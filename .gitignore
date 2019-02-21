@@ -1,0 +1,11 @@
+*.class
+.project
+.settings/
+.classpath
+.idea/
+crysknife-parent.iml
+core/crysknife-core.iml
+processor/crysknife-processor.iml
+annotations/crysknife-annotations.iml
+annotations/crysknife-processor.iml
+
