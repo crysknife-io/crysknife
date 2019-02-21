@@ -23,9 +23,7 @@ public class BeanDefinition {
 
     private Element element;
 
-    public BeanDefinition() {
-
-    }
+    private BeanType type;
 
     public BeanDefinition(Element element) {
         this.element = element;
@@ -48,6 +46,7 @@ public class BeanDefinition {
     public String toString() {
         return "BeanDefinition{" +
                 "element=" + Utils.getQualifiedName(element) +
+                ". type=" + getType() +
                 ", fields=" + getFieldInjectionPoints().stream().map(m -> m.toString()).collect(Collectors.joining(", ")) +
                 (getConstructorInjectionPoint() == null ? "" : ", constructor=" + getConstructorInjectionPoint().toString()) +
                 (getPostConstract() == null ? "" : ", postConstract=" + getPostConstract()) +
@@ -80,5 +79,13 @@ public class BeanDefinition {
 
     public void setPostConstract(String postConstract) {
         this.postConstract = postConstract;
+    }
+
+    public BeanType getType() {
+        return type;
+    }
+
+    public void setType(BeanType type) {
+        this.type = type;
     }
 }

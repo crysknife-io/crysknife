@@ -2,6 +2,7 @@ package org.treblereel.gwt.crysknife;
 
 import com.google.auto.common.MoreElements;
 import org.treblereel.gwt.crysknife.internal.BeanDefinition;
+import org.treblereel.gwt.crysknife.internal.BeanType;
 import org.treblereel.gwt.crysknife.internal.GenerationContext;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -10,9 +11,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.treblereel.gwt.crysknife.internal.Utils.getAllFactoryParameters;
@@ -41,18 +40,6 @@ public class FactoryGenerator {
         this.definitions = definitions;
         this.roundEnvironment = roundEnvironment;
         this.processingEnvironment = processingEnvironment;
-    }
-
-    static String getQualifiedFactoryName(TypeElement singleton) {
-        return getPackageName(singleton) + "." + getFactoryClassName(singleton);
-    }
-
-    static String getQualifiedProviderName(TypeElement singleton) {
-        return getPackageName(singleton) + "." + getFactoryClassName(singleton);
-    }
-
-    static String getFactoryClassName(TypeElement singleton) {
-        return singleton.getSimpleName().toString() + "_Factory";
     }
 
     void generate() {
@@ -100,6 +87,14 @@ public class FactoryGenerator {
         }
     }
 
+    static String getQualifiedFactoryName(TypeElement singleton) {
+        return getPackageName(singleton) + "." + getFactoryClassName(singleton);
+    }
+
+    static String getFactoryClassName(TypeElement singleton) {
+        return singleton.getSimpleName().toString() + "_Factory";
+    }
+
     private void generateBody(BeanDefinition definition, PrintWriter out, String classFactoryName, String className) {
         generateFieldInjectionFactory(definition, out, classFactoryName, className);
     }
@@ -119,11 +114,19 @@ public class FactoryGenerator {
 
     }
 
+    static String getQualifiedProviderName(TypeElement singleton) {
+        return getPackageName(singleton) + "." + getFactoryClassName(singleton);
+    }
+
     private void generateGet(BeanDefinition definition, PrintWriter out, String className) {
         String args = "";
 
         System.out.println(definition);
 
+        if (definition.getType().equals(BeanType.SINGLETON)) {
+            out.println("    private " + className + " instance;");
+
+        }
 
         if (definition.getConstructorInjectionPoint() != null)
             args = definition.getConstructorInjectionPoint()
@@ -133,27 +136,38 @@ public class FactoryGenerator {
                     .collect(Collectors.joining(", "));
 
         out.println("    public " + className + " get() {");
-        out.println("        " + className + " instance = new  " + className + "(" + args + ");");
 
 
+        if (definition.getType().equals(BeanType.SINGLETON)) {
+            out.println("        if(instance == null) {");
+            out.println("            instance = new  " + className + "(" + args + ");");
+            generateInstanceInitStmt(definition, out);
+            out.println("        }");
+
+        } else {
+            out.println("        " + className + "instance = new " + className + "(" + args + ");");
+            generateInstanceInitStmt(definition, out);
+        }
+        out.println("        return instance;");
+        out.println("    }");
+    }
+
+    private void generateInstanceInitStmt(BeanDefinition definition, PrintWriter out) {
         definition.getFieldInjectionPoints()
                 .stream().forEach(param -> {
-            out.println("        instance." + param.getName() + " = " + param.getName() + ".get();");
+            out.println("            instance." + param.getName() + " = " + param.getName() + ".get();");
 
         });
 
         if (definition.getPostConstract() != null) {
-            out.println("        instance." + definition.getPostConstract() + "();");
+            out.println("            instance." + definition.getPostConstract() + "();");
         }
-
-        out.println("        return instance;");
-        out.println("    }");
     }
 
     private void generateFields(BeanDefinition definition, PrintWriter out) {
         getAllFactoryParameters(definition).entrySet()
                 .stream().forEach(v -> {
-            out.println("    private final Provider<"+v.getKey() + "> " + v.getValue() + ";");
+            out.println("    private final Provider<" + v.getKey() + "> " + v.getValue() + ";");
         });
     }
 
@@ -161,7 +175,7 @@ public class FactoryGenerator {
         String constructorAndFieldArgsWithDefinitions = getAllInitParametersWithDefinitions(definition);
         String constructorAndFieldArgs = getAllInitParameters(definition);
 
-        out.println("    public " + classFactoryName + "(" + constructorAndFieldArgsWithDefinitions + ") {");
+        out.println("    private " + classFactoryName + "(" + constructorAndFieldArgsWithDefinitions + ") {");
         getAllFactoryParameters(definition).entrySet()
                 .stream().forEach(v -> {
             out.println("        this." + v.getValue() + " = " + v.getValue() + ";");
@@ -184,7 +198,7 @@ public class FactoryGenerator {
     private String getAllInitParametersWithDefinitions(BeanDefinition definition) {
         return getAllFactoryParameters(definition).entrySet()
                 .stream()
-                .map(v -> "Provider<"+v.getKey() + "> " + v.getValue())
+                .map(v -> "Provider<" + v.getKey() + "> " + v.getValue())
                 .collect(Collectors.joining(", "));
     }
 

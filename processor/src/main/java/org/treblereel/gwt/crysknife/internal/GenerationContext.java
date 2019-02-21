@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -168,8 +169,19 @@ public class GenerationContext {
         } else {
             BeanDefinition bean = new BeanDefinition(scan);
             setPostConstruct(bean);
+            setBeanType(bean);
             beans.put(name, bean);
             return bean;
+        }
+    }
+
+    private void setBeanType(BeanDefinition bean) {
+        TypeElement element = MoreElements.asType(bean.getElement());
+        Singleton singleton = element.getAnnotation(Singleton.class);
+        if (singleton != null) {
+            bean.setType(BeanType.SINGLETON);
+        } else {
+            bean.setType(BeanType.DEPENDENT);
         }
     }
 
