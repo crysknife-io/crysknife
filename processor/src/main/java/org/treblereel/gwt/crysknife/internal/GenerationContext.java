@@ -11,6 +11,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -43,6 +44,8 @@ public class GenerationContext {
 
     private final Map<String, ProducerDefinition> producers = new HashMap<>();
 
+    private final Map<String, NamedDefinition> named = new HashMap<>();
+
     private final Set<String> packages;
 
     private final MutableGraph<String> graph = GraphBuilder.directed().build();
@@ -66,6 +69,7 @@ public class GenerationContext {
 
     private void init() {
         processProducersAnnotation();
+        processNamedAnnotation();
         processSingletonAnnotation();
     }
 
@@ -76,7 +80,27 @@ public class GenerationContext {
             ProducerDefinition producer = new ProducerDefinition(returnType, MoreElements.asType(pro.getEnclosingElement()), pro.getSimpleName().toString());
             this.producers.put(getQualifiedName(returnType), producer);
         });
+    }
 
+    private void processNamedAnnotation() {
+        Set<Element> producers = (Set<Element>) roundEnvironment.getElementsAnnotatedWith(Named.class);
+        producers.stream().forEach(named -> {
+            if (named.getKind().equals(ElementKind.CLASS)) {
+                TypeElement element = MoreElements.asType(named);
+                String value = named.getAnnotation(Named.class).value();
+                element.getInterfaces().forEach(i -> {
+                    String iface = getQualifiedName(MoreTypes.asElement(i));
+                    NamedDefinition definition;
+                    if (this.named.containsKey(iface)) {
+                        definition = this.named.get(iface);
+                    } else {
+                        definition = new NamedDefinition(iface);
+                        this.named.put(iface, definition);
+                    }
+                    definition.getImplementations().put(value, getQualifiedName(element));
+                });
+            }
+        });
     }
 
     private void processSingletonAnnotation() {
@@ -88,41 +112,86 @@ public class GenerationContext {
             String parentQualifiedName = getQualifiedName(scan);
             graph.addNode(parentQualifiedName);
             for (Element elm : getAnnotatedElements(processingEnvironment.getElementUtils(), scan, Inject.class)) {
-                String childQualifiedName = getQualifiedName(elm);
-                graph.addNode(childQualifiedName);
-                if (!childQualifiedName.equals(parentQualifiedName)) {
-                    graph.putEdge(parentQualifiedName, childQualifiedName);
-                }
                 if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
+                    String childQualifiedName = getQualifiedName(elm);
+                    graph.addNode(childQualifiedName);
+                    if (!childQualifiedName.equals(parentQualifiedName)) {
+                        graph.putEdge(parentQualifiedName, childQualifiedName);
+                    }
                     ConstructorInjectionPoint point = new ConstructorInjectionPoint(scan,
                             ElementKind.CONSTRUCTOR,
                             elm.getSimpleName().toString());
                     ExecutableElement constructor = (ExecutableElement) elm;
                     List<? extends VariableElement> params = constructor.getParameters();
                     for (int i = 0; i < params.size(); i++) {
-                        String name = params.get(i).getSimpleName().toString();
-                        DeclaredType declaredType = (DeclaredType) params.get(i).asType();
-                        graph.addNode(declaredType.toString());
-                        graph.putEdge(getQualifiedName(elm), declaredType.toString());
-                        stack.push((TypeElement) declaredType.asElement());
-                        point.addParam(name, declaredType);
+                        processConstructorParam(stack, elm, point, params.get(i));
                     }
                     parent.setConstructorInjectionPoint(point);
                 } else if (elm.getKind().equals(ElementKind.FIELD)) {
-                    DeclaredType declaredType = (DeclaredType) elm.asType();
-                    FieldInjectionPoint point = new FieldInjectionPoint(scan,
-                            ElementKind.FIELD,
-                            elm.getSimpleName().toString(),
-                            (TypeElement) declaredType.asElement());
-                    parent.getFieldInjectionPoints().add(point);
-                    stack.push((TypeElement) declaredType.asElement());
+                    processField(stack, scan, parent, elm, parentQualifiedName);
                 }
             }
         }
 
-        Traverser.forGraph(graph).depthFirstPostOrder(getQualifiedName(application)).forEach(n -> {
-            orderedBeans.add(n);
+        Traverser.forGraph(graph).depthFirstPostOrder(getQualifiedName(application)).forEach(bean -> {
+            orderedBeans.add(bean);
         });
+    }
+
+    private void processConstructorParam(Stack<TypeElement> stack, Element elm, ConstructorInjectionPoint point, VariableElement param) {
+        TypeElement next;
+        String beanName;
+        Named named = param.getAnnotation(Named.class);
+        DeclaredType declaredType = (DeclaredType) param.asType();
+        String name = param.getSimpleName().toString();
+        if(named != null){
+            String type = named.value();
+            beanName = this.named.get(declaredType.toString()).getImplementations().get(type);
+            TypeElement element = processingEnvironment.getElementUtils().getTypeElement(beanName);
+            getBeanDefinitionOrCreateNew(element);
+            next = element;
+        } else {
+            next = (TypeElement) declaredType.asElement();
+            beanName = getQualifiedName(next);
+        }
+        graph.addNode(beanName);
+        graph.putEdge(getQualifiedName(elm), beanName);
+        point.addParam(name, MoreTypes.asDeclared(next.asType()));
+        stack.push(next);
+    }
+
+    private void processField(Stack<TypeElement> stack, TypeElement scan, BeanDefinition parent, Element elm, String parentQualifiedName) {
+        TypeElement next;
+        FieldInjectionPoint point;
+        String childQualifiedName;
+        Named named = elm.getAnnotation(Named.class);
+        DeclaredType declaredType = (DeclaredType) elm.asType();
+
+        if (named != null) {
+            String beanType = named.value();
+            String bean = this.named.get(declaredType.toString()).getImplementations().get(beanType);
+            TypeElement element = processingEnvironment.getElementUtils().getTypeElement(bean);
+            getBeanDefinitionOrCreateNew(element);
+            point = new FieldInjectionPoint(scan,
+                    ElementKind.FIELD,
+                    elm.getSimpleName().toString(),
+                    element);
+            next = element;
+            childQualifiedName = getQualifiedName(element);
+        } else {
+            point = new FieldInjectionPoint(scan,
+                    ElementKind.FIELD,
+                    elm.getSimpleName().toString(),
+                    (TypeElement) declaredType.asElement());
+            next = (TypeElement) declaredType.asElement();
+            childQualifiedName = getQualifiedName(elm);
+        }
+        graph.addNode(childQualifiedName);
+        if (!childQualifiedName.equals(parentQualifiedName)) {
+            graph.putEdge(parentQualifiedName, childQualifiedName);
+        }
+        parent.getFieldInjectionPoints().add(point);
+        stack.push(next);
     }
 
     private BeanDefinition getBeanDefinitionOrCreateNew(Element scan) {

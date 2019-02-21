@@ -32,6 +32,9 @@ public class Utils {
         } else if (elm.getKind().equals(ElementKind.CLASS)) {
             TypeElement typeElement = MoreElements.asType(elm);
             return typeElement.getQualifiedName().toString();
+        } else if (elm.getKind().equals(ElementKind.INTERFACE)) {
+            TypeElement typeElement = MoreElements.asType(elm);
+            return typeElement.getQualifiedName().toString();
         }
         throw new Error("unable to process bean " + elm.toString());
     }

@@ -8,6 +8,7 @@ import org.treblereel.gwt.crysknife.internal.ProducerDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -57,6 +58,9 @@ public class FactoryGenerator {
 
     private void build(BeanDefinition definition) throws IOException {
         TypeElement bean = MoreElements.asType(definition.getElement());
+        if(bean.getKind().equals(ElementKind.INTERFACE)){
+            return;
+        }
         String className = definition.getElement().getSimpleName().toString();
         String classFactoryName = getFactoryClassName(bean);
         String packageName = getPackageName(bean);

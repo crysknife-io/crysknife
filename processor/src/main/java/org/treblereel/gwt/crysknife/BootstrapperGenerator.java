@@ -120,6 +120,8 @@ public class BootstrapperGenerator {
     }
 
     private String getAllInitParametersWithDefinitions(BeanDefinition definition) {
+        System.out.println(definition.toString());
+
         return getAllFactoryParameters(definition).entrySet()
                 .stream()
                 .map(v -> toVariableName(v.getKey()))
@@ -141,108 +143,4 @@ public class BootstrapperGenerator {
         out.println("     }");
     }
 
-    private void generateImport(PrintWriter out) {
-        context.getBeans().forEach((k, v) -> {
-            if (!k.equals(getQualifiedName(application))) {
-                //out.println("import "+k +"_Factory;");
-            }
-        });
-    }
 }
-/*
-    private void processSingletonAnnotation(Set<Element> elementsAnnotatedWith) {
-        Graph graph = new Graph();
-        Stack<TypeElement> stack = new Stack<>();
-        stack.push(application);
-
-        while (!stack.isEmpty()) {
-            TypeElement scan = stack.pop();
-            String parent = getQualifiedName(scan);
-            graph.addVertex(parent);
-
-            getAnnotatedElements(processingEnvironment.getElementUtils(),
-                    scan,
-                    Inject.class).forEach(elm -> {
-                String child = getQualifiedName(elm);
-                graph.addVertex(child);
-                graph.addEdge(parent, child);
-
-                if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
-                    ExecutableElement constructor = (ExecutableElement) elm;
-                    List<? extends VariableElement> params = constructor.getParameters();
-                    for (int i = 0; i < params.size(); i++) {
-                        DeclaredType declaredType = (DeclaredType) params.get(i).asType();
-                        graph.addVertex(declaredType.toString());
-                        graph.addEdge(child, declaredType.toString());
-                        stack.push((TypeElement) declaredType.asElement());
-                    }
-                } else if (elm.getKind().equals(ElementKind.FIELD)) {
-                    DeclaredType declaredType = (DeclaredType) elm.asType();
-                    stack.push((TypeElement) declaredType.asElement());
-                }
-            });
-        }
-
-
-        List<String> order = new ArrayList<>(graph.breadthFirstTraversal(graph, getQualifiedName(application)));
-        Collections.reverse(order);
-
-        order.forEach((k) -> {
-            System.out.println("=> " + k);
-        });
-
-    }
-
-    public String getQualifiedName(Element elm) {
-        if (elm.getKind().equals(ElementKind.FIELD)) {
-            VariableElement variableElement = MoreElements.asVariable(elm);
-            DeclaredType declaredType = (DeclaredType) variableElement.asType();
-            return declaredType.toString();
-        } else if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
-            ExecutableElement executableElement = MoreElements.asExecutable(elm);
-            return executableElement.getEnclosingElement().toString();
-        } else if (elm.getKind().equals(ElementKind.CLASS)) {
-            TypeElement typeElement = MoreElements.asType(elm);
-            return typeElement.getQualifiedName().toString();
-        }
-        throw new Error("unable to process bean " + elm.toString());
-    }
-
-    private List<String> inTheOrderOfCreation(TypeElement application){
-        Graph graph = new Graph();
-        Stack<TypeElement> stack = new Stack<>();
-        stack.push(application);
-
-        while (!stack.isEmpty()) {
-            TypeElement scan = stack.pop();
-            String parent = getQualifiedName(scan);
-            graph.addVertex(parent);
-
-            getAnnotatedElements(processingEnvironment.getElementUtils(),
-                    scan,
-                    Inject.class).forEach(elm -> {
-                String child = getQualifiedName(elm);
-                graph.addVertex(child);
-                graph.addEdge(parent, child);
-
-                if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
-                    ExecutableElement constructor = (ExecutableElement) elm;
-                    List<? extends VariableElement> params = constructor.getParameters();
-                    for (int i = 0; i < params.size(); i++) {
-                        DeclaredType declaredType = (DeclaredType) params.get(i).asType();
-                        graph.addVertex(declaredType.toString());
-                        graph.addEdge(child, declaredType.toString());
-                        stack.push((TypeElement) declaredType.asElement());
-                    }
-                } else if (elm.getKind().equals(ElementKind.FIELD)) {
-                    DeclaredType declaredType = (DeclaredType) elm.asType();
-                    stack.push((TypeElement) declaredType.asElement());
-                }
-            });
-        }
-
-        List<String> order = new ArrayList<>(graph.breadthFirstTraversal(graph, getQualifiedName(application)));
-        Collections.reverse(order);
-        return order;
-    }*/
-

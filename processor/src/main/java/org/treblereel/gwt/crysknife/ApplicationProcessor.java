@@ -92,9 +92,5 @@ public class ApplicationProcessor extends AbstractProcessor {
             throw new Error("there must only one class annotated with @Application");
         }
         this.application = elements.stream().findFirst().get();//TODO
-
-        elements.forEach(injectAnnotated -> {
-            System.out.println("bean " + injectAnnotated.getQualifiedName());
-        });
     }
 }
