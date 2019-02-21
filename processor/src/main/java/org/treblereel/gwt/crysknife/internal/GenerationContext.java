@@ -1,6 +1,7 @@
 package org.treblereel.gwt.crysknife.internal;
 
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.Traverser;
@@ -8,6 +9,7 @@ import com.google.common.graph.Traverser;
 import javax.annotation.PostConstruct;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.lang.model.element.Element;
@@ -37,9 +39,11 @@ public class GenerationContext {
 
     private final ProcessingEnvironment processingEnvironment;
 
-    private final Set<String> packages;
-
     private final Map<String, BeanDefinition> beans = new HashMap<>();
+
+    private final Map<String, ProducerDefinition> producers = new HashMap<>();
+
+    private final Set<String> packages;
 
     private final MutableGraph<String> graph = GraphBuilder.directed().build();
 
@@ -61,60 +65,19 @@ public class GenerationContext {
     }
 
     private void init() {
+        processProducersAnnotation();
         processSingletonAnnotation();
-
-        //graph();
-
     }
 
-/*    private void graph() {
-        MutableGraph<String> graph = GraphBuilder.directed().build();
-
-        Stack<TypeElement> stack = new Stack<>();
-        stack.push(application);
-
-        while (!stack.isEmpty()) {
-            TypeElement scan = stack.pop();
-            String parentQualifiedName = getQualifiedName(scan);
-            System.out.println("Parent " + parentQualifiedName);
-            graph.addNode(parentQualifiedName);
-
-            for (Element elm : getAnnotatedElements(processingEnvironment.getElementUtils(), scan, Inject.class)) {
-                String childQualifiedName = getQualifiedName(elm);
-                System.out.println("Child " + childQualifiedName);
-                graph.addNode(childQualifiedName);
-
-                if (!childQualifiedName.equals(parentQualifiedName)) {
-                    System.out.println("Child to Parent  " + childQualifiedName + " " + parentQualifiedName);
-
-                    graph.putEdge(parentQualifiedName, childQualifiedName);
-                }
-                if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
-                    ExecutableElement constructor = (ExecutableElement) elm;
-                    List<? extends VariableElement> params = constructor.getParameters();
-                    for (int i = 0; i < params.size(); i++) {
-
-                        DeclaredType declaredType = (DeclaredType) params.get(i).asType();
-                        graph.addNode(declaredType.toString());
-                        graph.putEdge(getQualifiedName(elm), declaredType.toString());
-
-                        stack.push((TypeElement) declaredType.asElement());
-                    }
-                } else if (elm.getKind().equals(ElementKind.FIELD)) {
-                    DeclaredType declaredType = (DeclaredType) elm.asType();
-                    stack.push((TypeElement) declaredType.asElement());
-                }
-            }
-        }
-
-
-
-        Traverser.forGraph(graph).depthFirstPostOrder(getQualifiedName(application)).forEach(n -> {
-            System.out.println(" kk " + n);
+    private void processProducersAnnotation() {
+        Set<ExecutableElement> producers = (Set<ExecutableElement>) roundEnvironment.getElementsAnnotatedWith(Produces.class);
+        producers.stream().forEach(pro -> {
+            TypeElement returnType = MoreElements.asType(MoreTypes.asElement(pro.getReturnType()));
+            ProducerDefinition producer = new ProducerDefinition(returnType, MoreElements.asType(pro.getEnclosingElement()), pro.getSimpleName().toString());
+            this.producers.put(getQualifiedName(returnType), producer);
         });
 
-
-    }*/
+    }
 
     private void processSingletonAnnotation() {
         Stack<TypeElement> stack = new Stack<>();
@@ -180,6 +143,8 @@ public class GenerationContext {
         Singleton singleton = element.getAnnotation(Singleton.class);
         if (singleton != null) {
             bean.setType(BeanType.SINGLETON);
+        } else if (producers.containsKey(getQualifiedName(element))) {
+            bean.setType(BeanType.PRODUCIBLE);
         } else {
             bean.setType(BeanType.DEPENDENT);
         }
@@ -213,5 +178,9 @@ public class GenerationContext {
 
     public List<String> getOrderedBeans() {
         return orderedBeans;
+    }
+
+    public Map<String, ProducerDefinition> getProducers() {
+        return producers;
     }
 }

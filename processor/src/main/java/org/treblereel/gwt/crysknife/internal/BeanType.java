@@ -5,6 +5,5 @@ package org.treblereel.gwt.crysknife.internal;
  * Created by treblereel 2/21/19
  */
 public enum BeanType {
-    SINGLETON, DEPENDENT;
-
+    SINGLETON, DEPENDENT, PRODUCIBLE;
 }

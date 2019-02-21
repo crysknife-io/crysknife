@@ -4,6 +4,7 @@ import com.google.auto.common.MoreElements;
 import org.treblereel.gwt.crysknife.internal.BeanDefinition;
 import org.treblereel.gwt.crysknife.internal.BeanType;
 import org.treblereel.gwt.crysknife.internal.GenerationContext;
+import org.treblereel.gwt.crysknife.internal.ProducerDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 import static org.treblereel.gwt.crysknife.internal.Utils.getAllFactoryParameters;
 import static org.treblereel.gwt.crysknife.internal.Utils.getPackageName;
+import static org.treblereel.gwt.crysknife.internal.Utils.getQualifiedName;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -121,12 +123,7 @@ public class FactoryGenerator {
     private void generateGet(BeanDefinition definition, PrintWriter out, String className) {
         String args = "";
 
-        System.out.println(definition);
-
-        if (definition.getType().equals(BeanType.SINGLETON)) {
-            out.println("    private " + className + " instance;");
-
-        }
+        generateInstanceDeclaration(definition, out, className);
 
         if (definition.getConstructorInjectionPoint() != null)
             args = definition.getConstructorInjectionPoint()
@@ -139,15 +136,22 @@ public class FactoryGenerator {
 
 
         if (definition.getType().equals(BeanType.SINGLETON)) {
-            out.println("        if(instance == null) {");
-            out.println("            instance = new  " + className + "(" + args + ");");
-            generateInstanceInitStmt(definition, out);
-            out.println("        }");
-
+            generateSingletonGet(definition, out, className, args);
+        } else if (definition.getType().equals(BeanType.PRODUCIBLE)) {
+            generateProducerGet(definition, out, className, args);
         } else {
-            out.println("        " + className + "instance = new " + className + "(" + args + ");");
+            out.println("        " + className + " instance = new " + className + "(" + args + ");");
             generateInstanceInitStmt(definition, out);
+            out.println("        return instance;");
+            out.println("    }");
         }
+    }
+
+    private void generateSingletonGet(BeanDefinition definition, PrintWriter out, String className, String args) {
+        out.println("        if(instance == null) {");
+        out.println("            instance = new  " + className + "(" + args + ");");
+        generateInstanceInitStmt(definition, out);
+        out.println("        }");
         out.println("        return instance;");
         out.println("    }");
     }
@@ -162,6 +166,46 @@ public class FactoryGenerator {
         if (definition.getPostConstract() != null) {
             out.println("            instance." + definition.getPostConstract() + "();");
         }
+    }
+
+    private void generateProducerGet(BeanDefinition definition, PrintWriter out, String className, String args) {
+
+        if (context.getProducers().containsKey(getQualifiedName(definition.getElement()))) {
+            String producer = getProducer(definition);
+            ProducerDefinition producerDefinition = context
+                    .getProducers()
+                    .get(getQualifiedName(definition.getElement()));
+            out.println("        if(instance == null) {");
+            out.println("            instance = new  " + producer + "();");
+            out.println("        }");
+            out.println("        return instance."+producerDefinition.getMethod()+"();");
+            out.println("    }");
+        }
+    }
+
+    private void generateInstanceDeclaration(BeanDefinition definition, PrintWriter out, String className) {
+        if (definition.getType().equals(BeanType.SINGLETON)) {
+            generateInstanceDeclarationSingleton(definition, out, className);
+        } else if (definition.getType().equals(BeanType.PRODUCIBLE)) {
+            generateInstanceDeclarationProducer(definition, out, className);
+        }
+    }
+
+    private void generateInstanceDeclarationSingleton(BeanDefinition definition, PrintWriter out, String className) {
+        out.println("    private " + className + " instance;");
+    }
+
+    private void generateInstanceDeclarationProducer(BeanDefinition definition, PrintWriter out, String className) {
+        String producer = getProducer(definition);
+        out.println("    private " + producer + " instance;");
+    }
+
+    private String getProducer(BeanDefinition definition) {
+        return context.getProducers()
+                    .get(getQualifiedName(definition.getElement()))
+                    .getProducer()
+                    .getQualifiedName()
+                    .toString();
     }
 
     private void generateFields(BeanDefinition definition, PrintWriter out) {

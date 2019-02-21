@@ -67,6 +67,8 @@ public class ApplicationProcessor extends AbstractProcessor {
         new FactoryGenerator(context, definitions, roundEnvironment, processingEnv).generate();
 
 
+
+
         return true;
     }
 
