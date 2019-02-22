@@ -9,6 +9,7 @@ import com.google.common.graph.Traverser;
 import javax.annotation.PostConstruct;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -111,7 +112,7 @@ public class GenerationContext {
             BeanDefinition parent = getBeanDefinitionOrCreateNew(scan);
             String parentQualifiedName = getQualifiedName(scan);
             graph.addNode(parentQualifiedName);
-            for (Element elm : getAnnotatedElements(processingEnvironment.getElementUtils(), scan, Inject.class)) {
+            for (Element elm : getAnnotatedElements(processingEnvironment.getElementUtils(), scan, Inject.class, Dependent.class)) {
                 if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     String childQualifiedName = getQualifiedName(elm);
                     graph.addNode(childQualifiedName);
@@ -210,8 +211,11 @@ public class GenerationContext {
     private void setBeanType(BeanDefinition bean) {
         TypeElement element = MoreElements.asType(bean.getElement());
         Singleton singleton = element.getAnnotation(Singleton.class);
+        Dependent dependent = element.getAnnotation(Dependent.class);
         if (singleton != null) {
             bean.setType(BeanType.SINGLETON);
+        }else if(dependent != null) {
+            bean.setType(BeanType.DEPENDENT);
         } else if (producers.containsKey(getQualifiedName(element))) {
             bean.setType(BeanType.PRODUCIBLE);
         } else {

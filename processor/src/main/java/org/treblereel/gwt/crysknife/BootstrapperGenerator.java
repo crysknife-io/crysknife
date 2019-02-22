@@ -120,8 +120,6 @@ public class BootstrapperGenerator {
     }
 
     private String getAllInitParametersWithDefinitions(BeanDefinition definition) {
-        System.out.println(definition.toString());
-
         return getAllFactoryParameters(definition).entrySet()
                 .stream()
                 .map(v -> toVariableName(v.getKey()))

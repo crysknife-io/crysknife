@@ -17,6 +17,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.lang.annotation.Annotation;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -52,6 +53,23 @@ public class ApplicationProcessor extends AbstractProcessor {
         return found;
     }
 
+    public static Set<Element> getAnnotatedElements(
+            Elements elements,
+            TypeElement type,
+            Class<? extends Annotation>... annotations) {
+        Set<Element> found = new HashSet<>();
+        Set<Class<? extends Annotation>> scan = new HashSet<>();
+        Collections.addAll(scan, annotations);
+        for (Element e : elements.getAllMembers(type)) {
+            scan.stream().forEach(a -> {
+                if (e.getAnnotation(a) != null) {
+                    found.add(e);
+                }
+            });
+        }
+        return found;
+    }
+
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
         if (annotations.isEmpty()) {
@@ -65,8 +83,6 @@ public class ApplicationProcessor extends AbstractProcessor {
         context = new GenerationContext(roundEnvironment, processingEnv, packages, application);
         new BootstrapperGenerator(context, roundEnvironment, processingEnv, packages, application).generate();
         new FactoryGenerator(context, definitions, roundEnvironment, processingEnv).generate();
-
-
 
 
         return true;
