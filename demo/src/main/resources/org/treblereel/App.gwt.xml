@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module rename-to='App'>
+  <inherits name='com.google.gwt.user.User' />
+<!--
+  <inherits name="dagger.Dagger" />
+-->
+  <inherits name='com.google.gwt.user.theme.standard.Standard' />
+  <inherits name="elemental2.dom.Dom" />
+
+  <inherits name='org.treblereel.gwt.Crysknife' />
+
+  <entry-point class='org.treblereel.client.AppBootstrap' />
+
+  <source path='client' />
+  <source path='shared' />
+
+</module>
