@@ -1,7 +1,6 @@
 package org.treblereel.client.inject;
 
 import com.google.gwt.core.client.GWT;
-import org.treblereel.client.DependentBean;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -37,5 +36,9 @@ public class BeanTwo {
         GWT.log(this.getClass().getCanonicalName());
         beanOne.say();
         beanThree.say();
+    }
+
+    public String callBeanOne(){
+        return beanOne.callCar();
     }
 }

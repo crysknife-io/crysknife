@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 public class Helicopter implements Vehicle {
 
     @Override
-    public void whoAmI() {
-        GWT.log("Helicopter");
+    public String whoAmI() {
+        return "Helicopter";
     }
 }

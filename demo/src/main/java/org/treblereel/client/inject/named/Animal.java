@@ -6,5 +6,5 @@ package org.treblereel.client.inject.named;
  */
 public interface Animal {
 
-    void say();
+    String say();
 }

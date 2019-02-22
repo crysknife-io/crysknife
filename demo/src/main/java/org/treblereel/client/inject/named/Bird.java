@@ -15,8 +15,8 @@ public class Bird implements Animal {
 
 
     @Override
-    public void say() {
-        GWT.log("tweet");
+    public String say() {
+        return "tweet";
     }
 }
 

@@ -82,4 +82,8 @@ public class Utils {
         }
         return false;
     }
+
+    public static String toVariableName(String name) {
+        return name.toLowerCase().replaceAll("\\.", "_");
+    }
 }

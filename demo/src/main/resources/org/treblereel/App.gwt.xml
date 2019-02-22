@@ -9,7 +9,15 @@
 
   <inherits name='org.treblereel.gwt.Crysknife' />
 
-  <entry-point class='org.treblereel.client.AppBootstrap' />
+
+  <inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
+
+  <public path='resource'>
+    <include name='css/*.css'/>
+    <include name='js/*.js'/>
+  </public>
+
+  <entry-point class='org.treblereel.client.App' />
 
   <source path='client' />
   <source path='shared' />

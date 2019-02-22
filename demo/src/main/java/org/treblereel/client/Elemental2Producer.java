@@ -1,5 +1,6 @@
 package org.treblereel.client;
 
+import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 
 import javax.enterprise.inject.Produces;
@@ -16,5 +17,10 @@ public class Elemental2Producer {
     @Produces
     public HTMLDivElement getDiv() {
         return (HTMLDivElement) document.createElement("div");
+    }
+
+    @Produces
+    public HTMLButtonElement getButton() {
+        return (HTMLButtonElement) document.createElement("button");
     }
 }

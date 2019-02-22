@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import static org.treblereel.gwt.crysknife.internal.Utils.getAllFactoryParameters;
 import static org.treblereel.gwt.crysknife.internal.Utils.getPackageName;
 import static org.treblereel.gwt.crysknife.internal.Utils.getQualifiedName;
+import static org.treblereel.gwt.crysknife.internal.Utils.toVariableName;
 
 public class BootstrapperGenerator {
     private final RoundEnvironment roundEnvironment;
@@ -124,11 +125,6 @@ public class BootstrapperGenerator {
                 .stream()
                 .map(v -> toVariableName(v.getKey()))
                 .collect(Collectors.joining(", "));
-    }
-
-
-    private String toVariableName(String name) {
-        return name.toLowerCase().replaceAll("\\.", "_");
     }
 
     private void generateBody(PrintWriter out, String className, String classBootstrapName) {

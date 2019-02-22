@@ -1,7 +1,5 @@
 package org.treblereel.client.inject.named;
 
-import com.google.gwt.core.client.GWT;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -14,7 +12,7 @@ import javax.inject.Singleton;
 public class Car implements Vehicle {
 
     @Override
-    public void whoAmI() {
-        GWT.log("Car");
+    public String whoAmI() {
+        return "Car";
     }
 }

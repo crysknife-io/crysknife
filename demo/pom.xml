@@ -53,16 +53,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.auto</groupId>
-      <artifactId>auto-common</artifactId>
-      <version>${auto.common.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.auto.service</groupId>
-      <artifactId>auto-service</artifactId>
-      <version>${auto.service.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <version>0.1-SNAPSHOT</version>
@@ -77,7 +67,11 @@
       <artifactId>crysknife-core</artifactId>
       <version>0.1-SNAPSHOT</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.gwtbootstrap3</groupId>
+      <artifactId>gwtbootstrap3</artifactId>
+      <version>0.9.4</version>
+    </dependency>
     <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>

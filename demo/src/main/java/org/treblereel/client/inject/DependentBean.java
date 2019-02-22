@@ -1,4 +1,4 @@
-package org.treblereel.client;
+package org.treblereel.client.inject;
 
 import com.google.gwt.core.client.GWT;
 import org.treblereel.client.inject.named.Animal;
@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Random;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -28,8 +29,13 @@ public class DependentBean {
     @Named("bird")
     Animal bird;
 
+    private int random;
+
+
     public DependentBean(){
         GWT.log(this.getClass().getCanonicalName() + " created");
+        this.random = new Random().nextInt();
+
     }
 
     public void sayHello() {
@@ -44,5 +50,9 @@ public class DependentBean {
         dog.say();
         cow.say();
 
+    }
+
+    public int getRandom() {
+        return random;
     }
 }

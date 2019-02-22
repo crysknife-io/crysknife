@@ -15,7 +15,7 @@ public class Cow implements Animal {
 
 
     @Override
-    public void say() {
-        GWT.log("moo");
+    public String say() {
+        return "moo";
     }
 }

@@ -20,4 +20,8 @@ public class Injector {
         beanOne.say();
         beanTwo.say();
     }
+
+    public String callBeanTwo(){
+        return beanTwo.callBeanOne();
+    }
 }

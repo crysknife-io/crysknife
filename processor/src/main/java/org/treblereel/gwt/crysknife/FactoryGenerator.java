@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import static org.treblereel.gwt.crysknife.internal.Utils.getAllFactoryParameters;
 import static org.treblereel.gwt.crysknife.internal.Utils.getPackageName;
 import static org.treblereel.gwt.crysknife.internal.Utils.getQualifiedName;
+import static org.treblereel.gwt.crysknife.internal.Utils.toVariableName;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -133,11 +134,10 @@ public class FactoryGenerator {
             args = definition.getConstructorInjectionPoint()
                     .getParameters()
                     .stream()
-                    .map(p -> p.getName() + ".get()")
+                    .map(p -> toVariableName(getQualifiedName(p.getDeclared().asElement())) + ".get()")
                     .collect(Collectors.joining(", "));
 
         out.println("    public " + className + " get() {");
-
 
         if (definition.getType().equals(BeanType.SINGLETON)) {
             generateSingletonGet(definition, out, className, args);
@@ -163,7 +163,7 @@ public class FactoryGenerator {
     private void generateInstanceInitStmt(BeanDefinition definition, PrintWriter out) {
         definition.getFieldInjectionPoints()
                 .stream().forEach(param -> {
-            out.println("            instance." + param.getName() + " = " + param.getName() + ".get();");
+            out.println("            instance." + param.getName() + " = " + toVariableName(getQualifiedName(param.getDeclared())) + ".get();");
 
         });
 
@@ -215,7 +215,7 @@ public class FactoryGenerator {
     private void generateFields(BeanDefinition definition, PrintWriter out) {
         getAllFactoryParameters(definition).entrySet()
                 .stream().forEach(v -> {
-            out.println("    private final Provider<" + v.getKey() + "> " + v.getValue() + ";");
+            out.println("    private final Provider<" + v.getKey() + "> " + toVariableName(v.getKey()) + ";");
         });
     }
 
@@ -226,7 +226,7 @@ public class FactoryGenerator {
         out.println("    private " + classFactoryName + "(" + constructorAndFieldArgsWithDefinitions + ") {");
         getAllFactoryParameters(definition).entrySet()
                 .stream().forEach(v -> {
-            out.println("        this." + v.getValue() + " = " + v.getValue() + ";");
+            out.println("        this." + toVariableName(v.getKey()) + " = " + toVariableName(v.getKey()) + ";");
         });
         out.println("    }");
 
@@ -239,14 +239,14 @@ public class FactoryGenerator {
     private String getAllInitParameters(BeanDefinition definition) {
         return getAllFactoryParameters(definition).entrySet()
                 .stream()
-                .map(v -> v.getValue())
+                .map(v -> toVariableName(v.getKey()))
                 .collect(Collectors.joining(", "));
     }
 
     private String getAllInitParametersWithDefinitions(BeanDefinition definition) {
         return getAllFactoryParameters(definition).entrySet()
                 .stream()
-                .map(v -> "Provider<" + v.getKey() + "> " + v.getValue())
+                .map(v -> "Provider<" + v.getKey() + "> " + toVariableName(v.getKey()))
                 .collect(Collectors.joining(", "));
     }
 

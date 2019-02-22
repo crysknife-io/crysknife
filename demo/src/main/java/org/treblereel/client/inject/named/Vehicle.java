@@ -7,5 +7,5 @@ package org.treblereel.client.inject.named;
 public interface Vehicle {
 
 
-    void whoAmI();
+    String whoAmI();
 }

@@ -5,6 +5,7 @@
 .idea/
 crysknife-parent.iml
 core/crysknife-core.iml
+demo/injection.iml
 processor/crysknife-processor.iml
 annotations/crysknife-annotations.iml
 annotations/crysknife-processor.iml
