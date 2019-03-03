@@ -1,10 +1,9 @@
 package org.treblereel.gwt.crysknife;
 
-import com.google.auto.service.AutoService;
-import org.treblereel.gwt.crysknife.client.Application;
-import org.treblereel.gwt.crysknife.client.ComponentScan;
-import org.treblereel.gwt.crysknife.internal.BeanDefinition;
-import org.treblereel.gwt.crysknife.internal.GenerationContext;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -12,16 +11,22 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import com.google.auto.common.MoreElements;
+import com.google.auto.service.AutoService;
+import org.treblereel.gwt.crysknife.annotation.Generator;
+import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.client.ComponentScan;
+import org.treblereel.gwt.crysknife.generator.ComponentInjectionResolverScanner;
+import org.treblereel.gwt.crysknife.generator.ComponentScanner;
+import org.treblereel.gwt.crysknife.generator.DependentGenerator;
+import org.treblereel.gwt.crysknife.generator.PostConstructGenerator;
+import org.treblereel.gwt.crysknife.generator.ProducesGenerator;
+import org.treblereel.gwt.crysknife.generator.SingletonGenerator;
+import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.generator.graph.Graph;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -31,61 +36,66 @@ import java.util.Set;
         "org.treblereel.gwt.crysknife.client.ComponentScan"})
 public class ApplicationProcessor extends AbstractProcessor {
 
+    private final List<String> orderedBeans = new LinkedList<>();
+    private IOCContext iocContext;
     private Set<String> packages;
-    private Set<TypeElement> injections = new HashSet<>();
-    private Set<TypeElement> singletons = new HashSet<>();
-    private Set<ExecutableElement> postConstructors = new HashSet<>();
     private GenerationContext context;
-
     private TypeElement application;
-
-    private Map<TypeElement, BeanDefinition> definitions = new HashMap<>();
-
-    public static Set<Element> getAnnotatedElements(
-            Elements elements,
-            TypeElement type,
-            Class<? extends Annotation> annotation) {
-        Set<Element> found = new HashSet<>();
-        for (Element e : elements.getAllMembers(type)) {
-            if (e.getAnnotation(annotation) != null)
-                found.add(e);
-        }
-        return found;
-    }
-
-    public static Set<Element> getAnnotatedElements(
-            Elements elements,
-            TypeElement type,
-            Class<? extends Annotation>... annotations) {
-        Set<Element> found = new HashSet<>();
-        Set<Class<? extends Annotation>> scan = new HashSet<>();
-        Collections.addAll(scan, annotations);
-        for (Element e : elements.getAllMembers(type)) {
-            scan.stream().forEach(a -> {
-                if (e.getAnnotation(a) != null) {
-                    found.add(e);
-                }
-            });
-        }
-        return found;
-    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
         if (annotations.isEmpty()) {
             return false;
         }
-
-
         processApplicationAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(Application.class));
         processComponentScanAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(ComponentScan.class));
 
-        context = new GenerationContext(roundEnvironment, processingEnv, packages, application);
-        new BootstrapperGenerator(context, roundEnvironment, processingEnv, packages, application).generate();
-        new FactoryGenerator(context, definitions, roundEnvironment, processingEnv).generate();
+        context = new GenerationContext(roundEnvironment, processingEnv);
+        iocContext = new IOCContext(context);
 
+        addPreBuildGenerators();
 
+        externalGeneratorslookup(context);
+        processComponentScan();
+        processInjectionScan();
+        processGraph();
+
+        iocContext.getOrderedBeans().forEach(bean -> {
+
+        });
+
+/*        iocContext.getBeans().forEach((k,v) -> {
+            System.out.println("bb = " + k);
+        });*/
+
+        //BootstrapperGenerator bootstrapperGenerator = new BootstrapperGenerator(iocContext, context);
+        new FactoryGenerator(iocContext, context).generate();
+        new BootstrapperGenerator(iocContext, context, application).generate();
         return true;
+    }
+
+    private void processGraph() {
+        new Graph(iocContext).process(application);
+    }
+
+    //TODO
+    private void externalGeneratorslookup(GenerationContext context) {
+        Set<TypeElement> generators = (Set<TypeElement>) context.getRoundEnvironment().getElementsAnnotatedWith(Generator.class);
+    }
+
+    private void processInjectionScan() {
+        new ComponentInjectionResolverScanner(iocContext).scan();
+    }
+
+    private void processComponentScan() {
+        new ComponentScanner(iocContext, context).scan();
+    }
+
+    private void addPreBuildGenerators() {
+        new SingletonGenerator().register(iocContext);
+        new DependentGenerator().register(iocContext);
+        new PostConstructGenerator().register(iocContext);
+        new ProducesGenerator().register(iocContext);
     }
 
     private void processComponentScanAnnotation(Set<TypeElement> elements) {
@@ -97,6 +107,10 @@ public class ApplicationProcessor extends AbstractProcessor {
                 packages.add(aPackage);
             }
         });
+
+        if (packages.isEmpty()) {
+            packages.add(MoreElements.getPackage(application).getQualifiedName().toString());
+        }
     }
 
     private void processApplicationAnnotation(Set<TypeElement> elements) {
@@ -107,6 +121,6 @@ public class ApplicationProcessor extends AbstractProcessor {
         if (elements.size() > 1) {
             throw new Error("there must only one class annotated with @Application");
         }
-        this.application = elements.stream().findFirst().get();//TODO
+        this.application = elements.stream().findFirst().get();
     }
 }

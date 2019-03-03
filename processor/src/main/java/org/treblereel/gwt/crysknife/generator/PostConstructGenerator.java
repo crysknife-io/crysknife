@@ -1,0 +1,35 @@
+package org.treblereel.gwt.crysknife.generator;
+
+import javax.annotation.PostConstruct;
+
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.annotation.Generator;
+import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
+import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
+
+/**
+ * @author Dmitrii Tikhomirov
+ * Created by treblereel 3/3/19
+ */
+@Generator
+public class PostConstructGenerator extends IOCGenerator {
+
+    @Override
+    public void register(IOCContext iocContext) {
+        iocContext.register(PostConstruct.class, WiringElementType.METHOD_DECORATOR, this);
+    }
+
+    @Override
+    public void generate(ClassBuilder builder, Definition definition) {
+        ExecutableDefinition postConstract = (ExecutableDefinition) definition;
+
+        FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
+        MethodCallExpr method = new MethodCallExpr(instance,
+                                                   postConstract.getExecutableElement().getSimpleName().toString());
+        builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
+    }
+}

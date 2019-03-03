@@ -1,7 +1,5 @@
 package org.treblereel.client.inject.named;
 
-import com.google.gwt.core.client.GWT;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 

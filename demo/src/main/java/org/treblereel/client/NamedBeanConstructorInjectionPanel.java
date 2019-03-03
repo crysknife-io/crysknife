@@ -1,5 +1,10 @@
 package org.treblereel.client;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 import org.gwtbootstrap3.client.ui.Button;
@@ -8,11 +13,6 @@ import org.gwtbootstrap3.client.ui.FormGroup;
 import org.gwtbootstrap3.client.ui.FormLabel;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.treblereel.client.inject.named.Vehicle;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -75,7 +75,6 @@ public class NamedBeanConstructorInjectionPanel implements IsWidget {
 
         formGroup.add(carBtn);
         formGroup.add(helicopterBtn);
-
     }
 
     private void setText(String text) {

@@ -1,0 +1,49 @@
+package org.treblereel.gwt.crysknife.generator.graph;
+
+import java.util.Stack;
+
+import javax.lang.model.element.TypeElement;
+
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
+import com.google.common.graph.Traverser;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
+
+/**
+ * @author Dmitrii Tikhomirov
+ * Created by treblereel 3/5/19
+ */
+public class Graph {
+
+    private final IOCContext context;
+
+    private final MutableGraph<TypeElement> graph = GraphBuilder.directed().build();
+
+    public Graph(IOCContext context) {
+        this.context = context;
+    }
+
+    public void process(TypeElement application) {
+        Stack<TypeElement> stack = new Stack<>();
+        stack.push(application);
+        while (!stack.isEmpty()) {
+            TypeElement scan = stack.pop();
+            BeanDefinition parent = context.getBeans().get(scan);
+            graph.addNode(scan);
+            if(parent == null){
+                continue;
+            }
+            parent.getDependsOn().forEach(deps -> {
+                if (!deps.equals(scan)) {
+                    graph.putEdge(scan, deps);
+                }
+                stack.push(deps);
+            });
+        }
+
+        Traverser.forGraph(graph)
+                .depthFirstPostOrder(application)
+                .forEach(bean -> context.getOrderedBeans().add(bean));
+    }
+}

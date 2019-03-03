@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootPanel;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
+import org.treblereel.client.inject.iface.IBean;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
 
@@ -11,7 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 @Application
-@ComponentScan("org.treblereel.client.inject")
+@ComponentScan("org.treblereel.client")
 public class App implements EntryPoint {
 
     @Inject
@@ -38,6 +39,9 @@ public class App implements EntryPoint {
     @Inject
     TransitiveInjection transitiveInjection;
 
+    @Inject
+    IBean iBean;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -45,6 +49,7 @@ public class App implements EntryPoint {
 
     @PostConstruct
     public void init(){
+
         RootPanel.get().add(namedBeanFieldInjectionPanel);
         RootPanel.get().add(namedBeanConstructorInjectionPanel);
         RootPanel.get().add(namedBeanConstructorInjectionPanel);
