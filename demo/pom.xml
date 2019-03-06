@@ -1,56 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.treblereel</groupId>
-  <artifactId>injection</artifactId>
+
+  <groupId>org.treblereel.gwt.crysknife.demo</groupId>
+  <artifactId>demo</artifactId>
+  <version>0.1-SNAPSHOT</version>
   <packaging>war</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>Maven Archetype for GWT</name>
 
   <properties>
-    <!-- Convenience property to set the GWT version -->
-    <gwt.version>2.8.2</gwt.version>
-    <auto.common.version>0.10</auto.common.version>
-    <auto.service.version>1.0-rc4</auto.service.version>
-    <!-- GWT 2.8 requires 1.8 -->
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <webappdir>${project.build.directory}/webapp</webappdir>
+    <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
+    <j2cl.maven.plugin.version>0.5-SNAPSHOT</j2cl.maven.plugin.version>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.google.gwt</groupId>
-        <artifactId>gwt</artifactId>
-        <version>${gwt.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-user</artifactId>
+      <groupId>com.google.elemental2</groupId>
+      <artifactId>elemental2-dom</artifactId>
+      <version>1.0.0-RC1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.jsinterop</groupId>
+      <artifactId>base</artifactId>
+      <version>1.0.0-RC1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-dev</artifactId>
-      <scope>provided</scope>
+      <groupId>com.vertispan.jsinterop</groupId>
+      <artifactId>base</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-      <version>1</version>
-      <scope>provided</scope>
+      <groupId>com.google.jsinterop</groupId>
+      <artifactId>jsinterop-annotations</artifactId>
+      <version>HEAD-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -67,85 +51,282 @@
       <artifactId>crysknife-core</artifactId>
       <version>0.1-SNAPSHOT</version>
     </dependency>
-    <dependency>
-      <groupId>org.gwtbootstrap3</groupId>
-      <artifactId>gwtbootstrap3</artifactId>
-      <version>0.9.4</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0-RC1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
-    <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>gwt-maven-plugin</artifactId>
-        <version>${gwt.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <runTarget>App.html</runTarget>
-          <modules>
-            <module>org.treblereel.App</module>
-          </modules>
-          <logLevel>INFO</logLevel>
-          <noServer>false</noServer>
-          <extraJvmArgs>-Xmx2048m -XX:CompileThreshold=7000 -Djava.io.tmpdir=${project.build.directory}
-          </extraJvmArgs>
-          <disableCastChecking>true</disableCastChecking>
-          <soycDetailed>false</soycDetailed>
-          <hostedWebapp>src/main/webapp</hostedWebapp>
-          <strict>true</strict>
-          <compileReport>true</compileReport>
-          <saveSource>true</saveSource>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>2.4.1</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${basedir}</directory>
-              <includes>
-                <include>src/main/webapp/app/</include>
-                <include>src/main/gwt-unitCache/</include>
-                <include>src/main/webapp/WEB-INF/deploy/</include>
-                <include>src/main/webapp/WEB-INF/classes/</include>
-                <include>src/main/webapp/WEB-INF/lib/*</include>
-                <include>src/main/webapp/WEB-INF/lib/**/*</include>
-                <include>.errai/</include>
-              </includes>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.0</version>
+        <!-- Do not upgrade past 3.1 to avoid triggering https://issues.apache.org/jira/browse/MSOURCES-95 -->
+        <!-- Unless you use annotation processors, then upgrade to 3.5.1 at a minimum -->
+        <version>3.5.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>net.cardosi.j2cl</groupId>
+        <artifactId>j2cl-maven-plugin</artifactId>
+        <version>${j2cl.maven.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>run-devmode</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <bytecodeClasspath>
+            <param>${java-classpath}</param>
+            <param>${webapp.libdir}/jre.jar</param>
+            <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
+          </bytecodeClasspath>
+          <j2clClasspath>
+            <param>${webapp.libdir}/bootstrap.js.zip</param>
+            <param>${webapp.libdir}/jre.js.zip</param>
+          </j2clClasspath>
+          <outputJsPathDir>${webappdir}/js</outputJsPathDir>
+          <sourceDir>
+            <param>${project.basedir}/src/main/java</param>
+          </sourceDir>
+          <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
+          <entrypoint>org.treblereel.client.App</entrypoint>
+          <outputDirectory>${project.basedir}/out</outputDirectory>
+          <externs>
+            <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
+            <extern>${project.basedir}/src/main/externs/svg.js</extern>
+          </externs>
+          <compilationLevel>BUNDLE</compilationLevel>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>devmode</id>
+      <build>
+        <defaultGoal>process-classes</defaultGoal>
+        <resources>
+          <resource>
+            <directory>src/main/webapp</directory>
+            <targetPath>${webappdir}</targetPath>
+          </resource>
+        </resources>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <outputDirectory>${webappdir}/classes</outputDirectory>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.0.2</version>
+            <executions>
+              <execution>
+                <id>build-java-classpath</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>build-classpath</goal>
+                </goals>
+                <configuration>
+                  <includeTypes>jar</includeTypes>
+                  <outputProperty>java-classpath</outputProperty>
+                </configuration>
+              </execution>
+              <execution>
+                <id>copy-bootstrap</id>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${webappdir}/WEB-INF/lib</outputDirectory>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>jre</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <classifier>jszip</classifier>
+                      <type>zip</type>
+                      <destFileName>jre.js.zip</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>jre</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <destFileName>jre.jar</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>gwt-internal-annotations</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <destFileName>gwt-internal-annotations.jar</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>bootstrap</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <classifier>jszip</classifier>
+                      <type>zip</type>
+                      <destFileName>bootstrap.js.zip</destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-maven-plugin</artifactId>
+            <version>9.4.14.v20181114</version>
+            <configuration>
+              <webApp>
+                <contextPath>/</contextPath>
+                <resourceBases>
+                  ${webappdir}
+                </resourceBases>
+                <descriptor>${webappdir}/WEB-INF/web.xml</descriptor>
+              </webApp>
+              <reload>automatic</reload>
+              <scanIntervalSeconds>1</scanIntervalSeconds>
+            </configuration>
+            <executions>
+              <execution>
+                <id>start-jetty</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+                <configuration>
+                  <scanIntervalSeconds>0</scanIntervalSeconds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>net.cardosi.j2cl</groupId>
+            <artifactId>j2cl-maven-plugin</artifactId>
+            <version>${j2cl.maven.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>run-devmode</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <bytecodeClasspath>
+                <param>${java-classpath}</param>
+                <param>${webapp.libdir}/jre.jar</param>
+                <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
+              </bytecodeClasspath>
+              <j2clClasspath>
+                <param>${webapp.libdir}/bootstrap.js.zip</param>
+                <param>${webapp.libdir}/jre.js.zip</param>
+              </j2clClasspath>
+              <outputJsPathDir>${webappdir}/js</outputJsPathDir>
+              <sourceDir>
+                <param>${project.basedir}/src/main/java</param>
+              </sourceDir>
+              <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
+              <entrypoint>org.treblereel.client.App</entrypoint>
+              <externs>
+                <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
+                <extern>${project.basedir}/src/main/externs/svg.js</extern>
+              </externs>
+              <compilationLevel>BUNDLE</compilationLevel>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>vertispan-releases</id>
+      <name>Vertispan hosted artifacts-releases</name>
+      <url>https://repo.vertispan.com/j2cl</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+      <id>sonatype-snapshots-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <repositories>
+
+    <repository>
+      <id>google-snapshots</id>
+      <name>google-snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/google-snapshots/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>vertispan-releases</id>
+      <name>Vertispan hosted artifacts-releases</name>
+      <url>https://repo.vertispan.com/j2cl</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>vertispan-snapshots</id>
+      <name>Vertispan Snapshots</name>
+      <url>https://repo.vertispan.com/gwt-snapshot/</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>sonatype-snapshots-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+  </repositories>
 </project>

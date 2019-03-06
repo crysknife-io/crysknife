@@ -1,48 +1,46 @@
 package org.treblereel.client;
 
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import org.gwtbootstrap3.client.ui.Button;
-import org.gwtbootstrap3.client.ui.Form;
-import org.gwtbootstrap3.client.ui.FormGroup;
-import org.gwtbootstrap3.client.ui.FormLabel;
-import org.gwtbootstrap3.client.ui.TextBox;
-import org.treblereel.client.inject.named.Animal;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
+import elemental2.dom.CSSProperties;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLFormElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLLabelElement;
+import org.treblereel.client.inject.named.Animal;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
-public class NamedBeanFieldInjectionPanel implements IsWidget {
+public class NamedBeanFieldInjectionPanel {
 
     @Inject
-    Form form;
+    HTMLDivElement form;
 
     @Inject
-    FormGroup formGroup;
+    HTMLDivElement formGroup;
 
     @Inject
-    FormLabel formLabel;
+    HTMLLabelElement formLabel;
 
     @Inject
-    TextBox textBox;
+    HTMLInputElement textBox;
 
     @Inject
-    Button birdBtn;
+    HTMLButtonElement birdBtn;
 
     @Inject
-    Button cowBtn;
+    HTMLButtonElement cowBtn;
 
     @Inject
-    Button dogBtn;
+    HTMLButtonElement dogBtn;
 
     @Inject
     @Named("dog")
@@ -56,62 +54,50 @@ public class NamedBeanFieldInjectionPanel implements IsWidget {
     @Named("bird")
     Animal bird;
 
-
     @PostConstruct
-    public void init(){
-        formLabel.setText("@Named beans, field injection");
-        formLabel.setFor("formSuccess");
+    public void init() {
+        formGroup.className = "form-group";
 
-        textBox.setId("textBox");
-        textBox.setWidth("250px");
-        textBox.setEnabled(false);
+        formLabel.textContent = "@Named beans, field injection";
+        formLabel.setAttribute("setFor", "textBoxNamedBeanFieldInjectionPanel");
+        formLabel.className = "control-label";
 
-        formGroup.add(formLabel);
-        formGroup.add(textBox);
+        textBox.id = "textBoxNamedBeanFieldInjectionPanel";
+        textBox.disabled = true;
+        textBox.className = "form-control";
+        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
 
-        form.add(formGroup);
+        formGroup.appendChild(formLabel);
+        formGroup.appendChild(textBox);
+
+        form.appendChild(formGroup);
 
         initBtn();
     }
 
     private void initBtn() {
-        birdBtn.setText("Bird");
-        birdBtn.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                setText(bird.say());
-            }
-        });
+        birdBtn.textContent = "Bird";
+        birdBtn.className = "btn btn-default";
+        birdBtn.addEventListener("click", evt -> setText(bird.say()));
 
-        cowBtn.setText("Cow");
-        cowBtn.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                setText(cow.say());
-            }
-        });
+        cowBtn.textContent = "Cow";
+        cowBtn.className = "btn btn-default";
+        cowBtn.addEventListener("click", evt -> setText(cow.say()));
 
-        dogBtn.setText("Bird");
-        dogBtn.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                setText(dog.say());
-            }
-        });
+        dogBtn.textContent = "Bird";
+        dogBtn.className = "btn btn-default";
+        dogBtn.addEventListener("click", evt -> setText(dog.say()));
 
-        formGroup.add(birdBtn);
-        formGroup.add(cowBtn);
-        formGroup.add(dogBtn);
-
+        formGroup.appendChild(birdBtn);
+        formGroup.appendChild(cowBtn);
+        formGroup.appendChild(dogBtn);
     }
 
     private void setText(String text) {
-        textBox.clear();
-        textBox.setText(text);
+        textBox.value = text;
     }
 
-    @Override
-    public Widget asWidget() {
+    public HTMLElement asElement() {
         return form;
     }
 }

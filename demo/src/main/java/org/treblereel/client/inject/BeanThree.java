@@ -1,8 +1,8 @@
 package org.treblereel.client.inject;
 
-import com.google.gwt.core.client.GWT;
-
 import javax.inject.Singleton;
+
+import elemental2.dom.DomGlobal;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -12,6 +12,6 @@ import javax.inject.Singleton;
 public class BeanThree {
 
     public void say() {
-        GWT.log(this.getClass().getCanonicalName());
+        DomGlobal.console.log(this.getClass().getCanonicalName());
     }
 }

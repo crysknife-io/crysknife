@@ -1,15 +1,15 @@
 package org.treblereel.client;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.user.client.ui.RootPanel;
+import elemental2.dom.DomGlobal;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
 import org.treblereel.client.inject.iface.IBean;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 @Application
 @ComponentScan("org.treblereel.client")
@@ -48,13 +48,11 @@ public class App implements EntryPoint {
     }
 
     @PostConstruct
-    public void init(){
-
-        RootPanel.get().add(namedBeanFieldInjectionPanel);
-        RootPanel.get().add(namedBeanConstructorInjectionPanel);
-        RootPanel.get().add(namedBeanConstructorInjectionPanel);
-        RootPanel.get().add(singletonBeans);
-        RootPanel.get().add(dependentBeans);
-        RootPanel.get().add(transitiveInjection);
+    public void init() {
+        DomGlobal.document.body.appendChild(dependentBeans.asElement());
+        DomGlobal.document.body.appendChild(singletonBeans.asElement());
+        DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.asElement());
+        DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.asElement());
+        DomGlobal.document.body.appendChild(transitiveInjection.asElement());
     }
 }

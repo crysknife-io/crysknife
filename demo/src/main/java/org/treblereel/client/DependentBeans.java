@@ -1,39 +1,41 @@
 package org.treblereel.client;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import org.gwtbootstrap3.client.ui.Button;
-import org.gwtbootstrap3.client.ui.Form;
-import org.gwtbootstrap3.client.ui.FormGroup;
-import org.gwtbootstrap3.client.ui.FormLabel;
-import org.gwtbootstrap3.client.ui.TextBox;
-import org.treblereel.client.inject.DependentBean;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import elemental2.dom.CSSProperties;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLLabelElement;
+import org.treblereel.client.inject.DependentBean;
+
+import static elemental2.dom.CSSProperties.WidthUnionType;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
-public class DependentBeans implements IsWidget {
+public class DependentBeans {
 
     @Inject
-    Form form;
+    HTMLDivElement form;
 
     @Inject
-    FormGroup formGroup;
+    HTMLDivElement formGroup;
 
     @Inject
-    FormLabel formLabel;
+    HTMLLabelElement formLabel;
 
     @Inject
-    TextBox textBox;
+    HTMLInputElement textBox;
 
     @Inject
-    Button checkBtn;
+    HTMLButtonElement checkBtn;
 
     @Inject
     DependentBean beanOne1Instance;
@@ -43,24 +45,30 @@ public class DependentBeans implements IsWidget {
 
     @PostConstruct
     public void init() {
-        formLabel.setText("@Dependent test, the same instance in two fields, random number assigned on construction");
-        formLabel.setFor("formSuccess");
+        form.className = "form-group";
 
-        textBox.setId("textBox");
-        textBox.setWidth("750px");
-        textBox.setEnabled(false);
+        formLabel.textContent = "@Dependent test, the same instance in two fields, random number assigned on construction";
+        formLabel.setAttribute("setFor", "textBox");
+        formLabel.className = "control-label";
 
-        formGroup.add(formLabel);
-        formGroup.add(textBox);
+        textBox.id = "textBox";
+        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
+        textBox.disabled = true;
+        textBox.className = "form-control";
 
-        form.add(formGroup);
+        formGroup.appendChild(formLabel);
+        formGroup.appendChild(textBox);
+
+        form.appendChild(formGroup);
 
         initBtn();
     }
 
     private void initBtn() {
-        checkBtn.setText("Check");
-        checkBtn.addClickHandler(event -> {
+        checkBtn.textContent = "Check";
+        checkBtn.className = "btn btn-default";
+        checkBtn.addEventListener("click", event -> {
+
             StringBuffer sb = new StringBuffer();
             sb.append("beanOne1Instance random :");
             sb.append(beanOne1Instance.getRandom());
@@ -71,17 +79,15 @@ public class DependentBeans implements IsWidget {
             setText(sb.toString());
         });
 
-        formGroup.add(checkBtn);
-
+        formGroup.appendChild(checkBtn);
     }
 
     private void setText(String text) {
-        textBox.clear();
-        textBox.setText(text);
+        textBox.value = text;
+        textBox.textContent = text;
     }
 
-    @Override
-    public Widget asWidget() {
+    public HTMLElement asElement() {
         return form;
     }
 }
