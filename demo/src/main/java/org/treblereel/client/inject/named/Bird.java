@@ -1,7 +1,5 @@
 package org.treblereel.client.inject.named;
 
-import com.google.gwt.core.client.GWT;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -12,7 +10,6 @@ import javax.inject.Singleton;
 @Named("bird")
 @Singleton
 public class Bird implements Animal {
-
 
     @Override
     public String say() {

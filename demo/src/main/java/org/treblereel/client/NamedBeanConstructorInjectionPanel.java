@@ -5,13 +5,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.Widget;
-import org.gwtbootstrap3.client.ui.Button;
-import org.gwtbootstrap3.client.ui.Form;
-import org.gwtbootstrap3.client.ui.FormGroup;
-import org.gwtbootstrap3.client.ui.FormLabel;
-import org.gwtbootstrap3.client.ui.TextBox;
+import elemental2.dom.CSSProperties;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLLabelElement;
 import org.treblereel.client.inject.named.Vehicle;
 
 /**
@@ -19,25 +18,25 @@ import org.treblereel.client.inject.named.Vehicle;
  * Created by treblereel 2/22/19
  */
 @Singleton
-public class NamedBeanConstructorInjectionPanel implements IsWidget {
+public class NamedBeanConstructorInjectionPanel {
 
     @Inject
-    Form form;
+    HTMLDivElement form;
 
     @Inject
-    FormGroup formGroup;
+    HTMLDivElement formGroup;
 
     @Inject
-    FormLabel formLabel;
+    HTMLLabelElement formLabel;
 
     @Inject
-    TextBox textBox;
+    HTMLInputElement textBox;
 
     @Inject
-    Button helicopterBtn;
+    HTMLButtonElement helicopterBtn;
 
     @Inject
-    Button carBtn;
+    HTMLButtonElement carBtn;
 
     Vehicle car;
 
@@ -51,39 +50,43 @@ public class NamedBeanConstructorInjectionPanel implements IsWidget {
 
     @PostConstruct
     public void init() {
-        formLabel.setText("@Named beans, constructor injection");
-        formLabel.setFor("formSuccess");
+        formGroup.className = "form-group";
 
-        textBox.setId("textBox");
-        textBox.setWidth("250px");
-        textBox.setEnabled(false);
+        formLabel.textContent = "@Named beans, constructor injection";
+        formLabel.setAttribute("setFor", "NamedBeanConstructorInjectionPanel");
+        formLabel.className = "control-label";
 
-        formGroup.add(formLabel);
-        formGroup.add(textBox);
+        textBox.id = "NamedBeanConstructorInjectionPanel";
+        textBox.disabled = true;
+        textBox.className = "form-control";
+        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
 
-        form.add(formGroup);
+        formGroup.appendChild(formLabel);
+        formGroup.appendChild(textBox);
+
+        form.appendChild(formGroup);
 
         initBtn();
     }
 
     private void initBtn() {
-        carBtn.setText("Car");
-        carBtn.addClickHandler(event -> setText(car.whoAmI()));
+        carBtn.textContent = "Car";
+        carBtn.className = "btn btn-default";
+        carBtn.addEventListener("click", evt -> setText(car.whoAmI()));
 
-        helicopterBtn.setText("Helicopter");
-        helicopterBtn.addClickHandler(event -> setText(helicopter.whoAmI()));
+        helicopterBtn.textContent = "Helicopter";
+        helicopterBtn.className = "btn btn-default";
+        helicopterBtn.addEventListener("click", evt -> setText(helicopter.whoAmI()));
 
-        formGroup.add(carBtn);
-        formGroup.add(helicopterBtn);
+        formGroup.appendChild(carBtn);
+        formGroup.appendChild(helicopterBtn);
     }
 
     private void setText(String text) {
-        textBox.clear();
-        textBox.setText(text);
+        textBox.value = text;
     }
 
-    @Override
-    public Widget asWidget() {
+    public HTMLElement asElement() {
         return form;
     }
 }

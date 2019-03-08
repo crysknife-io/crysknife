@@ -1,13 +1,14 @@
 package org.treblereel.client.inject;
 
-import com.google.gwt.core.client.GWT;
-import org.treblereel.client.inject.named.Vehicle;
+import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.util.Random;
+
+import elemental2.dom.DomGlobal;
+import org.treblereel.client.inject.named.Vehicle;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -35,14 +36,16 @@ public class BeanOne {
     }
 
     public void say() {
-        GWT.log(this.getClass().getCanonicalName());
+        DomGlobal.console.log(this.getClass().getCanonicalName());
     }
 
     public int getRandom() {
         return random;
     }
 
-    public String callCar(){
-      return car.whoAmI();
-    };
+    public String callCar() {
+        return car.whoAmI();
+    }
+
+    ;
 }

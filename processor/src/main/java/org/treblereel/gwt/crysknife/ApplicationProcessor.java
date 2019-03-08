@@ -3,6 +3,7 @@ package org.treblereel.gwt.crysknife;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -47,11 +48,17 @@ public class ApplicationProcessor extends AbstractProcessor {
         if (annotations.isEmpty()) {
             return false;
         }
-        processApplicationAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(Application.class));
-        processComponentScanAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(ComponentScan.class));
 
         context = new GenerationContext(roundEnvironment, processingEnv);
         iocContext = new IOCContext(context);
+
+        Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
+        if(!maybeApplication.isPresent()){
+            return true;
+        }
+        this.application = maybeApplication.get();
+
+        processComponentScanAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(ComponentScan.class));
 
         addPreBuildGenerators();
 
@@ -60,15 +67,6 @@ public class ApplicationProcessor extends AbstractProcessor {
         processInjectionScan();
         processGraph();
 
-        iocContext.getOrderedBeans().forEach(bean -> {
-
-        });
-
-/*        iocContext.getBeans().forEach((k,v) -> {
-            System.out.println("bb = " + k);
-        });*/
-
-        //BootstrapperGenerator bootstrapperGenerator = new BootstrapperGenerator(iocContext, context);
         new FactoryGenerator(iocContext, context).generate();
         new BootstrapperGenerator(iocContext, context, application).generate();
         return true;
@@ -113,14 +111,18 @@ public class ApplicationProcessor extends AbstractProcessor {
         }
     }
 
-    private void processApplicationAnnotation(Set<TypeElement> elements) {
-        if (elements.size() == 0) {
-            throw new Error("no class annotated with @Application detected");
+    private Optional<TypeElement> processApplicationAnnotation(IOCContext iocContext) {
+        Set<TypeElement>  applications = (Set<TypeElement>) iocContext.getGenerationContext()
+                .getRoundEnvironment()
+                .getElementsAnnotatedWith(Application.class);
+
+        if (applications.size() == 0) {
+            System.out.println("no class annotated with @Application detected");
         }
 
-        if (elements.size() > 1) {
-            throw new Error("there must only one class annotated with @Application");
+        if (applications.size() > 1) {
+            System.out.println("there must only one class annotated with @Application");
         }
-        this.application = elements.stream().findFirst().get();
+        return applications.stream().findFirst();
     }
 }

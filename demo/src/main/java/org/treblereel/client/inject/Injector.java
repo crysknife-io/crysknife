@@ -1,11 +1,10 @@
 package org.treblereel.client.inject;
 
-
-import com.google.gwt.core.client.GWT;
-import org.treblereel.client.inject.iface.IBean;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import elemental2.dom.DomGlobal;
+import org.treblereel.client.inject.iface.IBean;
 
 @Singleton
 public class Injector {
@@ -20,13 +19,12 @@ public class Injector {
     IBean iBean;
 
     public void say() {
-        GWT.log(this.getClass().getCanonicalName());
+        DomGlobal.console.log(this.getClass().getCanonicalName());
         beanOne.say();
         beanTwo.say();
-        iBean.sayHello();
     }
 
-    public String callBeanTwo(){
+    public String callBeanTwo() {
         return beanTwo.callBeanOne();
     }
 }
