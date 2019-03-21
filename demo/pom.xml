@@ -11,20 +11,22 @@
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
-    <j2cl.maven.plugin.version>0.5-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.7-SNAPSHOT</j2cl.maven.plugin.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.google.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0-RC1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vertispan.jsinterop</groupId>
-      <artifactId>base</artifactId>
+      <groupId>com.vertispan.elemental2</groupId>
+      <artifactId>elemental2-core</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.vertispan.elemental2</groupId>
+      <artifactId>elemental2-dom</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>com.google.jsinterop</groupId>
       <artifactId>jsinterop-annotations</artifactId>
@@ -45,16 +47,18 @@
       <artifactId>crysknife-core</artifactId>
       <version>0.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>1.3.9</version>
+    </dependency>
   </dependencies>
 
   <build>
-    <finalName>${artifactId}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <!-- Do not upgrade past 3.1 to avoid triggering https://issues.apache.org/jira/browse/MSOURCES-95 -->
-        <!-- Unless you use annotation processors, then upgrade to 3.5.1 at a minimum -->
-        <version>3.5.1</version>
+        <version>3.8.0</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
@@ -73,189 +77,12 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>net.cardosi.j2cl</groupId>
-        <artifactId>j2cl-maven-plugin</artifactId>
-        <version>${j2cl.maven.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>run-devmode</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <bytecodeClasspath>
-            <param>${java-classpath}</param>
-            <param>${webapp.libdir}/jre.jar</param>
-            <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
-          </bytecodeClasspath>
-          <j2clClasspath>
-            <param>${webapp.libdir}/bootstrap.js.zip</param>
-            <param>${webapp.libdir}/jre.js.zip</param>
-          </j2clClasspath>
-          <outputJsPathDir>${webappdir}/js</outputJsPathDir>
-          <sourceDir>
-            <param>${project.basedir}/src/main/java</param>
-          </sourceDir>
-          <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
-          <entrypoint>org.treblereel.client.App</entrypoint>
-          <outputDirectory>${project.basedir}/out</outputDirectory>
-          <externs>
-            <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
-            <extern>${project.basedir}/src/main/externs/svg.js</extern>
-          </externs>
-          <compilationLevel>BUNDLE</compilationLevel>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 
   <profiles>
     <profile>
       <id>devmode</id>
-      <build>
-        <defaultGoal>process-classes</defaultGoal>
-        <resources>
-          <resource>
-            <directory>src/main/webapp</directory>
-            <targetPath>${webappdir}</targetPath>
-          </resource>
-        </resources>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <outputDirectory>${webappdir}/classes</outputDirectory>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.0.2</version>
-            <executions>
-              <execution>
-                <id>build-java-classpath</id>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>build-classpath</goal>
-                </goals>
-                <configuration>
-                  <includeTypes>jar</includeTypes>
-                  <outputProperty>java-classpath</outputProperty>
-                </configuration>
-              </execution>
-              <execution>
-                <id>copy-bootstrap</id>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${webappdir}/WEB-INF/lib</outputDirectory>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>jre</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <classifier>jszip</classifier>
-                      <type>zip</type>
-                      <destFileName>jre.js.zip</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>jre</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <destFileName>jre.jar</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>gwt-internal-annotations</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <destFileName>gwt-internal-annotations.jar</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>bootstrap</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <classifier>jszip</classifier>
-                      <type>zip</type>
-                      <destFileName>bootstrap.js.zip</destFileName>
-                    </artifactItem>
-                  </artifactItems>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-maven-plugin</artifactId>
-            <version>9.4.14.v20181114</version>
-            <configuration>
-              <webApp>
-                <contextPath>/</contextPath>
-                <resourceBases>${webappdir}</resourceBases>
-                <descriptor>${webappdir}/WEB-INF/web.xml</descriptor>
-              </webApp>
-              <reload>automatic</reload>
-              <scanIntervalSeconds>1</scanIntervalSeconds>
-            </configuration>
-            <executions>
-              <execution>
-                <id>start-jetty</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>start</goal>
-                </goals>
-                <configuration>
-                  <scanIntervalSeconds>0</scanIntervalSeconds>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>net.cardosi.j2cl</groupId>
-            <artifactId>j2cl-maven-plugin</artifactId>
-            <version>${j2cl.maven.plugin.version}</version>
-            <executions>
-              <execution>
-                <id>run-devmode</id>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <bytecodeClasspath>
-                <param>${java-classpath}</param>
-                <param>${webapp.libdir}/jre.jar</param>
-                <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
-              </bytecodeClasspath>
-              <j2clClasspath>
-                <param>${webapp.libdir}/bootstrap.js.zip</param>
-                <param>${webapp.libdir}/jre.js.zip</param>
-              </j2clClasspath>
-              <outputJsPathDir>${webappdir}/js</outputJsPathDir>
-              <sourceDir>
-                <param>${project.basedir}/src/main/java</param>
-              </sourceDir>
-              <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
-              <entrypoint>org.treblereel.client.App</entrypoint>
-              <externs>
-                <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
-                <extern>${project.basedir}/src/main/externs/svg.js</extern>
-              </externs>
-              <compilationLevel>BUNDLE</compilationLevel>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>build</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
@@ -327,6 +154,161 @@
                       <type>zip</type>
                       <destFileName>bootstrap.js.zip</destFileName>
                     </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>javac-bootstrap-classpath</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <destFileName>javac-bootstrap-classpath.jar</destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-maven-plugin</artifactId>
+            <version>9.4.14.v20181114</version>
+            <configuration>
+              <webApp>
+                <contextPath>/</contextPath>
+                <resourceBases>${webappdir}</resourceBases>
+                <descriptor>${webappdir}/WEB-INF/web.xml</descriptor>
+              </webApp>
+              <reload>automatic</reload>
+              <scanIntervalSeconds>1</scanIntervalSeconds>
+            </configuration>
+            <executions>
+              <execution>
+                <id>start-jetty</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>start</goal>
+                </goals>
+                <configuration>
+                  <scanIntervalSeconds>0</scanIntervalSeconds>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>net.cardosi.j2cl</groupId>
+            <artifactId>j2cl-maven-plugin</artifactId>
+            <version>${j2cl.maven.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>run-devmode</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <bytecodeClasspath>
+                <param>${java-classpath}</param>
+                <param>${webapp.libdir}/jre.jar</param>
+                <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
+                <param>${webapp.libdir}/javac-bootstrap-classpath.jar</param>
+              </bytecodeClasspath>
+              <javacBootClasspath>${webapp.libdir}/javac-bootstrap-classpath.jar</javacBootClasspath>
+              <j2clClasspath>
+                <param>${webapp.libdir}/bootstrap.js.zip</param>
+                <param>${webapp.libdir}/jre.js.zip</param>
+              </j2clClasspath>
+              <outputJsPathDir>${webappdir}/js</outputJsPathDir>
+              <sourceDir>
+                <param>${project.basedir}/src/main/java</param>
+              </sourceDir>
+              <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
+              <entrypoint>org.treblereel.client.App</entrypoint>
+              <outputJsFilename>app.js</outputJsFilename>
+              <externs>
+                <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
+                <extern>${project.basedir}/src/main/externs/svg.js</extern>
+              </externs>
+              <compilationLevel>BUNDLE</compilationLevel>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>build</id>
+      <build>
+        <defaultGoal>process-classes</defaultGoal>
+        <resources>
+          <resource>
+            <directory>src/main/webapp</directory>
+            <targetPath>${webappdir}</targetPath>
+          </resource>
+        </resources>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <outputDirectory>${webappdir}/classes</outputDirectory>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.0.2</version>
+            <executions>
+              <execution>
+                <id>build-java-classpath</id>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>build-classpath</goal>
+                </goals>
+                <configuration>
+                  <includeTypes>jar</includeTypes>
+                  <outputProperty>java-classpath</outputProperty>
+                </configuration>
+              </execution>
+              <execution>
+                <id>copy-bootstrap</id>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${webappdir}/WEB-INF/lib</outputDirectory>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>jre</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <classifier>jszip</classifier>
+                      <type>zip</type>
+                      <destFileName>jre.js.zip</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>jre</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <destFileName>jre.jar</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>gwt-internal-annotations</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <destFileName>gwt-internal-annotations.jar</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>bootstrap</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <classifier>jszip</classifier>
+                      <type>zip</type>
+                      <destFileName>bootstrap.js.zip</destFileName>
+                    </artifactItem>
+                    <artifactItem>
+                      <groupId>com.vertispan.j2cl</groupId>
+                      <artifactId>javac-bootstrap-classpath</artifactId>
+                      <version>0.2-SNAPSHOT</version>
+                      <destFileName>javac-bootstrap-classpath.jar</destFileName>
+                    </artifactItem>
                   </artifactItems>
                 </configuration>
               </execution>
@@ -338,7 +320,7 @@
             <version>${j2cl.maven.plugin.version}</version>
             <executions>
               <execution>
-                <id>run-build</id>
+                <id>run-devmode</id>
                 <phase>process-classes</phase>
                 <goals>
                   <goal>build</goal>
@@ -350,12 +332,15 @@
                 <param>${java-classpath}</param>
                 <param>${webapp.libdir}/jre.jar</param>
                 <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
+                <param>${webapp.libdir}/javac-bootstrap-classpath.jar</param>
               </bytecodeClasspath>
+              <javacBootClasspath>${webapp.libdir}/javac-bootstrap-classpath.jar</javacBootClasspath>
               <j2clClasspath>
                 <param>${webapp.libdir}/bootstrap.js.zip</param>
                 <param>${webapp.libdir}/jre.js.zip</param>
               </j2clClasspath>
               <outputJsPathDir>${webappdir}/js</outputJsPathDir>
+              <outputJsFilename>app.js</outputJsFilename>
               <sourceDir>
                 <param>${project.basedir}/src/main/java</param>
               </sourceDir>
@@ -379,7 +364,7 @@
                   <goal>copy-resources</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>${project.build.directory}/${artifactId}/</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${artifactId}-${project.version}/</outputDirectory>
                   <resources>
                     <resource>
                       <directory>${webappdir}</directory>
@@ -396,6 +381,8 @@
       </build>
     </profile>
   </profiles>
+
+
   <pluginRepositories>
     <pluginRepository>
       <id>vertispan-releases</id>
