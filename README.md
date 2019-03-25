@@ -8,11 +8,10 @@ Feel free to comment and criticize.
 How to build
 1. 'git clone git@github.com:treblereel/crysknife.git'
 2. 'mvn clean install'
-3. choose another folder and 'git clone https://github.com/gitgabrio/j2clmavenplugin.git'
-4. 'git checkout origin/handle-dependencies'
-5. 'mvn clean install'
-6. to run demo run 'mvn install -Pdevmode' within crysknife/demo folder
-7. to build a .war run 'mvn clean package -Pbuild' within crysknife/demo folder
+3. choose another folder and 'git clone https://github.com/treblereel/j2clmavenplugin.git'
+4. 'mvn clean install'
+5. to run demo run 'mvn install -Pdevmode' within crysknife/demo folder
+6. to build a .war run 'mvn clean package -Pbuild' within crysknife/demo folder
 
 
 Have fun and let j2cl win !
