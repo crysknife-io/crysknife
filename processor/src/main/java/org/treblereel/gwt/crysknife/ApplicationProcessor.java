@@ -19,6 +19,7 @@ import com.google.auto.service.AutoService;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
+import org.treblereel.gwt.crysknife.generator.BeanManagerProducerGenerator;
 import org.treblereel.gwt.crysknife.generator.ComponentInjectionResolverScanner;
 import org.treblereel.gwt.crysknife.generator.ComponentScanner;
 import org.treblereel.gwt.crysknife.generator.DependentGenerator;
@@ -53,7 +54,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         iocContext = new IOCContext(context);
 
         Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
-        if(!maybeApplication.isPresent()){
+        if (!maybeApplication.isPresent()) {
             return true;
         }
         this.application = maybeApplication.get();
@@ -61,13 +62,13 @@ public class ApplicationProcessor extends AbstractProcessor {
         processComponentScanAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(ComponentScan.class));
 
         addPreBuildGenerators();
-
         externalGeneratorslookup(context);
         processComponentScan();
         processInjectionScan();
         processGraph();
 
         new FactoryGenerator(iocContext, context).generate();
+        new BeanManagerGenerator(iocContext, context).generate();
         new BootstrapperGenerator(iocContext, context, application).generate();
         return true;
     }
@@ -94,6 +95,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         new DependentGenerator().register(iocContext);
         new PostConstructGenerator().register(iocContext);
         new ProducesGenerator().register(iocContext);
+        new BeanManagerProducerGenerator().register(iocContext);
     }
 
     private void processComponentScanAnnotation(Set<TypeElement> elements) {
@@ -112,7 +114,7 @@ public class ApplicationProcessor extends AbstractProcessor {
     }
 
     private Optional<TypeElement> processApplicationAnnotation(IOCContext iocContext) {
-        Set<TypeElement>  applications = (Set<TypeElement>) iocContext.getGenerationContext()
+        Set<TypeElement> applications = (Set<TypeElement>) iocContext.getGenerationContext()
                 .getRoundEnvironment()
                 .getElementsAnnotatedWith(Application.class);
 

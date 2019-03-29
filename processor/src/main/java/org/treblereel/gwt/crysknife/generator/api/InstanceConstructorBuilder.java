@@ -28,22 +28,5 @@ public class InstanceConstructorBuilder extends Builder {
         ObjectCreationExpr newInstance = new ObjectCreationExpr();
         newInstance.setType(new ClassOrInterfaceType().setName(classBuilder.beanDefinition.getClassFactoryName()));
         methodDeclaration.getBody().get().getStatements().add(new ReturnStmt(newInstance));
-
-        if (!classBuilder.beanDefinition.getDependsOn().isEmpty()) {
-            for (TypeElement argument : classBuilder.beanDefinition.getDependsOn()) {
-                String varName = Utils.toVariableName(argument.getQualifiedName().toString());
-
-                ClassOrInterfaceType type = new ClassOrInterfaceType();
-                type.setName(Provider.class.getSimpleName());
-                type.setTypeArguments(new ClassOrInterfaceType().setName(argument.getQualifiedName().toString()));
-
-                Parameter param = new Parameter();
-                param.setName(varName);
-                param.setType(type);
-
-                methodDeclaration.addAndGetParameter(param);
-                newInstance.addArgument(varName);
-            }
-        }
     }
 }

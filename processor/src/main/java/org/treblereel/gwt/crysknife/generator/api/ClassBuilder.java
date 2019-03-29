@@ -68,6 +68,10 @@ public class ClassBuilder {
         classDeclaration.getImplementedTypes().add(factory);
     }
 
+    public CompilationUnit getClassCompilationUnit() {
+        return clazz;
+    }
+
     public ClassOrInterfaceDeclaration getClassDeclaration() {
         return classDeclaration;
     }

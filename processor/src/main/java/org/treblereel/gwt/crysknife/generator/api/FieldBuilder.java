@@ -1,6 +1,5 @@
 package org.treblereel.gwt.crysknife.generator.api;
 
-import javax.inject.Provider;
 import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
@@ -25,7 +24,7 @@ public class FieldBuilder extends Builder {
                 String varName = Utils.toVariableName(argument.getQualifiedName().toString());
 
                 ClassOrInterfaceType type = new ClassOrInterfaceType();
-                type.setName(Provider.class.getSimpleName());
+                type.setName("org.treblereel.gwt.crysknife.client.Instance");
                 type.setTypeArguments(new ClassOrInterfaceType().setName(argument.getQualifiedName().toString()));
 
                 Parameter param = new Parameter();

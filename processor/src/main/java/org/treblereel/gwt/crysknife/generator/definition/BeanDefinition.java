@@ -20,8 +20,8 @@ import javax.lang.model.util.Elements;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
-import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.point.ConstructorPoint;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
@@ -54,7 +54,6 @@ public class BeanDefinition extends Definition {
     }
 
     private static void addDependency(BeanDefinition beanDefinition, VariableElement variable, Elements elements) {
-
         TypeElement type = MoreElements.asType(MoreTypes.asElement(variable.asType()));
         beanDefinition.dependsOn.add(type);
     }
@@ -66,6 +65,10 @@ public class BeanDefinition extends Definition {
             executableDefinitions.put(generator, new HashSet());
             executableDefinitions.get(generator).add(definition);
         }
+    }
+
+    public void addGenerator(IOCGenerator iocGenerator) {
+        generators.add(iocGenerator);
     }
 
     @Override

@@ -28,11 +28,11 @@ public abstract class TypeProcessor {
             beanDefinition = BeanDefinition.of(typeElement, iocContext);
             iocContext.getBeans().put(typeElement, beanDefinition);
         }
-        chechNamedAndAdd(iocContext, typeElement, beanDefinition);
+        checkNamedAndAdd(iocContext, typeElement, beanDefinition);
         return beanDefinition;
     }
 
-    protected void chechNamedAndAdd(IOCContext iocContext, TypeElement typeElement, BeanDefinition beanDefinition) {
+    protected void checkNamedAndAdd(IOCContext iocContext, TypeElement typeElement, BeanDefinition beanDefinition) {
         if (typeElement.getAnnotation(Named.class) != null) {
             String named = typeElement.getAnnotation(Named.class).value();
             typeElement.getInterfaces().stream().forEach(i -> {

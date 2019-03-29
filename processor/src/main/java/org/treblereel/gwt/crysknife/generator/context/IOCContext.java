@@ -33,7 +33,14 @@ public class IOCContext {
     }
 
     public void register(final Class annotation, final WiringElementType wiringElementType, final IOCGenerator generator) {
-        this.generators.put(new IOCGeneratorMeta(annotation.getCanonicalName(), wiringElementType), generator);
+        register(annotation, Object.class, wiringElementType, generator);
+    }
+
+    public void register(final Class annotation, Class exactType, final WiringElementType wiringElementType, final IOCGenerator generator) {
+        TypeElement type = getGenerationContext()
+                .getElements()
+                .getTypeElement(exactType.getCanonicalName());
+        this.generators.put(new IOCGeneratorMeta(annotation.getCanonicalName(), type, wiringElementType), generator);
     }
 
     public Map<IOCGeneratorMeta, IOCGenerator> getGenerators() {
@@ -60,11 +67,14 @@ public class IOCContext {
 
         public final String annotation;
 
+        public final TypeElement exactType;
+
         public final WiringElementType wiringElementType;
 
-        public IOCGeneratorMeta(String annotation, WiringElementType wiringElementType) {
+        public IOCGeneratorMeta(String annotation, TypeElement exactType, WiringElementType wiringElementType) {
             this.annotation = annotation;
             this.wiringElementType = wiringElementType;
+            this.exactType = exactType;
         }
 
         @Override

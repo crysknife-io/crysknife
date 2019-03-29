@@ -33,5 +33,7 @@ import javax.inject.Scope;
  * @since 2.0
  */
 public interface Factory<T> extends Provider<T> {
+
+
 }
 

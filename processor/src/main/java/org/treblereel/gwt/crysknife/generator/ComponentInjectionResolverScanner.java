@@ -22,7 +22,7 @@ public class ComponentInjectionResolverScanner {
 
     private final IOCContext iocContext;
 
-    Set<TypeElement> unmannaged = new HashSet<>();
+    Set<TypeElement> unmanaged = new HashSet<>();
 
     public ComponentInjectionResolverScanner(IOCContext iocContext) {
         this.iocContext = iocContext;
@@ -45,13 +45,20 @@ public class ComponentInjectionResolverScanner {
             }
         });
 
-        addUnmannagedBeans();
+        addUnmanagedBeans();
     }
 
-    //Process as Dependent Beans
-    private void addUnmannagedBeans() {
-        IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Dependent.class.getCanonicalName(), WiringElementType.DEPENDENT_BEAN);
-        unmannaged.forEach(bean -> {
+    //Process as Dependent Beans //TODO
+    private void addUnmanagedBeans() {
+        TypeElement type = iocContext
+                .getGenerationContext()
+                .getElements()
+                .getTypeElement(Object.class.getCanonicalName());
+
+        IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Dependent.class.getCanonicalName(),
+                                                                           type,
+                                                                           WiringElementType.DEPENDENT_BEAN);
+        unmanaged.forEach(bean -> {
             BeanDefinition beanDefinition = BeanDefinition.of(bean, iocContext);
             IOCGenerator gen = iocContext.getGenerators().get(meta);
             beanDefinition.addGenerator(gen);
@@ -82,7 +89,7 @@ public class ComponentInjectionResolverScanner {
         }
 
         if (!iocContext.getBeans().containsKey(field.getType())) {
-            unmannaged.add(field.getType());
+            unmanaged.add(field.getType());
         }
     }
 }

@@ -9,6 +9,7 @@ import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
 import org.treblereel.client.inject.iface.IBean;
 import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
 
 @Application
@@ -17,6 +18,9 @@ public class App implements EntryPoint {
 
     @Inject
     Injector injector;
+
+    @Inject
+    BeanManager beanManager;
 
     @Inject
     NamedBeanFieldInjectionPanel namedBeanFieldInjectionPanel;
