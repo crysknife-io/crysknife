@@ -1,11 +1,11 @@
 package org.treblereel.gwt.crysknife.generator.definition;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,12 +15,16 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import org.treblereel.gwt.crysknife.generator.BasicIOCGenerator;
+import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
+import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.point.ConstructorPoint;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
@@ -32,14 +36,14 @@ import org.treblereel.gwt.crysknife.util.Utils;
  */
 public class BeanDefinition extends Definition {
 
-    private Set<TypeElement> dependsOn = new LinkedHashSet<>();
-    private List<FieldPoint> fieldInjectionPoints = new LinkedList<>();
-    private ConstructorPoint constructorInjectionPoint;
-    private String className;
-    private String classFactoryName;
-    private String packageName;
-    private String qualifiedName;
-    private TypeElement element;
+    protected List<FieldPoint> fieldInjectionPoints = new LinkedList<>();
+    protected ConstructorPoint constructorInjectionPoint;
+    protected String className;
+    protected String classFactoryName;
+    protected String packageName;
+    protected String qualifiedName;
+    protected TypeElement element;
+    protected Set<DeclaredType> types = new HashSet<>();
 
     protected BeanDefinition(TypeElement element) {
         this.element = element;
@@ -50,12 +54,10 @@ public class BeanDefinition extends Definition {
     }
 
     public static BeanDefinition of(TypeElement element, IOCContext context) {
+        if (context.getBeans().containsKey(element)) {
+            return context.getBeans().get(element);
+        }
         return new BeanDefinitionBuilder(element, context).build();
-    }
-
-    private static void addDependency(BeanDefinition beanDefinition, VariableElement variable, Elements elements) {
-        TypeElement type = MoreElements.asType(MoreTypes.asElement(variable.asType()));
-        beanDefinition.dependsOn.add(type);
     }
 
     public void addExecutableDefinition(IOCGenerator generator, ExecutableDefinition definition) {
@@ -68,20 +70,20 @@ public class BeanDefinition extends Definition {
     }
 
     public void addGenerator(IOCGenerator iocGenerator) {
-        generators.add(iocGenerator);
+        this.generator = Optional.of(iocGenerator);
     }
 
     @Override
     public String toString() {
         return "BeanDefinition {" +
-                " generators = [ " + generators.stream().map(m -> m.getClass().getSimpleName()).collect(Collectors.joining(", ")) +
+                " generator = [ " + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]" +
                 " ] , element= [" + element +
-                " ] , dependsOn= [ " + dependsOn.stream().map(m -> Utils.getQualifiedName(m)).collect(Collectors.joining(", ")) +
+                " ] , dependsOn= [ " + dependsOn.stream().map(m -> Utils.getQualifiedName(m.element)).collect(Collectors.joining(", ")) +
                 " ] , executables= [ " + executableDefinitions.values().stream().map(m -> m.toString()).collect(Collectors.joining(", ")) +
                 " ]}";
     }
 
-    public Set<TypeElement> getDependsOn() {
+    public Set<BeanDefinition> getDependsOn() {
         return dependsOn;
     }
 
@@ -130,8 +132,30 @@ public class BeanDefinition extends Definition {
         return element;
     }
 
+    public Set<DeclaredType> getDeclaredTypes() {
+        return types;
+    }
+
     public ConstructorPoint getConstructorInjectionPoint() {
         return constructorInjectionPoint;
+    }
+
+    public String getFactoryVariableName() {
+        return ((BeanIOCGenerator) generator.get()).getFactoryVariableName();
+    }
+
+    public void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        IOCGenerator gen = generator.get();
+        if (gen instanceof BeanIOCGenerator) {
+            ((BeanIOCGenerator) gen).addFactoryFieldDeclaration(classBuilder, beanDefinition);
+        }
+    }
+
+    public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        IOCGenerator gen = generator.get();
+        if (gen instanceof BeanIOCGenerator) {
+            ((BeanIOCGenerator) gen).addFactoryFieldInitialization(classBuilder, beanDefinition);
+        }
     }
 
     private static class BeanDefinitionBuilder {
@@ -140,9 +164,13 @@ public class BeanDefinition extends Definition {
 
         private Elements elements;
 
+        private IOCContext context;
+
         BeanDefinitionBuilder(TypeElement element, IOCContext context) {
+            this.context = context;
             this.beanDefinition = new BeanDefinition(element);
             this.elements = context.getGenerationContext().getElements();
+            this.beanDefinition.setGenerator(new BasicIOCGenerator());
         }
 
         public BeanDefinition build() {
@@ -172,10 +200,11 @@ public class BeanDefinition extends Definition {
             });
         }
 
-        public FieldPoint parseField(Element type) {
+        private FieldPoint parseField(Element type) {
             FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
             if (!field.isNamed()) {
-                addDependency(beanDefinition, MoreElements.asVariable(type), elements);
+                TypeElement typeElement = MoreElements.asType(MoreTypes.asElement(MoreElements.asVariable(type).asType()));
+                beanDefinition.dependsOn.add(BeanDefinition.of(typeElement, context));
             }
             return field;
         }

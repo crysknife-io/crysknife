@@ -20,9 +20,12 @@ import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
 import org.treblereel.gwt.crysknife.generator.BeanManagerProducerGenerator;
+import org.treblereel.gwt.crysknife.generator.BootstrapperGenerator;
 import org.treblereel.gwt.crysknife.generator.ComponentInjectionResolverScanner;
 import org.treblereel.gwt.crysknife.generator.ComponentScanner;
 import org.treblereel.gwt.crysknife.generator.DependentGenerator;
+import org.treblereel.gwt.crysknife.generator.EventProducerGenerator;
+import org.treblereel.gwt.crysknife.generator.ObservesGenerator;
 import org.treblereel.gwt.crysknife.generator.PostConstructGenerator;
 import org.treblereel.gwt.crysknife.generator.ProducesGenerator;
 import org.treblereel.gwt.crysknife.generator.SingletonGenerator;
@@ -59,7 +62,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         }
         this.application = maybeApplication.get();
 
-        processComponentScanAnnotation((Set<TypeElement>) roundEnvironment.getElementsAnnotatedWith(ComponentScan.class));
+        processComponentScanAnnotation();
 
         addPreBuildGenerators();
         externalGeneratorslookup(context);
@@ -69,7 +72,6 @@ public class ApplicationProcessor extends AbstractProcessor {
 
         new FactoryGenerator(iocContext, context).generate();
         new BeanManagerGenerator(iocContext, context).generate();
-        new BootstrapperGenerator(iocContext, context, application).generate();
         return true;
     }
 
@@ -91,22 +93,27 @@ public class ApplicationProcessor extends AbstractProcessor {
     }
 
     private void addPreBuildGenerators() {
+
         new SingletonGenerator().register(iocContext);
         new DependentGenerator().register(iocContext);
         new PostConstructGenerator().register(iocContext);
         new ProducesGenerator().register(iocContext);
         new BeanManagerProducerGenerator().register(iocContext);
+        new EventProducerGenerator().register(iocContext);
+        new BootstrapperGenerator().register(iocContext);
+        new ObservesGenerator().register(iocContext);
     }
 
-    private void processComponentScanAnnotation(Set<TypeElement> elements) {
+    private void processComponentScanAnnotation() {
         packages = new HashSet<>();
-
-        elements.forEach(componentScan -> {
-            String[] values = componentScan.getAnnotation(ComponentScan.class).value();
-            for (String aPackage : values) {
-                packages.add(aPackage);
-            }
-        });
+        context.getRoundEnvironment()
+                .getElementsAnnotatedWith(ComponentScan.class)
+                .forEach(componentScan -> {
+                    String[] values = componentScan.getAnnotation(ComponentScan.class).value();
+                    for (String aPackage : values) {
+                        packages.add(aPackage);
+                    }
+                });
 
         if (packages.isEmpty()) {
             packages.add(MoreElements.getPackage(application).getQualifiedName().toString());

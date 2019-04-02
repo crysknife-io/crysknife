@@ -1,10 +1,16 @@
 package org.treblereel.client;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.event.Event;
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import com.google.gwt.core.client.EntryPoint;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLDivElement;
+import org.treblereel.client.events.Address;
+import org.treblereel.client.events.BeanWithCDIEvents;
+import org.treblereel.client.events.User;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
 import org.treblereel.client.inject.iface.IBean;
@@ -46,6 +52,15 @@ public class App implements EntryPoint {
     @Inject
     IBean iBean;
 
+    @Inject
+    BeanWithCDIEvents beanWithCDIEvents;
+
+    @Inject
+    Event<User> eventUser;
+
+    @Inject
+    HTMLDivElement toast;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -58,5 +73,29 @@ public class App implements EntryPoint {
         DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.asElement());
         DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.asElement());
         DomGlobal.document.body.appendChild(transitiveInjection.asElement());
+        DomGlobal.document.body.appendChild(beanWithCDIEvents.asElement());
+
+        initToast();
+    }
+
+    private void initToast() {
+        toast.id = "snackbar";
+        toast.textContent = "LuckyMe";
+
+        DomGlobal.document.body.appendChild(toast);
+    }
+
+    void onUserEvent(@Observes User user) {
+        toast.className = "show";
+        toast.textContent = "App : onEvent " + user.toString();
+
+        DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
+    }
+
+    void onAddressEvent(@Observes Address address) {
+        toast.className = "show";
+        toast.textContent = "App : onEvent " + address.toString();
+
+        DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
     }
 }

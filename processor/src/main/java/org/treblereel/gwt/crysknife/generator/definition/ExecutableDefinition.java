@@ -28,6 +28,7 @@ public class ExecutableDefinition extends Definition {
     public String toString() {
         return "ExecutableDefinition{" +
                 "executableElement=" + executableElement +
+                " generator = [ " + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]" +
                 '}';
     }
 

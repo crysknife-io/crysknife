@@ -1,7 +1,5 @@
 package org.treblereel.gwt.crysknife.generator.api;
 
-import javax.lang.model.element.TypeElement;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -10,6 +8,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -23,28 +22,26 @@ public class ConstructorBuilder extends Builder {
     }
 
     @Override
-    public void build() {
+    public void build(BeanDefinition argument) {
         ConstructorDeclaration constructorDeclaration = classBuilder.getClassDeclaration().addConstructor(Modifier.Keyword.PRIVATE);
-        if (!classBuilder.beanDefinition.getDependsOn().isEmpty()) {
-            for (TypeElement argument : classBuilder.beanDefinition.getDependsOn()) {
-                classBuilder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.BeanManagerImpl");
-                classBuilder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.Instance");
+        classBuilder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.BeanManagerImpl");
+        classBuilder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.Instance");
 
-                String varName = Utils.toVariableName(argument.getQualifiedName().toString());
+        String varName = Utils.toVariableName(argument.getQualifiedName());
 
-                ClassOrInterfaceType beanManager = new ClassOrInterfaceType();
-                beanManager.setName("BeanManagerImpl");
+        ClassOrInterfaceType beanManager = new ClassOrInterfaceType();
 
-                MethodCallExpr callForBeanManagerImpl = new MethodCallExpr(beanManager.getNameAsExpression(), "get");
-                MethodCallExpr callForPriducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
-                        .addArgument(new StringLiteralExpr(argument.getQualifiedName().toString()));
+        beanManager.setName(argument.getFactoryVariableName());
 
-                ThisExpr clazz = new ThisExpr();
-                FieldAccessExpr field = new FieldAccessExpr(clazz, varName);
-                AssignExpr assign = new AssignExpr().setTarget(field).setValue(callForPriducer);
+        MethodCallExpr callForBeanManagerImpl = new MethodCallExpr(beanManager.getNameAsExpression(), "get");
 
-                constructorDeclaration.getBody().addStatement(assign);
-            }
-        }
+        MethodCallExpr callForProducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
+                .addArgument(new StringLiteralExpr(argument.getQualifiedName()));
+
+        ThisExpr clazz = new ThisExpr();
+        FieldAccessExpr field = new FieldAccessExpr(clazz, varName);
+        AssignExpr assign = new AssignExpr().setTarget(field).setValue(callForProducer);
+
+        constructorDeclaration.getBody().addStatement(assign);
     }
 }

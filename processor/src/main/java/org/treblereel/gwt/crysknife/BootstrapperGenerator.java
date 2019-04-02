@@ -22,6 +22,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.generator.PostConstructGenerator;
+import org.treblereel.gwt.crysknife.generator.ScopedBeanGenerator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
@@ -80,7 +81,7 @@ public class BootstrapperGenerator {
         }
     }
 
-    private class BootstrapperGeneratorBuilder {
+    private class BootstrapperGeneratorBuilder extends ScopedBeanGenerator {
 
         private final BeanDefinition beanDefinition;
 
@@ -126,6 +127,7 @@ public class BootstrapperGenerator {
 
             for (FieldPoint fieldPoint : iocContext.getBeans().get(application).getFieldInjectionPoints()) {
 
+
                 FieldAccessExpr instance = new FieldAccessExpr(new FieldAccessExpr(new ThisExpr(), "instance"), fieldPoint.getName());
 
                 ClassOrInterfaceType beanManager = new ClassOrInterfaceType();
@@ -161,6 +163,11 @@ public class BootstrapperGenerator {
         private Expression generateInstanceInitializer() {
             Expression instance = new FieldAccessExpr(new ThisExpr(), "instance");
             return new AssignExpr().setTarget(instance).setValue(new NameExpr("instance"));
+        }
+
+        @Override
+        public void register(IOCContext iocContext) {
+
         }
     }
 }

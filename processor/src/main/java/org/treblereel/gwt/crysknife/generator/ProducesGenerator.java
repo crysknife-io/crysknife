@@ -11,9 +11,10 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.definition.ProducerDefinition;
 import org.treblereel.gwt.crysknife.util.Utils;
@@ -23,9 +24,7 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * Created by treblereel 3/4/19
  */
 @Generator
-public class ProducesGenerator extends IOCGenerator {
-
-    private IOCContext iocContext;
+public class ProducesGenerator extends BeanIOCGenerator {
 
     @Override
     public void register(IOCContext iocContext) {
@@ -34,10 +33,9 @@ public class ProducesGenerator extends IOCGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder builder, Definition definition) {
+    public void generateDependantFieldDeclaration(ClassBuilder builder, BeanDefinition definition) {
         if (definition instanceof ProducerDefinition) {
             ProducerDefinition producesDefinition = (ProducerDefinition) definition;
-            ExecutableElement method = producesDefinition.getMethod();
             TypeElement instance = producesDefinition.getInstance();
 
             ObjectCreationExpr newInstance = new ObjectCreationExpr();
@@ -49,14 +47,20 @@ public class ProducesGenerator extends IOCGenerator {
                                              "producer",
                                              newInstance,
                                              Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
+        }
+    }
+
+    @Override
+    public void generateInstanceGetMethodReturn(ClassBuilder builder, BeanDefinition definition) {
+        if (definition instanceof ProducerDefinition) {
             FieldAccessExpr fieldAccess = new FieldAccessExpr(new ThisExpr(), "producer");
-            MethodCallExpr call = new MethodCallExpr(fieldAccess, method.getSimpleName().toString());
+            MethodCallExpr call = new MethodCallExpr(fieldAccess, ((ProducerDefinition) definition).getMethod().getSimpleName().toString());
             builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new ReturnStmt(call));
         }
     }
 
     @Override
-    public void finish(ClassBuilder builder, Definition definition) {
-
+    public void generate(ClassBuilder builder, Definition definition) {
+        super.generate(builder, definition);
     }
 }

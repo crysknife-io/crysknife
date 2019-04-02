@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -22,7 +23,7 @@ public class InstanceConstructorBuilder extends Builder {
     }
 
     @Override
-    public void build() {
+    public void build(BeanDefinition beanDefinition) {
         MethodDeclaration methodDeclaration = classBuilder.getClassDeclaration().addMethod("create", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         methodDeclaration.setType(classBuilder.beanDefinition.getClassFactoryName());
         ObjectCreationExpr newInstance = new ObjectCreationExpr();

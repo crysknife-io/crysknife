@@ -9,9 +9,9 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
-import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
 
@@ -25,11 +25,17 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     @Override
     public void register(IOCContext iocContext) {
         iocContext.register(Singleton.class, WiringElementType.DEPENDENT_BEAN, this);
+        this.iocContext = iocContext;
     }
 
     @Override
     public void generate(ClassBuilder builder, Definition definition) {
-        BeanDefinition beanDefinition = (BeanDefinition) definition;
+        super.generate(builder, definition);
+    }
+
+    @Override
+    public void generateInstanceGetMethodBuilder(ClassBuilder builder, BeanDefinition beanDefinition) {
+        super.generateInstanceGetMethodBuilder(builder, beanDefinition);
         BlockStmt body = builder.getGetMethodDeclaration().getBody().get();
 
         FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
@@ -38,9 +44,5 @@ public class SingletonGenerator extends ScopedBeanGenerator {
         body.addAndGetStatement(ifStmt);
 
         builder.getClassDeclaration().addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
-
-        beanDefinition.getFieldInjectionPoints().forEach(injection -> {
-            body.addAndGetStatement(injection.generate());
-        });
     }
 }

@@ -11,5 +11,6 @@ public enum WiringElementType {
     METHOD_DECORATOR,
     PRODUCER_ELEMENT,
     FIELD_TYPE,
+    PARAMETER,
     NOT_SUPPORTED
 }

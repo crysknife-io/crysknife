@@ -2,6 +2,7 @@ package org.treblereel.gwt.crysknife.generator.api;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -14,7 +15,7 @@ public class InitBuilder extends Builder {
     }
 
     @Override
-    public void build() {
+    public void build(BeanDefinition argument) {
 
         MethodDeclaration getMethodDeclaration = classBuilder.getClassDeclaration()
                 .addMethod("get", Modifier.Keyword.PUBLIC);

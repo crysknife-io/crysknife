@@ -31,14 +31,15 @@ public class Graph {
             TypeElement scan = stack.pop();
             BeanDefinition parent = context.getBeans().get(scan);
             graph.addNode(scan);
-            if(parent == null){
+            if (parent == null) {
                 continue;
             }
             parent.getDependsOn().forEach(deps -> {
-                if (!deps.equals(scan)) {
-                    graph.putEdge(scan, deps);
+                if (!deps.getType()
+                        .equals(scan)) {
+                    graph.putEdge(scan, deps.getType());
                 }
-                stack.push(deps);
+                stack.push(deps.getType());
             });
         }
 

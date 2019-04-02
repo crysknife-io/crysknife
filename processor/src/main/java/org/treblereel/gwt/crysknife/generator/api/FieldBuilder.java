@@ -1,10 +1,9 @@
 package org.treblereel.gwt.crysknife.generator.api;
 
-import javax.lang.model.element.TypeElement;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -18,21 +17,16 @@ public class FieldBuilder extends Builder {
     }
 
     @Override
-    public void build() {
-        if (!classBuilder.beanDefinition.getDependsOn().isEmpty()) {
-            for (TypeElement argument : classBuilder.beanDefinition.getDependsOn()) {
-                String varName = Utils.toVariableName(argument.getQualifiedName().toString());
+    public void build(BeanDefinition argument) {
+        String varName = Utils.toVariableName(argument.getQualifiedName());
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName("org.treblereel.gwt.crysknife.client.Instance");
+        type.setTypeArguments(new ClassOrInterfaceType().setName(argument.getQualifiedName()));
 
-                ClassOrInterfaceType type = new ClassOrInterfaceType();
-                type.setName("org.treblereel.gwt.crysknife.client.Instance");
-                type.setTypeArguments(new ClassOrInterfaceType().setName(argument.getQualifiedName().toString()));
+        Parameter param = new Parameter();
+        param.setName(varName);
+        param.setType(type);
 
-                Parameter param = new Parameter();
-                param.setName(varName);
-                param.setType(type);
-
-                classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-            }
-        }
+        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 }

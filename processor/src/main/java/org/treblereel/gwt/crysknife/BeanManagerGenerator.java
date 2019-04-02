@@ -86,29 +86,6 @@ public class BeanManagerGenerator {
 
         public BeanManagerGeneratorBuilder() {
 
-           /* System.out.println("\n\n HAHA");
-
-            iocContext.getQualifiers().forEach((k,v) -> {
-                System.out.println("K " + k.getQualifiedName());
-                v.forEach((k1,v1) -> {
-                    System.out.println("          " + k1 + "  " + v1.toString());
-                });
-
-            });
-
-
-            TypeElement type = generationContext.getElements().getTypeElement("org.treblereel.gwt.crysknife.client.BeanManager");
-            BeanDefinition beanDefinition = BeanDefinition.of(type, iocContext);
-            Map<String, BeanDefinition> map = new HashMap<>();
-
-            TypeElement impl = generationContext.getElements().getTypeElement("org.treblereel.gwt.crysknife.client.BeanManagerImpl");
-
-            map.put("org.treblereel.gwt.crysknife.client.BeanManager", BeanDefinition.of(impl, iocContext));
-
-            iocContext.getQualifiers().put(type, map);
-
-            iocContext.getBeans().put(type, beanDefinition);*/
-
         }
 
         public CompilationUnit build() {
@@ -131,7 +108,6 @@ public class BeanManagerGenerator {
 
             for (TypeElement field : iocContext.getOrderedBeans()) {
                 if (field.getKind().equals(ElementKind.CLASS) && field.getAnnotation(Application.class) == null) {
-
                     generateInitEntry(init, field);
                 }
             }
@@ -210,9 +186,6 @@ public class BeanManagerGenerator {
 
         private void initConstructor() {
             constructorDeclaration = classDeclaration.addConstructor(Modifier.Keyword.PRIVATE);
-
-
-            //constructorDeclaration.getBody().getStatements().add(new ExpressionStmt().setExpression(new NameExpr("super()")));
         }
     }
 }

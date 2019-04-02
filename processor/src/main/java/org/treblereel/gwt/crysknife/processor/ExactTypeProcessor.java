@@ -22,8 +22,11 @@ public class ExactTypeProcessor extends TypeProcessor {
         if (element.getKind().equals(ElementKind.FIELD)) {
             TypeMirror mirror = MoreElements.asVariable(element).asType();
             TypeElement typeElement = MoreTypes.asTypeElement(mirror);
-
-            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, typeElement);
+            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, generator, typeElement);
+            if (typeElement.getTypeParameters().size() > 0) {
+                TypeMirror type = element.asType();
+                beanDefinition.getDeclaredTypes().add(MoreTypes.asDeclared(type));
+            }
             beanDefinition.addGenerator(generator);
         }
     }

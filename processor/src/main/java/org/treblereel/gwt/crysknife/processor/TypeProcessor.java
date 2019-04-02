@@ -8,9 +8,9 @@ import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
-import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -20,12 +20,13 @@ public abstract class TypeProcessor {
 
     public abstract void process(IOCContext context, IOCGenerator generator, Element element);
 
-    protected BeanDefinition getBeanDefinitionOrCreateAndGet(IOCContext iocContext, TypeElement typeElement) {
+    protected BeanDefinition getBeanDefinitionOrCreateAndGet(IOCContext iocContext, IOCGenerator generator, TypeElement typeElement) {
         BeanDefinition beanDefinition;
         if (iocContext.getBeans().containsKey(typeElement)) {
             beanDefinition = iocContext.getBeans().get(typeElement);
         } else {
             beanDefinition = BeanDefinition.of(typeElement, iocContext);
+            beanDefinition.addGenerator(generator);
             iocContext.getBeans().put(typeElement, beanDefinition);
         }
         checkNamedAndAdd(iocContext, typeElement, beanDefinition);

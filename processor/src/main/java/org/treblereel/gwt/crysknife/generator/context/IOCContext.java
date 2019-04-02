@@ -82,17 +82,18 @@ public class IOCContext {
             if (this == o) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass()) {
+            if (!(o instanceof IOCGeneratorMeta)) {
                 return false;
             }
             IOCGeneratorMeta that = (IOCGeneratorMeta) o;
             return Objects.equals(annotation, that.annotation) &&
+                    Objects.equals(exactType, that.exactType) &&
                     wiringElementType == that.wiringElementType;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(annotation, wiringElementType);
+            return Objects.hash(annotation, exactType, wiringElementType);
         }
     }
 }

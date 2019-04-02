@@ -33,6 +33,8 @@ public class TypeProcessorFactory {
                 return Optional.of(new ProducerTypeProcessor());
             case METHOD_DECORATOR:
                 return Optional.of(new MethodDecoratorTypeProcessor());
+            case PARAMETER:
+                return Optional.of(new ParameterTypeProcessor());
             default:
                 return Optional.empty();
         }
