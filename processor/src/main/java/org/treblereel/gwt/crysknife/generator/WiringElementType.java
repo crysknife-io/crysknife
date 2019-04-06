@@ -10,5 +10,7 @@ public enum WiringElementType {
     DEPENDENT_BEAN,
     METHOD_DECORATOR,
     PRODUCER_ELEMENT,
+    FIELD_TYPE,
+    PARAMETER,
     NOT_SUPPORTED
 }

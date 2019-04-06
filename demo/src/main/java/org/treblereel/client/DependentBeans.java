@@ -52,7 +52,7 @@ public class DependentBeans {
         formLabel.className = "control-label";
 
         textBox.id = "textBox";
-        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
+        textBox.style.width = CSSProperties.WidthUnionType.of("700px");
         textBox.disabled = true;
         textBox.className = "form-control";
 

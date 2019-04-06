@@ -1,13 +1,13 @@
 package org.treblereel.gwt.crysknife.generator.definition;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
-import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -15,31 +15,15 @@ import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
  */
 public abstract class Definition {
 
-    protected final Set<IOCGenerator> generators = new HashSet<>();
-
     protected final Map<IOCGenerator, Set<ExecutableDefinition>> executableDefinitions = new HashMap<>();
+    protected Set<BeanDefinition> dependsOn = new LinkedHashSet<>();
+    protected Optional<IOCGenerator> generator = Optional.empty();
 
-    public void addGenerator(IOCGenerator generator) {
-        generators.add(generator);
+    public void setGenerator(IOCGenerator generator) {
+        this.generator = Optional.of(generator);
     }
 
     public void generate(ClassBuilder builder) {
-        generators.forEach(generator -> {
-            generator.generate(builder, this);
-        });
-
-        executableDefinitions.forEach(((generator, executables) -> executables.forEach(executable -> {
-            generator.generate(builder, executable);
-        })));
-    }
-
-    public void finish(ClassBuilder builder) {
-        generators.forEach(generator -> {
-            generator.finish(builder, this);
-        });
-
-        executableDefinitions.forEach(((generator, executables) -> executables.forEach(executable -> {
-            generator.finish(builder, executable);
-        })));
+        generator.ifPresent(gen -> gen.generate(builder, this));
     }
 }

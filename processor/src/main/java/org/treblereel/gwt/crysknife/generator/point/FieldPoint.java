@@ -44,7 +44,18 @@ public class FieldPoint extends Point {
         ThisExpr clazz = new ThisExpr();
         FieldAccessExpr instance = new FieldAccessExpr(clazz, "instance");
         FieldAccessExpr field = new FieldAccessExpr(instance, getName());
-        MethodCallExpr call = new MethodCallExpr(new NameExpr(Utils.toVariableName(type)), "get");
+        MethodCallExpr call;
+        if (MoreTypes.asTypeElement(this.field.asType()).getTypeParameters().size() > 0) {
+            MethodCallExpr instanceCall = new MethodCallExpr(new NameExpr(Utils.toVariableName(type)), "get");
+            call = new MethodCallExpr(instanceCall, "get");
+            MoreTypes.asDeclared(this.field.asType()).getTypeArguments().forEach(tp -> {
+                //TODO
+                call.addArgument(new FieldAccessExpr(new NameExpr(tp.toString()), "class"));
+            });
+        } else {
+            call = new MethodCallExpr(new NameExpr(Utils.toVariableName(type)), "get");
+        }
+
         return new AssignExpr().setTarget(field).setValue(call);
     }
 

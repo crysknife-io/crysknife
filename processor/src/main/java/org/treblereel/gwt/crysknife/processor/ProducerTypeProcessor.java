@@ -22,6 +22,7 @@ public class ProducerTypeProcessor extends TypeProcessor {
         if (element.getKind().equals(ElementKind.METHOD)) {
             ExecutableElement method = MoreElements.asExecutable(element);
             Element theReturn = MoreTypes.asElement(method.getReturnType());
+
             ProducerDefinition producerDefinition = ProducerDefinition.of(method, MoreElements.asType(method.getEnclosingElement()));
             producerDefinition.addGenerator(generator);
             context.getBeans().put(MoreElements.asType(theReturn), producerDefinition);

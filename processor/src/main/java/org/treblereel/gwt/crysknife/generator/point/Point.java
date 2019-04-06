@@ -3,6 +3,7 @@ package org.treblereel.gwt.crysknife.generator.point;
 import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.expr.Expression;
+import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 
 /**
  * @author Dmitrii Tikhomirov

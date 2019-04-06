@@ -18,7 +18,7 @@ public class DependentTypeProcessor extends TypeProcessor {
     public void process(IOCContext context, IOCGenerator generator, Element element) {
         if (MoreElements.isType(element)) {
             TypeElement typeElement = MoreElements.asType(element);
-            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, typeElement);
+            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, generator, typeElement);
             beanDefinition.addGenerator(generator);
         }
     }

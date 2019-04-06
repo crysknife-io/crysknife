@@ -22,7 +22,7 @@ public class MethodDecoratorTypeProcessor extends TypeProcessor {
         if (element.getKind().equals(ElementKind.METHOD)) {
             ExecutableElement method = MoreElements.asExecutable(element);
             TypeElement enclosingElement = MoreElements.asType(method.getEnclosingElement());
-            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, enclosingElement);
+            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, generator, enclosingElement);
             beanDefinition.addExecutableDefinition(generator, ExecutableDefinition.of(method, enclosingElement));
         }
     }

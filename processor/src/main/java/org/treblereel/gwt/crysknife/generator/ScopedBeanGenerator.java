@@ -16,9 +16,10 @@ import org.treblereel.gwt.crysknife.generator.definition.Definition;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/3/19
  */
-public abstract class ScopedBeanGenerator extends IOCGenerator {
+public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     protected FieldAccessExpr instance;
+
 
     protected Expression generateInstanceInitializer(ClassBuilder classBuilder, BeanDefinition definition) {
         if (definition.getConstructorInjectionPoint() == null) {
@@ -32,10 +33,4 @@ public abstract class ScopedBeanGenerator extends IOCGenerator {
         }
     }
 
-    @Override
-    public void finish(ClassBuilder classBuilder, Definition definition) {
-        FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-        BlockStmt body = classBuilder.getGetMethodDeclaration().getBody().get();
-        body.getStatements().add(new ReturnStmt(instance));
-    }
 }

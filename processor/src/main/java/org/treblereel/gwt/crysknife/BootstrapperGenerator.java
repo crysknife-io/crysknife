@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.inject.Provider;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
@@ -19,16 +18,16 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.generator.PostConstructGenerator;
+import org.treblereel.gwt.crysknife.generator.ScopedBeanGenerator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
-import org.treblereel.gwt.crysknife.util.Utils;
 
 import static org.treblereel.gwt.crysknife.util.Utils.getPackageName;
 
@@ -82,7 +81,7 @@ public class BootstrapperGenerator {
         }
     }
 
-    private class BootstrapperGeneratorBuilder {
+    private class BootstrapperGeneratorBuilder extends ScopedBeanGenerator {
 
         private final BeanDefinition beanDefinition;
 
@@ -99,7 +98,6 @@ public class BootstrapperGenerator {
 
         private CompilationUnit build() {
             initClass();
-            addFields();
             initInitMethod();
             initConstructor();
             initPostConstractMethod();
@@ -114,6 +112,7 @@ public class BootstrapperGenerator {
             clazz.setPackageDeclaration(beanDefinition.getPackageName());
             classDeclaration = clazz.addClass(classBootstrapName);
             clazz.addImport(Provider.class);
+            clazz.addImport("org.treblereel.gwt.crysknife.client.BeanManagerImpl");
             classDeclaration.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
         }
 
@@ -128,12 +127,19 @@ public class BootstrapperGenerator {
 
             for (FieldPoint fieldPoint : iocContext.getBeans().get(application).getFieldInjectionPoints()) {
 
+
                 FieldAccessExpr instance = new FieldAccessExpr(new FieldAccessExpr(new ThisExpr(), "instance"), fieldPoint.getName());
-                MethodCallExpr methodCallExpr = new MethodCallExpr(
-                        new FieldAccessExpr(
-                                new ThisExpr(),
-                                Utils.toVariableName(fieldPoint.getType())), "get");
-                AssignExpr assignExpr = new AssignExpr().setTarget(instance).setValue(methodCallExpr);
+
+                ClassOrInterfaceType beanManager = new ClassOrInterfaceType();
+                beanManager.setName("BeanManagerImpl");
+
+                MethodCallExpr callForBeanManagerImpl = new MethodCallExpr(beanManager.getNameAsExpression(), "get");
+                MethodCallExpr callForProducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
+                        .addArgument(new StringLiteralExpr(fieldPoint.getType().getQualifiedName().toString()));
+                MethodCallExpr callForProducerGet = new MethodCallExpr(callForProducer, "get");
+
+                AssignExpr assignExpr = new AssignExpr().setTarget(instance).setValue(callForProducerGet);
+
                 initializeMethodDeclaration.getBody().get().addAndGetStatement(assignExpr);
             }
         }
@@ -159,25 +165,9 @@ public class BootstrapperGenerator {
             return new AssignExpr().setTarget(instance).setValue(new NameExpr("instance"));
         }
 
-        private void addFields() {
-            for (TypeElement field : iocContext.getOrderedBeans()) {
-                if (field.getKind().equals(ElementKind.CLASS) && field.getAnnotation(Application.class) == null) {
-                    BeanDefinition bean = iocContext.getBeans().get(field);
-                    String varName = Utils.toVariableName(field);
+        @Override
+        public void register(IOCContext iocContext) {
 
-                    ClassOrInterfaceType type = new ClassOrInterfaceType();
-                    type.setName(Provider.class.getSimpleName());
-                    type.setTypeArguments(new ClassOrInterfaceType().setName(field.getQualifiedName().toString()));
-                    MethodCallExpr call = new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(field)), "create");
-                    if (!bean.getDependsOn().isEmpty()) {
-                        for (TypeElement argument : bean.getDependsOn()) {
-                            String name = Utils.toVariableName(argument);
-                            call.addArgument(name);
-                        }
-                    }
-                    classDeclaration.addFieldWithInitializer(type, varName, call, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-                }
-            }
         }
     }
 }

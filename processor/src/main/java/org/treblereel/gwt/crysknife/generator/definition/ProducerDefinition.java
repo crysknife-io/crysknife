@@ -2,13 +2,11 @@ package org.treblereel.gwt.crysknife.generator.definition;
 
 import java.util.Objects;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
-import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -16,57 +14,36 @@ import org.treblereel.gwt.crysknife.util.Utils;
  */
 public class ProducerDefinition extends BeanDefinition {
 
-    private final ExecutableElement executableElement;
+    private final ExecutableElement method;
 
-    private final TypeElement enclosingElement;
+    private final TypeElement producer;
 
-    private final TypeElement produces;
-
-
-    private ProducerDefinition(ExecutableElement executableElement, TypeElement enclosingElement) {
-        super(enclosingElement);
-        this.executableElement = executableElement;
-        this.enclosingElement = enclosingElement;
-        this.produces = MoreElements.asType(MoreTypes.asElement(executableElement.getReturnType()));
+    private ProducerDefinition(ExecutableElement method, TypeElement producer) {
+        super(MoreElements.asType(MoreTypes.asElement(method.getReturnType())));
+        this.method = method;
+        this.producer = producer;
     }
 
-    public static ProducerDefinition of(ExecutableElement executableElement, TypeElement enclosingElement) {
-        return new ProducerDefinition(executableElement, enclosingElement);
-    }
-
-    @Override
-    public String getQualifiedName() {
-        return Utils.getQualifiedName(produces);
-    }
-
-    @Override
-    public String getClassFactoryName() {
-        return Utils.getFactoryClassName(produces);
-    }
-
-    @Override
-    public String getClassName() {
-        return Utils.getQualifiedName(produces);
-    }
-
-    @Override
-    public String getPackageName() {
-        return MoreElements.getPackage(produces).getQualifiedName().toString();
+    public static ProducerDefinition of(ExecutableElement method, TypeElement producer) {
+        return new ProducerDefinition(method, producer);
     }
 
     @Override
     public String toString() {
         return "ProducerDefinition{" +
-                "producer=" + enclosingElement +
+                " produces= " + element +
+                " , producer= " + producer +
+                " , method= " + method +
+                " , generator = " + (generator.isPresent() ? generator.get().getClass().getSimpleName() : "") +
                 '}';
     }
 
     public ExecutableElement getMethod() {
-        return executableElement;
+        return method;
     }
 
     public TypeElement getInstance() {
-        return enclosingElement;
+        return producer;
     }
 
     @Override
@@ -78,12 +55,12 @@ public class ProducerDefinition extends BeanDefinition {
             return false;
         }
         ProducerDefinition that = (ProducerDefinition) o;
-        return Objects.equals(executableElement, that.executableElement) &&
-                Objects.equals(enclosingElement, that.enclosingElement);
+        return Objects.equals(method, that.method) &&
+                Objects.equals(producer, that.producer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(executableElement, enclosingElement);
+        return Objects.hash(method, producer);
     }
 }

@@ -51,7 +51,7 @@ public class SingletonBeans {
         textBox.id = "SingletonBeans";
         textBox.disabled = true;
         textBox.className = "form-control";
-        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
+        textBox.style.width = CSSProperties.WidthUnionType.of("700px");
 
         formGroup.appendChild(formLabel);
         formGroup.appendChild(textBox);

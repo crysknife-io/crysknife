@@ -22,9 +22,9 @@ public class ComponentScanner {
 
     public void scan() {
         iocContext.getGenerators().forEach((meta, generator) -> {
-            TypeElement annotation = iocContext.getGenerationContext().getElements().getTypeElement(meta.annotation);
+            TypeElement annotation = context.getElements().getTypeElement(meta.annotation);
             context.getRoundEnvironment().getElementsAnnotatedWith(annotation).forEach(element -> {
-                TypeProcessorFactory.getTypeProcessor(meta).process(iocContext, generator, element);
+                TypeProcessorFactory.getTypeProcessor(meta, element).ifPresent(g -> g.process(iocContext, generator, element));
             });
         });
     }
