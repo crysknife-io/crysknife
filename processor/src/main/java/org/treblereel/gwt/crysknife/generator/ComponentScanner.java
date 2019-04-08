@@ -1,7 +1,10 @@
 package org.treblereel.gwt.crysknife.generator;
 
+import java.util.Comparator;
+
 import javax.lang.model.element.TypeElement;
 
+import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.processor.TypeProcessorFactory;
@@ -21,11 +24,22 @@ public class ComponentScanner {
     }
 
     public void scan() {
-        iocContext.getGenerators().forEach((meta, generator) -> {
-            TypeElement annotation = context.getElements().getTypeElement(meta.annotation);
-            context.getRoundEnvironment().getElementsAnnotatedWith(annotation).forEach(element -> {
-                TypeProcessorFactory.getTypeProcessor(meta, element).ifPresent(g -> g.process(iocContext, generator, element));
-            });
-        });
+
+        iocContext.getGenerators()
+                .keySet()
+                .stream()
+                .sorted(Comparator.comparing(h -> Integer.valueOf(iocContext
+                                                                          .getGenerators()
+                                                                          .get(h)
+                                                                          .getClass()
+                                                                          .getAnnotation(Generator.class)
+                                                                          .priority())))
+                .forEach(meta -> {
+
+                    TypeElement annotation = context.getElements().getTypeElement(meta.annotation);
+                    context.getRoundEnvironment().getElementsAnnotatedWith(annotation).forEach(element -> {
+                        TypeProcessorFactory.getTypeProcessor(meta, element).ifPresent(g -> g.process(iocContext, iocContext.getGenerators().get(meta), element));
+                    });
+                });
     }
 }

@@ -11,31 +11,30 @@ import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLLabelElement;
+import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.named.Vehicle;
+import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
-public class NamedBeanConstructorInjectionPanel {
+@Templated("namedbeanconstructorinjectionpanel.html")
+public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElement> {
 
     @Inject
+    @DataField
     HTMLDivElement form;
 
-    @Inject
-    HTMLDivElement formGroup;
-
-    @Inject
-    HTMLLabelElement formLabel;
-
-    @Inject
+    @DataField
     HTMLInputElement textBox;
 
-    @Inject
+    @DataField
     HTMLButtonElement helicopterBtn;
 
-    @Inject
+    @DataField
     HTMLButtonElement carBtn;
 
     Vehicle car;
@@ -50,43 +49,20 @@ public class NamedBeanConstructorInjectionPanel {
 
     @PostConstruct
     public void init() {
-        formGroup.className = "form-group";
-
-        formLabel.textContent = "@Named beans, constructor injection";
-        formLabel.setAttribute("setFor", "NamedBeanConstructorInjectionPanel");
-        formLabel.className = "control-label";
-
-        textBox.id = "NamedBeanConstructorInjectionPanel";
-        textBox.disabled = true;
-        textBox.className = "form-control";
-        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
-
-        formGroup.appendChild(formLabel);
-        formGroup.appendChild(textBox);
-
-        form.appendChild(formGroup);
-
         initBtn();
     }
 
     private void initBtn() {
-        carBtn.textContent = "Car";
-        carBtn.className = "btn btn-default";
         carBtn.addEventListener("click", evt -> setText(car.whoAmI()));
-
-        helicopterBtn.textContent = "Helicopter";
-        helicopterBtn.className = "btn btn-default";
         helicopterBtn.addEventListener("click", evt -> setText(helicopter.whoAmI()));
-
-        formGroup.appendChild(carBtn);
-        formGroup.appendChild(helicopterBtn);
     }
 
     private void setText(String text) {
         textBox.value = text;
     }
 
-    public HTMLElement asElement() {
+    @Override
+    public HTMLDivElement element() {
         return form;
     }
 }

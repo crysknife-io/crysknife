@@ -9,4 +9,6 @@ demo/demo.iml
 processor/crysknife-processor.iml
 annotations/crysknife-annotations.iml
 annotations/crysknife-processor.iml
-
+templates/generator/templates-generator.iml
+templates/api/templates-api.iml
+templates/templates.iml

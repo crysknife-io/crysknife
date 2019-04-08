@@ -31,7 +31,7 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/31/19
  */
-@Generator
+@Generator(priority = 999)
 public class EventProducerGenerator extends BeanIOCGenerator {
 
     @Override

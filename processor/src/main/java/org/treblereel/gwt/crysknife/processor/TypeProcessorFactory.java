@@ -31,6 +31,8 @@ public class TypeProcessorFactory {
                 return Optional.of(new DependentTypeProcessor());
             case PRODUCER_ELEMENT:
                 return Optional.of(new ProducerTypeProcessor());
+            case CLASS_DECORATOR:
+                return Optional.of(new ClassDecoratorTypeProcessor());
             case METHOD_DECORATOR:
                 return Optional.of(new MethodDecoratorTypeProcessor());
             case PARAMETER:

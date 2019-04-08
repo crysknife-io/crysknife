@@ -1,9 +1,12 @@
 package org.treblereel.client.events;
 
+import jsinterop.annotations.JsType;
+
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/31/19
  */
+@JsType
 public class User {
 
     private int id;

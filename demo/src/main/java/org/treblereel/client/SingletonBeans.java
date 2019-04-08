@@ -10,28 +10,27 @@ import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLLabelElement;
+import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.BeanOne;
+import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
-public class SingletonBeans {
+@Templated("singletonbeans.html")
+public class SingletonBeans implements IsElement<HTMLDivElement> {
 
     @Inject
+    @DataField("root")
     HTMLDivElement form;
 
-    @Inject
-    HTMLDivElement formGroup;
-
-    @Inject
-    HTMLLabelElement formLabel;
-
-    @Inject
+    @DataField("input")
     HTMLInputElement textBox;
 
-    @Inject
+    @DataField("btn")
     HTMLButtonElement checkBtn;
 
     @Inject
@@ -42,28 +41,10 @@ public class SingletonBeans {
 
     @PostConstruct
     public void init() {
-        formGroup.className = "form-group";
-
-        formLabel.textContent = "@Singleton test, the same instance in two fields, random number assigned on construction";
-        formLabel.setAttribute("setFor", "SingletonBeans");
-        formLabel.className = "control-label";
-
-        textBox.id = "SingletonBeans";
-        textBox.disabled = true;
-        textBox.className = "form-control";
-        textBox.style.width = CSSProperties.WidthUnionType.of("700px");
-
-        formGroup.appendChild(formLabel);
-        formGroup.appendChild(textBox);
-
-        form.appendChild(formGroup);
-
         initBtn();
     }
 
     private void initBtn() {
-        checkBtn.textContent = "Check";
-        checkBtn.className = "btn btn-default";
         checkBtn.addEventListener("click", evt -> {
             StringBuffer sb = new StringBuffer();
             sb.append("beanOne1Instance random :");
@@ -74,15 +55,14 @@ public class SingletonBeans {
 
             setText(sb.toString());
         });
-
-        formGroup.appendChild(checkBtn);
     }
 
     private void setText(String text) {
         textBox.value = text;
     }
 
-    public HTMLElement asElement() {
+    @Override
+    public HTMLDivElement element() {
         return form;
     }
 }

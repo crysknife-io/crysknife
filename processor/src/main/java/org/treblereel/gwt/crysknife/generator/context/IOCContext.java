@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import javax.lang.model.element.TypeElement;
 
+import com.google.common.collect.BiMap;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;

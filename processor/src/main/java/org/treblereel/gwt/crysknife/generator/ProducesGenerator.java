@@ -23,7 +23,7 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/4/19
  */
-@Generator
+@Generator(priority = 500)
 public class ProducesGenerator extends BeanIOCGenerator {
 
     @Override

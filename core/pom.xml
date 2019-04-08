@@ -12,7 +12,7 @@
   <artifactId>crysknife-core</artifactId>
   <packaging>jar</packaging>
 
-  <name>crysknife-annotations</name>
+  <name>crysknife-core</name>
   <description>This artifact contains annotations for three4g</description>
   <url>https://github.com/treblereel</url>
 

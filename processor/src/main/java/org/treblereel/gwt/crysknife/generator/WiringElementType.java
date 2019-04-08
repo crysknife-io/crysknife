@@ -9,6 +9,7 @@ public enum WiringElementType {
     LOAD_ASYNC,
     DEPENDENT_BEAN,
     METHOD_DECORATOR,
+    CLASS_DECORATOR,
     PRODUCER_ELEMENT,
     FIELD_TYPE,
     PARAMETER,
