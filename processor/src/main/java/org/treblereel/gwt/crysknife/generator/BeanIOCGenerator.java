@@ -2,7 +2,6 @@ package org.treblereel.gwt.crysknife.generator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Comparator;
 
 import javax.annotation.processing.FilerException;
 import javax.inject.Provider;
@@ -19,7 +18,6 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -45,6 +43,7 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
 
             generateInstanceGetMethodBuilder(clazz, beanDefinition);
             generateInstanceGetMethodInitializer(clazz, beanDefinition);
+            generateInstanceGetMethodDecorators(clazz, beanDefinition);
 
             generatePostInstanceConstructorInitializer(clazz, beanDefinition);
             generateInstanceGetMethodReturn(clazz, beanDefinition);
@@ -55,6 +54,10 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
 
             write(clazz, beanDefinition, iocContext.getGenerationContext());
         }
+    }
+
+    private void generateInstanceGetMethodDecorators(ClassBuilder clazz, BeanDefinition beanDefinition) {
+        beanDefinition.generateDecorators(clazz);
     }
 
     public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
@@ -91,9 +94,7 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
     }
 
     public void generatePostInstanceConstructorInitializer(ClassBuilder clazz, BeanDefinition beanDefinition) {
-        Comparator<IOCGenerator> comparator = Comparator.comparing(h -> Integer.valueOf(h.getClass().getAnnotation(Generator.class).priority()));
-
-        beanDefinition.getExecutableDefinitions().keySet().stream().sorted(comparator).forEach(k -> {
+        beanDefinition.getExecutableDefinitions().keySet().stream().sorted(Definition.iOCGeneratorcomparator).forEach(k -> {
             beanDefinition.getExecutableDefinitions().get(k).forEach(executable -> {
                 executable.generate(clazz); //TODO
                 k.generate(clazz, executable);

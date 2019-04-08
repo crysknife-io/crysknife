@@ -8,30 +8,26 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLInputElement;
-import elemental2.dom.HTMLLabelElement;
+import org.jboss.gwt.elemento.core.IsElement;
+import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/31/19
  */
 @Singleton
-public class BeanWithCDIEvents {
+@Templated("beanwithcdievents.html")
+public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
 
     @Inject
+    @DataField
     HTMLDivElement form;
 
-    @Inject
-    HTMLDivElement formGroup;
-
-    @Inject
-    HTMLLabelElement formLabel;
-
-    @Inject
+    @DataField
     HTMLInputElement textBox;
 
     @Inject
@@ -40,33 +36,15 @@ public class BeanWithCDIEvents {
     @Inject
     Event<Address> eventAddress;
 
-    @Inject
+    @DataField
     HTMLButtonElement sendUserEvent, sendAddressEvent;
 
     @PostConstruct
     public void init() {
-        formGroup.className = "form-group";
-
-        formLabel.textContent = "Bean with Event<User> and Event<Address>";
-        formLabel.setAttribute("setFor", "BeanWithCDIEvents");
-        formLabel.className = "control-label";
-
-        textBox.id = "BeanWithCDIEvents";
-        textBox.disabled = true;
-        textBox.className = "form-control";
-        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
-
-        formGroup.appendChild(formLabel);
-        formGroup.appendChild(textBox);
-
-        form.appendChild(formGroup);
-
         initBtn();
     }
 
     private void initBtn() {
-        sendUserEvent.textContent = "User event";
-        sendUserEvent.className = "btn btn-default";
         sendUserEvent.addEventListener("click", evt -> {
             User user = new User();
             user.setId(new Random().nextInt());
@@ -74,17 +52,12 @@ public class BeanWithCDIEvents {
             eventUser.fire(user);
         });
 
-        sendAddressEvent.textContent = "Address event";
-        sendAddressEvent.className = "btn btn-default";
         sendAddressEvent.addEventListener("click", evt -> {
             Address address = new Address();
             address.setId(new Random().nextInt());
             address.setName("Redhat");
             eventAddress.fire(address);
         });
-
-        formGroup.appendChild(sendUserEvent);
-        formGroup.appendChild(sendAddressEvent);
     }
 
     public void OnUserEvent(@Observes User user) {
@@ -99,7 +72,8 @@ public class BeanWithCDIEvents {
         textBox.value = text;
     }
 
-    public HTMLElement asElement() {
+    @Override
+    public HTMLDivElement element() {
         return form;
     }
 }

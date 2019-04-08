@@ -26,7 +26,7 @@ import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 4/5/19
  */
-@Generator
+@Generator(priority = 1000)
 public class ObservesGenerator extends IOCGenerator {
 
     @Override

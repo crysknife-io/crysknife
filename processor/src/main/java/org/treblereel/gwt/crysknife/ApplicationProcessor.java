@@ -16,26 +16,24 @@ import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
-import org.treblereel.gwt.crysknife.generator.BeanManagerProducerGenerator;
-import org.treblereel.gwt.crysknife.generator.BootstrapperGenerator;
 import org.treblereel.gwt.crysknife.generator.ComponentInjectionResolverScanner;
 import org.treblereel.gwt.crysknife.generator.ComponentScanner;
-import org.treblereel.gwt.crysknife.generator.DependentGenerator;
-import org.treblereel.gwt.crysknife.generator.EventProducerGenerator;
-import org.treblereel.gwt.crysknife.generator.ObservesGenerator;
-import org.treblereel.gwt.crysknife.generator.PostConstructGenerator;
-import org.treblereel.gwt.crysknife.generator.ProducesGenerator;
-import org.treblereel.gwt.crysknife.generator.SingletonGenerator;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.graph.Graph;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes({"org.treblereel.gwt.crysknife.client.Application",
+@SupportedAnnotationTypes({
+        "org.treblereel.gwt.crysknife.client.Application",
         "javax.inject.Inject",
         "javax.inject.Singleton",
         "org.treblereel.gwt.crysknife.client.ComponentScan"})
@@ -64,8 +62,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 
         processComponentScanAnnotation();
 
-        addPreBuildGenerators();
-        externalGeneratorslookup(context);
+        initAndRegisterGenerators();
         processComponentScan();
         processInjectionScan();
         processGraph();
@@ -79,9 +76,17 @@ public class ApplicationProcessor extends AbstractProcessor {
         new Graph(iocContext).process(application);
     }
 
-    //TODO
-    private void externalGeneratorslookup(GenerationContext context) {
-        Set<TypeElement> generators = (Set<TypeElement>) context.getRoundEnvironment().getElementsAnnotatedWith(Generator.class);
+    private void initAndRegisterGenerators() {
+        try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
+            ClassInfoList routeClassInfoList = scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
+            for (ClassInfo routeClassInfo : routeClassInfoList) {
+                try {
+                    ((IOCGenerator) Class.forName(routeClassInfo.getName()).newInstance()).register(iocContext);
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    throw new Error(e);
+                }
+            }
+        }
     }
 
     private void processInjectionScan() {
@@ -90,18 +95,6 @@ public class ApplicationProcessor extends AbstractProcessor {
 
     private void processComponentScan() {
         new ComponentScanner(iocContext, context).scan();
-    }
-
-    private void addPreBuildGenerators() {
-
-        new SingletonGenerator().register(iocContext);
-        new DependentGenerator().register(iocContext);
-        new PostConstructGenerator().register(iocContext);
-        new ProducesGenerator().register(iocContext);
-        new BeanManagerProducerGenerator().register(iocContext);
-        new EventProducerGenerator().register(iocContext);
-        new BootstrapperGenerator().register(iocContext);
-        new ObservesGenerator().register(iocContext);
     }
 
     private void processComponentScanAnnotation() {

@@ -19,48 +19,56 @@
       <groupId>com.vertispan.elemental2</groupId>
       <artifactId>elemental2-core</artifactId>
       <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.vertispan.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
       <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.jsinterop</groupId>
       <artifactId>jsinterop-annotations</artifactId>
       <version>HEAD-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>templates-generator</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <version>1.3.9</version>
     </dependency>
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-      <version>8.0</version>
-      <scope>compile</scope>
-    </dependency>
   </dependencies>
 
+
   <build>
+
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -101,6 +109,38 @@
           </resource>
         </resources>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>custom-resources</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <targetPath>${basedir}/target/webapp</targetPath>
+                      <directory>src/main/webapp</directory>
+                      <filtering>true</filtering>
+                    </resource>
+                    <resource>
+                      <targetPath>${basedir}/target/webapp/classes</targetPath>
+                      <directory>src/main/resources</directory>
+                      <filtering>false</filtering>
+                    </resource>
+                  </resources>
+                  <encoding>UTF-8</encoding>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -222,6 +262,8 @@
                 <param>${webapp.libdir}/bootstrap.js.zip</param>
                 <param>${webapp.libdir}/jre.js.zip</param>
               </j2clClasspath>
+
+
               <outputJsPathDir>${webappdir}/js</outputJsPathDir>
               <sourceDir>
                 <param>${project.basedir}/src/main/java</param>

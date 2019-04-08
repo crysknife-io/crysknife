@@ -4,6 +4,7 @@ import javax.enterprise.inject.Produces;
 
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLFormElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLLabelElement;
@@ -39,5 +40,10 @@ public class Elemental2Producer {
     @Produces
     public HTMLLabelElement getLabelElement() {
         return (HTMLLabelElement) document.createElement("label");
+    }
+
+    @Produces
+    public HTMLElement getElement() {
+        return (HTMLElement) document.createElement("element");
     }
 }

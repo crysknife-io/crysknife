@@ -12,34 +12,33 @@ import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLFormElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLLabelElement;
+import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.named.Animal;
+import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
-public class NamedBeanFieldInjectionPanel {
+@Templated("namedbeanfieldinjectionpanel.html")
+public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
 
     @Inject
+    @DataField
     HTMLDivElement form;
 
-    @Inject
-    HTMLDivElement formGroup;
-
-    @Inject
-    HTMLLabelElement formLabel;
-
-    @Inject
+    @DataField
     HTMLInputElement textBox;
 
-    @Inject
+    @DataField
     HTMLButtonElement birdBtn;
 
-    @Inject
+    @DataField
     HTMLButtonElement cowBtn;
 
-    @Inject
+    @DataField
     HTMLButtonElement dogBtn;
 
     @Inject
@@ -56,48 +55,24 @@ public class NamedBeanFieldInjectionPanel {
 
     @PostConstruct
     public void init() {
-        formGroup.className = "form-group";
-
-        formLabel.textContent = "@Named beans, field injection";
-        formLabel.setAttribute("setFor", "textBoxNamedBeanFieldInjectionPanel");
-        formLabel.className = "control-label";
-
-        textBox.id = "textBoxNamedBeanFieldInjectionPanel";
-        textBox.disabled = true;
-        textBox.className = "form-control";
-        textBox.style.width = CSSProperties.WidthUnionType.of("300px");
-
-        formGroup.appendChild(formLabel);
-        formGroup.appendChild(textBox);
-
-        form.appendChild(formGroup);
-
         initBtn();
     }
 
     private void initBtn() {
-        birdBtn.textContent = "Bird";
-        birdBtn.className = "btn btn-default";
         birdBtn.addEventListener("click", evt -> setText(bird.say()));
 
-        cowBtn.textContent = "Cow";
-        cowBtn.className = "btn btn-default";
         cowBtn.addEventListener("click", evt -> setText(cow.say()));
 
-        dogBtn.textContent = "Bird";
-        dogBtn.className = "btn btn-default";
         dogBtn.addEventListener("click", evt -> setText(dog.say()));
 
-        formGroup.appendChild(birdBtn);
-        formGroup.appendChild(cowBtn);
-        formGroup.appendChild(dogBtn);
     }
 
     private void setText(String text) {
         textBox.value = text;
     }
 
-    public HTMLElement asElement() {
+    @Override
+    public HTMLDivElement element() {
         return form;
     }
 }

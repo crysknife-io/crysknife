@@ -14,6 +14,7 @@ import org.treblereel.client.events.User;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
 import org.treblereel.client.inject.iface.IBean;
+import org.treblereel.client.template.TemplatedBean;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
@@ -37,7 +38,7 @@ public class App implements EntryPoint {
     @Inject
     DependentBean dependentBean;
 
-    @Inject
+    //@Inject
     Elemental2Bean elemental2Bean;
 
     @Inject
@@ -61,6 +62,9 @@ public class App implements EntryPoint {
     @Inject
     HTMLDivElement toast;
 
+    @Inject
+    TemplatedBean templatedBean;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -68,12 +72,12 @@ public class App implements EntryPoint {
 
     @PostConstruct
     public void init() {
-        DomGlobal.document.body.appendChild(dependentBeans.asElement());
-        DomGlobal.document.body.appendChild(singletonBeans.asElement());
-        DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.asElement());
-        DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.asElement());
-        DomGlobal.document.body.appendChild(transitiveInjection.asElement());
-        DomGlobal.document.body.appendChild(beanWithCDIEvents.asElement());
+        DomGlobal.document.body.appendChild(dependentBeans.element());
+        DomGlobal.document.body.appendChild(singletonBeans.element());
+        DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.element());
+        DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.element());
+        DomGlobal.document.body.appendChild(transitiveInjection.element());
+        DomGlobal.document.body.appendChild(beanWithCDIEvents.element());
 
         initToast();
     }

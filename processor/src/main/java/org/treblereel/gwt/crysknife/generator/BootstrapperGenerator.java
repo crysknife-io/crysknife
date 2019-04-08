@@ -26,7 +26,7 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 4/5/19
  */
-@Generator
+@Generator(priority = 100000)
 public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     private String BOOTSTRAP_EXTENSION = "Bootstrap";
