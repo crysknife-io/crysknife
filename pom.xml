@@ -55,6 +55,7 @@
         <module>processor</module>
         <module>core</module>
         <module>templates</module>
+        <module>elemental2</module>
     </modules>
 
     <dependencyManagement>

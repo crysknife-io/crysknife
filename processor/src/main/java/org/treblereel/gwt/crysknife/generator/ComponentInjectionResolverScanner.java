@@ -1,17 +1,17 @@
 package org.treblereel.gwt.crysknife.generator;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.enterprise.context.Dependent;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
@@ -25,7 +25,7 @@ public class ComponentInjectionResolverScanner {
 
     private final IOCContext iocContext;
 
-    Set<TypeElement> unmanaged = new HashSet<>();
+    private Set<TypeElement> unmanaged = new HashSet<>();
 
     public ComponentInjectionResolverScanner(IOCContext iocContext) {
         this.iocContext = iocContext;
@@ -33,19 +33,19 @@ public class ComponentInjectionResolverScanner {
 
     public void scan() {
         iocContext.getBeans().forEach((type, bean) -> {
-            bean.getFieldInjectionPoints().forEach(
-                    field -> processFieldInjectionPoint(field, bean));
+            for (FieldPoint field : bean.getFieldInjectionPoints()) {
+                processFieldInjectionPoint(field, bean);
+            }
         });
 
-        iocContext.getBeans().forEach((type, bean) -> {
+        for (Map.Entry<TypeElement, BeanDefinition> entry : iocContext.getBeans().entrySet()) {
+            BeanDefinition bean = entry.getValue();
             if (bean.getConstructorInjectionPoint() != null) {
-
                 bean.getConstructorInjectionPoint()
                         .getArguments()
                         .forEach(field -> processFieldInjectionPoint(field, bean));
             }
-        });
-
+        }
         addUnmanagedBeans();
     }
 
@@ -61,14 +61,19 @@ public class ComponentInjectionResolverScanner {
                                                                            WiringElementType.DEPENDENT_BEAN);
         unmanaged.forEach(bean -> {
             BeanDefinition beanDefinition = BeanDefinition.of(bean, iocContext);
-            IOCGenerator gen = iocContext.getGenerators().get(meta);
-            beanDefinition.addGenerator(gen);
-            iocContext.getBeans().put(bean, beanDefinition);
+            if (iocContext.getGenerators().get(meta).stream().findFirst().isPresent()) {
+                IOCGenerator gen = iocContext.getGenerators().get(meta).stream().findFirst().get();
+                beanDefinition.setGenerator(gen);
+                iocContext.getBeans().put(bean, beanDefinition);
+            } else {
+                throw new Error("Unable to find generator based on meta " + meta.toString());
+            }
         });
     }
 
     private void processFieldInjectionPoint(FieldPoint field, BeanDefinition definition) {
         if (field.getType().getKind().isInterface() || field.isNamed()) {
+
             TypeElement dependency = null;
             if (field.isNamed()) {
                 String named = field.getNamed();
@@ -76,26 +81,37 @@ public class ComponentInjectionResolverScanner {
             } else if (field.getType().getKind().isInterface()) {
                 TypeMirror beanType = field.getType().asType();
                 Types types = iocContext.getGenerationContext().getTypes();
-                Optional<TypeElement> result = iocContext.getBeans().keySet().stream().filter(bean -> types.isSubtype(bean.asType(), beanType)).findFirst();
-
+                Optional<TypeElement> result = iocContext.getBeans()
+                        .keySet()
+                        .stream()
+                        .filter(bean -> types.isSubtype(bean.asType(), beanType))
+                        .filter(elm -> elm.getKind().equals(ElementKind.CLASS))
+                        .findFirst();
                 if (result.isPresent()) {
                     dependency = iocContext.getBeans().get(result.get()).getType();
                 } else {
-                    TypeElement typeElement = MoreElements.asType(types.asElement(beanType));
-                    Optional<IOCContext.IOCGeneratorMeta> meta = iocContext.getGenerators().keySet().stream().filter(k -> k.exactType.equals(typeElement)).findFirst();
-                    if (meta.isPresent()) {
-                        System.out.println("Will be generated " + definition.getDeclaredTypes().stream().map(m -> m.toString()).collect(Collectors.joining(",")));
-                    }
+                    Optional<TypeElement> iface = iocContext.getBeans()
+                            .keySet()
+                            .stream()
+                            .filter(bean -> types.isSubtype(bean.asType(), beanType))
+                            .findFirst();
+                    dependency = iocContext.getBeans().get(iface.get()).getType();
                 }
             }
             if (dependency == null) {
                 DeclaredType type = MoreTypes.asDeclared(field.getField().asType());
-
                 throw new Error("Unable find implementation of bean " + type + " from " + field.getField().getEnclosingElement());
             }
 
-            definition.getDependsOn().remove(field.getType());
-            definition.getDependsOn().add(iocContext.getBeans().get(dependency));
+            if (field.isNamed()) {
+                BeanDefinition named = iocContext.getQualifiers().get(field.getType()).get(field.getNamed());
+                dependency = named.getType();
+                definition.getDependsOn().remove(iocContext.getBeans().get(field.getType()));
+                definition.getDependsOn().add(named);
+            } else {
+                field.setType(dependency);
+                definition.getDependsOn().add(iocContext.getBeans().get(dependency));
+            }
             field.setType(dependency);
         }
 

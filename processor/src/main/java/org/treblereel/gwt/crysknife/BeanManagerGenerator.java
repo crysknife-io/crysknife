@@ -19,20 +19,18 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
-import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -114,18 +112,20 @@ public class BeanManagerGenerator {
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field) {
-            ClassOrInterfaceType type = new ClassOrInterfaceType();
-            type.setName(Provider.class.getSimpleName());
-            type.setTypeArguments(new ClassOrInterfaceType().setName(field.getQualifiedName().toString()));
+            if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
+                ClassOrInterfaceType type = new ClassOrInterfaceType();
+                type.setName(Provider.class.getSimpleName());
+                type.setTypeArguments(new ClassOrInterfaceType().setName(field.getQualifiedName().toString()));
 
-            MethodCallExpr call = new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(field)), "create");
+                MethodCallExpr call = new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(field)), "create");
 
-            NameExpr fieldAccess = new NameExpr("beanStore");
-            MethodCallExpr putCall = new MethodCallExpr(fieldAccess, "put");
-            putCall.addArgument(new StringLiteralExpr(field.getQualifiedName().toString()));
-            putCall.addArgument(call);
+                NameExpr fieldAccess = new NameExpr("beanStore");
+                MethodCallExpr putCall = new MethodCallExpr(fieldAccess, "put");
+                putCall.addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"));
+                putCall.addArgument(call);
 
-            init.getBody().get().addAndGetStatement(putCall);
+                init.getBody().get().addAndGetStatement(putCall);
+            }
         }
 
         private void addGetInstanceMethod() {

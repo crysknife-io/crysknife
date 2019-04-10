@@ -18,8 +18,6 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -32,15 +30,16 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * Created by treblereel 3/31/19
  */
 @Generator(priority = 999)
-public class EventProducerGenerator extends BeanIOCGenerator {
+public class EventProducerGenerator extends ScopedBeanGenerator {
 
     @Override
     public void register(IOCContext iocContext) {
-        iocContext.register(Inject.class, Event.class, WiringElementType.FIELD_TYPE, this);
+        iocContext.register(Inject.class, Event.class, WiringElementType.DEPENDENT_BEAN, this);
         this.iocContext = iocContext;
 
         TypeElement type = iocContext.getGenerationContext().getElements().getTypeElement(Event.class.getCanonicalName());
-        BeanDefinition beanDefinition = BeanDefinition.of(type, iocContext);
+        BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
+        beanDefinition.setGenerator(this);
         iocContext.getBeans().put(type, beanDefinition);
     }
 

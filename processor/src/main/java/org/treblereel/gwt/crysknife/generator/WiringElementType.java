@@ -12,6 +12,7 @@ public enum WiringElementType {
     CLASS_DECORATOR,
     PRODUCER_ELEMENT,
     FIELD_TYPE,
+    FIELD_DECORATOR,
     PARAMETER,
     NOT_SUPPORTED
 }

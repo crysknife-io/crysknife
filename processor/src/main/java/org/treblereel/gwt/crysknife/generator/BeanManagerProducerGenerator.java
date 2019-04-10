@@ -16,7 +16,7 @@ import org.treblereel.gwt.crysknife.generator.definition.Definition;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/30/19
  */
-@Generator(priority = 10000)
+@Generator()
 public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
 
     @Override

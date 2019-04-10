@@ -24,7 +24,7 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * Created by treblereel 3/4/19
  */
 @Generator(priority = 500)
-public class ProducesGenerator extends BeanIOCGenerator {
+public class ProducesGenerator extends ScopedBeanGenerator {
 
     @Override
     public void register(IOCContext iocContext) {

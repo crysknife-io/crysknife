@@ -19,14 +19,18 @@ import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
  */
 public class ParameterTypeProcessor extends TypeProcessor {
 
+    protected ParameterTypeProcessor(IOCGenerator generator) {
+        super(generator);
+    }
+
     @Override
-    public void process(IOCContext context, IOCGenerator generator, Element element) {
+    public void process(IOCContext context, Element element) {
         if (element.getKind().equals(ElementKind.PARAMETER)) {
             VariableElement parameter = MoreElements.asVariable(element);
             ExecutableElement method = MoreElements.asExecutable(parameter.getEnclosingElement());
 
             TypeElement enclosingElement = MoreElements.asType(method.getEnclosingElement());
-            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, generator, enclosingElement);
+            BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(enclosingElement);
             beanDefinition.addExecutableDefinition(generator, ExecutableDefinition.of(method, enclosingElement));
         }
     }

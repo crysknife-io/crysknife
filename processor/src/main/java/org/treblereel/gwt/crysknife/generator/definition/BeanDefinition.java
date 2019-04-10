@@ -18,10 +18,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
-import org.treblereel.gwt.crysknife.generator.BasicIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -69,8 +67,12 @@ public class BeanDefinition extends Definition {
         }
     }
 
-    public void addGenerator(IOCGenerator iocGenerator) {
-        this.generator = Optional.of(iocGenerator);
+    public void setGenerator(IOCGenerator iocGenerator) {
+        if (iocGenerator == null) {
+            this.generator = Optional.empty();
+        } else {
+            this.generator = Optional.of(iocGenerator);
+        }
     }
 
     @Override
@@ -140,21 +142,29 @@ public class BeanDefinition extends Definition {
         return constructorInjectionPoint;
     }
 
+    public void setConstructorInjectionPoint(ConstructorPoint constructorInjectionPoint) {
+        this.constructorInjectionPoint = constructorInjectionPoint;
+    }
+
     public String getFactoryVariableName() {
         return ((BeanIOCGenerator) generator.get()).getFactoryVariableName();
     }
 
     public void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        IOCGenerator gen = generator.get();
-        if (gen instanceof BeanIOCGenerator) {
-            ((BeanIOCGenerator) gen).addFactoryFieldDeclaration(classBuilder, beanDefinition);
-        }
+        generator.ifPresent(gen -> {
+            if (gen instanceof BeanIOCGenerator) {
+                ((BeanIOCGenerator) gen).addFactoryFieldDeclaration(classBuilder, beanDefinition);
+            }
+        });
+//        generator.orElseThrow(() -> new Error("Unable to find generator for " + beanDefinition.toString()));
     }
 
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        IOCGenerator gen = generator.get();
-        if (gen instanceof BeanIOCGenerator) {
-            ((BeanIOCGenerator) gen).addFactoryFieldInitialization(classBuilder, beanDefinition);
+        if (generator.isPresent()) {
+            IOCGenerator gen = generator.get();
+            if (gen instanceof BeanIOCGenerator) {
+                ((BeanIOCGenerator) gen).addFactoryFieldInitialization(classBuilder, beanDefinition);
+            }
         }
     }
 
@@ -170,7 +180,6 @@ public class BeanDefinition extends Definition {
             this.context = context;
             this.beanDefinition = new BeanDefinition(element);
             this.elements = context.getGenerationContext().getElements();
-            this.beanDefinition.setGenerator(new BasicIOCGenerator());
         }
 
         public BeanDefinition build() {
@@ -204,7 +213,8 @@ public class BeanDefinition extends Definition {
             FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
             if (!field.isNamed()) {
                 TypeElement typeElement = MoreElements.asType(MoreTypes.asElement(MoreElements.asVariable(type).asType()));
-                beanDefinition.dependsOn.add(BeanDefinition.of(typeElement, context));
+                BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
+                beanDefinition.dependsOn.add(fieldBeanDefinition);
             }
             return field;
         }

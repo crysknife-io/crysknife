@@ -14,7 +14,7 @@ import org.treblereel.gwt.crysknife.client.Instance;
  */
 public class AbstractBeanManager implements BeanManager {
 
-    final protected Map<String, Provider> beanStore = new java.util.HashMap<>();
+    final protected Map<Class, Provider> beanStore = new java.util.HashMap<>();
 
     protected AbstractBeanManager() {
 
@@ -26,12 +26,12 @@ public class AbstractBeanManager implements BeanManager {
     }
 
     @Override
-    public <T> Instance<T> lookupBean(String type, Annotation... qualifiers) {
+    public <T> Instance<T> lookupBean(Class type, Annotation... qualifiers) {
         return null;
     }
 
     @Override
-    public <T> Instance<T> lookupBean(String type) {
+    public <T> Instance<T> lookupBean(Class type) {
         return new InstanceImpl<T>(beanStore.get(type));
     }
 }

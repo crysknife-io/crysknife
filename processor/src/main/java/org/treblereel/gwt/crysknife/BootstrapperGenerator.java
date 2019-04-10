@@ -100,7 +100,7 @@ public class BootstrapperGenerator {
             initClass();
             initInitMethod();
             initConstructor();
-            initPostConstractMethod();
+            initPostConstructMethod();
             return clazz;
         }
 
@@ -135,7 +135,7 @@ public class BootstrapperGenerator {
 
                 MethodCallExpr callForBeanManagerImpl = new MethodCallExpr(beanManager.getNameAsExpression(), "get");
                 MethodCallExpr callForProducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
-                        .addArgument(new StringLiteralExpr(fieldPoint.getType().getQualifiedName().toString()));
+                        .addArgument(new FieldAccessExpr(new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
                 MethodCallExpr callForProducerGet = new MethodCallExpr(callForProducer, "get");
 
                 AssignExpr assignExpr = new AssignExpr().setTarget(instance).setValue(callForProducerGet);
@@ -144,7 +144,7 @@ public class BootstrapperGenerator {
             }
         }
 
-        private void initPostConstractMethod() {
+        private void initPostConstructMethod() {
             beanDefinition.getExecutableDefinitions().forEach((k, v) -> {
                 if (k.getClass().equals(PostConstructGenerator.class)) {
                     if (v.stream().findFirst().isPresent()) {
