@@ -2,7 +2,6 @@ package org.treblereel.gwt.crysknife.generator;
 
 import java.io.IOException;
 
-import javax.enterprise.event.Event;
 import javax.inject.Provider;
 
 import com.github.javaparser.ast.Modifier;
@@ -10,7 +9,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import org.treblereel.gwt.crysknife.annotation.Generator;
@@ -33,7 +31,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     @Override
     public void register(IOCContext iocContext) {
-        iocContext.register(Application.class, Event.class, WiringElementType.DEPENDENT_BEAN, this);
+        iocContext.register(Application.class, WiringElementType.DEPENDENT_BEAN, this);
         this.iocContext = iocContext;
     }
 
@@ -52,7 +50,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         classBuilder.getConstructorDeclaration().getParameters().add(arg);
         beanDefinition.getDependsOn().forEach(on -> generateFactoryFieldDeclaration(classBuilder, on));
 
-        AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(),"instance")).setValue(new NameExpr("application"));
+        AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance")).setValue(new NameExpr("application"));
         classBuilder.getConstructorDeclaration().getBody().addAndGetStatement(assign);
     }
 

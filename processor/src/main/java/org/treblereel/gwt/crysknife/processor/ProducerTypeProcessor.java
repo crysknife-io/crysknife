@@ -17,14 +17,18 @@ import org.treblereel.gwt.crysknife.generator.definition.ProducerDefinition;
 
 public class ProducerTypeProcessor extends TypeProcessor {
 
+    protected ProducerTypeProcessor(IOCGenerator generator) {
+        super(generator);
+    }
+
     @Override
-    public void process(IOCContext context, IOCGenerator generator, Element element) {
+    public void process(IOCContext context, Element element) {
         if (element.getKind().equals(ElementKind.METHOD)) {
             ExecutableElement method = MoreElements.asExecutable(element);
             Element theReturn = MoreTypes.asElement(method.getReturnType());
 
             ProducerDefinition producerDefinition = ProducerDefinition.of(method, MoreElements.asType(method.getEnclosingElement()));
-            producerDefinition.addGenerator(generator);
+            producerDefinition.setGenerator(generator);
             context.getBeans().put(MoreElements.asType(theReturn), producerDefinition);
         }
     }

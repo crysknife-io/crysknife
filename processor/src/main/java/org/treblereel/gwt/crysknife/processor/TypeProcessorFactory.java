@@ -9,6 +9,7 @@ import javax.lang.model.type.TypeMirror;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 
 /**
@@ -17,26 +18,26 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
  */
 public class TypeProcessorFactory {
 
-    public static Optional<TypeProcessor> getTypeProcessor(IOCContext.IOCGeneratorMeta meta, Element element) {
+    public static Optional<TypeProcessor> getTypeProcessor(IOCContext.IOCGeneratorMeta meta, IOCGenerator generator, Element element) {
         if (element.getKind().equals(ElementKind.FIELD)) {
             TypeMirror mirror = MoreElements.asVariable(element).asType();
             TypeElement type = MoreTypes.asTypeElement(mirror);
             if (type.equals(meta.exactType)) {
-                return Optional.of(new ExactTypeProcessor());
+                return Optional.of(new ExactTypeProcessor(generator));
             }
         }
 
         switch (meta.wiringElementType) {
             case DEPENDENT_BEAN:
-                return Optional.of(new DependentTypeProcessor());
+                return Optional.of(new DependentTypeProcessor(generator));
             case PRODUCER_ELEMENT:
-                return Optional.of(new ProducerTypeProcessor());
+                return Optional.of(new ProducerTypeProcessor(generator));
             case CLASS_DECORATOR:
-                return Optional.of(new ClassDecoratorTypeProcessor());
+                return Optional.of(new ClassDecoratorTypeProcessor(generator));
             case METHOD_DECORATOR:
-                return Optional.of(new MethodDecoratorTypeProcessor());
+                return Optional.of(new MethodDecoratorTypeProcessor(generator));
             case PARAMETER:
-                return Optional.of(new ParameterTypeProcessor());
+                return Optional.of(new ParameterTypeProcessor(generator));
             default:
                 return Optional.empty();
         }

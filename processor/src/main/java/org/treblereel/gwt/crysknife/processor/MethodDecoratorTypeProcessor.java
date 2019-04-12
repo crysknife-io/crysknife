@@ -6,10 +6,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
-import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -17,12 +17,16 @@ import org.treblereel.gwt.crysknife.generator.IOCGenerator;
  */
 public class MethodDecoratorTypeProcessor extends TypeProcessor {
 
+    protected MethodDecoratorTypeProcessor(IOCGenerator generator) {
+        super(generator);
+    }
+
     @Override
-    public void process(IOCContext context, IOCGenerator generator, Element element) {
+    public void process(IOCContext context, Element element) {
         if (element.getKind().equals(ElementKind.METHOD)) {
             ExecutableElement method = MoreElements.asExecutable(element);
             TypeElement enclosingElement = MoreElements.asType(method.getEnclosingElement());
-            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, generator, enclosingElement);
+            BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(enclosingElement);
             beanDefinition.addExecutableDefinition(generator, ExecutableDefinition.of(method, enclosingElement));
         }
     }

@@ -5,6 +5,7 @@ import javax.lang.model.element.Element;
 import com.google.auto.common.MoreElements;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -12,10 +13,16 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
  */
 public class ClassDecoratorTypeProcessor extends TypeProcessor {
 
+    protected ClassDecoratorTypeProcessor(IOCGenerator generator) {
+        super(generator);
+    }
+
     @Override
-    public void process(IOCContext context, IOCGenerator generator, Element element) {
+    public void process(IOCContext context, Element element) {
         if (MoreElements.isType(element)) {
-            context.getBeans().get(MoreElements.asType(element)).addDecorator(generator, null);
+            BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(MoreElements.asType(element));
+
+            context.getBeans().get(MoreElements.asType(element)).addDecorator(generator, beanDefinition);
         }
     }
 }

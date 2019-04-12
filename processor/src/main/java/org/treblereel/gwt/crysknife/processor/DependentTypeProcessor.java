@@ -14,12 +14,17 @@ import org.treblereel.gwt.crysknife.generator.IOCGenerator;
  */
 public class DependentTypeProcessor extends TypeProcessor {
 
+    protected DependentTypeProcessor(IOCGenerator generator) {
+        super(generator);
+    }
+
     @Override
-    public void process(IOCContext context, IOCGenerator generator, Element element) {
+    public void process(IOCContext context,  Element element) {
         if (MoreElements.isType(element)) {
             TypeElement typeElement = MoreElements.asType(element);
-            BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndGet(context, generator, typeElement);
-            beanDefinition.addGenerator(generator);
+            BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
+            beanDefinition.setGenerator(generator);
         }
     }
+
 }

@@ -5,6 +5,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -36,7 +37,7 @@ public class ConstructorBuilder extends Builder {
         MethodCallExpr callForBeanManagerImpl = new MethodCallExpr(beanManager.getNameAsExpression(), "get");
 
         MethodCallExpr callForProducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
-                .addArgument(new StringLiteralExpr(argument.getQualifiedName()));
+                .addArgument(new FieldAccessExpr(new NameExpr(argument.getQualifiedName()), "class"));
 
         ThisExpr clazz = new ThisExpr();
         FieldAccessExpr field = new FieldAccessExpr(clazz, varName);

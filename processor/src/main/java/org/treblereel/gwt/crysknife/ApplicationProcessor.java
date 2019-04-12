@@ -61,7 +61,6 @@ public class ApplicationProcessor extends AbstractProcessor {
         this.application = maybeApplication.get();
 
         processComponentScanAnnotation();
-
         initAndRegisterGenerators();
         processComponentScan();
         processInjectionScan();
