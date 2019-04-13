@@ -9,6 +9,7 @@ import javax.inject.Provider;
 
 import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.Instance;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -24,7 +25,7 @@ public abstract class AbstractBeanManager implements BeanManager {
 
     @Override
     public void destroyBean(Object ref) {
-
+        throw new NotImplementedException();
     }
 
     protected void register(Class type, Provider provider) {

@@ -58,7 +58,6 @@
       <version>2.0</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>com.vertispan.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
