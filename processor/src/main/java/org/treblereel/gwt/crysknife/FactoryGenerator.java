@@ -17,13 +17,10 @@ import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
  */
 public class FactoryGenerator {
 
-    private final GenerationContext generationContext;
-
     private final IOCContext iocContext;
 
     FactoryGenerator(IOCContext iocContext, GenerationContext generationContext) {
         this.iocContext = iocContext;
-        this.generationContext = generationContext;
     }
 
     void generate() {

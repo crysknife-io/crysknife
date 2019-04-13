@@ -1,8 +1,6 @@
 package org.treblereel.gwt.crysknife;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -11,6 +9,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
+import javax.inject.Inject;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
@@ -22,12 +21,16 @@ import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
 import org.treblereel.gwt.crysknife.generator.ComponentInjectionResolverScanner;
 import org.treblereel.gwt.crysknife.generator.ComponentScanner;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
+import org.treblereel.gwt.crysknife.generator.QualifiersScan;
+import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.graph.Graph;
 
 @AutoService(Processor.class)
@@ -39,7 +42,6 @@ import org.treblereel.gwt.crysknife.generator.graph.Graph;
         "org.treblereel.gwt.crysknife.client.ComponentScan"})
 public class ApplicationProcessor extends AbstractProcessor {
 
-    private final List<String> orderedBeans = new LinkedList<>();
     private IOCContext iocContext;
     private Set<String> packages;
     private GenerationContext context;
@@ -62,13 +64,43 @@ public class ApplicationProcessor extends AbstractProcessor {
 
         processComponentScanAnnotation();
         initAndRegisterGenerators();
+        processQualifiersScan();
         processComponentScan();
         processInjectionScan();
         processGraph();
+        processPrepareForGenerationTasks();
 
         new FactoryGenerator(iocContext, context).generate();
         new BeanManagerGenerator(iocContext, context).generate();
         return true;
+    }
+
+    private void processPrepareForGenerationTasks() {
+        TypeElement beanManager = iocContext.getGenerationContext()
+                .getProcessingEnvironment()
+                .getElementUtils()
+                .getTypeElement("org.treblereel.gwt.crysknife.client.BeanManager");
+
+        Optional<TypeElement> ifPresent = iocContext.getBeans().keySet()
+                .stream().filter(dep -> dep.equals(beanManager)).findFirst();
+        if (!ifPresent.isPresent()) {
+            BeanDefinition beanManagerDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(beanManager);
+
+            TypeElement type = iocContext
+                    .getGenerationContext()
+                    .getElements()
+                    .getTypeElement(BeanManager.class.getCanonicalName());
+
+            IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Inject.class.getCanonicalName(),
+                                                                               type,
+                                                                               WiringElementType.FIELD_TYPE);
+            beanManagerDefinition.setGenerator(iocContext.getGenerators().get(meta).stream().findFirst().get());
+            iocContext.getBeans().put(beanManager, beanManagerDefinition);
+        }
+    }
+
+    private void processQualifiersScan() {
+        new QualifiersScan(iocContext).process();
     }
 
     private void processGraph() {

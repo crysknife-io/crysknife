@@ -1,4 +1,4 @@
-package org.treblereel.gwt.crysknife.internal;
+package org.treblereel.gwt.crysknife.client.internal;
 
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;

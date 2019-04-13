@@ -15,6 +15,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.util.Utils;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -61,6 +62,11 @@ public class FieldPoint extends Point {
 
     public boolean isNamed() {
         return field.getAnnotation(Named.class) != null;
+    }
+
+    //TODO
+    public boolean isQualified() {
+        throw new NotImplementedException();
     }
 
     public String getNamed() {

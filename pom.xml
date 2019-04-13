@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <name>crysknife-parent</name>
-    <description>T</description>
+    <description>POC DI for GWT 3 or j2cl</description>
     <url>https://github.com/treblereel</url>
 
     <developers>
@@ -33,11 +33,11 @@
     </organization>
 
     <scm>
-        <url>https://github.com/treblereel/three4g</url>
-        <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
-        <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <url>https://github.com/treblereel/crysknife</url>
+        <developerConnection>scm:git:git@github.com:treblereel/crysknife.git</developerConnection>
+        <connection>scm:git:git://github.com/treblereel/crysknife.git</connection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -86,7 +86,6 @@
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
-                        <compilerArgument>-proc:none</compilerArgument>
                     </configuration>
                 </plugin>
 
@@ -169,6 +168,19 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <id>vertispan</id>
+            <name>vertispan</name>
+            <url>https://repo.vertispan.com/gwt-snapshot/</url>
+        </repository>
+    </repositories>
 
     <profiles>
         <!-- release profile to create sources, javadoc, and sign all artifacts before uploading -->

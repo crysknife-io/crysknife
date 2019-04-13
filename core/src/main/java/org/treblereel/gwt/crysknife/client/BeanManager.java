@@ -10,7 +10,7 @@ public interface BeanManager {
 
     void destroyBean(Object ref);
 
-    <T> Instance<T> lookupBean(final Class type, Annotation... qualifiers);
+    <T> Instance<T> lookupBean(final Class type, Class<? extends Annotation> qualifier);
 
     <T> Instance<T> lookupBean(final Class type);
 }

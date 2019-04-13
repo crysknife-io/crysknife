@@ -14,7 +14,6 @@ import javax.tools.JavaFileObject;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -24,6 +23,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
@@ -47,8 +47,6 @@ public class BeanManagerGenerator {
 
     private final GenerationContext generationContext;
 
-    private ConstructorDeclaration constructorDeclaration;
-
     BeanManagerGenerator(IOCContext iocContext,
                          GenerationContext generationContext) {
         this.iocContext = iocContext;
@@ -68,7 +66,6 @@ public class BeanManagerGenerator {
     private void build() throws IOException {
         JavaFileObject builderFile = generationContext.getProcessingEnvironment().getFiler()
                 .createSourceFile(qualifiedBootstrapName + "Impl");
-
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             out.append(new BeanManagerGeneratorBuilder().build().toString());
         }
@@ -89,9 +86,7 @@ public class BeanManagerGenerator {
         public CompilationUnit build() {
             initClass();
             addFields();
-            initConstructor();
             initInitMethod();
-
             addGetInstanceMethod();
             return clazz;
         }
@@ -117,14 +112,11 @@ public class BeanManagerGenerator {
                 type.setName(Provider.class.getSimpleName());
                 type.setTypeArguments(new ClassOrInterfaceType().setName(field.getQualifiedName().toString()));
 
-                MethodCallExpr call = new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(field)), "create");
+                MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
+                        .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
+                        .addArgument(new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(field)), "create"));
 
-                NameExpr fieldAccess = new NameExpr("beanStore");
-                MethodCallExpr putCall = new MethodCallExpr(fieldAccess, "put");
-                putCall.addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"));
-                putCall.addArgument(call);
-
-                init.getBody().get().addAndGetStatement(putCall);
+                init.getBody().get().addAndGetStatement(call);
             }
         }
 
@@ -182,10 +174,6 @@ public class BeanManagerGenerator {
             newInstance.setType(new ClassOrInterfaceType()
                                         .setName(className + "Impl"));
             return new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance);
-        }
-
-        private void initConstructor() {
-            constructorDeclaration = classDeclaration.addConstructor(Modifier.Keyword.PRIVATE);
         }
     }
 }
