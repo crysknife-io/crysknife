@@ -1,8 +1,11 @@
 package org.treblereel.gwt.crysknife.generator;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.inject.Provider;
+import javax.inject.Singleton;
+import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;

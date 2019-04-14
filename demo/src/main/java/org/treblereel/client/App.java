@@ -65,6 +65,12 @@ public class App implements EntryPoint {
     @Inject
     TemplatedBean templatedBean;
 
+    @Inject
+    QualifierBeans qualifierBeans;
+
+    @Inject
+    QualifierBeansConstructorInjection qualifierBeansConstructorInjection;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();

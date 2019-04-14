@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -209,13 +210,27 @@ public class BeanDefinition extends Definition {
             });
         }
 
+        //TODO refactoring needed here
         private FieldPoint parseField(Element type) {
             FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
-            if (!field.isNamed()) {
+            if (context.getQualifiers().containsKey(field.getType())) {
+                BeanDefinition bean = null;
+                for (AnnotationMirror mirror : context.getGenerationContext()
+                        .getProcessingEnvironment()
+                        .getElementUtils()
+                        .getAllAnnotationMirrors(type)) {
+                    bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
+                }
+                if (bean != null) {
+                    beanDefinition.dependsOn.add(bean);
+                    field.setType(bean.getType());
+                }
+            } else if (!field.isNamed()) {
                 TypeElement typeElement = MoreElements.asType(MoreTypes.asElement(MoreElements.asVariable(type).asType()));
                 BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
                 beanDefinition.dependsOn.add(fieldBeanDefinition);
             }
+
             return field;
         }
     }
