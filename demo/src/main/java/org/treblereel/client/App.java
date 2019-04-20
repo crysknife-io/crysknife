@@ -7,7 +7,10 @@ import javax.inject.Inject;
 
 import com.google.gwt.core.client.EntryPoint;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.EventListener;
+import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.MouseEvent;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.events.User;
@@ -71,6 +74,9 @@ public class App implements EntryPoint {
     @Inject
     QualifierBeansConstructorInjection qualifierBeansConstructorInjection;
 
+    @Inject
+    HTMLButtonElement element;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -84,6 +90,11 @@ public class App implements EntryPoint {
         DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.element());
         DomGlobal.document.body.appendChild(transitiveInjection.element());
         DomGlobal.document.body.appendChild(beanWithCDIEvents.element());
+
+        element.textContent = "textContent";
+
+        DomGlobal.document.body.appendChild(element);
+
 
         initToast();
     }

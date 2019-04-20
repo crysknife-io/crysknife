@@ -17,4 +17,7 @@ public class QualifierFieldInjection {
     @Inject
     @QualifierTwo
     public QualifierBeanTwo qualifierBeanTwo;
+
+    @Inject
+    public QualifierBean qualifierBeanDefault;
 }

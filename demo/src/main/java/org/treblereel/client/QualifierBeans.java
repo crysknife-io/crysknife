@@ -1,6 +1,7 @@
 package org.treblereel.client;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -23,12 +24,13 @@ public class QualifierBeans {
     @QualifierTwo
     QualifierBean two;
 
+    @Inject
+    @Default
+    QualifierBean three;
+
     @PostConstruct
     void init() {
         one.say();
         two.say();
     }
-
-
-
 }

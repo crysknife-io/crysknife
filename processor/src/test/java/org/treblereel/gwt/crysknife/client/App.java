@@ -22,4 +22,7 @@ public class App {
 
     @Inject
     QualifierFieldInjection qualifierFieldInjection;
+
+    @Inject
+    BeanManager beanManager;
 }
