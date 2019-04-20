@@ -7,16 +7,17 @@ import javax.inject.Inject;
 
 import com.google.gwt.core.client.EntryPoint;
 import elemental2.dom.DomGlobal;
-import elemental2.dom.EventListener;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.MouseEvent;
+import org.gwtproject.resources.client.ResourceCallback;
+import org.gwtproject.resources.client.ResourceException;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.events.User;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
 import org.treblereel.client.inject.iface.IBean;
+import org.treblereel.client.resources.TextResource;
 import org.treblereel.client.template.TemplatedBean;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.BeanManager;
@@ -77,6 +78,9 @@ public class App implements EntryPoint {
     @Inject
     HTMLButtonElement element;
 
+    @Inject
+    TextResource textResource;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -94,7 +98,23 @@ public class App implements EntryPoint {
         element.textContent = "textContent";
 
         DomGlobal.document.body.appendChild(element);
+        DomGlobal.console.log(textResource.helloWorldRelative().getText());
 
+        try {
+            textResource.helloWorldExternal().getText(new ResourceCallback<org.gwtproject.resources.client.TextResource>() {
+                @Override
+                public void onError(ResourceException e) {
+                    DomGlobal.alert("[Error] " + e.getMessage());
+                }
+
+                @Override
+                public void onSuccess(org.gwtproject.resources.client.TextResource textResource) {
+                    DomGlobal.console.log("external " + textResource.getText());
+                }
+            });
+        } catch (ResourceException e) {
+            DomGlobal.alert("[Error] " + e.getMessage());
+        }
 
         initToast();
     }

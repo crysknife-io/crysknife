@@ -226,11 +226,9 @@ public class BeanDefinition extends Definition {
                     field.setType(bean.getType());
                 }
             } else if (!field.isNamed()) {
-                TypeElement typeElement = MoreElements.asType(MoreTypes.asElement(MoreElements.asVariable(type).asType()));
-                BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
+                BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(field.getType());
                 beanDefinition.dependsOn.add(fieldBeanDefinition);
             }
-
             return field;
         }
     }

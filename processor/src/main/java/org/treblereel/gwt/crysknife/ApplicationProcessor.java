@@ -72,7 +72,7 @@ public class ApplicationProcessor extends AbstractProcessor {
 
         new FactoryGenerator(iocContext, context).generate();
         new BeanManagerGenerator(iocContext, context).generate();
-        return true;
+        return false;
     }
 
     private void processPrepareForGenerationTasks() {

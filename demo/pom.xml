@@ -12,6 +12,7 @@
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <j2cl.maven.plugin.version>0.1-SNAPSHOT</j2cl.maven.plugin.version>
+    <maven.properties.plugin>1.0.0</maven.properties.plugin>
   </properties>
 
   <dependencies>
@@ -59,7 +60,18 @@
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>gwt-resources</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
@@ -99,6 +111,32 @@
             <goals>
               <goal>jar-no-fork</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <version>${maven.properties.plugin}</version>
+        <executions>
+          <execution>
+            <id>demo</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>set-system-properties</goal>
+            </goals>
+            <configuration>
+              <properties>
+                <property>
+                  <name>ClientBundle.cacheLocation</name>
+                  <value>target/webapp/gwt-cache/</value>
+                </property>
+                <property>
+                  <name>ClientBundle.cacheUrl</name>
+                  <value>/gwt-cache/</value>
+                </property>
+              </properties>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -150,8 +188,6 @@
               </execution>
             </executions>
           </plugin>
-
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -305,6 +341,56 @@
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>custom-resources</id>
+                <phase>process-resources</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <targetPath>${basedir}/target/webapp</targetPath>
+                      <directory>src/main/webapp</directory>
+                      <filtering>true</filtering>
+                    </resource>
+                    <resource>
+                      <targetPath>${basedir}/target/webapp/classes</targetPath>
+                      <directory>src/main/resources</directory>
+                      <filtering>false</filtering>
+                    </resource>
+                  </resources>
+                  <encoding>UTF-8</encoding>
+                </configuration>
+              </execution>
+              <execution>
+                <id>copy-resources</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${webappdir}</directory>
+                      <excludes>
+                        <exclude>**/classes/**</exclude>
+                      </excludes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <outputDirectory>${webappdir}/classes</outputDirectory>
@@ -398,43 +484,21 @@
                 <param>${webapp.libdir}/bootstrap.js.zip</param>
                 <param>${webapp.libdir}/jre.js.zip</param>
               </j2clClasspath>
+              <dependencyMode>PRUNE_LEGACY</dependencyMode>
+
               <outputJsPathDir>${webappdir}/js</outputJsPathDir>
-              <outputJsFilename>app.js</outputJsFilename>
               <sourceDir>
                 <param>${project.basedir}/src/main/java</param>
               </sourceDir>
               <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
               <entrypoint>org.treblereel.client.App</entrypoint>
+              <outputJsFilename>app.js</outputJsFilename>
               <externs>
                 <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
                 <extern>${project.basedir}/src/main/externs/svg.js</extern>
               </externs>
               <compilationLevel>BUNDLE</compilationLevel>
             </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>2.6</version>
-            <executions>
-              <execution>
-                <id>copy-resources</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${webappdir}</directory>
-                      <excludes>
-                        <exclude>**/classes/**</exclude>
-                      </excludes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>

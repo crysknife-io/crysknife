@@ -13,3 +13,4 @@ templates/generator/templates-generator.iml
 templates/api/templates-api.iml
 templates/templates.iml
 elemental2/elemental2-generator.iml
+gwt-resources/gwt-resources.iml
