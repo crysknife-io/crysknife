@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.enterprise.inject.Default;
 import javax.inject.Qualifier;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -22,26 +23,48 @@ public class QualifiersScan {
 
     private final IOCContext iocContext;
 
+    private final Set<VariableElement> points = new HashSet<>();
+
     public QualifiersScan(IOCContext iocContext) {
         this.iocContext = iocContext;
     }
 
     public void process() {
-        Set<VariableElement> points = new HashSet<>();
+        processQualifierAnnotation();
+        processDefaultAnnotation();
+    }
 
+    private void processQualifierAnnotation() {
         iocContext.getGenerationContext()
                 .getRoundEnvironment()
                 .getElementsAnnotatedWith(Qualifier.class)
                 .forEach(qualified -> iocContext.getGenerationContext()
                         .getRoundEnvironment()
                         .getElementsAnnotatedWith(MoreElements.asType(qualified)).forEach(element -> {
-                            if (element.getKind().isField()) {
-                                points.add(MoreElements.asVariable(element));
-                            } else if (element.getKind().isClass()) {
-                                processQualifier(MoreElements.asType(element), qualified);
-                            }
+                            processAnnotation(element, qualified);
                         }));
+    }
 
+    private void processDefaultAnnotation() {
+        Element qualified = iocContext.getGenerationContext()
+                .getProcessingEnvironment()
+                .getElementUtils()
+                .getTypeElement(Default.class.getCanonicalName());
+
+        iocContext.getGenerationContext()
+                .getRoundEnvironment()
+                .getElementsAnnotatedWith(Default.class)
+                .forEach(annotated -> {
+                    processAnnotation(annotated, qualified);
+                });
+    }
+
+    private void processAnnotation(Element element, Element qualified) {
+        if (element.getKind().isField()) {
+            points.add(MoreElements.asVariable(element));
+        } else if (element.getKind().isClass()) {
+            processQualifier(MoreElements.asType(element), qualified);
+        }
     }
 
     private void processQualifier(TypeElement qualifier, Element annotation) {

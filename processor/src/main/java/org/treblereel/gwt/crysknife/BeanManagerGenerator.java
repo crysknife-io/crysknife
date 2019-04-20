@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -104,9 +105,21 @@ public class BeanManagerGenerator {
                     generateInitEntry(init, field);
                 }
             }
+
+            iocContext.getQualifiers().forEach((type, beans) -> {
+                beans.forEach((annotation, definition) -> {
+                    if (definition.getType().getAnnotation(Named.class) == null) {
+                        generateInitEntry(init, type, definition.getType(), annotation);
+                    }
+                });
+            });
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field) {
+            generateInitEntry(init, field, field, null);
+        }
+
+        private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory, String annotation) {
             if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
                 ClassOrInterfaceType type = new ClassOrInterfaceType();
                 type.setName(Provider.class.getSimpleName());
@@ -114,8 +127,10 @@ public class BeanManagerGenerator {
 
                 MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
                         .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
-                        .addArgument(new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(field)), "create"));
-
+                        .addArgument(new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(factory)), "create"));
+                if (annotation != null) {
+                    call.addArgument(annotation + ".class");
+                }
                 init.getBody().get().addAndGetStatement(call);
             }
         }

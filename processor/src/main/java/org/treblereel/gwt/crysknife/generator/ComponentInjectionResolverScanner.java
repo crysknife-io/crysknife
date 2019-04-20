@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Default;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -78,6 +79,9 @@ public class ComponentInjectionResolverScanner {
             if (field.isNamed()) {
                 String named = field.getNamed();
                 dependency = iocContext.getQualifiers().get(field.getType()).get(named).getType();
+            }else if(iocContext.getQualifiers().containsKey(field.getType())
+                    && iocContext.getQualifiers().get(field.getType()).containsKey(Default.class.getCanonicalName())){
+                dependency = iocContext.getQualifiers().get(field.getType()).get(Default.class.getCanonicalName()).getType();
             } else if (field.getType().getKind().isInterface()) {
                 TypeMirror beanType = field.getType().asType();
                 Types types = iocContext.getGenerationContext().getTypes();
