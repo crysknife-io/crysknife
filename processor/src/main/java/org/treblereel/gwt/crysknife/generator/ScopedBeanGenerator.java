@@ -56,7 +56,9 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             generateFactoryCreateMethod(clazz, beanDefinition);
             generateFactoryMethods(clazz, beanDefinition);
 
-            write(clazz, beanDefinition, iocContext.getGenerationContext());
+            write(clazz,
+                  beanDefinition,
+                  iocContext.getGenerationContext());
         }
     }
 

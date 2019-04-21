@@ -1,5 +1,6 @@
 package org.treblereel.gwt.crysknife.generator;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -60,6 +61,7 @@ public class ComponentInjectionResolverScanner {
         IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Dependent.class.getCanonicalName(),
                                                                            type,
                                                                            WiringElementType.DEPENDENT_BEAN);
+
         unmanaged.forEach(bean -> {
             BeanDefinition beanDefinition = BeanDefinition.of(bean, iocContext);
             if (iocContext.getGenerators().get(meta).stream().findFirst().isPresent()) {
@@ -79,8 +81,8 @@ public class ComponentInjectionResolverScanner {
             if (field.isNamed()) {
                 String named = field.getNamed();
                 dependency = iocContext.getQualifiers().get(field.getType()).get(named).getType();
-            }else if(iocContext.getQualifiers().containsKey(field.getType())
-                    && iocContext.getQualifiers().get(field.getType()).containsKey(Default.class.getCanonicalName())){
+            } else if (iocContext.getQualifiers().containsKey(field.getType())
+                    && iocContext.getQualifiers().get(field.getType()).containsKey(Default.class.getCanonicalName())) {
                 dependency = iocContext.getQualifiers().get(field.getType()).get(Default.class.getCanonicalName()).getType();
             } else if (field.getType().getKind().isInterface()) {
                 TypeMirror beanType = field.getType().asType();
@@ -100,6 +102,20 @@ public class ComponentInjectionResolverScanner {
                             .filter(bean -> types.isSubtype(bean.asType(), beanType))
                             .findFirst();
                     dependency = iocContext.getBeans().get(iface.get()).getType();
+                }
+
+                //add as Default if not exist
+                if (!iocContext.getQualifiers().containsKey(field.getType())) {
+                    Optional<TypeElement> subType = iocContext.getBeans()
+                            .keySet()
+                            .stream()
+                            .filter(elm -> (!elm.equals(field.getType()) && types.isSubtype(elm.asType(), field.getType().asType()))).findFirst();
+
+                    if (subType.isPresent()) {
+                        Map<String, BeanDefinition> qualifiers = new HashMap<>();
+                        qualifiers.put(Default.class.getCanonicalName(), iocContext.getBeans().get(dependency));
+                        iocContext.getQualifiers().put(field.getType(), qualifiers);
+                    }
                 }
             }
             if (dependency == null) {

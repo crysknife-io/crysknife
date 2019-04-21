@@ -9,6 +9,7 @@ import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.DependentBean;
+import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 
@@ -35,6 +36,9 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @Inject
     DependentBean beanOne2Instance;
+
+    @Inject
+    TextResource textResource;
 
     @PostConstruct
     public void init() {
