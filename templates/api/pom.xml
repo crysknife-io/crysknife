@@ -4,7 +4,7 @@
 
   <parent>
     <groupId>org.treblereel.gwt.crysknife</groupId>
-    <artifactId>crysknife-parent</artifactId>
+    <artifactId>templates-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>

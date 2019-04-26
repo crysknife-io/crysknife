@@ -310,7 +310,7 @@
                 <param>${webapp.libdir}/jre.js.zip</param>
               </j2clClasspath>
               <dependencyMode>PRUNE_LEGACY</dependencyMode>
-
+              <intermediateJsPath>${webappdir}/js/sources</intermediateJsPath>
               <outputJsPathDir>${webappdir}/js</outputJsPathDir>
               <sourceDir>
                 <param>${project.basedir}/src/main/java</param>
@@ -387,8 +387,6 @@
               </execution>
             </executions>
           </plugin>
-
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
