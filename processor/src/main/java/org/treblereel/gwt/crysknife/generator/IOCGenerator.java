@@ -12,5 +12,6 @@ public abstract class IOCGenerator {
 
     public abstract void register(IOCContext iocContext);
 
-    public abstract void generate(ClassBuilder clazz, Definition beanDefinition);
+    public abstract void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition);
+
 }

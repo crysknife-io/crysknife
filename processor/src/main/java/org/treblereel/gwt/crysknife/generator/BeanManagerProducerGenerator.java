@@ -26,11 +26,6 @@ public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder clazz, Definition definition) {
-        super.generate(clazz, definition);
-    }
-
-    @Override
     public void generateInstanceGetMethodReturn(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get");
         classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new ReturnStmt(methodCallExpr));

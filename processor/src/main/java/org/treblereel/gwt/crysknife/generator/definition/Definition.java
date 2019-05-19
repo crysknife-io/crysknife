@@ -31,13 +31,15 @@ public abstract class Definition {
         this.generator = Optional.of(generator);
     }
 
-    public void generate(ClassBuilder builder) {
-        generator.ifPresent(gen -> gen.generate(builder, this));
+    public void generate(ClassBuilder classBuilder) {
+        if (generator.isPresent()) {
+            generator.get().generateBeanFactory(classBuilder, this);
+        }
     }
 
     public void generateDecorators(ClassBuilder builder) {
-        decorators.keySet().stream().sorted(iOCGeneratorcomparator)
-                .forEach(decorator -> decorator.generate(builder, this));
+        //decorators.keySet().stream().sorted(iOCGeneratorcomparator)
+        //        .forEach(decorator -> ((BeanIOCGenerator) decorator).generateBeanCall(builder, this));
     }
 
     public <T extends Definition> T addDecorator(IOCGenerator generator, Definition definition) {

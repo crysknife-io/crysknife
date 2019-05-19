@@ -38,16 +38,21 @@ public class ComponentInjectionResolverScanner {
             for (FieldPoint field : bean.getFieldInjectionPoints()) {
                 processFieldInjectionPoint(field, bean);
             }
+            if (bean.getConstructorInjectionPoint() != null) {
+                bean.getConstructorInjectionPoint()
+                        .getArguments()
+                        .forEach(field -> processFieldInjectionPoint(field, bean));
+            }
         });
 
-        for (Map.Entry<TypeElement, BeanDefinition> entry : iocContext.getBeans().entrySet()) {
+/*        for (Map.Entry<TypeElement, BeanDefinition> entry : iocContext.getBeans().entrySet()) {
             BeanDefinition bean = entry.getValue();
             if (bean.getConstructorInjectionPoint() != null) {
                 bean.getConstructorInjectionPoint()
                         .getArguments()
                         .forEach(field -> processFieldInjectionPoint(field, bean));
             }
-        }
+        }*/
         addUnmanagedBeans();
     }
 
@@ -76,6 +81,8 @@ public class ComponentInjectionResolverScanner {
 
     private void processFieldInjectionPoint(FieldPoint field, BeanDefinition definition) {
         if (field.getType().getKind().isInterface() || field.isNamed()) {
+
+            System.out.println("processFieldInjectionPoint " + field.getType() + " " + definition.getQualifiedName());
 
             TypeElement dependency = null;
             if (field.isNamed()) {
@@ -132,6 +139,9 @@ public class ComponentInjectionResolverScanner {
                 field.setType(dependency);
                 definition.getDependsOn().add(iocContext.getBeans().get(dependency));
             }
+
+            System.out.println(" ? " + field.getType() + " " + iocContext.getBeans().get(dependency));
+
             field.setType(dependency);
         }
 

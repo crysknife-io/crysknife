@@ -59,8 +59,4 @@ public class ProducesGenerator extends ScopedBeanGenerator {
         }
     }
 
-    @Override
-    public void generate(ClassBuilder builder, Definition definition) {
-        super.generate(builder, definition);
-    }
 }

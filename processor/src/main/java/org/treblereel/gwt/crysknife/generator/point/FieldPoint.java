@@ -40,7 +40,7 @@ public class FieldPoint extends Point {
         return field;
     }
 
-    @Override
+/*    @Override
     public Expression generate() {
         ThisExpr clazz = new ThisExpr();
         FieldAccessExpr instance = new FieldAccessExpr(clazz, "instance");
@@ -58,7 +58,7 @@ public class FieldPoint extends Point {
         }
 
         return new AssignExpr().setTarget(field).setValue(call);
-    }
+    }*/
 
     public boolean isNamed() {
         return field.getAnnotation(Named.class) != null;

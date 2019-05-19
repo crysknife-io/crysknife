@@ -29,8 +29,8 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder builder, Definition definition) {
-        super.generate(builder, definition);
+    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+        super.generateBeanFactory(clazz, definition);
     }
 
     @Override

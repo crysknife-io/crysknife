@@ -19,8 +19,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 
+import com.github.javaparser.ast.expr.Expression;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -74,6 +76,15 @@ public class BeanDefinition extends Definition {
         } else {
             this.generator = Optional.of(iocGenerator);
         }
+    }
+
+    public Expression generateBeanCall(ClassBuilder builder, FieldPoint fieldPoint) {
+        Optional<Expression> result;
+        if(generator.isPresent()) {
+            IOCGenerator iocGenerator = generator.get();
+            return ((BeanIOCGenerator)iocGenerator).generateBeanCall(builder, fieldPoint, this);
+        }
+        return null; //
     }
 
     @Override
@@ -147,7 +158,7 @@ public class BeanDefinition extends Definition {
         this.constructorInjectionPoint = constructorInjectionPoint;
     }
 
-    public String getFactoryVariableName() {
+ /*   public String getFactoryVariableName() {
         return ((BeanIOCGenerator) generator.get()).getFactoryVariableName();
     }
 
@@ -167,7 +178,7 @@ public class BeanDefinition extends Definition {
                 ((BeanIOCGenerator) gen).addFactoryFieldInitialization(classBuilder, beanDefinition);
             }
         }
-    }
+    }*/
 
     private static class BeanDefinitionBuilder {
 

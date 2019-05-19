@@ -3,13 +3,11 @@ package org.treblereel.gwt.crysknife.generator;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import elemental2.dom.DomGlobal;
@@ -65,6 +63,7 @@ import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 import static java.util.Arrays.asList;
@@ -142,31 +141,12 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder classBuilder, Definition definition) {
+    public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
 
     }
 
     @Override
-    public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName("org.treblereel.gwt.crysknife.client.Instance");
-        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
-
-        Parameter param = new Parameter();
-        param.setName(varName);
-        param.setType(type);
-
-        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-    }
-
-    @Override
-    public String getFactoryVariableName() {
-        return "";
-    }
-
-    @Override
-    public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+    public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
         classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
         classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
         classBuilder.getClassCompilationUnit().addImport(Provider.class);
@@ -186,6 +166,9 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
                                                "        }" +
                                                "    })"));
         classBuilder.getConstructorDeclaration().getBody().addStatement(assign);
+
+        return new NameExpr("IMPLEMENT ME " + this.getClass().getSimpleName());
+
     }
 
     private String getTagFromType(BeanDefinition beanDefinition) {
@@ -206,5 +189,8 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
             //TODO @Named
         }
         return "\"" + HTML_ELEMENTS.get(clazz).stream().findFirst().get() + "\"";
+
+        //return new NameExpr("IMPLEMENT ME " + clazz.getSimpleName());
     }
+
 }

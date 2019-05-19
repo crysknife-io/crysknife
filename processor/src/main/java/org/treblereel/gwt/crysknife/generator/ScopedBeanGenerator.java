@@ -9,7 +9,6 @@ import javax.tools.JavaFileObject;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -19,11 +18,14 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.point.ConstructorPoint;
+import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -36,25 +38,27 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     protected IOCContext iocContext;
 
-    public void generate(ClassBuilder clazz, Definition definition) {
+    @Override
+    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
         if (definition instanceof BeanDefinition) {
 
             BeanDefinition beanDefinition = (BeanDefinition) definition;
 
             initClassBuilder(clazz, beanDefinition);
 
-            generateDependantFieldDeclaration(clazz, beanDefinition);
-
             generateInstanceGetMethodBuilder(clazz, beanDefinition);
-            generateInstanceGetMethodInitializer(clazz, beanDefinition);
+
             generateInstanceGetMethodDecorators(clazz, beanDefinition);
 
             generatePostInstanceConstructorInitializer(clazz, beanDefinition);
+
+            generateDependantFieldDeclaration(clazz, beanDefinition);
+
             generateInstanceGetMethodReturn(clazz, beanDefinition);
 
-            generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
+            //generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
             generateFactoryCreateMethod(clazz, beanDefinition);
-            generateFactoryMethods(clazz, beanDefinition);
+            //generateFactoryMethods(clazz, beanDefinition);
 
             write(clazz,
                   beanDefinition,
@@ -102,18 +106,10 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     public void generatePostInstanceConstructorInitializer(ClassBuilder clazz, BeanDefinition beanDefinition) {
         beanDefinition.getExecutableDefinitions().keySet().stream().sorted(Definition.iOCGeneratorcomparator).forEach(k -> {
             beanDefinition.getExecutableDefinitions().get(k).forEach(executable -> {
-                executable.generate(clazz); //TODO
-                k.generate(clazz, executable);
+                //executable.generate(clazz); //TODO
+                //k.generate(clazz, executable);
             });
         });
-
-/*                beanDefinition.getExecutableDefinitions().values().stream().sorted(exec -> exec.get)
-        forEach((k, executable) -> {
-            executable.forEach(exec -> {
-                //k.generate(clazz, exec);
-                exec.generate(clazz); //TODO
-            });
-        });*/
     }
 
     public void generateInstanceGetMethodReturn(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
@@ -121,19 +117,50 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
                 .get().addAndGetStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "instance")));
     }
 
-    public void generateInstanceGetMethodInitializer(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        beanDefinition.getFieldInjectionPoints().forEach(injection -> {
-            classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(injection.generate());
-        });
+    public void generateInstanceGetMethodInitializerOld(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        //beanDefinition.getFieldInjectionPoints().forEach(injection -> {
+        //classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(injection.generate());
+        //});
+
+        //classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(injection.generate());
+
+    }
+
+    public void generateInstanceGetMethodInitializer(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        ThisExpr clazz = new ThisExpr();
+        FieldAccessExpr instance = new FieldAccessExpr(clazz, "instance");
+        FieldAccessExpr field = new FieldAccessExpr(instance, fieldPoint.getName());
+        MethodCallExpr call;
+        if (MoreTypes.asTypeElement(fieldPoint.getField().asType()).getTypeParameters().size() > 0) {
+            MethodCallExpr instanceCall = new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
+            call = new MethodCallExpr(instanceCall, "get");
+            MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().forEach(tp -> {
+                //TODO
+                call.addArgument(new FieldAccessExpr(new NameExpr(tp.toString()), "class"));
+            });
+        } else {
+            call = new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
+        }
+
+        classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new AssignExpr().setTarget(field).setValue(call));
     }
 
     public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
-        beanDefinition.getDependsOn().forEach(on -> generateFactoryFieldDeclaration(classBuilder, on));
+        if (classBuilder.getConstructorDeclaration() == null) {
+            classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
+        }
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
+            iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(classBuilder, fieldPoint);
+        });
     }
 
-    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        beanDefinition.generateFactoryFieldDeclaration(classBuilder, beanDefinition);
+    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName("org.treblereel.gwt.crysknife.client.Instance");
+        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
+
+        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
@@ -156,38 +183,18 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     public void generateFactoryConstructorDepsBuilder(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.BeanManagerImpl");
         classBuilder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.Instance");
-
-        beanDefinition.getDependsOn().forEach(on -> {
-            on.addFactoryFieldInitialization(classBuilder, on);
-        });
-    }
-
-    public void generateFactoryMethods(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-
+        addFactoryFieldInitialization(classBuilder, beanDefinition);
     }
 
     public String getFactoryVariableName() {
         return "BeanManagerImpl";
     }
 
-    public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName("org.treblereel.gwt.crysknife.client.Instance");
-        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
-
-        Parameter param = new Parameter();
-        param.setName(varName);
-        param.setType(type);
-
-        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-    }
-
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
 
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType beanManager = new ClassOrInterfaceType();
-        beanManager.setName(beanDefinition.getFactoryVariableName());
+        beanManager.setName(getFactoryVariableName());
 
         MethodCallExpr callForBeanManagerImpl = new MethodCallExpr(beanManager.getNameAsExpression(), "get");
         MethodCallExpr callForProducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
@@ -205,7 +212,30 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
                                         .setName(definition.getClassName()));
             return new AssignExpr().setTarget(instance).setValue(newInstance);
         } else {
-            return definition.getConstructorInjectionPoint().generate();
+            return generateInstanceConstructorInjectionPoint(classBuilder, definition.getConstructorInjectionPoint());
         }
+    }
+
+    protected Expression generateInstanceConstructorInjectionPoint(ClassBuilder classBuilder, ConstructorPoint point) {
+        classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
+
+        FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
+        ObjectCreationExpr newInstance = new ObjectCreationExpr();
+        newInstance.setType(new ClassOrInterfaceType()
+                                    .setName(point.getName()));
+
+        for (FieldPoint argument : point.getArguments()) {
+            newInstance.addArgument(iocContext.getBeans().get(argument.getType()).generateBeanCall(classBuilder, argument));
+        }
+        return new AssignExpr().setTarget(instance).setValue(newInstance);
+    }
+
+    @Override
+    public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        generateFactoryFieldDeclaration(clazz, fieldPoint, beanDefinition);
+        generateInstanceGetMethodInitializer(clazz, fieldPoint, beanDefinition);
+        generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
+
+        return new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
     }
 }

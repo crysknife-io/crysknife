@@ -14,6 +14,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -21,6 +22,7 @@ import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -39,8 +41,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder clazz, Definition definition) {
-        super.generate(clazz, definition);
+    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+        super.generateBeanFactory(clazz, definition);
     }
 
     @Override
@@ -55,6 +57,15 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
         AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance")).setValue(new NameExpr("application"));
         classBuilder.getConstructorDeclaration().getBody().addAndGetStatement(assign);
+    }
+
+    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName("org.treblereel.gwt.crysknife.client.Instance");
+        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
+
+        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     @Override

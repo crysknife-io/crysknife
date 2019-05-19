@@ -23,8 +23,7 @@ public class PostConstructGenerator extends IOCGenerator {
         iocContext.register(PostConstruct.class, WiringElementType.METHOD_DECORATOR, this);
     }
 
-    @Override
-    public void generate(ClassBuilder builder, Definition definition) {
+    public void generateBeanFactory(ClassBuilder builder, Definition definition) {
         if (definition instanceof ExecutableDefinition) {
             ExecutableDefinition postConstract = (ExecutableDefinition) definition;
             FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");

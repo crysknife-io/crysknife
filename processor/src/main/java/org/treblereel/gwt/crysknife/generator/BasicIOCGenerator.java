@@ -17,8 +17,4 @@ public class BasicIOCGenerator extends DependentGenerator {
         this.iocContext = iocContext;
     }
 
-    @Override
-    public void generate(ClassBuilder clazz, Definition beanDefinition) {
-        super.generate(clazz, beanDefinition);
-    }
 }
