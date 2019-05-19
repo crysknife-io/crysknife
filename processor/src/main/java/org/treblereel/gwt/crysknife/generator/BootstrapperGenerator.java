@@ -1,11 +1,8 @@
 package org.treblereel.gwt.crysknife.generator;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import javax.inject.Provider;
-import javax.inject.Singleton;
-import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -22,7 +19,6 @@ import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
-import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -52,11 +48,14 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         arg.setName("application");
         arg.setType(beanDefinition.getType().getSimpleName().toString());
 
-        classBuilder.getConstructorDeclaration().getParameters().add(arg);
-        beanDefinition.getDependsOn().forEach(on -> generateFactoryFieldDeclaration(classBuilder, on));
+        classBuilder.addParametersToConstructor(arg);
+
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
+            iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(classBuilder, fieldPoint);
+        });
 
         AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance")).setValue(new NameExpr("application"));
-        classBuilder.getConstructorDeclaration().getBody().addAndGetStatement(assign);
+        classBuilder.addStatementToConstructor(assign);
     }
 
     protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
@@ -65,7 +64,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         type.setName("org.treblereel.gwt.crysknife.client.Instance");
         type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
 
-        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
+        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     @Override
@@ -76,13 +75,12 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
         clazz.setClassName(beanDefinition.getType().getSimpleName().toString() + BOOTSTRAP_EXTENSION);
 
-        clazz.getClassDeclaration().addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+        clazz.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
     }
 
     @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodDeclaration getMethodDeclaration = classBuilder.getClassDeclaration()
-                .addMethod("initialize");
+        MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
     }
 

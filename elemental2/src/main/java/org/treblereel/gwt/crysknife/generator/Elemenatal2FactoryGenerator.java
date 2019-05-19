@@ -165,10 +165,9 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
                                                "            return (" + beanDefinition.getType().getSimpleName() + ")DomGlobal.document.createElement(" + getTagFromType(beanDefinition) + ");" +
                                                "        }" +
                                                "    })"));
-        classBuilder.getConstructorDeclaration().getBody().addStatement(assign);
+        classBuilder.addStatementToConstructor(assign);
 
         return new NameExpr("IMPLEMENT ME " + this.getClass().getSimpleName());
-
     }
 
     private String getTagFromType(BeanDefinition beanDefinition) {
@@ -192,5 +191,4 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
 
         //return new NameExpr("IMPLEMENT ME " + clazz.getSimpleName());
     }
-
 }

@@ -63,7 +63,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
 
         ClassOrInterfaceType factory = new ClassOrInterfaceType();
         factory.setName("AbstractEventFactory");
-        clazz.getClassDeclaration().getExtendedTypes().add(factory);
+        clazz.getExtendedTypes().add(factory);
     }
 
     //@Override
@@ -71,7 +71,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType type = new ClassOrInterfaceType();
         type.setName("javax.enterprise.event.Event_Factory");
-        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
+        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     //@Override
@@ -82,12 +82,12 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         ThisExpr clazz = new ThisExpr();
         FieldAccessExpr field = new FieldAccessExpr(clazz, varName);
         AssignExpr assign = new AssignExpr().setTarget(field).setValue(callForBeanManagerImpl);
-        classBuilder.getConstructorDeclaration().getBody().addStatement(assign);
+        classBuilder.addStatementToConstructor(assign);
     }
 
     @Override
     public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodDeclaration getMethodDeclaration = classBuilder.getClassDeclaration()
+        MethodDeclaration getMethodDeclaration = classBuilder
                 .addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         getMethodDeclaration.setType("Event_Factory");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
@@ -101,7 +101,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance)));
         body.addAndGetStatement(ifStmt);
         body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
-        classBuilder.getClassDeclaration().addField("javax.enterprise.event.Event_Factory", "instance", Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+        classBuilder.addField("javax.enterprise.event.Event_Factory", "instance", Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
     }
 }
 

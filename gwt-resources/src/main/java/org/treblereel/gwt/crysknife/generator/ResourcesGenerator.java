@@ -8,11 +8,9 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
-import elemental2.dom.DomGlobal;
 import org.gwtproject.resources.client.Resource;
 import org.gwtproject.resources.ext.ResourceGeneratorUtil;
 import org.treblereel.gwt.crysknife.annotation.Generator;
@@ -21,6 +19,7 @@ import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -37,11 +36,11 @@ public class ResourcesGenerator extends BeanIOCGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder classBuilder, Definition definition) {
+    public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
 
     }
 
-    @Override
+    //@Override
     public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType type = new ClassOrInterfaceType();
@@ -52,18 +51,18 @@ public class ResourcesGenerator extends BeanIOCGenerator {
         param.setName(varName);
         param.setType(type);
 
-        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
+        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
-    @Override
+    //@Override
     public String getFactoryVariableName() {
         return "";
     }
 
-    @Override
+    //@Override
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
-        String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType())+"."+theName;
+        String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
 
         classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
         classBuilder.getClassCompilationUnit().addImport(Provider.class);
@@ -80,9 +79,14 @@ public class ResourcesGenerator extends BeanIOCGenerator {
                                                + ">() {" +
                                                "        @Override" +
                                                "        public " + beanDefinition.getType().getSimpleName() + " get() {" +
-                                               "            return new " +theName + "();" +
+                                               "            return new " + theName + "();" +
                                                "        }" +
                                                "    })"));
-        classBuilder.getConstructorDeclaration().getBody().addStatement(assign);
+        classBuilder.addStatementToConstructor(assign);
+    }
+
+    @Override
+    public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        return new NameExpr("Call me");
     }
 }

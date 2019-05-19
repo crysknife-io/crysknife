@@ -30,7 +30,7 @@ public class DependentGenerator extends ScopedBeanGenerator {
     @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder builder, BeanDefinition beanDefinition) {
         super.generateInstanceGetMethodBuilder(builder, beanDefinition);
-        builder.getClassDeclaration().addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+        builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
 
         builder.getGetMethodDeclaration().getBody()
                 .get()

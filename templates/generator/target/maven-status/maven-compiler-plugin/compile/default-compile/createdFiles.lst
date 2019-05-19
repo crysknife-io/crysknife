@@ -1,0 +1,14 @@
+org/jboss/gwt/elemento/processor/context/DataElementInfo.class
+org/jboss/gwt/elemento/processor/MissingTypeException.class
+org/jboss/gwt/elemento/processor/TemplateSelector.class
+org/jboss/gwt/elemento/processor/context/DataElementInfo$Kind.class
+org/jboss/gwt/elemento/processor/context/TemplateContext.class
+org/jboss/gwt/elemento/processor/context/AbstractPropertyInfo.class
+org/jboss/gwt/elemento/processor/TypeSimplifier.class
+org/treblereel/gwt/crysknife/generator/TemplatedGenerator.class
+org/jboss/gwt/elemento/processor/context/RootElementInfo.class
+org/treblereel/gwt/crysknife/generator/TemplatedDefinition.class
+org/jboss/gwt/elemento/processor/AbortProcessingException.class
+org/jboss/gwt/elemento/processor/context/PostConstructInfo.class
+org/jboss/gwt/elemento/processor/ProcessingException.class
+org/jboss/gwt/elemento/processor/ExpressionParser.class

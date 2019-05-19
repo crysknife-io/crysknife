@@ -21,8 +21,6 @@ import javax.lang.model.util.Elements;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
-import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -70,6 +68,14 @@ public class BeanDefinition extends Definition {
         }
     }
 
+    public void generateDecorators(ClassBuilder builder) {
+        executableDefinitions.forEach((gen, defs) -> {
+            defs.forEach(def -> {
+                gen.generateBeanFactory(builder, def);
+            });
+        });
+    }
+
     public void setGenerator(IOCGenerator iocGenerator) {
         if (iocGenerator == null) {
             this.generator = Optional.empty();
@@ -80,11 +86,11 @@ public class BeanDefinition extends Definition {
 
     public Expression generateBeanCall(ClassBuilder builder, FieldPoint fieldPoint) {
         Optional<Expression> result;
-        if(generator.isPresent()) {
+        if (generator.isPresent()) {
             IOCGenerator iocGenerator = generator.get();
-            return ((BeanIOCGenerator)iocGenerator).generateBeanCall(builder, fieldPoint, this);
+            return ((BeanIOCGenerator) iocGenerator).generateBeanCall(builder, fieldPoint, this);
         }
-        return null; //
+        return null;
     }
 
     @Override

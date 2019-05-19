@@ -43,6 +43,6 @@ public class SingletonGenerator extends ScopedBeanGenerator {
         ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(generateInstanceInitializer(builder, beanDefinition)));
         body.addAndGetStatement(ifStmt);
 
-        builder.getClassDeclaration().addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+        builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
     }
 }

@@ -38,8 +38,13 @@ public abstract class Definition {
     }
 
     public void generateDecorators(ClassBuilder builder) {
-        //decorators.keySet().stream().sorted(iOCGeneratorcomparator)
-        //        .forEach(decorator -> ((BeanIOCGenerator) decorator).generateBeanCall(builder, this));
+        System.out.println("generateDecorators");
+
+        decorators.keySet().stream().sorted(iOCGeneratorcomparator)
+                .forEach(decorator -> {
+                    System.out.println("DECCC " + decorator.getClass().getSimpleName());
+                    (decorator).generateBeanFactory(builder, this);
+                });
     }
 
     public <T extends Definition> T addDecorator(IOCGenerator generator, Definition definition) {

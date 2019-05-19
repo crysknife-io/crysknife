@@ -1,0 +1,5 @@
+org/treblereel/gwt/crysknife/annotation/DataField.class
+org/treblereel/gwt/crysknife/annotation/Templated.class
+org/jboss/gwt/elemento/core/IsElement.class
+org/jboss/gwt/elemento/template/TemplateUtil.class
+org/jboss/gwt/elemento/template/TemplateUtil$SelectorFunction.class
