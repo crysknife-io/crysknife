@@ -38,11 +38,8 @@ public abstract class Definition {
     }
 
     public void generateDecorators(ClassBuilder builder) {
-        System.out.println("generateDecorators");
-
         decorators.keySet().stream().sorted(iOCGeneratorcomparator)
                 .forEach(decorator -> {
-                    System.out.println("DECCC " + decorator.getClass().getSimpleName());
                     (decorator).generateBeanFactory(builder, this);
                 });
     }

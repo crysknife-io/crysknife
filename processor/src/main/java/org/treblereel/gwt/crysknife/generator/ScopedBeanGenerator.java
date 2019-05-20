@@ -48,8 +48,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
             generateInstanceGetMethodBuilder(clazz, beanDefinition);
 
-            generatePostInstanceConstructorInitializer(clazz, beanDefinition);
-
             generateDependantFieldDeclaration(clazz, beanDefinition);
 
             generateInstanceGetMethodDecorators(clazz, beanDefinition);
@@ -59,6 +57,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             //generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
             generateFactoryCreateMethod(clazz, beanDefinition);
             //generateFactoryMethods(clazz, beanDefinition);
+
+
 
             write(clazz,
                   beanDefinition,
@@ -103,27 +103,9 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         clazz.getImplementedTypes().add(factory);
     }
 
-    public void generatePostInstanceConstructorInitializer(ClassBuilder clazz, BeanDefinition beanDefinition) {
-        beanDefinition.getExecutableDefinitions().keySet().stream().sorted(Definition.iOCGeneratorcomparator).forEach(k -> {
-            beanDefinition.getExecutableDefinitions().get(k).forEach(executable -> {
-                //executable.generate(clazz); //TODO
-                //k.generate(clazz, executable);
-            });
-        });
-    }
-
     public void generateInstanceGetMethodReturn(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.getGetMethodDeclaration().getBody()
-                .get().addAndGetStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "instance")));
-    }
-
-    public void generateInstanceGetMethodInitializerOld(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        //beanDefinition.getFieldInjectionPoints().forEach(injection -> {
-        //classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(injection.generate());
-        //});
-
-        //classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(injection.generate());
-
+                .get().addStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "instance")));
     }
 
     public void generateInstanceGetMethodInitializer(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
@@ -142,13 +124,20 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             call = new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
         }
 
-        classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new AssignExpr().setTarget(field).setValue(call));
+        classBuilder.getGetMethodDeclaration().getBody().get().addStatement(new AssignExpr().setTarget(field).setValue(call));
     }
 
     public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
         beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
-            iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(classBuilder, fieldPoint);
+            FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new FieldAccessExpr(
+                    new ThisExpr(), "instance"), fieldPoint.getField().getSimpleName().toString());
+
+            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+                    new AssignExpr().setTarget(fieldAccessExpr)
+                            .setValue(iocContext.getBeans()
+                                              .get(fieldPoint.getType())
+                                              .generateBeanCall(classBuilder, fieldPoint)));
         });
     }
 
@@ -202,6 +191,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     }
 
     protected Expression generateInstanceInitializer(ClassBuilder classBuilder, BeanDefinition definition) {
+
         if (definition.getConstructorInjectionPoint() == null) {
             instance = new FieldAccessExpr(new ThisExpr(), "instance");
             ObjectCreationExpr newInstance = new ObjectCreationExpr();
@@ -230,7 +220,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     @Override
     public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
         generateFactoryFieldDeclaration(clazz, fieldPoint, beanDefinition);
-        generateInstanceGetMethodInitializer(clazz, fieldPoint, beanDefinition);
+        //generateInstanceGetMethodInitializer(clazz, fieldPoint, beanDefinition);
         generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
 
         return new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");

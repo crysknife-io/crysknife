@@ -24,8 +24,6 @@ public class MethodDecoratorTypeProcessor extends TypeProcessor {
     @Override
     public void process(IOCContext context, Element element) {
         if (element.getKind().equals(ElementKind.METHOD)) {
-            System.out.println("add decorator " + element.getSimpleName());
-
             ExecutableElement method = MoreElements.asExecutable(element);
             TypeElement enclosingElement = MoreElements.asType(method.getEnclosingElement());
             BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(enclosingElement);

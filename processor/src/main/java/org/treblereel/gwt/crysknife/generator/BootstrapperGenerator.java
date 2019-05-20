@@ -80,8 +80,20 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        classBuilder.addConstructorDeclaration(Modifier.Keyword.PACKAGE_PRIVATE);
+
         MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
+
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
+            FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new FieldAccessExpr(
+                    new ThisExpr(), "instance"), fieldPoint.getField().getSimpleName().toString());
+            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+                    new AssignExpr().setTarget(fieldAccessExpr)
+                            .setValue(iocContext.getBeans()
+                                              .get(fieldPoint.getType())
+                                              .generateBeanCall(classBuilder, fieldPoint)));
+        });
     }
 
     @Override

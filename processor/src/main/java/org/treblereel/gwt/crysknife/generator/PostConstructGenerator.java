@@ -24,7 +24,6 @@ public class PostConstructGenerator extends IOCGenerator {
     }
 
     public void generateBeanFactory(ClassBuilder builder, Definition definition) {
-        System.out.println("DECOR " + definition.toString());
         if (definition instanceof ExecutableDefinition) {
             ExecutableDefinition postConstract = (ExecutableDefinition) definition;
             FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");

@@ -10,13 +10,17 @@ import javax.inject.Singleton;
 @Singleton
 public class QualifierConstructorInjection {
 
-    public QualifierBeanOne qualifierBeanOne;
+    public QualifierBean qualifierBeanOne;
 
-    public QualifierBeanTwo qualifierBeanTwo;
+    public QualifierBean qualifierBeanTwo;
 
     @Inject
-    public QualifierConstructorInjection(@QualifierTwo QualifierBeanOne qualifierBeanOne,
-                                         @QualifierOne QualifierBeanTwo qualifierBeanTwo) {
+    public QualifierBean qualifier;
+
+
+    @Inject
+    public QualifierConstructorInjection(@QualifierTwo QualifierBean qualifierBeanTwo,
+                                         @QualifierOne QualifierBean qualifierBeanOne) {
         this.qualifierBeanOne = qualifierBeanOne;
         this.qualifierBeanTwo = qualifierBeanTwo;
     }

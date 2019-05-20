@@ -12,11 +12,11 @@ public class QualifierFieldInjection {
 
     @Inject
     @QualifierOne
-    public QualifierBeanOne qualifierBeanOne;
+    public QualifierBean qualifierBeanOne;
 
     @Inject
     @QualifierTwo
-    public QualifierBeanTwo qualifierBeanTwo;
+    public QualifierBean qualifierBeanTwo;
 
     @Inject
     public QualifierBean qualifierBeanDefault;

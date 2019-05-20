@@ -3,11 +3,8 @@ package org.treblereel.gwt.crysknife.generator;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import elemental2.dom.DomGlobal;
@@ -21,6 +18,7 @@ import elemental2.dom.HTMLDataListElement;
 import elemental2.dom.HTMLDetailsElement;
 import elemental2.dom.HTMLDialogElement;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLEmbedElement;
 import elemental2.dom.HTMLFieldSetElement;
 import elemental2.dom.HTMLFormElement;
@@ -64,9 +62,6 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
-import org.treblereel.gwt.crysknife.util.Utils;
-
-import static java.util.Arrays.asList;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -94,7 +89,8 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
         HTML_ELEMENTS.put(HTMLEmbedElement.class, "embed");
         HTML_ELEMENTS.put(HTMLFieldSetElement.class, "fieldset");
         HTML_ELEMENTS.put(HTMLFormElement.class, "form");
-        HTML_ELEMENTS.putAll(HTMLHeadingElement.class, asList("h1", "h2", "h3", "h4", "h5", "h6"));
+        HTML_ELEMENTS.put(HTMLHeadingElement.class, "named");
+        HTML_ELEMENTS.put(HTMLElement.class, "named");
         HTML_ELEMENTS.put(HTMLHRElement.class, "hr");
         HTML_ELEMENTS.put(HTMLImageElement.class, "img");
         HTML_ELEMENTS.put(HTMLInputElement.class, "input");
@@ -131,13 +127,11 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
 
     @Override
     public void register(IOCContext iocContext) {
-
+        this.iocContext = iocContext;
         HTML_ELEMENTS.keySet().forEach(clazz -> {
             iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
             iocContext.getBlacklist().add(clazz.getCanonicalName());
         });
-
-        this.iocContext = iocContext;
     }
 
     @Override
@@ -152,27 +146,15 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
         classBuilder.getClassCompilationUnit().addImport(Provider.class);
         classBuilder.getClassCompilationUnit().addImport(beanDefinition.getType().getQualifiedName().toString());
 
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        FieldAccessExpr field = new FieldAccessExpr(new ThisExpr(), varName);
-
-        AssignExpr assign = new AssignExpr()
-                .setTarget(field)
-                .setValue(new NameExpr("new InstanceImpl(new Provider<"
-                                               + beanDefinition.getType().getSimpleName()
-                                               + ">() {" +
-                                               "        @Override" +
-                                               "        public " + beanDefinition.getType().getSimpleName() + " get() {" +
-                                               "            return (" + beanDefinition.getType().getSimpleName() + ")DomGlobal.document.createElement(" + getTagFromType(beanDefinition) + ");" +
-                                               "        }" +
-                                               "    })"));
-        classBuilder.addStatementToConstructor(assign);
-
-        return new NameExpr("IMPLEMENT ME " + this.getClass().getSimpleName());
+        return new NameExpr("(" + beanDefinition.getType().getSimpleName() + ")DomGlobal.document.createElement(" + getTagFromType(fieldPoint, beanDefinition) + ")");
     }
 
-    private String getTagFromType(BeanDefinition beanDefinition) {
+    private String getTagFromType(FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        if(fieldPoint.isNamed()) {
+            return "\"" + fieldPoint.getNamed() + "\"";
+        }
 
-        Class clazz = null;
+        Class clazz;
         try {
             clazz = Class.forName(beanDefinition.getType().getQualifiedName().toString());
         } catch (ClassNotFoundException e) {
@@ -184,11 +166,6 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
             throw new Error("Unable to process " + beanDefinition.getType().getQualifiedName().toString());
         }
 
-        if (HTML_ELEMENTS.get(clazz).size() > 1) {
-            //TODO @Named
-        }
         return "\"" + HTML_ELEMENTS.get(clazz).stream().findFirst().get() + "\"";
-
-        //return new NameExpr("IMPLEMENT ME " + clazz.getSimpleName());
     }
 }

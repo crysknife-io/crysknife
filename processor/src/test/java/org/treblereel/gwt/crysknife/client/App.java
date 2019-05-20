@@ -1,8 +1,8 @@
 package org.treblereel.gwt.crysknife.client;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import elemental2.dom.HTMLDivElement;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean;
@@ -15,20 +15,16 @@ import org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean;
 @ComponentScan("org.treblereel.client")
 public class App {
 
-    //@Inject
+    @Inject
     SingletonBean singletonBean;
 
-    //@Inject
+    @Inject
     QualifierConstructorInjection qualifierConstructorInjection;
 
-    ///@Inject
+    @Inject
     QualifierFieldInjection qualifierFieldInjection;
 
-    //@Inject
+    @Inject
     BeanManager beanManager;
 
-    @PostConstruct
-    public void init() {
-
-    }
 }

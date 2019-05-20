@@ -86,7 +86,13 @@ public class ResourcesGenerator extends BeanIOCGenerator {
     }
 
     @Override
-    public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
-        return new NameExpr("Call me");
+    public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
+        String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
+        classBuilder.getClassCompilationUnit().addImport(beanDefinition.getType().getQualifiedName().toString());
+        classBuilder.getClassCompilationUnit().addImport(qualifiedImplName);
+
+
+        return new NameExpr("new " + theName + "();");
     }
 }

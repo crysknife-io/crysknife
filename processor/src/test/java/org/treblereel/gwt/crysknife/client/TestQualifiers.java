@@ -9,6 +9,7 @@ import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBean;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanDefault;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanOne;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanTwo;
+import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierOne;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierTwo;
 import org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean;
@@ -23,17 +24,6 @@ public class TestQualifiers {
 
     @Before
     public void setup() {
-
-        //org.treblereel.gwt.crysknife.client.Instance<SingletonBean> sb =  BeanManagerImpl.get().lookupBean(org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean.class);
-        org.treblereel.gwt.crysknife.client.Instance<SingletonBean> sb = null;
-                //=  BeanManagerImpl.get().lookupBean(org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean.class);
-
-
-        Assert.assertNotNull(BeanManager_Factory.create().get());
-        Assert.assertNotNull(BeanManager_Factory.create().get().lookupBean(SingletonBean.class));
-        Assert.assertNull(BeanManagerImpl.get().lookupBean(SingletonBean.class));
-        Assert.assertNull(sb.get());
-
         new AppBootstrap(app).initialize();
     }
 
@@ -45,6 +35,7 @@ public class TestQualifiers {
 
     @Test
     public void testQualifierFieldInjection() {
+        Assert.assertEquals(QualifierFieldInjection.class, app.qualifierFieldInjection.getClass());
         Assert.assertEquals(QualifierBeanOne.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanOne.say());
         Assert.assertEquals(QualifierBeanTwo.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanTwo.say());
         Assert.assertEquals(QualifierBeanDefault.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanDefault.say());

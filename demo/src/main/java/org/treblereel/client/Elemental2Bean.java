@@ -1,11 +1,13 @@
 package org.treblereel.client;
 
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLButtonElement;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
+
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLHeadingElement;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -16,6 +18,10 @@ public class Elemental2Bean {
 
     @Inject
     HTMLButtonElement buttonElement;
+
+    @Inject
+    @Named("h5")
+    HTMLHeadingElement headingElement;
 
     @PostConstruct
     public void init() {

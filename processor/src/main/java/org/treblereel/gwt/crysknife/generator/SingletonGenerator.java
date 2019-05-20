@@ -29,11 +29,6 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
-        super.generateBeanFactory(clazz, definition);
-    }
-
-    @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder builder, BeanDefinition beanDefinition) {
         super.generateInstanceGetMethodBuilder(builder, beanDefinition);
         BlockStmt body = builder.getGetMethodDeclaration().getBody().get();

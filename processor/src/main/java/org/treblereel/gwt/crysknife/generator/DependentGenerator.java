@@ -23,11 +23,6 @@ public class DependentGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
-        super.generateBeanFactory(clazz, definition);
-    }
-
-    @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder builder, BeanDefinition beanDefinition) {
         super.generateInstanceGetMethodBuilder(builder, beanDefinition);
         builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);

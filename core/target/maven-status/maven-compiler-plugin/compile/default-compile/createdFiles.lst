@@ -1,9 +1,0 @@
-javax/enterprise/event/Event.class
-org/treblereel/gwt/crysknife/client/internal/AbstractEventFactory$EventHolder.class
-org/treblereel/gwt/crysknife/client/internal/AbstractEventFactory.class
-org/treblereel/gwt/crysknife/client/internal/InstanceImpl.class
-org/treblereel/gwt/crysknife/client/internal/AbstractEventHandler.class
-org/treblereel/gwt/crysknife/client/internal/AbstractBeanManager.class
-org/treblereel/gwt/crysknife/client/BeanManager.class
-org/treblereel/gwt/crysknife/client/internal/Factory.class
-org/treblereel/gwt/crysknife/client/Instance.class
