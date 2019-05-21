@@ -1,6 +1,7 @@
 package org.treblereel.gwt.crysknife.client;
 
 import javax.enterprise.inject.Default;
+import javax.inject.Inject;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,7 +13,6 @@ import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanTwo
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierOne;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierTwo;
-import org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -47,5 +47,14 @@ public class TestQualifiers {
         Assert.assertEquals(QualifierBeanDefault.class, app.beanManager.lookupBean(QualifierBean.class, Default.class).get().getClass());
         Assert.assertEquals(QualifierBeanOne.class, app.beanManager.lookupBean(QualifierBean.class, QualifierOne.class).get().getClass());
         Assert.assertEquals(QualifierBeanTwo.class, app.beanManager.lookupBean(QualifierBean.class, QualifierTwo.class).get().getClass());
+    }
+
+    @Inject
+    public void testApplicationScopedConstructorInjection() {
+        Assert.assertNotNull(app.applicationScopedConstructorInjection);
+        Assert.assertNotNull(app.applicationScopedConstructorInjection.bean);
+        Assert.assertNotNull(app.applicationScopedConstructorInjection.bean2);
+        Assert.assertEquals(app.applicationScopedConstructorInjection.bean, app.applicationScopedConstructorInjection.bean2);
+        Assert.assertEquals(app.applicationScopedConstructorInjection.bean.say(), app.applicationScopedConstructorInjection.bean2.say());
     }
 }
