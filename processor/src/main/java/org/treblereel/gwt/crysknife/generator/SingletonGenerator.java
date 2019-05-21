@@ -1,5 +1,6 @@
 package org.treblereel.gwt.crysknife.generator;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
 
 import com.github.javaparser.ast.Modifier;
@@ -13,7 +14,6 @@ import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
-import org.treblereel.gwt.crysknife.generator.definition.Definition;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -25,6 +25,7 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     @Override
     public void register(IOCContext iocContext) {
         iocContext.register(Singleton.class, WiringElementType.DEPENDENT_BEAN, this);
+        iocContext.register(ApplicationScoped.class, WiringElementType.DEPENDENT_BEAN, this);
         this.iocContext = iocContext;
     }
 
