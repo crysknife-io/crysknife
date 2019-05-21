@@ -9,8 +9,10 @@ import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBean;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanDefault;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanOne;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanTwo;
+import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierOne;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierTwo;
+import org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -33,6 +35,7 @@ public class TestQualifiers {
 
     @Test
     public void testQualifierFieldInjection() {
+        Assert.assertEquals(QualifierFieldInjection.class, app.qualifierFieldInjection.getClass());
         Assert.assertEquals(QualifierBeanOne.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanOne.say());
         Assert.assertEquals(QualifierBeanTwo.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanTwo.say());
         Assert.assertEquals(QualifierBeanDefault.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanDefault.say());

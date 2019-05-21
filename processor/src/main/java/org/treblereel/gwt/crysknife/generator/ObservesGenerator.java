@@ -35,7 +35,7 @@ public class ObservesGenerator extends IOCGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder classBuilder, Definition definition) {
+    public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
         if (definition instanceof ExecutableDefinition) {
             ExecutableDefinition methodDefinition = (ExecutableDefinition) definition;
 

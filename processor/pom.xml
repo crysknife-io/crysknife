@@ -81,6 +81,12 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.elemental2</groupId>
+      <artifactId>elemental2-dom</artifactId>
+      <version>RELEASE</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

@@ -29,11 +29,6 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder builder, Definition definition) {
-        super.generate(builder, definition);
-    }
-
-    @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder builder, BeanDefinition beanDefinition) {
         super.generateInstanceGetMethodBuilder(builder, beanDefinition);
         BlockStmt body = builder.getGetMethodDeclaration().getBody().get();
@@ -43,6 +38,6 @@ public class SingletonGenerator extends ScopedBeanGenerator {
         ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(generateInstanceInitializer(builder, beanDefinition)));
         body.addAndGetStatement(ifStmt);
 
-        builder.getClassDeclaration().addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+        builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
     }
 }

@@ -32,5 +32,4 @@ public abstract class Point {
         return name;
     }
 
-    public abstract Expression generate();
 }

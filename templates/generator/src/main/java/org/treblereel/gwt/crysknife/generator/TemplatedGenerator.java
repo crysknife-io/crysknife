@@ -209,7 +209,7 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder builder, Definition definition) {
+    public void generateBeanFactory(ClassBuilder builder, Definition definition) {
         if (definition instanceof BeanDefinition) {
             BeanDefinition beanDefinition = (BeanDefinition) definition;
             validateType(beanDefinition.getType(), beanDefinition.getType().getAnnotation(Templated.class));

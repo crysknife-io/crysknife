@@ -1,11 +1,8 @@
 package org.treblereel.gwt.crysknife.generator;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import javax.inject.Provider;
-import javax.inject.Singleton;
-import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -14,6 +11,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -39,8 +37,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder clazz, Definition definition) {
-        super.generate(clazz, definition);
+    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+        super.generateBeanFactory(clazz, definition);
     }
 
     @Override
@@ -50,11 +48,23 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         arg.setName("application");
         arg.setType(beanDefinition.getType().getSimpleName().toString());
 
-        classBuilder.getConstructorDeclaration().getParameters().add(arg);
-        beanDefinition.getDependsOn().forEach(on -> generateFactoryFieldDeclaration(classBuilder, on));
+        classBuilder.addParametersToConstructor(arg);
+
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
+            iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(classBuilder, fieldPoint);
+        });
 
         AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance")).setValue(new NameExpr("application"));
-        classBuilder.getConstructorDeclaration().getBody().addAndGetStatement(assign);
+        classBuilder.addStatementToConstructor(assign);
+    }
+
+    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName("org.treblereel.gwt.crysknife.client.Instance");
+        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
+
+        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     @Override
@@ -65,14 +75,25 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
         clazz.setClassName(beanDefinition.getType().getSimpleName().toString() + BOOTSTRAP_EXTENSION);
 
-        clazz.getClassDeclaration().addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+        clazz.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
     }
 
     @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodDeclaration getMethodDeclaration = classBuilder.getClassDeclaration()
-                .addMethod("initialize");
+        classBuilder.addConstructorDeclaration(Modifier.Keyword.PACKAGE_PRIVATE);
+
+        MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
+
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
+            FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new FieldAccessExpr(
+                    new ThisExpr(), "instance"), fieldPoint.getField().getSimpleName().toString());
+            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+                    new AssignExpr().setTarget(fieldAccessExpr)
+                            .setValue(iocContext.getBeans()
+                                              .get(fieldPoint.getType())
+                                              .generateBeanCall(classBuilder, fieldPoint)));
+        });
     }
 
     @Override

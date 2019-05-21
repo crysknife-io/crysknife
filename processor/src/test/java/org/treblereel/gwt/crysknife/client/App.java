@@ -2,6 +2,7 @@ package org.treblereel.gwt.crysknife.client;
 
 import javax.inject.Inject;
 
+import elemental2.dom.HTMLDivElement;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.gwt.crysknife.client.injection.singleton.SingletonBean;
@@ -25,4 +26,5 @@ public class App {
 
     @Inject
     BeanManager beanManager;
+
 }

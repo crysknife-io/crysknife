@@ -1,7 +1,6 @@
 package org.treblereel.gwt.crysknife.generator;
 
 import javax.enterprise.inject.Produces;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
@@ -15,7 +14,6 @@ import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
-import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.definition.ProducerDefinition;
 import org.treblereel.gwt.crysknife.util.Utils;
 
@@ -42,11 +40,10 @@ public class ProducesGenerator extends ScopedBeanGenerator {
             newInstance.setType(new ClassOrInterfaceType()
                                         .setName(Utils.getQualifiedName(instance)));
 
-            builder.getClassDeclaration()
-                    .addFieldWithInitializer(Utils.getQualifiedName(instance),
-                                             "producer",
-                                             newInstance,
-                                             Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
+            builder.addFieldWithInitializer(Utils.getQualifiedName(instance),
+                                            "producer",
+                                            newInstance,
+                                            Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
         }
     }
 
@@ -57,10 +54,5 @@ public class ProducesGenerator extends ScopedBeanGenerator {
             MethodCallExpr call = new MethodCallExpr(fieldAccess, ((ProducerDefinition) definition).getMethod().getSimpleName().toString());
             builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new ReturnStmt(call));
         }
-    }
-
-    @Override
-    public void generate(ClassBuilder builder, Definition definition) {
-        super.generate(builder, definition);
     }
 }

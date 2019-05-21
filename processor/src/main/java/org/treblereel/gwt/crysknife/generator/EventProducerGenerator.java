@@ -8,6 +8,7 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -18,11 +19,13 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
@@ -46,7 +49,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
     }
 
     @Override
-    public void generate(ClassBuilder clazz, Definition definition) {
+    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
         if (definition instanceof BeanDefinition) {
             BeanDefinition beanDefinition = (BeanDefinition) definition;
             initClassBuilder(clazz, beanDefinition);
@@ -63,18 +66,28 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
 
         ClassOrInterfaceType factory = new ClassOrInterfaceType();
         factory.setName("AbstractEventFactory");
-        clazz.getClassDeclaration().getExtendedTypes().add(factory);
+        clazz.getExtendedTypes().add(factory);
     }
 
-    @Override
+    //@Override
     public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType type = new ClassOrInterfaceType();
         type.setName("javax.enterprise.event.Event_Factory");
-        classBuilder.getClassDeclaration().addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
+        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     @Override
+    public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+        classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
+        MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
+
+        return new NameExpr("Event_Factory.get().get(" + MoreTypes.asDeclared(fieldPoint.getField()
+                                                                                      .asType())
+                .getTypeArguments().get(0) + ".class)");
+    }
+
+    //@Override
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
@@ -82,12 +95,12 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         ThisExpr clazz = new ThisExpr();
         FieldAccessExpr field = new FieldAccessExpr(clazz, varName);
         AssignExpr assign = new AssignExpr().setTarget(field).setValue(callForBeanManagerImpl);
-        classBuilder.getConstructorDeclaration().getBody().addStatement(assign);
+        classBuilder.addStatementToConstructor(assign);
     }
 
-    @Override
+    //@Override
     public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodDeclaration getMethodDeclaration = classBuilder.getClassDeclaration()
+        MethodDeclaration getMethodDeclaration = classBuilder
                 .addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
         getMethodDeclaration.setType("Event_Factory");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
@@ -101,7 +114,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance)));
         body.addAndGetStatement(ifStmt);
         body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
-        classBuilder.getClassDeclaration().addField("javax.enterprise.event.Event_Factory", "instance", Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
+        classBuilder.addField("javax.enterprise.event.Event_Factory", "instance", Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
     }
 }
 
