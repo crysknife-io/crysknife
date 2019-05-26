@@ -44,14 +44,6 @@ public class ComponentInjectionResolverScanner {
             }
         });
 
-/*        for (Map.Entry<TypeElement, BeanDefinition> entry : iocContext.getBeans().entrySet()) {
-            BeanDefinition bean = entry.getValue();
-            if (bean.getConstructorInjectionPoint() != null) {
-                bean.getConstructorInjectionPoint()
-                        .getArguments()
-                        .forEach(field -> processFieldInjectionPoint(field, bean));
-            }
-        }*/
         addUnmanagedBeans();
     }
 
@@ -106,67 +98,6 @@ public class ComponentInjectionResolverScanner {
             definition.getDependsOn().add(beanDefinition);
             field.setType(beanDefinition.getType());
         }
-
-
-/*        if (field.getType().getKind().isInterface() || field.isNamed()) {
-            TypeElement dependency = null;
-            if (field.isNamed()) {
-                String named = field.getNamed();
-                dependency = iocContext.getQualifiers().get(field.getType()).get(named).getType();
-            } else if (iocContext.getQualifiers().containsKey(field.getType())
-                    && iocContext.getQualifiers().get(field.getType()).containsKey(Default.class.getCanonicalName())) {
-                dependency = iocContext.getQualifiers().get(field.getType()).get(Default.class.getCanonicalName()).getType();
-            } else if (field.getType().getKind().isInterface()) {
-                TypeMirror beanType = field.getType().asType();
-                Types types = iocContext.getGenerationContext().getTypes();
-                Optional<TypeElement> result = iocContext.getBeans()
-                        .keySet()
-                        .stream()
-                        .filter(bean -> types.isSubtype(bean.asType(), beanType))
-                        .filter(elm -> elm.getKind().equals(ElementKind.CLASS))
-                        .findFirst();
-                if (result.isPresent()) {
-                    dependency = iocContext.getBeans().get(result.get()).getType();
-                } else {
-                    Optional<TypeElement> iface = iocContext.getBeans()
-                            .keySet()
-                            .stream()
-                            .filter(bean -> types.isSubtype(bean.asType(), beanType))
-                            .findFirst();
-                    dependency = iocContext.getBeans().get(iface.get()).getType();
-                }
-
-                //add as Default if not exist
-                if (!iocContext.getQualifiers().containsKey(field.getType())) {
-                    Optional<TypeElement> subType = iocContext.getBeans()
-                            .keySet()
-                            .stream()
-                            .filter(elm -> (!elm.equals(field.getType()) && types.isSubtype(elm.asType(), field.getType().asType()))).findFirst();
-
-                    if (subType.isPresent()) {
-                        Map<String, BeanDefinition> qualifiers = new HashMap<>();
-                        qualifiers.put(Default.class.getCanonicalName(), iocContext.getBeans().get(dependency));
-                        iocContext.getQualifiers().put(field.getType(), qualifiers);
-                    }
-                }
-            }
-            if (dependency == null) {
-                DeclaredType type = MoreTypes.asDeclared(field.getField().asType());
-                throw new Error("Unable find implementation of bean " + type + " from " + field.getField().getEnclosingElement());
-            }
-
-            if (field.isNamed()) {
-                BeanDefinition named = iocContext.getQualifiers().get(field.getType()).get(field.getNamed());
-                dependency = named.getType();
-                definition.getDependsOn().remove(iocContext.getBeans().get(field.getType()));
-                definition.getDependsOn().add(named);
-            } else {
-                field.setType(dependency);
-                definition.getDependsOn().add(iocContext.getBeans().get(dependency));
-            }
-            field.setType(dependency);
-        }*/
-
         if (!iocContext.getBeans().containsKey(field.getType())) {
             unmanaged.add(field.getType());
         }

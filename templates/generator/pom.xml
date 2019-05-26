@@ -66,9 +66,23 @@
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>elemental2-generator</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-api</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>org.gwtproject.dom</artifactId>
+          <groupId>gwt-dom</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>org.gwtproject.core</artifactId>
+          <groupId>gwt-core</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

@@ -105,7 +105,7 @@ public class BootstrapperGenerator {
         }
 
         private void initInitMethod() {
-            initializeMethodDeclaration = classDeclaration.addMethod("initialize", Modifier.Keyword.PACKAGE_PRIVATE);
+            initializeMethodDeclaration = classDeclaration.addMethod("initialize");
         }
 
         private void initClass() {
@@ -117,7 +117,7 @@ public class BootstrapperGenerator {
         }
 
         private void initConstructor() {
-            constructorDeclaration = classDeclaration.addConstructor(Modifier.Keyword.PACKAGE_PRIVATE);
+            constructorDeclaration = classDeclaration.addConstructor();
 
             Parameter param = new Parameter();
             param.setName("instance");

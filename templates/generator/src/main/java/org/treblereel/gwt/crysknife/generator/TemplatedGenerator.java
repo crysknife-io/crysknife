@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -32,11 +33,14 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -120,6 +124,7 @@ import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.util.Utils;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
@@ -196,6 +201,7 @@ public class TemplatedGenerator extends IOCGenerator {
     private RoundEnvironment roundEnvironment;
     private ProcessingEnvironment processingEnvironment;
     private Messager messager;
+    private BeanDefinition beanDefinition;
 
     @Override
     public void register(IOCContext iocContext) {
@@ -211,7 +217,7 @@ public class TemplatedGenerator extends IOCGenerator {
     @Override
     public void generateBeanFactory(ClassBuilder builder, Definition definition) {
         if (definition instanceof BeanDefinition) {
-            BeanDefinition beanDefinition = (BeanDefinition) definition;
+            beanDefinition = (BeanDefinition) definition;
             validateType(beanDefinition.getType(), beanDefinition.getType().getAnnotation(Templated.class));
             processType(builder, beanDefinition.getType(), beanDefinition.getType().getAnnotation(Templated.class));
         }
@@ -250,6 +256,22 @@ public class TemplatedGenerator extends IOCGenerator {
         }
     }
 
+    private String getStylesheet(TypeElement type, Templated templated) {
+        if (Strings.emptyToNull(templated.stylesheet()) == null) {
+            List<String> postfixes = Arrays.asList(".css", ".gss");
+            String path = type.getQualifiedName().toString().replaceAll("\\.", "/");
+            for (String postfix : postfixes) {
+                FileObject file = findTemplate(path + postfix, false);
+                if (new File(file.toUri()).exists()) {
+                    return type.getSimpleName() + "" + postfix;
+                }
+            }
+        } else {
+            return templated.stylesheet();
+        }
+        return null;
+    }
+
     private void processType(ClassBuilder builder, TypeElement type, Templated templated) {
         String isElementTypeParameter = getIsElementTypeParameter(type.getInterfaces());
         String subclass = TypeSimplifier.simpleNameOf(generatedClassName(type, "Templated_", ""));
@@ -264,6 +286,9 @@ public class TemplatedGenerator extends IOCGenerator {
         List<DataElementInfo> dataElements = processDataElements(type, templateSelector, root);
         context.setDataElements(dataElements);
 
+        // css/gss stylesheet
+        context.setStylesheet(getStylesheet(type, templated));
+
         // generate code
         code(builder, context);
         info("Generated templated implementation [%s] for [%s]", context.getSubclass(), context.getBase());
@@ -271,9 +296,41 @@ public class TemplatedGenerator extends IOCGenerator {
 
     private void code(ClassBuilder builder, TemplateContext templateContext) {
         addImports(builder);
+        setStylesheet(builder, templateContext);
         setAttributes(builder, templateContext);
         setInnerHTML(builder, templateContext);
         processDataFields(builder, templateContext);
+    }
+
+    private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
+        if (templateContext.getStylesheet() != null) {
+            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource");
+            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource.NotStrict");
+            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.Resource");
+            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.ClientBundle.Source");
+            builder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.templates.client.StyleInjector");
+            ClassOrInterfaceDeclaration inner = new ClassOrInterfaceDeclaration();
+            inner.setName("Stylesheet");
+            inner.setInterface(true);
+            inner.addAnnotation("Resource");
+
+            new JavaParser().parseBodyDeclaration("@Source(\"" + templateContext.getStylesheet() + "\") @NotStrict CssResource getStyle();").ifSuccessful(result -> inner.addMember(result));
+            builder.getClassDeclaration().addMember(inner);
+
+            String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";
+
+            //TODO Temporary workaround, till gwt-dom StyleInjector ll be fixed
+            builder.getGetMethodDeclaration()
+                    .getBody()
+                    .get().addStatement(new MethodCallExpr(new MethodCallExpr(new ClassOrInterfaceType()
+                                       .setName("StyleInjector")
+                                       .getNameAsExpression(), "fromString").addArgument(new MethodCallExpr(
+                    new MethodCallExpr(
+                            new ObjectCreationExpr()
+                                    .setType(theName),
+                            "getStyle"),
+                    "getText")),"inject"));
+        }
     }
 
     private void processDataFields(ClassBuilder builder, TemplateContext templateContext) {
@@ -352,7 +409,6 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     // ------------------------------------------------------ @DataElement fields and methods
-
     private List<DataElementInfo> processDataElements(TypeElement type, TemplateSelector templateSelector,
                                                       org.jsoup.nodes.Element root) {
         List<DataElementInfo> dataElements = new ArrayList<>();
@@ -513,24 +569,7 @@ public class TemplatedGenerator extends IOCGenerator {
         org.jsoup.nodes.Element root = null;
         String fqTemplate = org.jboss.gwt.elemento.processor.TypeSimplifier.packageNameOf(type).replace('.', '/') + "/" + templateSelector.template;
 
-        JavaFileManager.Location[] locations = new JavaFileManager.Location[]{
-                StandardLocation.SOURCE_PATH,
-                StandardLocation.CLASS_PATH,
-                StandardLocation.SOURCE_OUTPUT,
-                StandardLocation.CLASS_OUTPUT,
-        };
-
-        FileObject templateResource = null;
-        for (JavaFileManager.Location location : locations) {
-            try {
-
-                FileObject temp = filer.getResource(location, "", fqTemplate);
-                if (new File(temp.getName()).exists()) {
-                    templateResource = temp;
-                }
-            } catch (IOException e) {
-            }
-        }
+        FileObject templateResource = getFileObject(fqTemplate);
         if (templateResource == null) {
             abortWithError(type, "Cannot find template \"%s\". Please make sure the template exists.", fqTemplate);
         }
@@ -558,7 +597,29 @@ public class TemplatedGenerator extends IOCGenerator {
         return root;
     }
 
-    private FileObject findTemplate(String name) {
+    private FileObject getFileObject(String fqTemplate) {
+        JavaFileManager.Location[] locations = new JavaFileManager.Location[]{
+                StandardLocation.SOURCE_PATH,
+                StandardLocation.CLASS_PATH,
+                StandardLocation.SOURCE_OUTPUT,
+                StandardLocation.CLASS_OUTPUT,
+        };
+
+        FileObject templateResource = null;
+        for (JavaFileManager.Location location : locations) {
+            try {
+
+                FileObject temp = filer.getResource(location, "", fqTemplate);
+                if (new File(temp.getName()).exists()) {
+                    templateResource = temp;
+                }
+            } catch (IOException e) {
+            }
+        }
+        return templateResource;
+    }
+
+    private FileObject findTemplate(String name, boolean log) {
         FileObject resource = null;
         JavaFileManager.Location[] locations = new JavaFileManager.Location[]{
                 StandardLocation.SOURCE_PATH,
@@ -573,7 +634,9 @@ public class TemplatedGenerator extends IOCGenerator {
                     return resource;
                 }
             } catch (IOException ignored) {
-                System.out.println(String.format("Unable to find %s in %s: %s", name, location.getName(), ignored.getMessage()));
+                if (log) {
+                    System.out.println(String.format("Unable to find %s in %s: %s", name, location.getName(), ignored.getMessage()));
+                }
             }
         }
         return null;
