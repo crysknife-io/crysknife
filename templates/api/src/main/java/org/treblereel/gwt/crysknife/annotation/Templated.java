@@ -14,4 +14,7 @@ import java.lang.annotation.Target;
 public @interface Templated {
 
     String value() default "";
+
+    String stylesheet() default "";
+
 }

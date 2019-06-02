@@ -54,15 +54,14 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.safehtml</groupId>
-      <artifactId>gwt-safehtml</artifactId>
-      <version>${safehtml.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.elemental2</groupId>
-          <artifactId>elemental2-core</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.gwtproject.core</groupId>
+      <artifactId>gwt-core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>gwt-resources</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>

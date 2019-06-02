@@ -51,56 +51,27 @@
       <groupId>org.gwtproject.resources</groupId>
       <artifactId>gwt-resources-api</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.gwt</groupId>
-          <artifactId>gwt-dev</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.gwt</groupId>
-          <artifactId>gwt-user</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mockito</groupId>
-          <artifactId>mockito-core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.resources</groupId>
       <artifactId>gwt-resources-core</artifactId>
       <version>1.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.gwt</groupId>
-          <artifactId>gwt-dev</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.gwt</groupId>
-          <artifactId>gwt-user</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.mockito</groupId>
-          <artifactId>mockito-core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.resources</groupId>
       <artifactId>gwt-resources-processor</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
       <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.core</groupId>
+      <artifactId>gwt-core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

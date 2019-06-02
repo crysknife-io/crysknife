@@ -43,7 +43,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     @Override
     public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        classBuilder.addConstructorDeclaration(Modifier.Keyword.PACKAGE_PRIVATE);
+        classBuilder.addConstructorDeclaration();
         Parameter arg = new Parameter();
         arg.setName("application");
         arg.setType(beanDefinition.getType().getSimpleName().toString());
@@ -80,7 +80,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     @Override
     public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        classBuilder.addConstructorDeclaration(Modifier.Keyword.PACKAGE_PRIVATE);
+        classBuilder.addConstructorDeclaration();
 
         MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);

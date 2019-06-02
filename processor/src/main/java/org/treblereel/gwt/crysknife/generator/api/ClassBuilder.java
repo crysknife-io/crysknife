@@ -47,7 +47,7 @@ public class ClassBuilder {
         return clazz;
     }
 
-    private ClassOrInterfaceDeclaration getClassDeclaration() {
+    public ClassOrInterfaceDeclaration getClassDeclaration() {
         return classDeclaration;
     }
 

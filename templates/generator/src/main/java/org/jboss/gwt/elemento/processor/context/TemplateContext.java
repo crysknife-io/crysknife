@@ -24,6 +24,7 @@ public class TemplateContext {
     private final String inject;
 
     private RootElementInfo root;
+    private String stylesheet;
     private List<DataElementInfo> dataElements;
     private List<PostConstructInfo> postConstructs;
     private List<AbstractPropertyInfo> abstractProperties;
@@ -92,5 +93,13 @@ public class TemplateContext {
 
     public List<AbstractPropertyInfo> getAbstractProperties() {
         return abstractProperties;
+    }
+
+    public String getStylesheet() {
+        return stylesheet;
+    }
+
+    public void setStylesheet(String stylesheet) {
+        this.stylesheet = stylesheet;
     }
 }

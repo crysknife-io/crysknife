@@ -56,24 +56,6 @@
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>elemental2-generator</artifactId>
-      <version>0.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>gwt-resources</artifactId>
-      <version>0.1-SNAPSHOT</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.mockito</groupId>
-          <artifactId>mockito-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
@@ -87,11 +69,6 @@
 
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -134,6 +111,10 @@
                 <property>
                   <name>ClientBundle.cacheUrl</name>
                   <value>/gwt-cache/</value>
+                </property>
+                <property>
+                  <name>CssResource.conversionMode</name>
+                  <value>strict</value>
                 </property>
               </properties>
             </configuration>
@@ -310,8 +291,8 @@
                 <param>${webapp.libdir}/jre.js.zip</param>
               </j2clClasspath>
               <dependencyMode>PRUNE_LEGACY</dependencyMode>
-              <intermediateJsPath>${webappdir}/js/sources</intermediateJsPath>
-              <outputJsPathDir>${webappdir}/js</outputJsPathDir>
+              <intermediateJsPath>${webappdir}/sources</intermediateJsPath>
+              <outputJsPathDir>${webappdir}/</outputJsPathDir>
               <sourceDir>
                 <param>${project.basedir}/src/main/java</param>
               </sourceDir>
@@ -529,17 +510,6 @@
 
   <repositories>
     <repository>
-      <id>google-snapshots</id>
-      <name>google-snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/google-snapshots/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>vertispan-releases</id>
       <name>Vertispan hosted artifacts-releases</name>
       <url>https://repo.vertispan.com/j2cl</url>
@@ -560,7 +530,7 @@
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
-    <repository>
+<!--    <repository>
       <id>sonatype-snapshots-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
       <snapshots>
@@ -577,6 +547,6 @@
         <updatePolicy>daily</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
-    </repository>
+    </repository>-->
   </repositories>
 </project>

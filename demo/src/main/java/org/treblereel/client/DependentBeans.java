@@ -18,7 +18,7 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
  * Created by treblereel 2/22/19
  */
 @Singleton
-@Templated("dependentbeans.html")
+@Templated(value = "dependentbeans.html")
 public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @Inject
