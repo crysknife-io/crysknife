@@ -41,7 +41,7 @@ public class DataElementInfo {
 
     @Override
     public String toString() {
-        return "@DataElement " + type + " " + name + " (" + kind + (returnedByMethod ? ", return by method" : "") + ")";
+        return "@DataElement " + type + " " + name + " " + selector + " (" + kind + (returnedByMethod ? ", return by method" : "") + ")";
     }
 
     public String getType() {

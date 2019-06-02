@@ -1,20 +1,18 @@
 package org.treblereel.client;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.HTMLFormElement;
 import elemental2.dom.HTMLInputElement;
-import elemental2.dom.HTMLLabelElement;
+import elemental2.dom.MouseEvent;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.named.Animal;
 import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
@@ -53,20 +51,6 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
     @Named("bird")
     Animal bird;
 
-    @PostConstruct
-    public void init() {
-        initBtn();
-    }
-
-    private void initBtn() {
-        birdBtn.addEventListener("click", evt -> setText(bird.say()));
-
-        cowBtn.addEventListener("click", evt -> setText(cow.say()));
-
-        dogBtn.addEventListener("click", evt -> setText(dog.say()));
-
-    }
-
     private void setText(String text) {
         textBox.value = text;
     }
@@ -74,5 +58,20 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
     @Override
     public HTMLDivElement element() {
         return form;
+    }
+
+    @EventHandler("birdBtn")
+    protected void onClickBird(@ForEvent("click") final MouseEvent event) {
+        setText(bird.say());
+    }
+
+    @EventHandler("cowBtn")
+    protected void onClickCow(@ForEvent("click") final MouseEvent event) {
+        setText(cow.say());
+    }
+
+    @EventHandler("dogBtn")
+    protected void onClickDog(@ForEvent("click") final MouseEvent event) {
+        setText(dog.say());
     }
 }

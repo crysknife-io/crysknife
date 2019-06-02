@@ -11,8 +11,11 @@ import javax.inject.Singleton;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
+import elemental2.dom.MouseEvent;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
@@ -75,5 +78,21 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     @Override
     public HTMLDivElement element() {
         return form;
+    }
+
+    @EventHandler("sendAddressEvent")
+    protected void sendAddressEvent(@ForEvent("click") final MouseEvent event) {
+        Address address = new Address();
+        address.setId(new Random().nextInt());
+        address.setName("Redhat");
+        eventAddress.fire(address);
+    }
+
+    @EventHandler("sendUserEvent")
+    protected void sendUserEvent(@ForEvent("click") final MouseEvent event) {
+        User user = new User();
+        user.setId(new Random().nextInt());
+        user.setName("IAMUSER");
+        eventUser.fire(user);
     }
 }

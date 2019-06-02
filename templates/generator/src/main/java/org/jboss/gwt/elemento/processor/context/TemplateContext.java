@@ -28,6 +28,7 @@ public class TemplateContext {
     private List<DataElementInfo> dataElements;
     private List<PostConstructInfo> postConstructs;
     private List<AbstractPropertyInfo> abstractProperties;
+    private List<EventHandlerInfo> events;
 
     public TemplateContext(String pkg, String base, String subclass, String isElementTypeParameter, String inject) {
         this.pkg = pkg;
@@ -101,5 +102,13 @@ public class TemplateContext {
 
     public void setStylesheet(StyleSheet stylesheet) {
         this.stylesheet = stylesheet;
+    }
+
+    public List<EventHandlerInfo> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<EventHandlerInfo> events) {
+        this.events = events;
     }
 }
