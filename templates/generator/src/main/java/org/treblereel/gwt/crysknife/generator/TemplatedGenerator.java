@@ -111,12 +111,16 @@ import org.jboss.gwt.elemento.processor.TemplateSelector;
 import org.jboss.gwt.elemento.processor.TypeSimplifier;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.RootElementInfo;
+import org.jboss.gwt.elemento.processor.context.StyleSheet;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
 import org.jboss.gwt.elemento.template.TemplateUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.lesscss.LessCompiler;
+import org.lesscss.LessException;
+import org.lesscss.LessSource;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.annotation.Templated;
@@ -256,18 +260,18 @@ public class TemplatedGenerator extends IOCGenerator {
         }
     }
 
-    private String getStylesheet(TypeElement type, Templated templated) {
+    private StyleSheet getStylesheet(TypeElement type, Templated templated) {
         if (Strings.emptyToNull(templated.stylesheet()) == null) {
-            List<String> postfixes = Arrays.asList(".css", ".gss");
+            List<String> postfixes = Arrays.asList(".css", ".gss", ".less");
             String path = type.getQualifiedName().toString().replaceAll("\\.", "/");
             for (String postfix : postfixes) {
                 FileObject file = findTemplate(path + postfix, false);
                 if (new File(file.toUri()).exists()) {
-                    return type.getSimpleName() + "" + postfix;
+                    return new StyleSheet(type.getSimpleName() + "" + postfix, new File(file.toUri()));
                 }
             }
         } else {
-            return templated.stylesheet();
+            return new StyleSheet(templated.stylesheet(), new File(getFileObject(templated.stylesheet()).toUri()));
         }
         return null;
     }
@@ -304,32 +308,52 @@ public class TemplatedGenerator extends IOCGenerator {
 
     private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
         if (templateContext.getStylesheet() != null) {
-            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource");
-            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource.NotStrict");
-            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.Resource");
-            builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.ClientBundle.Source");
+            System.out.println(templateContext.getStylesheet());
             builder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.templates.client.StyleInjector");
-            ClassOrInterfaceDeclaration inner = new ClassOrInterfaceDeclaration();
-            inner.setName("Stylesheet");
-            inner.setInterface(true);
-            inner.addAnnotation("Resource");
 
-            new JavaParser().parseBodyDeclaration("@Source(\"" + templateContext.getStylesheet() + "\") @NotStrict CssResource getStyle();").ifSuccessful(result -> inner.addMember(result));
-            builder.getClassDeclaration().addMember(inner);
+            if (!templateContext.getStylesheet().isLess()) {
+                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource");
+                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource.NotStrict");
+                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.Resource");
+                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.ClientBundle.Source");
+                ClassOrInterfaceDeclaration inner = new ClassOrInterfaceDeclaration();
+                inner.setName("Stylesheet");
+                inner.setInterface(true);
+                inner.addAnnotation("Resource");
 
-            String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";
+                new JavaParser().parseBodyDeclaration("@Source(\"" + templateContext.getStylesheet().getStyle() + "\") @NotStrict CssResource getStyle();").ifSuccessful(result -> inner.addMember(result));
+                builder.getClassDeclaration().addMember(inner);
 
-            //TODO Temporary workaround, till gwt-dom StyleInjector ll be fixed
-            builder.getGetMethodDeclaration()
-                    .getBody()
-                    .get().addStatement(new MethodCallExpr(new MethodCallExpr(new ClassOrInterfaceType()
-                                       .setName("StyleInjector")
-                                       .getNameAsExpression(), "fromString").addArgument(new MethodCallExpr(
-                    new MethodCallExpr(
-                            new ObjectCreationExpr()
-                                    .setType(theName),
-                            "getStyle"),
-                    "getText")),"inject"));
+                String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";
+
+                //TODO Temporary workaround, till gwt-dom StyleInjector ll be fixed
+                builder.getGetMethodDeclaration()
+                        .getBody()
+                        .get().addStatement(new MethodCallExpr(new MethodCallExpr(new ClassOrInterfaceType()
+                                                                                          .setName("StyleInjector")
+                                                                                          .getNameAsExpression(), "fromString").addArgument(new MethodCallExpr(
+                        new MethodCallExpr(
+                                new ObjectCreationExpr()
+                                        .setType(theName),
+                                "getStyle"),
+                        "getText")), "inject"));
+            } else {
+                try {
+                    final LessSource source = new LessSource(templateContext.getStylesheet().getFile());
+                    final LessCompiler compiler = new LessCompiler();
+                    final String compiledCss = compiler.compile(source);
+
+                    builder.getGetMethodDeclaration()
+                            .getBody()
+                            .get().addStatement(new MethodCallExpr(
+                            new MethodCallExpr(
+                                    new ClassOrInterfaceType()
+                                            .setName("StyleInjector")
+                                            .getNameAsExpression(), "fromString").addArgument(new StringLiteralExpr(compiledCss)), "inject"));
+                } catch (LessException | IOException e) {
+                    throw new Error("Unable to process Less " + templateContext.getStylesheet());
+                }
+            }
         }
     }
 
