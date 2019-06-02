@@ -39,6 +39,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -56,6 +57,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.Event;
 import elemental2.dom.HTMLAnchorElement;
 import elemental2.dom.HTMLAreaElement;
 import elemental2.dom.HTMLAudioElement;
@@ -110,6 +112,7 @@ import org.jboss.gwt.elemento.processor.ProcessingException;
 import org.jboss.gwt.elemento.processor.TemplateSelector;
 import org.jboss.gwt.elemento.processor.TypeSimplifier;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
+import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
 import org.jboss.gwt.elemento.processor.context.RootElementInfo;
 import org.jboss.gwt.elemento.processor.context.StyleSheet;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
@@ -122,6 +125,8 @@ import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
 import org.lesscss.LessSource;
 import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -290,6 +295,9 @@ public class TemplatedGenerator extends IOCGenerator {
         List<DataElementInfo> dataElements = processDataElements(type, templateSelector, root);
         context.setDataElements(dataElements);
 
+        List<EventHandlerInfo> eventElements = processEventHandlers(type, context);
+        context.setEvents(eventElements);
+
         // css/gss stylesheet
         context.setStylesheet(getStylesheet(type, templated));
 
@@ -304,11 +312,11 @@ public class TemplatedGenerator extends IOCGenerator {
         setAttributes(builder, templateContext);
         setInnerHTML(builder, templateContext);
         processDataFields(builder, templateContext);
+        processEventHandlers(builder, templateContext);
     }
 
     private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
         if (templateContext.getStylesheet() != null) {
-            System.out.println(templateContext.getStylesheet());
             builder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.templates.client.StyleInjector");
 
             if (!templateContext.getStylesheet().isLess()) {
@@ -388,6 +396,25 @@ public class TemplatedGenerator extends IOCGenerator {
             builder.getGetMethodDeclaration()
                     .getBody()
                     .get().addAndGetStatement(ifStmt);
+        });
+    }
+
+    private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {
+        templateContext.getEvents().forEach(event -> {
+            for (String eventEvent : event.getEvents()) {
+                FieldAccessExpr instance = new FieldAccessExpr(
+                        new FieldAccessExpr(
+                                new ThisExpr(), "instance"),
+                        event.getInfo().getName());
+
+                MethodCallExpr methodCallExpr = new MethodCallExpr(instance, "addEventListener")
+                        .addArgument(new StringLiteralExpr(eventEvent))
+                        .addArgument(new NameExpr("e -> this.instance." + event.getMethodName() + "(("+ event.getEventType() + ")e)"));
+
+                builder.getGetMethodDeclaration()
+                        .getBody()
+                        .get().addAndGetStatement(methodCallExpr);
+            }
         });
     }
 
@@ -508,6 +535,64 @@ public class TemplatedGenerator extends IOCGenerator {
                 });
 
         return dataElements;
+    }
+
+    private List<EventHandlerInfo> processEventHandlers(TypeElement type, TemplateContext templateContext) {
+        List<EventHandlerInfo> eventHandlerElements = new ArrayList<>();
+
+        // fields
+        ElementFilter.methodsIn(type.getEnclosedElements()).stream()
+                .filter(method -> MoreElements.isAnnotationPresent(method, EventHandler.class))
+                .forEach(method -> {
+
+                    // verify the field
+                    if (method.getModifiers().contains(Modifier.PRIVATE)) {
+                        abortWithError(method, "@%s method must not be private", EventHandler.class.getSimpleName());
+                    }
+                    if (method.getModifiers().contains(Modifier.STATIC)) {
+                        abortWithError(method, "@%s method must not be static", EventHandler.class.getSimpleName());
+                    }
+
+                    if (method.getParameters().isEmpty() || method.getParameters().size() > 1) {
+                        abortWithError(method, "@%s method must have one parameter",
+                                       EventHandler.class.getSimpleName());
+                    }
+
+                    VariableElement parameter = method.getParameters().get(0);
+                    DeclaredType declaredType = MoreTypes.asDeclared(parameter.asType());
+
+                    if (parameter.getAnnotation(ForEvent.class) == null) {
+                        abortWithError(method, "@%s method must have one parameter and this parameter must be annotated with ",
+                                       ForEvent.class.getSimpleName());
+                    }
+
+                    if (parameter.getAnnotation(ForEvent.class).value() == null || parameter.getAnnotation(ForEvent.class).value().length == 0) {
+                        abortWithError(method, "@%s value must not be empty ",
+                                       ForEvent.class.getSimpleName());
+                    }
+
+                    String[] events = parameter.getAnnotation(ForEvent.class).value();
+                    String[] dataElements = method.getAnnotation(EventHandler.class).value();
+
+                    TypeElement event = iocContext.getGenerationContext().getElements().getTypeElement(Event.class.getCanonicalName());
+
+                    if (!iocContext.getGenerationContext().getTypes().isSubtype(declaredType, event.asType())) {
+                        abortWithError(event, "@%s method must have only one parameter and this parameter must be type or subtype of  ",
+                                       EventHandler.class.getSimpleName());
+                    }
+
+                    Arrays.stream(dataElements).forEach(data -> {
+                        java.util.Optional<DataElementInfo> result = templateContext.getDataElements().stream().filter(elm -> elm.getSelector().equals(data)).findFirst();
+                        if (result.isPresent()) {
+                            DataElementInfo info = result.get();
+                            eventHandlerElements.add(new EventHandlerInfo(info, events, method.getSimpleName().toString(), declaredType.toString()));
+                        } else {
+                            abortWithError(method, "Unable to find DataField element with name or alias " + data + " from ");
+                        }
+                    });
+                });
+
+        return eventHandlerElements;
     }
 
     private void verifyHTMLElement(String htmlType, String selector, Element element, TemplateSelector templateSelector,

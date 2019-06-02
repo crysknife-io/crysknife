@@ -22,7 +22,6 @@ import org.treblereel.client.template.TemplatedBean;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
-import org.treblereel.gwt.crysknife.templates.client.StyleInjector;
 
 @Application
 @ComponentScan("org.treblereel.client")

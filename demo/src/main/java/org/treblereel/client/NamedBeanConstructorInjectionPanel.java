@@ -11,9 +11,12 @@ import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLLabelElement;
+import elemental2.dom.MouseEvent;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.named.Vehicle;
 import org.treblereel.gwt.crysknife.annotation.DataField;
+import org.treblereel.gwt.crysknife.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
@@ -64,6 +67,16 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
     @Override
     public HTMLDivElement element() {
         return form;
+    }
+
+    @EventHandler("carBtn")
+    protected void onClickCar(@ForEvent("click") final MouseEvent event) {
+        setText(car.whoAmI());
+    }
+
+    @EventHandler("helicopterBtn")
+    protected void onClickHelicopter(@ForEvent("click") final MouseEvent event) {
+        setText(helicopter.whoAmI());
     }
 }
 
