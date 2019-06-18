@@ -6,13 +6,12 @@ import javax.inject.Singleton;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
-import elemental2.dom.MouseEvent;
+import org.gwtproject.event.dom.client.ClickEvent;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
-import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
@@ -53,7 +52,7 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("checkBtn")
-    protected void onClick(@ForEvent("click") final MouseEvent event) {
+    public void onFallbackInputChange(final ClickEvent e) {
         StringBuffer sb = new StringBuffer();
         sb.append("beanOne1Instance random :");
         sb.append(beanOne1Instance.getRandom());
