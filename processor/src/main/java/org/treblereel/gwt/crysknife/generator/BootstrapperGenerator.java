@@ -90,8 +90,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
                     new ThisExpr(), "instance"), fieldPoint.getField().getSimpleName().toString());
             classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
                     new AssignExpr().setTarget(fieldAccessExpr)
-                            .setValue(iocContext.getBeans()
-                                              .get(fieldPoint.getType())
+                            .setValue(iocContext.getBean(fieldPoint.getType())
                                               .generateBeanCall(classBuilder, fieldPoint)));
         });
     }

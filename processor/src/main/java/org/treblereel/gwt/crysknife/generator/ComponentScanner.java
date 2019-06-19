@@ -10,8 +10,11 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -58,7 +61,16 @@ public class ComponentScanner {
                 elements.put(annotation, new HashSet<>());
             }
             context.getRoundEnvironment().getElementsAnnotatedWith(annotation).forEach(element -> {
-                elements.get(annotation).add(element);
+                if(element.getKind().equals(ElementKind.CONSTRUCTOR)) {
+                    ExecutableType constructor = MoreTypes.asExecutable(element.asType());
+                    if( constructor.getParameterTypes().size() > 0) {
+                        constructor.getParameterTypes().forEach(param -> {
+                            elements.get(annotation).add(((DeclaredType) param).asElement());
+                        });
+                    }
+                } else {
+                    elements.get(annotation).add(element);
+                }
             });
         });
 
@@ -86,8 +98,8 @@ public class ComponentScanner {
 
         metas.forEach(meta -> {
             TypeElement annotation = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils().getTypeElement(meta.annotation);
-            elements.get(annotation).stream().filter(e -> e.getKind().equals(ElementKind.FIELD))
-                    .filter(elm -> MoreElements.asVariable(elm).asType().equals(meta.exactType.asType()))
+            elements.get(annotation).stream().filter(e -> (e.getKind().isField() || e.getKind().isClass()))
+                    .filter(elm -> (elm.getKind().isField() ? MoreElements.asVariable(elm).asType() : elm.asType()).equals(meta.exactType.asType()))
                     .forEach(elm -> {
                         TypeProcessorFactory.getTypeProcessor(meta, iocContext.getGenerators().get(meta).stream().findFirst().get(), elm)
                                 .ifPresent(processor -> processor.process(iocContext, elm));

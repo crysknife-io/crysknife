@@ -60,6 +60,13 @@ public class IOCContext {
         return beans;
     }
 
+    public BeanDefinition getBean(TypeElement bean) {
+        if (beans.containsKey(bean)) {
+            return beans.get(bean);
+        }
+        throw new Error(bean.toString());
+    }
+
     public GenerationContext getGenerationContext() {
         return generationContext;
     }

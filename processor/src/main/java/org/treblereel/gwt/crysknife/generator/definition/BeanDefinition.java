@@ -21,6 +21,7 @@ import javax.lang.model.util.Elements;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -80,19 +81,19 @@ public class BeanDefinition extends Definition {
 
     public void setGenerator(IOCGenerator iocGenerator) {
         if (iocGenerator == null) {
-            this.generator = Optional.empty();
+            throw new Error("Unable to set generator for " + this.toString());
         } else {
             this.generator = Optional.of(iocGenerator);
         }
     }
 
     public Expression generateBeanCall(ClassBuilder builder, FieldPoint fieldPoint) {
-        Optional<Expression> result;
         if (generator.isPresent()) {
             IOCGenerator iocGenerator = generator.get();
             return ((BeanIOCGenerator) iocGenerator).generateBeanCall(builder, fieldPoint, this);
+        } else{
+            throw new Error("Unable to find generator for " + getQualifiedName() );
         }
-        return null;
     }
 
     @Override
@@ -188,8 +189,9 @@ public class BeanDefinition extends Definition {
         private void processInjections() {
             elements.getAllMembers(beanDefinition.element).forEach(mem -> {
                 if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR) || mem.getKind().equals(ElementKind.FIELD))) {
-                    if (mem.getModifiers().contains(Modifier.PRIVATE) || mem.getModifiers().contains(Modifier.PROTECTED)) {
-                        throw new Error(mem.toString());
+                    if (mem.getModifiers().contains(Modifier.PRIVATE)) {
+                        System.out.println("Error, field must not be private " + mem + " in " + beanDefinition.getQualifiedName());
+                        throw new Error();
                     }
                     if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
                         ExecutableElement elms = MoreElements.asExecutable(mem);

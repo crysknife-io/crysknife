@@ -10,4 +10,6 @@ public interface Instance<T> {
 
     void destroy(T var1);
 
+    void destroyAll();
+
 }

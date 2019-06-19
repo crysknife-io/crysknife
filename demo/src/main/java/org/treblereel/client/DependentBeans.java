@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLSelectElement;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.DependentBean;
@@ -22,10 +23,10 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
 @Templated(value = "dependentbeans.html")
 public class DependentBeans implements IsElement<HTMLDivElement> {
 
-    @Inject
     @DataField
     HTMLDivElement form;
 
+    @Inject
     @DataField
     HTMLInputElement textBox;
 
@@ -40,6 +41,14 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @Inject
     TextResource textResource;
+
+    @Inject
+    public DependentBeans(HTMLSelectElement nativeSelect,
+                          HTMLDivElement form,
+                          HTMLButtonElement checkBtn) {
+        this.form = form;
+        this.checkBtn = checkBtn;
+    }
 
     private void setText(String text) {
         textBox.value = text;
