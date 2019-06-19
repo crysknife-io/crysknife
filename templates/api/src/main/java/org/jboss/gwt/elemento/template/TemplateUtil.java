@@ -61,6 +61,14 @@ public final class TemplateUtil {
         HTMLElement oldElement = resolveElement(context, identifier);
         if (oldElement != null && oldElement.parentNode != null) {
             oldElement.parentNode.replaceChild(newElement, oldElement);
+            if (oldElement.hasAttributes()) {
+                for (String attributeName : oldElement.getAttributeNames()) {
+                    newElement.setAttribute(attributeName, oldElement.getAttribute(attributeName));
+                }
+            }
+            if(oldElement.textContent != null){
+                newElement.textContent = oldElement.textContent;
+            }
         }
     }
 

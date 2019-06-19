@@ -617,7 +617,6 @@ public class TemplatedGenerator extends IOCGenerator {
     private List<EventHandlerInfo> processEventHandlers(TypeElement type, TemplateContext templateContext) {
         List<EventHandlerInfo> eventHandlerElements = new ArrayList<>();
 
-        Element eventHandler = iocContext.getGenerationContext().getElements().getTypeElement(EventHandler.class.getCanonicalName());
         Element forEvent = iocContext.getGenerationContext().getElements().getTypeElement(ForEvent.class.getCanonicalName());
         Element domEvent = iocContext.getGenerationContext().getElements().getTypeElement(DomEvent.class.getCanonicalName());
 
