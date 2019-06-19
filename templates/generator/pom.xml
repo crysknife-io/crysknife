@@ -55,6 +55,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event-dom</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>0.1-SNAPSHOT</version>

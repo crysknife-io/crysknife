@@ -11,7 +11,7 @@
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
-    <j2cl.maven.plugin.version>0.1-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.1.1-SNAPSHOT</j2cl.maven.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
   </properties>
 
@@ -29,11 +29,14 @@
       <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
-      <groupId>com.google.jsinterop</groupId>
-      <artifactId>jsinterop-annotations</artifactId>
-      <version>HEAD-SNAPSHOT</version>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event-dom</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <exclusions><exclusion>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt-dev</artifactId>
+      </exclusion></exclusions>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -52,6 +55,21 @@
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-generator</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.elemental2</groupId>
+          <artifactId>elemental2-dom</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.elemental2</groupId>
+          <artifactId>elemental2-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.jsinterop</groupId>
+          <artifactId>base</artifactId>
+        </exclusion>
+      </exclusions>
+
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -203,7 +221,7 @@
                     <artifactItem>
                       <groupId>com.vertispan.j2cl</groupId>
                       <artifactId>jre</artifactId>
-                      <version>0.2-SNAPSHOT</version>
+                      <version>0.3-SNAPSHOT</version>
                       <classifier>jszip</classifier>
                       <type>zip</type>
                       <destFileName>jre.js.zip</destFileName>
@@ -211,19 +229,19 @@
                     <artifactItem>
                       <groupId>com.vertispan.j2cl</groupId>
                       <artifactId>jre</artifactId>
-                      <version>0.2-SNAPSHOT</version>
+                      <version>0.3-SNAPSHOT</version>
                       <destFileName>jre.jar</destFileName>
                     </artifactItem>
                     <artifactItem>
                       <groupId>com.vertispan.j2cl</groupId>
                       <artifactId>gwt-internal-annotations</artifactId>
-                      <version>0.2-SNAPSHOT</version>
+                      <version>0.3-SNAPSHOT</version>
                       <destFileName>gwt-internal-annotations.jar</destFileName>
                     </artifactItem>
                     <artifactItem>
                       <groupId>com.vertispan.j2cl</groupId>
                       <artifactId>bootstrap</artifactId>
-                      <version>0.2-SNAPSHOT</version>
+                      <version>0.3-SNAPSHOT</version>
                       <classifier>jszip</classifier>
                       <type>zip</type>
                       <destFileName>bootstrap.js.zip</destFileName>
@@ -231,7 +249,7 @@
                     <artifactItem>
                       <groupId>com.vertispan.j2cl</groupId>
                       <artifactId>javac-bootstrap-classpath</artifactId>
-                      <version>0.2-SNAPSHOT</version>
+                      <version>0.3-SNAPSHOT</version>
                       <destFileName>javac-bootstrap-classpath.jar</destFileName>
                     </artifactItem>
                   </artifactItems>
@@ -300,180 +318,9 @@
               <entrypoint>org.treblereel.client.App</entrypoint>
               <outputJsFilename>app.js</outputJsFilename>
               <externs>
+<!--
                 <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
-                <extern>${project.basedir}/src/main/externs/svg.js</extern>
-              </externs>
-              <compilationLevel>BUNDLE</compilationLevel>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>build</id>
-      <build>
-        <defaultGoal>process-classes</defaultGoal>
-        <resources>
-          <resource>
-            <directory>src/main/webapp</directory>
-            <targetPath>${webappdir}</targetPath>
-          </resource>
-        </resources>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>3.1.0</version>
-            <executions>
-              <execution>
-                <id>custom-resources</id>
-                <phase>process-resources</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}</outputDirectory>
-                  <resources>
-                    <resource>
-                      <targetPath>${basedir}/target/webapp</targetPath>
-                      <directory>src/main/webapp</directory>
-                      <filtering>true</filtering>
-                    </resource>
-                    <resource>
-                      <targetPath>${basedir}/target/webapp/classes</targetPath>
-                      <directory>src/main/resources</directory>
-                      <filtering>false</filtering>
-                    </resource>
-                  </resources>
-                  <encoding>UTF-8</encoding>
-                </configuration>
-              </execution>
-              <execution>
-                <id>copy-resources</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/</outputDirectory>
-                  <resources>
-                    <resource>
-                      <directory>${webappdir}</directory>
-                      <excludes>
-                        <exclude>**/classes/**</exclude>
-                      </excludes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <outputDirectory>${webappdir}/classes</outputDirectory>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.0.2</version>
-            <executions>
-              <execution>
-                <id>build-java-classpath</id>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>build-classpath</goal>
-                </goals>
-                <configuration>
-                  <includeTypes>jar</includeTypes>
-                  <outputProperty>java-classpath</outputProperty>
-                </configuration>
-              </execution>
-              <execution>
-                <id>copy-bootstrap</id>
-                <goals>
-                  <goal>copy</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${webappdir}/WEB-INF/lib</outputDirectory>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>jre</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <classifier>jszip</classifier>
-                      <type>zip</type>
-                      <destFileName>jre.js.zip</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>jre</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <destFileName>jre.jar</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>gwt-internal-annotations</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <destFileName>gwt-internal-annotations.jar</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>bootstrap</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <classifier>jszip</classifier>
-                      <type>zip</type>
-                      <destFileName>bootstrap.js.zip</destFileName>
-                    </artifactItem>
-                    <artifactItem>
-                      <groupId>com.vertispan.j2cl</groupId>
-                      <artifactId>javac-bootstrap-classpath</artifactId>
-                      <version>0.2-SNAPSHOT</version>
-                      <destFileName>javac-bootstrap-classpath.jar</destFileName>
-                    </artifactItem>
-                  </artifactItems>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.treblereel.gwt.j2cl</groupId>
-            <artifactId>j2cl-maven-plugin</artifactId>
-            <version>${j2cl.maven.plugin.version}</version>
-            <executions>
-              <execution>
-                <id>run-devmode</id>
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>build</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <bytecodeClasspath>
-                <param>${java-classpath}</param>
-                <param>${webapp.libdir}/jre.jar</param>
-                <param>${webapp.libdir}/gwt-internal-annotations.jar</param>
-                <param>${webapp.libdir}/javac-bootstrap-classpath.jar</param>
-              </bytecodeClasspath>
-              <javacBootClasspath>${webapp.libdir}/javac-bootstrap-classpath.jar</javacBootClasspath>
-              <j2clClasspath>
-                <param>${webapp.libdir}/bootstrap.js.zip</param>
-                <param>${webapp.libdir}/jre.js.zip</param>
-              </j2clClasspath>
-              <dependencyMode>PRUNE_LEGACY</dependencyMode>
-
-              <outputJsPathDir>${webappdir}/js</outputJsPathDir>
-              <sourceDir>
-                <param>${project.basedir}/src/main/java</param>
-              </sourceDir>
-              <jsZipCacheDir>${project.basedir}/jsZipCache</jsZipCacheDir>
-              <entrypoint>org.treblereel.client.App</entrypoint>
-              <outputJsFilename>app.js</outputJsFilename>
-              <externs>
-                <extern>${project.basedir}/src/main/externs/w3c_clipboardevent.js</extern>
+-->
                 <extern>${project.basedir}/src/main/externs/svg.js</extern>
               </externs>
               <compilationLevel>BUNDLE</compilationLevel>
@@ -520,6 +367,7 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
+
     <repository>
       <id>vertispan-snapshots</id>
       <name>Vertispan Snapshots</name>
@@ -530,23 +378,23 @@
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
-<!--    <repository>
-      <id>sonatype-snapshots-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/repositories</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>-->
+    <!--    <repository>
+          <id>sonatype-snapshots-repo</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>sonatype-repo</id>
+          <url>https://oss.sonatype.org/content/repositories/repositories</url>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+        </repository>-->
   </repositories>
 </project>

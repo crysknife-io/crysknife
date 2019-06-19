@@ -14,10 +14,18 @@
 package org.jboss.gwt.elemento.core;
 
 import elemental2.dom.HTMLElement;
+import jsinterop.base.Js;
 
 /** Interface for custom components returning a single element. */
 public interface IsElement<E extends HTMLElement> {
 
     /** @retun the element of the custom component */
-    E element();
+    default E element() {
+        return (E) Js.uncheckedCast(this);
+    }
+
+    //TODO
+    default HTMLElement getElement() {
+        return (E) Js.uncheckedCast(this);
+    }
 }
