@@ -54,11 +54,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
             generateInstanceGetMethodReturn(clazz, beanDefinition);
 
-            //generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
             generateFactoryCreateMethod(clazz, beanDefinition);
-            //generateFactoryMethods(clazz, beanDefinition);
-
-
 
             write(clazz,
                   beanDefinition,

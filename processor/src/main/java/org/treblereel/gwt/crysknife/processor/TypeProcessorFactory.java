@@ -19,10 +19,11 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 public class TypeProcessorFactory {
 
     public static Optional<TypeProcessor> getTypeProcessor(IOCContext.IOCGeneratorMeta meta, IOCGenerator generator, Element element) {
-        if (element.getKind().equals(ElementKind.FIELD)) {
-            TypeMirror mirror = MoreElements.asVariable(element).asType();
-            TypeElement type = MoreTypes.asTypeElement(mirror);
-            if (type.equals(meta.exactType)) {
+        if (element.getKind().isField() || element.getKind().isClass()) {
+            TypeMirror type = (element.getKind().isField() ?
+                    MoreElements.asVariable(element).asType() :
+                    element.asType());
+            if(type.equals(meta.exactType.asType())) {
                 return Optional.of(new ExactTypeProcessor(generator));
             }
         }

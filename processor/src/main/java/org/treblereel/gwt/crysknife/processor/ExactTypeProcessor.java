@@ -23,8 +23,10 @@ public class ExactTypeProcessor extends TypeProcessor {
 
     @Override
     public void process(IOCContext context, Element element) {
-        if (element.getKind().equals(ElementKind.FIELD)) {
-            TypeMirror mirror = MoreElements.asVariable(element).asType();
+        if (element.getKind().isField() || element.getKind().isClass()) {
+            TypeMirror mirror = (element.getKind().isField() ?
+                    MoreElements.asVariable(element).asType() :
+                    element.asType());
             TypeElement typeElement = MoreTypes.asTypeElement(mirror);
             BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
             if (typeElement.getTypeParameters().size() > 0) {
