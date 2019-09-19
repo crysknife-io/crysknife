@@ -96,6 +96,53 @@ public class BeanDefinition extends Definition {
         }
     }
 
+    public void processInjections(IOCContext context) {
+        Elements elements = context.getGenerationContext().getElements();
+
+        elements.getAllMembers(element).forEach(mem -> {
+            if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR) || mem.getKind().equals(ElementKind.FIELD))) {
+                if (mem.getModifiers().contains(Modifier.PRIVATE)) {
+                    System.out.println("Error, field must not be private " + mem + " in " + getQualifiedName());
+                    throw new Error();
+                }
+                if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
+                    ExecutableElement elms = MoreElements.asExecutable(mem);
+                    constructorInjectionPoint = new ConstructorPoint(Utils.getQualifiedName(element), element);
+
+                    for (int i = 0; i < elms.getParameters().size(); i++) {
+                        FieldPoint field = parseField(elms.getParameters().get(i), context);
+                        getConstructorInjectionPoint().addArgument(field);
+                    }
+                } else if (mem.getKind().equals(ElementKind.FIELD)) {
+                    FieldPoint fiend = parseField(mem, context);
+                    fieldInjectionPoints.add(fiend);
+                }
+            }
+        });
+    }
+
+    //TODO refactoring needed here
+    private FieldPoint parseField(Element type, IOCContext context) {
+        FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
+        if (context.getQualifiers().containsKey(field.getType())) {
+            BeanDefinition bean = null;
+            for (AnnotationMirror mirror : context.getGenerationContext()
+                    .getProcessingEnvironment()
+                    .getElementUtils()
+                    .getAllAnnotationMirrors(type)) {
+                bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
+            }
+            if (bean != null) {
+                dependsOn.add(bean);
+                field.setType(bean.getType());
+            }
+        } else if (!field.isNamed()) {
+            BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(field.getType());
+            dependsOn.add(fieldBeanDefinition);
+        }
+        return field;
+    }
+
     @Override
     public String toString() {
         return "BeanDefinition {" +
@@ -182,11 +229,10 @@ public class BeanDefinition extends Definition {
         }
 
         public BeanDefinition build() {
-            processInjections();
             return beanDefinition;
         }
 
-        private void processInjections() {
+  /*      private void processInjections() {
             elements.getAllMembers(beanDefinition.element).forEach(mem -> {
                 if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR) || mem.getKind().equals(ElementKind.FIELD))) {
                     if (mem.getModifiers().contains(Modifier.PRIVATE)) {
@@ -229,6 +275,6 @@ public class BeanDefinition extends Definition {
                 beanDefinition.dependsOn.add(fieldBeanDefinition);
             }
             return field;
-        }
+        }*/
     }
 }

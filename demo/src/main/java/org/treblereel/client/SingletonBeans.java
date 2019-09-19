@@ -27,9 +27,11 @@ public class SingletonBeans implements IsElement<HTMLDivElement> {
     @DataField("root")
     HTMLDivElement form;
 
+    @Inject
     @DataField("input")
     HTMLInputElement textBox;
 
+    @Inject
     @DataField
     HTMLButtonElement checkBtn;
 
@@ -48,7 +50,7 @@ public class SingletonBeans implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return form;
     }
 

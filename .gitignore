@@ -14,3 +14,6 @@ templates/api/templates-api.iml
 templates/templates.iml
 elemental2/elemental2-generator.iml
 gwt-resources/gwt-resources.iml
+databinding/generator/databinding-api.iml
+databinding/generator/databinding-generator.iml
+databinding/databinding-parent.iml

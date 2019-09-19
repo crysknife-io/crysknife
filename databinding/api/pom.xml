@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.treblereel.gwt.crysknife</groupId>
+    <artifactId>databinding-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
+  <artifactId>databinding-api</artifactId>
+  <description>databinding api</description>
+  <packaging>jar</packaging>
+
+  <developers>
+    <developer>
+      <id>treblereel</id>
+      <name>Dmitrii Tikhomirov</name>
+      <email>chani@me.com</email>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache License Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>Treblereel</name>
+    <url>https://github.com/treblereel</url>
+  </organization>
+
+  <scm>
+    <url>https://github.com/treblereel/three4g</url>
+    <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
+    <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
+    <tag>HEAD</tag>
+  </scm>
+
+
+  <properties>
+    <safehtml.version>1.0-SNAPSHOT</safehtml.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event</artifactId>
+      <version>HEAD-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event-dom</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event-legacy</artifactId>
+      <version>HEAD-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.core</groupId>
+      <artifactId>gwt-core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.widgets</groupId>
+      <artifactId>gwt-widgets</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>27.1-jre</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>templates-api</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.java</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

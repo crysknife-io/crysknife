@@ -31,12 +31,15 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
     @DataField
     HTMLDivElement form;
 
+    @Inject
     @DataField
     HTMLInputElement textBox;
 
+    @Inject
     @DataField
     HTMLButtonElement helicopterBtn;
 
+    @Inject
     @DataField
     HTMLButtonElement carBtn;
 
@@ -65,7 +68,7 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return form;
     }
 
@@ -78,5 +81,6 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
     protected void onClickHelicopter(@ForEvent("click") final MouseEvent event) {
         setText(helicopter.whoAmI());
     }
+
 }
 

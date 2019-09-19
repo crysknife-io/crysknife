@@ -91,7 +91,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
         clazz.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.internal.Factory");
         clazz.getClassCompilationUnit().addImport(Provider.class);
-        clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
+        //clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
         clazz.setClassName(beanDefinition.getClassFactoryName());
 
         ClassOrInterfaceType factory = new ClassOrInterfaceType();
@@ -191,8 +191,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         if (definition.getConstructorInjectionPoint() == null) {
             instance = new FieldAccessExpr(new ThisExpr(), "instance");
             ObjectCreationExpr newInstance = new ObjectCreationExpr();
-            newInstance.setType(new ClassOrInterfaceType()
-                                        .setName(definition.getClassName()));
+            newInstance.setType(definition.getClassName());
             return new AssignExpr().setTarget(instance).setValue(newInstance);
         } else {
             return generateInstanceConstructorInjectionPoint(classBuilder, definition.getConstructorInjectionPoint());
@@ -204,8 +203,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
         FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
         ObjectCreationExpr newInstance = new ObjectCreationExpr();
-        newInstance.setType(new ClassOrInterfaceType()
-                                    .setName(point.getName()));
+        newInstance.setType(point.getType().getSimpleName().toString());
 
         for (FieldPoint argument : point.getArguments()) {
             newInstance.addArgument(iocContext.getBeans().get(argument.getType()).generateBeanCall(classBuilder, argument));

@@ -57,6 +57,7 @@
         <module>templates</module>
         <module>elemental2</module>
         <module>gwt-resources</module>
+        <module>databinding</module>
     </modules>
 
     <dependencyManagement>

@@ -1,5 +1,6 @@
 package org.treblereel.client;
 
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -19,7 +20,7 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
-@Singleton
+@Dependent
 @Templated("namedbeanfieldinjectionpanel.html")
 public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
 
@@ -27,15 +28,19 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
     @DataField
     HTMLDivElement form;
 
+    @Inject
     @DataField
     HTMLInputElement textBox;
 
+    @Inject
     @DataField
     HTMLButtonElement birdBtn;
 
+    @Inject
     @DataField
     HTMLButtonElement cowBtn;
 
+    @Inject
     @DataField
     HTMLButtonElement dogBtn;
 
@@ -56,7 +61,7 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return form;
     }
 

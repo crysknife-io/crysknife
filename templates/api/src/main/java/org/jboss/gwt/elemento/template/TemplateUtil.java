@@ -66,8 +66,8 @@ public final class TemplateUtil {
                     newElement.setAttribute(attributeName, oldElement.getAttribute(attributeName));
                 }
             }
-            if(oldElement.textContent != null){
-                newElement.textContent = oldElement.textContent;
+            if(oldElement.innerHTML != null){
+                newElement.innerHTML = oldElement.innerHTML;
             }
         }
     }
@@ -75,7 +75,7 @@ public final class TemplateUtil {
     // ------------------------------------------------------ custom elements
 
     public static void replaceIsElement(HTMLElement context, String identifier, IsElement newElement) {
-        replaceElement(context, identifier, newElement.element());
+        replaceElement(context, identifier, newElement.getElement());
     }
 
     public static <E> E resolveCustomElement(HTMLElement context, String identifier) {
