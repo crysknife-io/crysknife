@@ -1,5 +1,7 @@
 package org.treblereel.gwt.crysknife.generator.graph;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.lang.model.element.TypeElement;
@@ -18,13 +20,14 @@ public class Graph {
 
     private final IOCContext context;
 
-    private final MutableGraph<TypeElement> graph = GraphBuilder.directed().build();
+    private final MutableGraph<TypeElement> graph = GraphBuilder.directed().allowsSelfLoops(false).build();
 
     public Graph(IOCContext context) {
         this.context = context;
     }
 
     public void process(TypeElement application) {
+        Set<TypeElement> state = new HashSet<>();
         Stack<TypeElement> stack = new Stack<>();
         stack.push(application);
         while (!stack.isEmpty()) {
@@ -39,7 +42,11 @@ public class Graph {
                         .equals(scan)) {
                     graph.putEdge(scan, deps.getType());
                 }
-                stack.push(deps.getType());
+
+                if(!state.contains(deps.getType())) {
+                    stack.push(deps.getType());
+                    state.add(deps.getType());
+                }
             });
         }
 

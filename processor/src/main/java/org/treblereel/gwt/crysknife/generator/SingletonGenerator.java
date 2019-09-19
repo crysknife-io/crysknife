@@ -10,6 +10,7 @@ import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -35,10 +36,10 @@ public class SingletonGenerator extends ScopedBeanGenerator {
         BlockStmt body = builder.getGetMethodDeclaration().getBody().get();
 
         FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(instance, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-        ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(generateInstanceInitializer(builder, beanDefinition)));
+        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(instance, new NullLiteralExpr(), BinaryExpr.Operator.NOT_EQUALS));
+        ifStmt.setThenStmt(new ReturnStmt(instance));
         body.addAndGetStatement(ifStmt);
-
+        body.addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
         builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
     }
 }

@@ -2,10 +2,12 @@ package org.treblereel.gwt.crysknife.generator.context;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.inject.Named;
 import javax.lang.model.element.Element;
@@ -83,13 +85,16 @@ public class IOCContext {
         return blacklist;
     }
 
+    private Set<TypeElement> inProcess = new HashSet<>();
+
     public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
         BeanDefinition beanDefinition;
         if (getBeans().containsKey(typeElement)) {
-            beanDefinition = getBeans().get(typeElement);
+            return getBeans().get(typeElement);
         } else {
             beanDefinition = BeanDefinition.of(typeElement, this);
             getBeans().put(typeElement, beanDefinition);
+            beanDefinition.processInjections(this);
         }
         checkNamedAndAdd(typeElement, beanDefinition);
         return beanDefinition;

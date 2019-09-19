@@ -59,7 +59,7 @@ public class ComponentInjectionResolverScanner {
                                                                            WiringElementType.DEPENDENT_BEAN);
 
         unmanaged.forEach(bean -> {
-            BeanDefinition beanDefinition = BeanDefinition.of(bean, iocContext);
+            BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(bean);
             if (iocContext.getGenerators().get(meta).stream().findFirst().isPresent()) {
                 IOCGenerator gen = iocContext.getGenerators().get(meta).stream().findFirst().get();
                 beanDefinition.setGenerator(gen);

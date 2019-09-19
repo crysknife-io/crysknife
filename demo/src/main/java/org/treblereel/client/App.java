@@ -9,6 +9,7 @@ import com.google.gwt.core.client.EntryPoint;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
+import org.gwtproject.dom.client.Element;
 import org.gwtproject.resources.client.ResourceCallback;
 import org.gwtproject.resources.client.ResourceException;
 import org.treblereel.client.events.Address;
@@ -16,6 +17,7 @@ import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.events.User;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.inject.Injector;
+import org.treblereel.client.inject.cyclic.BeanOne;
 import org.treblereel.client.inject.iface.IBean;
 import org.treblereel.client.resources.TextResource;
 import org.treblereel.client.template.TemplatedBean;
@@ -52,6 +54,9 @@ public class App implements EntryPoint {
     DependentBeans dependentBeans;
 
     @Inject
+    DependentBeans dependentBeans1;
+
+    @Inject
     TransitiveInjection transitiveInjection;
 
     @Inject
@@ -81,6 +86,9 @@ public class App implements EntryPoint {
     @Inject
     TextResource textResource;
 
+    @Inject
+    BeanOne one;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -88,12 +96,19 @@ public class App implements EntryPoint {
 
     @PostConstruct
     public void init() {
-        DomGlobal.document.body.appendChild(dependentBeans.element());
-        DomGlobal.document.body.appendChild(singletonBeans.element());
-        DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.element());
-        DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.element());
-        DomGlobal.document.body.appendChild(transitiveInjection.element());
-        DomGlobal.document.body.appendChild(beanWithCDIEvents.element());
+
+        Element.createObject();
+
+        DomGlobal.console.log("user_agent " + org.treblereel.client.Element.UserAgentHolder.user_agent);
+
+
+
+        DomGlobal.document.body.appendChild(dependentBeans.getElement());
+        DomGlobal.document.body.appendChild(singletonBeans.getElement());
+        DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.getElement());
+        DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.getElement());
+        DomGlobal.document.body.appendChild(transitiveInjection.getElement());
+        DomGlobal.document.body.appendChild(beanWithCDIEvents.getElement());
 
         element.textContent = "textContent";
 
@@ -139,4 +154,5 @@ public class App implements EntryPoint {
 
         DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
     }
+
 }

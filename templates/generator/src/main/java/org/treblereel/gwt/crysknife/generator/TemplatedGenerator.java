@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.Filer;
@@ -35,8 +38,11 @@ import javax.tools.StandardLocation;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -46,6 +52,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -126,6 +133,7 @@ import org.gwtproject.event.dom.client.FocusEvent;
 import org.gwtproject.event.dom.client.GestureChangeEvent;
 import org.gwtproject.event.dom.client.GestureEndEvent;
 import org.gwtproject.event.dom.client.GestureStartEvent;
+import org.gwtproject.event.dom.client.KeyDownEvent;
 import org.gwtproject.event.dom.client.KeyPressEvent;
 import org.gwtproject.event.dom.client.KeyUpEvent;
 import org.gwtproject.event.dom.client.LoadEvent;
@@ -171,6 +179,7 @@ import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
+import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 import static java.util.Arrays.asList;
@@ -264,6 +273,7 @@ public class TemplatedGenerator extends IOCGenerator {
         EVENTS.put(GestureEndEvent.class.getCanonicalName(), "gestureend");
         EVENTS.put(GestureStartEvent.class.getCanonicalName(), "gesturestart");
         EVENTS.put(KeyPressEvent.class.getCanonicalName(), "keypress");
+        EVENTS.put(KeyDownEvent.class.getCanonicalName(), "keydown");
         EVENTS.put(KeyUpEvent.class.getCanonicalName(), "keyup");
         EVENTS.put(LoadedMetadataEvent.class.getCanonicalName(), "loadedmetadata");
         EVENTS.put(LoadEvent.class.getCanonicalName(), "load");
@@ -385,11 +395,60 @@ public class TemplatedGenerator extends IOCGenerator {
 
     private void code(ClassBuilder builder, TemplateContext templateContext) {
         addImports(builder);
+        generateWrapper(builder, templateContext);
         setStylesheet(builder, templateContext);
-        setAttributes(builder, templateContext);
-        setInnerHTML(builder, templateContext);
         processDataFields(builder, templateContext);
         processEventHandlers(builder, templateContext);
+    }
+
+    private void generateWrapper(ClassBuilder builder, TemplateContext templateContext) {
+        ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
+        wrapper.setName(beanDefinition.getClassName());
+        wrapper.addExtendedType(beanDefinition.getQualifiedName());
+        wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
+        String element = getElementFromTag(templateContext);
+
+
+        wrapper.addFieldWithInitializer(element,
+                                        "root",
+                                        new CastExpr(new ClassOrInterfaceType().setName(element), new MethodCallExpr(new FieldAccessExpr(
+                                                new NameExpr("elemental2.dom.DomGlobal"), "document"),
+                                                                                                                                          "createElement").addArgument(
+                                                new StringLiteralExpr(templateContext.getRoot().getTag()))),
+                                        com.github.javaparser.ast.Modifier.Keyword.PRIVATE,
+                                        com.github.javaparser.ast.Modifier.Keyword.FINAL);
+
+        ConstructorDeclaration constructor = wrapper.addConstructor(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+        if (beanDefinition.getConstructorInjectionPoint() != null) {
+            List<String> args = new LinkedList<>();
+            for (FieldPoint argument : beanDefinition.getConstructorInjectionPoint().getArguments()) {
+                constructor.addAndGetParameter(argument.getType().getQualifiedName().toString(), argument.getName());
+                args.add(argument.getName());
+            }
+            StringJoiner joiner = new StringJoiner(",");
+            args.stream().forEach(arg -> joiner.add(arg));
+            constructor.getBody().addStatement("super(" + joiner.toString() + ");");
+
+        }
+        setAttributes(constructor.getBody(), templateContext);
+        setInnerHTML(constructor.getBody(), templateContext);
+
+        addGetElement(wrapper, templateContext);
+
+        builder.getClassDeclaration().addMember(wrapper);
+    }
+
+    private void addGetElement(ClassOrInterfaceDeclaration wrapper, TemplateContext templateContext) {
+        String element = getElementFromTag(templateContext);
+
+        MethodDeclaration method = wrapper.addMethod("getElement",
+                                                     com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+        method.addAnnotation(Override.class);
+        method.setType(element);
+        ReturnStmt _return = new ReturnStmt(new CastExpr(new ClassOrInterfaceType().setName(element),
+                                                         new FieldAccessExpr(new ThisExpr(), "root")));
+
+        method.getBody().get().addStatement(_return);
     }
 
     private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
@@ -427,14 +486,13 @@ public class TemplatedGenerator extends IOCGenerator {
                     final LessSource source = new LessSource(templateContext.getStylesheet().getFile());
                     final LessCompiler compiler = new LessCompiler();
                     final String compiledCss = compiler.compile(source);
-
                     builder.getGetMethodDeclaration()
                             .getBody()
                             .get().addStatement(new MethodCallExpr(
                             new MethodCallExpr(
                                     new ClassOrInterfaceType()
                                             .setName("StyleInjector")
-                                            .getNameAsExpression(), "fromString").addArgument(new StringLiteralExpr(compiledCss)), "inject"));
+                                            .getNameAsExpression(), "fromString").addArgument(new StringLiteralExpr(org.gwtproject.resources.rg.Generator.escape(compiledCss))), "inject"));
                 } catch (LessException | IOException e) {
                     throw new Error("Unable to process Less " + templateContext.getStylesheet());
                 }
@@ -452,13 +510,13 @@ public class TemplatedGenerator extends IOCGenerator {
                                                             .setName("TemplateUtil")
                                                             .getNameAsExpression(), "resolveElementAs")
                         .setTypeArguments(new ClassOrInterfaceType().setName(element.getType()))
-                        .addArgument("this.instance.element()")
+                        .addArgument("this.instance.getElement()")
                         .addArgument(new StringLiteralExpr(element.getSelector()));
             } else {
                 resolveElement = new MethodCallExpr(new ClassOrInterfaceType()
                                                             .setName("TemplateUtil")
                                                             .getNameAsExpression(), "resolveElement")
-                        .addArgument("this.instance.element()")
+                        .addArgument("this.instance.getElement()")
                         .addArgument(new StringLiteralExpr(element.getName()));
             }
 
@@ -466,7 +524,7 @@ public class TemplatedGenerator extends IOCGenerator {
 
             ifStmt.setElseStmt(new BlockStmt().addAndGetStatement(new MethodCallExpr(new ClassOrInterfaceType()
                                                                                              .setName("TemplateUtil").getNameAsExpression(), "replaceElement")
-                                                                          .addArgument("this.instance.element()")
+                                                                          .addArgument("this.instance.getElement()")
                                                                           .addArgument(new StringLiteralExpr(element.getSelector()))
                                                                           .addArgument("this.instance." + element.getName())));
 
@@ -500,28 +558,21 @@ public class TemplatedGenerator extends IOCGenerator {
         builder.getClassCompilationUnit().addImport(TemplateUtil.class);
     }
 
-    private void setInnerHTML(ClassBuilder builder, TemplateContext templateContext) {
-        builder.getGetMethodDeclaration()
-                .getBody()
-                .get()
-                .addAndGetStatement(
-                        new AssignExpr().setTarget(new FieldAccessExpr(
-                                new MethodCallExpr(
-                                        new FieldAccessExpr(
-                                                new ThisExpr(), "instance"), "element"), "innerHTML"))
-                                .setValue(new StringLiteralExpr(templateContext.getRoot().getInnerHtml())));
+    private void setInnerHTML(BlockStmt block, TemplateContext templateContext) {
+        block.addAndGetStatement(
+                new AssignExpr().setTarget(new FieldAccessExpr(
+                        new FieldAccessExpr(
+                                new ThisExpr(), "root"), "innerHTML"))
+                        .setValue(new StringLiteralExpr(templateContext.getRoot().getInnerHtml())));
     }
 
-    private void setAttributes(ClassBuilder builder, TemplateContext templateContext) {
+    private void setAttributes(BlockStmt block, TemplateContext templateContext) {
         templateContext.getRoot().getAttributes().forEach(attribute -> {
-            builder.getGetMethodDeclaration()
-                    .getBody()
-                    .get()
-                    .addAndGetStatement(new MethodCallExpr(new MethodCallExpr(
-                            new FieldAccessExpr(
-                                    new ThisExpr(), "instance"), "element"), "setAttribute")
-                                                .addArgument(new StringLiteralExpr(attribute.getKey()))
-                                                .addArgument(new StringLiteralExpr(attribute.getValue())));
+            block.addAndGetStatement(new MethodCallExpr(
+                    new FieldAccessExpr(
+                            new ThisExpr(), "root"), "setAttribute")
+                                             .addArgument(new StringLiteralExpr(attribute.getKey()))
+                                             .addArgument(new StringLiteralExpr(attribute.getValue())));
         });
     }
 
@@ -815,6 +866,7 @@ public class TemplatedGenerator extends IOCGenerator {
                     templateResource = temp;
                 }
             } catch (IOException e) {
+                    System.out.println(String.format("Unable to find %s in %s: ", fqTemplate, location.getName()));
             }
         }
         return templateResource;
@@ -938,5 +990,17 @@ public class TemplatedGenerator extends IOCGenerator {
         } else {
             this.messager.printMessage(Diagnostic.Kind.ERROR, processingException.getMessage());
         }
+    }
+
+    private String getElementFromTag(TemplateContext context) {
+        java.util.Optional<Map.Entry<String, Collection<String>>> result = HTML_ELEMENTS.asMap()
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue()
+                        .contains(context.getRoot().getTag())).findFirst();
+        if(result.isPresent()) {
+            return result.get().getKey();
+        }
+        return "elemental2.dom.HTMLElement";
     }
 }

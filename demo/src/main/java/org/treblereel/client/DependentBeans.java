@@ -1,8 +1,10 @@
 package org.treblereel.client;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
@@ -30,6 +32,7 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
     @DataField
     HTMLInputElement textBox;
 
+    @Inject
     @DataField
     HTMLButtonElement checkBtn;
 
@@ -55,11 +58,6 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
         textBox.textContent = text;
     }
 
-    @Override
-    public HTMLDivElement element() {
-        return form;
-    }
-
     @EventHandler("checkBtn")
     public void onFallbackInputChange(final ClickEvent e) {
         StringBuffer sb = new StringBuffer();
@@ -70,6 +68,16 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
         sb.append(", ? equal " + (beanOne1Instance.getRandom() == beanOne2Instance.getRandom()));
 
         setText(sb.toString());
+    }
+
+    @PostConstruct
+    public void init(){
+        DomGlobal.console.log("CREATED ");
+    }
+
+    @Override
+    public HTMLDivElement getElement() {
+        return form;
     }
 }
 

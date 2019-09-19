@@ -26,9 +26,11 @@ public class TransitiveInjection implements IsElement<HTMLDivElement> {
     @DataField
     HTMLDivElement form;
 
+    @Inject
     @DataField
     HTMLInputElement textBox;
 
+    @Inject
     @DataField
     HTMLButtonElement checkBtn;
 
@@ -40,7 +42,7 @@ public class TransitiveInjection implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return form;
     }
 

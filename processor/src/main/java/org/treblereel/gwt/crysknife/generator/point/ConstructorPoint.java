@@ -36,16 +36,4 @@ public class ConstructorPoint extends Point {
         return arguments;
     }
 
-/*    @Override
-    public Expression generate() {
-        FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-        ObjectCreationExpr newInstance = new ObjectCreationExpr();
-        newInstance.setType(new ClassOrInterfaceType()
-                                    .setName(getName()));
-
-        for (FieldPoint argument : arguments) {
-            newInstance.addArgument(new MethodCallExpr(new NameExpr(Utils.toVariableName(argument.getType())), "get"));
-        }
-        return new AssignExpr().setTarget(instance).setValue(newInstance);
-    }*/
 }

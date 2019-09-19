@@ -30,6 +30,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     @DataField
     HTMLDivElement form;
 
+    @Inject
     @DataField
     HTMLInputElement textBox;
 
@@ -39,6 +40,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     @Inject
     Event<Address> eventAddress;
 
+    @Inject
     @DataField
     HTMLButtonElement sendUserEvent, sendAddressEvent;
 
@@ -76,7 +78,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return form;
     }
 

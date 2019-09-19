@@ -29,7 +29,7 @@ public class TestQualifiers {
 
     @Test
     public void testQualifierConstructorInjection() {
-        Assert.assertEquals(QualifierBeanOne.class.getCanonicalName(), app.qualifierConstructorInjection.qualifierBeanOne.say());
+        Assert.assertEquals(QualifierBeanOne.class, app.qualifierConstructorInjection.qualifierBeanOne.getClass());
         Assert.assertEquals(QualifierBeanTwo.class.getCanonicalName(), app.qualifierConstructorInjection.qualifierBeanTwo.say());
     }
 
