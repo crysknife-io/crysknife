@@ -1,13 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
-    <output url="file://$MODULE_DIR$/../target/classes" />
-    <output-test url="file://$MODULE_DIR$/../target/test-classes" />
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.11" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.event:gwt-event:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.event:gwt-event-dom:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.dom:gwt-dom:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.realityforge.com.google.jsinterop:base:1.0.0-b2-e6d791f" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.safecss:gwt-safecss:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.regexp:gwt-regexp:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: com.google.elemental2:elemental2-core:sources:1.0.0-RC1" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.dom:gwt-dom-style-definitions:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: com.google.elemental2:elemental2-dom:1.0.0-RC1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.jsinterop:jsinterop-annotations:1.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.jsinterop:base:1.0.0-RC1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.elemental2:elemental2-core:1.0.0-RC1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.elemental2:elemental2-promise:1.0.0-RC1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.elemental2:elemental2-dom:sources:1.0.0-RC1" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.event:gwt-event-legacy:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.core:gwt-core:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.widgets:gwt-widgets:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.i18n:gwt-datetimeformat:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.i18n:gwt-cldr:sources:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.event:gwt-logical-event:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject:editors:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.event:gwt-event:sources:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.animation:gwt-animation:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.timer:gwt-timer:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.layout:gwt-layout:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.aria:gwt-aria:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.user.window:gwt-window:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.http:gwt-http:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.user.history:gwt-history:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.uibinder:gwt-uibinder-client:1.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.i18n:gwt-cldr:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.resources:gwt-resources-api:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.gwtproject.callback:gwt-callback:HEAD-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:28.1-jre" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:3.0.2" level="project" />
+    <orderEntry type="library" name="Maven: org.checkerframework:checker-qual:2.8.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.errorprone:error_prone_annotations:2.3.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.j2objc:j2objc-annotations:1.3" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.mojo:animal-sniffer-annotations:1.18" level="project" />
+    <orderEntry type="module" module-name="crysknife-annotations" scope="PROVIDED" />
+    <orderEntry type="module" module-name="templates-api" />
+    <orderEntry type="library" name="Maven: org.gwtproject.safehtml:gwt-safehtml:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: com.google.jsilver:jsilver:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.11.3" level="project" />
   </component>
 </module>

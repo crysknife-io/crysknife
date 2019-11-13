@@ -74,7 +74,9 @@ public class ComponentInjectionResolverScanner {
         BeanDefinition beanDefinition = null;
         if (field.isNamed()) {
             if (!iocContext.getBlacklist().contains(field.getType().getQualifiedName().toString())) {
-                beanDefinition = iocContext.getQualifiers().get(field.getType()).get(field.getNamed());
+                if(iocContext.getQualifiers().containsKey(field.getType())) {
+                    beanDefinition = iocContext.getQualifiers().get(field.getType()).get(field.getNamed());
+                }
             } else {
                 beanDefinition = iocContext.getBeans().get(field.getType());
             }

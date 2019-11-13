@@ -18,9 +18,8 @@ package org.treblereel.gwt.crysknife.databinding.client.api;
 
 import java.awt.Checkbox;
 
-import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.TextBox;
 import org.gwtproject.user.client.TakesValue;
+import org.gwtproject.user.client.ui.TextBox;
 
 /**
  * Contract for converters that perform model value to component value transformations and vice versa.

@@ -62,7 +62,7 @@ public final class TemplateUtil {
         if (oldElement != null && oldElement.parentNode != null) {
             oldElement.parentNode.replaceChild(newElement, oldElement);
             if (oldElement.hasAttributes()) {
-                for (String attributeName : oldElement.getAttributeNames()) {
+                for (String attributeName : oldElement.getAttributeNames().asList()) {
                     newElement.setAttribute(attributeName, oldElement.getAttribute(attributeName));
                 }
             }

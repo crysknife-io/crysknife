@@ -10,8 +10,9 @@ How to build
 2. 'mvn clean install'
 3. choose another folder and 'git clone https://github.com/treblereel/j2clmavenplugin.git'
 4. 'mvn clean install'
-5. to run demo run 'mvn package -Pdevmode' within crysknife/demo folder</br>
-5.1 open browser http://127.0.0.1:8080/index.html
+5. to run demo run 'mvn clean j2cl:watch' within crysknife/demo folder</br>
+5.1. open another console and run 'mvn tomcat7:run'
+5.2. open browser http://127.0.0.1:8080/demo
 6. to build a .war run 'mvn clean package -Pbuild' within crysknife/demo folder
 
 

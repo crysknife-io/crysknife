@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.GwtIncompatible;
+
 /**
  * Extracts expressions like {@code ${foo}} from a string and returns a map with the expression as key and
  * the plain text (w/o {@code ${}}) as value.
@@ -27,6 +29,7 @@ public class ExpressionParser {
 
     private static final Pattern PATTERN = Pattern.compile("\\$\\{(.*?)\\}");
 
+    @GwtIncompatible
     public Map<String, String> parse(String input) {
         if (input != null) {
             Map<String, String> matches = new HashMap<>();

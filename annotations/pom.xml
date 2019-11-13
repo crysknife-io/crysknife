@@ -44,16 +44,6 @@
         <tag>HEAD</tag>
     </scm>
 
-
-    <dependencies>
-        <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
-            <version>1</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
     <build>
         <resources>
             <resource>
