@@ -6,16 +6,9 @@ import javax.inject.Named;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.util.Utils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -46,7 +39,7 @@ public class FieldPoint extends Point {
 
     //TODO
     public boolean isQualified() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     public String getNamed() {

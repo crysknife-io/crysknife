@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 
 import javax.annotation.processing.FilerException;
 import javax.inject.Provider;
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import com.github.javaparser.ast.Modifier;
@@ -71,6 +72,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             String fileName = Utils.getQualifiedFactoryName(beanDefinition.getType());
             String source = clazz.toSourceCode();
             build(fileName, source, context);
+        } catch (javax.annotation.processing.FilerException e1) {
+            context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.NOTE, e1.getMessage());
         } catch (IOException e1) {
             throw new Error(e1);
         }

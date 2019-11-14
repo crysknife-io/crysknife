@@ -80,4 +80,3 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
         return form;
     }
 }
-

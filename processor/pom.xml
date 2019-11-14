@@ -34,6 +34,13 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
+  <scm>
+    <url>https://github.com/treblereel/three4g</url>
+    <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
+    <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
+    <tag>HEAD</tag>
+  </scm>
+
   <dependencies>
     <dependency>
       <groupId>com.google.auto</groupId>
@@ -46,14 +53,10 @@
       <version>${auto.service.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-      <version>1</version>
-    </dependency>
-    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -63,12 +66,7 @@
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
-      <version>3.14.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.javaparser</groupId>
-      <artifactId>javaparser-symbol-solver-core</artifactId>
-      <version>3.14.2</version>
+      <version>3.13.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -78,18 +76,13 @@
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>4.8.24</version>
+      <version>4.8.53</version>
     </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>RELEASE</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -100,11 +93,6 @@
         <directory>src/main/resources</directory>
       </resource>
     </resources>
-    <testResources>
-      <testResource>
-        <directory>${project.basedir}/src/test/java</directory>
-      </testResource>
-    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -121,44 +109,36 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.1</version>
-        <configuration>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${project.build.sourceDirectory}</additionalClasspathElement>
-            <additionalClasspathElement>${project.build.testSourceDirectory}</additionalClasspathElement>
-            <additionalClasspathElement>${project.build.directory}/generated-test-sources/test-annotations
-            </additionalClasspathElement>
-          </additionalClasspathElements>
-          <useManifestOnlyJar>false</useManifestOnlyJar>
-          <forkMode>always</forkMode>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
+        <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <id>default-compile</id>
+            <phase>package</phase>
             <goals>
-              <goal>compile</goal>
+              <goal>shade</goal>
             </goals>
             <configuration>
-              <showWarnings>true</showWarnings>
-              <compilerArgument>-proc:none</compilerArgument>
+              <minimizeJar>true</minimizeJar>
+              <filters>
+                <filter>
+                  <artifact>com.google.guava:guava</artifact>
+                  <includes>
+                    <include>com/google/common/base</include>
+                  </includes>
+                  <excludes>
+                    <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>*:*:*:*</artifact>
+                  <excludes>
+                    <exclude>**/*.java</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
-          </execution>
-          <execution>
-            <id>default-testCompile</id>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
 </project>

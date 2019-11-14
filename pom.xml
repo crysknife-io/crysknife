@@ -42,12 +42,12 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.version>3.6.0</maven.compiler.version>
+        <maven.compiler.version>3.8.0</maven.compiler.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javapoet.version>1.11.1</javapoet.version>
         <auto.common.version>0.10</auto.common.version>
-        <auto.service.version>1.0-rc4</auto.service.version>
+        <auto.service.version>1.0-rc6</auto.service.version>
     </properties>
 
     <modules>
@@ -238,5 +238,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

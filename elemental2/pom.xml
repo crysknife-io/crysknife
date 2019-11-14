@@ -48,28 +48,27 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.vertispan.elemental2</groupId>
+      <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>crysknife-annotations</artifactId>
+      <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.vertispan.elemental2</groupId>
-      <artifactId>elemental2-core</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
-      <groupId>com.vertispan.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <groupId>com.github.javaparser</groupId>
+      <artifactId>javaparser-core</artifactId>
+      <version>3.13.1</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

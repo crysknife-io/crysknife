@@ -5,13 +5,12 @@ import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import com.google.gwt.core.client.EntryPoint;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import org.gwtproject.dom.client.Element;
 import org.gwtproject.resources.client.ResourceCallback;
 import org.gwtproject.resources.client.ResourceException;
+import org.gwtproject.core.client.EntryPoint;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.events.User;
@@ -43,9 +42,6 @@ public class App implements EntryPoint {
 
     @Inject
     DependentBean dependentBean;
-
-    //@Inject
-    Elemental2Bean elemental2Bean;
 
     @Inject
     SingletonBeans singletonBeans;
@@ -96,11 +92,6 @@ public class App implements EntryPoint {
 
     @PostConstruct
     public void init() {
-
-        Element.createObject();
-
-        DomGlobal.console.log("user_agent " + org.treblereel.client.Element.UserAgentHolder.user_agent);
-
 
 
         DomGlobal.document.body.appendChild(dependentBeans.getElement());

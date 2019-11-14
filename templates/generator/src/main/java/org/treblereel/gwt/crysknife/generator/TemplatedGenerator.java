@@ -365,6 +365,8 @@ public class TemplatedGenerator extends IOCGenerator {
         } else {
             return new StyleSheet(templated.stylesheet(), new File(getFileObject(templated.stylesheet()).toUri()));
         }
+        System.out.println(String.format("Unable to find stylesheet for %s", type.getQualifiedName()));
+
         return null;
     }
 
@@ -866,14 +868,14 @@ public class TemplatedGenerator extends IOCGenerator {
                     templateResource = temp;
                 }
             } catch (IOException e) {
-                    System.out.println(String.format("Unable to find %s in %s: ", fqTemplate, location.getName()));
+
             }
         }
         return templateResource;
     }
 
     private FileObject findTemplate(String name, boolean log) {
-        FileObject resource = null;
+        FileObject resource;
         JavaFileManager.Location[] locations = new JavaFileManager.Location[]{
                 StandardLocation.SOURCE_PATH,
                 StandardLocation.CLASS_PATH,
@@ -887,9 +889,7 @@ public class TemplatedGenerator extends IOCGenerator {
                     return resource;
                 }
             } catch (IOException ignored) {
-                if (log) {
-                    System.out.println(String.format("Unable to find %s in %s: %s", name, location.getName(), ignored.getMessage()));
-                }
+
             }
         }
         return null;

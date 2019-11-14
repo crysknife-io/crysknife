@@ -34,34 +34,20 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
-  <scm>
-    <url>https://github.com/treblereel/three4g</url>
-    <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
-    <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
-    <tag>HEAD</tag>
-  </scm>
-
-
   <properties>
     <safehtml.version>1.0-SNAPSHOT</safehtml.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>com.vertispan.elemental2</groupId>
+      <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-      <scope>provided</scope>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.core</groupId>
-      <artifactId>gwt-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>gwt-resources</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.gwtproject.safehtml</groupId>
+      <artifactId>gwt-safehtml</artifactId>
+      <version>${safehtml.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>
