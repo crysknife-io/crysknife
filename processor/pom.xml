@@ -80,6 +80,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>28.1-jre</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
@@ -120,10 +126,12 @@
               <minimizeJar>true</minimizeJar>
               <filters>
                 <filter>
-                  <artifact>com.google.guava:guava</artifact>
+<!--                  <artifact>com.google.guava:guava</artifact>
                   <includes>
                     <include>com/google/common/base</include>
-                  </includes>
+                    <include>com/google/common/collect</include>
+                    <include>com/google/common/escape</include>
+                  </includes>-->
                   <excludes>
                     <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
                   </excludes>
@@ -135,6 +143,12 @@
                   </excludes>
                 </filter>
               </filters>
+              <relocations>
+                <relocation>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>com.shaded.google.common</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>

@@ -29,7 +29,6 @@ import org.gwtproject.dom.client.Node;
 import org.gwtproject.dom.client.TextAreaElement;
 import org.gwtproject.event.dom.client.KeyUpEvent;
 import org.gwtproject.event.dom.client.KeyUpHandler;
-import org.gwtproject.event.legacy.shared.GwtEvent;
 import org.gwtproject.event.logical.shared.ValueChangeEvent;
 import org.gwtproject.event.logical.shared.ValueChangeHandler;
 import org.gwtproject.event.shared.HandlerRegistration;
@@ -90,7 +89,6 @@ import java.util.function.Supplier;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
   final Multimap<String, Binding> bindings = LinkedHashMultimap.create();
-  final Map<String, PropertyType> propertyTypes = new HashMap<>();
   final Map<String, DataBinder> binders = new HashMap<>();
   final Map<String, Object> knownValues = new HashMap<>();
   final Collection<HandlerRegistration> modelChangeHandlers = new ArrayList<>();
@@ -98,9 +96,12 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
   PropertyChangeHandlerSupport propertyChangeHandlerSupport = new PropertyChangeHandlerSupport();
 
   final BindableProxy<T> proxy;
-  T target;
 
-  BindableProxyAgent(final BindableProxy<T> proxy, final T target) {
+  public final Map<String, PropertyType> propertyTypes = new HashMap<>();
+
+  public T target;
+
+  public BindableProxyAgent(final BindableProxy<T> proxy, final T target) {
     this.proxy = proxy;
     this.target = target;
   }
@@ -489,7 +490,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
           final Object component, final Consumer<Object> modelUpdater,
           Supplier<Map<Class<? extends org.gwtproject.event.shared.Event>, HandlerRegistration>> registrar) {
 
-    registrar = mergeToLeft(registrar, (com.google.common.base.Supplier<Map<Class<? extends org.gwtproject.event.shared.Event>, HandlerRegistration>>) () -> {
+    registrar = mergeToLeft(registrar, (Supplier<Map<Class<? extends org.gwtproject.event.shared.Event>, HandlerRegistration>>) () -> {
       DomGlobal.console.debug("Adding ValueBox keyup handler to {}", component);
       final HandlerRegistration keyUpHandlerReg = ((ValueBoxBase) component)
               .addKeyUpHandler(event -> modelUpdater.accept(((ValueBoxBase) component).getText()));
@@ -669,7 +670,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
    * changed). This method is invoked in case a bound property changed outside
    * the property's write method (when using a non accessor method).
    */
-  void updateWidgetsAndFireEvents() {
+  public void updateWidgetsAndFireEvents() {
     for (final String property : propertyTypes.keySet()) {
       final Object knownValue = knownValues.get(property);
       final Object actualValue = proxy.get(property);
@@ -702,7 +703,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
    * @param newValue
    *          The new value of the property.
    */
-  <P> void updateWidgetsAndFireEvent(final boolean sync, final String property, final P oldValue, final P newValue) {
+  public <P> void updateWidgetsAndFireEvent(final boolean sync, final String property, final P oldValue, final P newValue) {
     updateWidgetsAndFireEvent(sync, property, oldValue, newValue, null);
   }
 

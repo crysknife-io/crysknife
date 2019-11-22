@@ -41,12 +41,6 @@
     <tag>HEAD</tag>
   </scm>
 
-
-  <properties>
-    <safehtml.version>1.0-SNAPSHOT</safehtml.version>
-    <lesscss.version>1.7.0.1.1</lesscss.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -58,6 +52,11 @@
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>databinding-api</artifactId>
       <version>0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.9</version>
     </dependency>
   </dependencies>
 
