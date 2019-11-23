@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <label setfor="nameBox" class="control-label">Data binding demo</label>
+    <div class="form-group" data-field="form">
+        <input id="nameBox" class="input-inline" style="width: 200px;" data-field="nameBox" placeholder="name"> Name
+        <input id="cityBox" class="input-inline" style="width: 200px;" data-field="cityBox" placeholder="city"> City
+        <input id="ageBox" type="number" class="input-inline" style="width: 200px;" data-field="ageBox" placeholder="age"> Age
+    </div>
+    <div class="form-group" data-field="form">
+        <button class="input-inline btn-success" style="width: 100px;" data-field="modelBtn">show model</button>
+        <button class="input-inline btn-success" style="width: 200px;" data-field="workingModelBtn">show working model</button>
+
+        <button class="input-inline btn-warning" style="width: 100px;" data-field="pauseBtn">pause</button>
+        <button class="input-inline btn-success" style="width: 100px;" data-field="resumeBtn">resume</button>
+    </div>
+    <input class="control-label" data-field="resultBox" style="width: 800px;" disabled>
+</div>
+</body>
+</html>

@@ -69,14 +69,6 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         clazz.getExtendedTypes().add(factory);
     }
 
-    //@Override
-    public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName("javax.enterprise.event.Event_Factory");
-        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-    }
-
     @Override
     public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
         classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
@@ -87,7 +79,6 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
                 .getTypeArguments().get(0) + ".class)");
     }
 
-    //@Override
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
@@ -98,7 +89,6 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         classBuilder.addStatementToConstructor(assign);
     }
 
-    //@Override
     public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         MethodDeclaration getMethodDeclaration = classBuilder
                 .addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);

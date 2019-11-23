@@ -94,7 +94,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
         clazz.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.internal.Factory");
         clazz.getClassCompilationUnit().addImport(Provider.class);
-        //clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
         clazz.setClassName(beanDefinition.getClassFactoryName());
 
         ClassOrInterfaceType factory = new ClassOrInterfaceType();

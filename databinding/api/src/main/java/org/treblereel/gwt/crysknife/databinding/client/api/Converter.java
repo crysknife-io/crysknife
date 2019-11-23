@@ -16,8 +16,6 @@
 
 package org.treblereel.gwt.crysknife.databinding.client.api;
 
-import java.awt.Checkbox;
-
 import org.gwtproject.user.client.TakesValue;
 import org.gwtproject.user.client.ui.TextBox;
 

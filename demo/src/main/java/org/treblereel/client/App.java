@@ -8,9 +8,12 @@ import javax.inject.Inject;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
+import jsinterop.annotations.JsFunction;
 import org.gwtproject.resources.client.ResourceCallback;
 import org.gwtproject.resources.client.ResourceException;
 import org.gwtproject.core.client.EntryPoint;
+import org.treblereel.client.databinding.Customer;
+import org.treblereel.client.databinding.Databinding;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.events.User;
@@ -23,6 +26,7 @@ import org.treblereel.client.template.TemplatedBean;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
+import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
 
 @Application
 @ComponentScan("org.treblereel.client")
@@ -85,6 +89,12 @@ public class App implements EntryPoint {
     @Inject
     BeanOne one;
 
+    @Inject
+    protected DataBinder<Customer> dataBinder;
+
+    @Inject
+    Databinding databinding;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -100,8 +110,7 @@ public class App implements EntryPoint {
         DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.getElement());
         DomGlobal.document.body.appendChild(transitiveInjection.getElement());
         DomGlobal.document.body.appendChild(beanWithCDIEvents.getElement());
-
-        element.textContent = "textContent";
+        DomGlobal.document.body.appendChild(databinding.getElement());
 
         DomGlobal.document.body.appendChild(element);
         DomGlobal.console.log(textResource.helloWorldRelative().getText());
@@ -123,7 +132,16 @@ public class App implements EntryPoint {
         }
 
         initToast();
+
     }
+
+    @FunctionalInterface
+    @JsFunction
+    interface FnWithoutArgs {
+        void onInvoke();
+    }
+
+
 
     private void initToast() {
         toast.id = "snackbar";

@@ -154,7 +154,7 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
 
   @Override
   public Object remove(final Object key) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " remove");
   }
 
   @Override
@@ -164,7 +164,7 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
 
   @Override
   public void clear() {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " clear");
   }
 
   @Override

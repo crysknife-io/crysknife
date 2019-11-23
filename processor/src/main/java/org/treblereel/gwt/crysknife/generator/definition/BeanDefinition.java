@@ -18,6 +18,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.google.auto.common.MoreElements;
@@ -98,11 +99,14 @@ public class BeanDefinition extends Definition {
 
     public void processInjections(IOCContext context) {
         Elements elements = context.getGenerationContext().getElements();
-
         elements.getAllMembers(element).forEach(mem -> {
             if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR) || mem.getKind().equals(ElementKind.FIELD))) {
                 if (mem.getModifiers().contains(Modifier.PRIVATE)) {
-                    System.out.println("Error, field must not be private " + mem + " in " + getQualifiedName());
+                    context.getGenerationContext()
+                            .getProcessingEnvironment()
+                            .getMessager()
+                            .printMessage(Diagnostic.Kind.ERROR,
+                                          String.format("Field [%s] in [%s] must not be private \n", mem,  getQualifiedName()));
                     throw new Error();
                 }
                 if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {

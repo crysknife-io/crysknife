@@ -16,7 +16,6 @@
 
 package org.treblereel.gwt.crysknife.databinding.client.api;
 
-import java.awt.Checkbox;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
