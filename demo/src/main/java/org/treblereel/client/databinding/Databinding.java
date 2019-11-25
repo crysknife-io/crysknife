@@ -41,6 +41,10 @@ public class Databinding implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
+    HTMLInputElement streetBox;
+
+    @Inject
+    @DataField
     HTMLInputElement ageBox;
 
     @Inject
@@ -68,7 +72,8 @@ public class Databinding implements IsElement<HTMLDivElement> {
 
         customer = dataBinder
                 .bind(nameBox, "name")
-                .bind(cityBox, "city")
+                .bind(cityBox, "address.city")
+                .bind(streetBox, "address.street.name")
                 .bind(ageBox, "age")
                 .getModel();
 

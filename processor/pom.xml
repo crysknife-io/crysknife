@@ -126,12 +126,6 @@
               <minimizeJar>true</minimizeJar>
               <filters>
                 <filter>
-<!--                  <artifact>com.google.guava:guava</artifact>
-                  <includes>
-                    <include>com/google/common/base</include>
-                    <include>com/google/common/collect</include>
-                    <include>com/google/common/escape</include>
-                  </includes>-->
                   <excludes>
                     <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
                   </excludes>
@@ -143,12 +137,12 @@
                   </excludes>
                 </filter>
               </filters>
-              <relocations>
+<!--              <relocations>
                 <relocation>
                   <pattern>com.google.common</pattern>
                   <shadedPattern>com.shaded.google.common</shadedPattern>
                 </relocation>
-              </relocations>
+              </relocations>-->
             </configuration>
           </execution>
         </executions>

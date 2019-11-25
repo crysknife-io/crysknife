@@ -9,8 +9,9 @@ How to build
 1. 'git clone git@github.com:treblereel/crysknife.git'
 2. 'mvn clean install'
 3. to run demo run 'mvn clean j2cl:watch' within crysknife/demo folder</br>
-4.1. open another console and run 'mvn tomcat7:run'
-4.2. open browser http://127.0.0.1:8080/demo
+4. 
+   1 open another console and run 'mvn tomcat7:run'
+   2 open browser http://127.0.0.1:8080/demo
 5. to build a .war run 'mvn clean package -Pbuild' within crysknife/demo folder
 
 

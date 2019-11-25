@@ -74,12 +74,6 @@
                   </excludes>
                 </filter>
               </filters>
-              <relocations>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>com.shaded.google.common</shadedPattern>
-                </relocation>
-              </relocations>
             </configuration>
           </execution>
         </executions>

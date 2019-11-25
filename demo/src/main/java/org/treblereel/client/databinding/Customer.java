@@ -11,7 +11,7 @@ public class Customer {
 
     private String name;
 
-    private String city;
+    private Address address;
 
     private int age;
 
@@ -25,12 +25,12 @@ public class Customer {
 
     }
 
-    public String getCity() {
-        return city;
+    public Address getAddress() {
+        return address;
     }
 
-    public void setCity(String city) {
-        this.city = city;
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public int getAge() {
@@ -45,7 +45,7 @@ public class Customer {
     public String toString() {
         return "Customer{" +
                 "name='" + name + '\'' +
-                ", city='" + city + '\'' +
+                ", address='" + address + '\'' +
                 ", age=" + age +
                 '}';
     }
