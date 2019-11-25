@@ -1,6 +1,7 @@
 package org.treblereel.gwt.crysknife.databinding.generator;
 
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -10,6 +11,7 @@ import javax.lang.model.util.Types;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.auto.common.MoreTypes;
 import org.apache.commons.lang3.StringUtils;
+import org.treblereel.gwt.crysknife.databinding.client.api.Bindable;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -59,6 +61,8 @@ public class BindableProxyGenerator {
         generatePropertyType(sb, type);
 
         sb.append(String.format("  p.put(\"this\", new PropertyType(%s.class, true, false));", type.getSimpleName()));
+        sb.append("  agent.copyValues();");
+        sb.append(newLine);
 
         sb.append(newLine);
         sb.append("}");
@@ -257,10 +261,29 @@ public class BindableProxyGenerator {
 
         type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField())
                 .forEach(f -> {
+
                     VariableElement elm = (VariableElement) f;
-                    sb.append("  ");
-                    sb.append(String.format("clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
-                    sb.append(newLine);
+                    if (!isBindableType(elm)) {
+                        sb.append("  ");
+                        sb.append(String.format("clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
+                        sb.append(newLine);
+                    } else {
+                        sb.append(String.format("if (t.%s() instanceof BindableProxy) {", getGetter(elm), type.getSimpleName()));
+                        sb.append(newLine);
+                        sb.append(String.format("  clone.%s((%s) ((BindableProxy) %s()).deepUnwrap());", getSetter(elm), f.asType(), getGetter(elm)));
+                        sb.append(newLine);
+                        sb.append(String.format("} else if (BindableProxyFactory.isBindableType(t.%s())) {", getGetter(elm)));
+                        sb.append(newLine);
+                        sb.append(String.format("  clone.%s((%s) ((BindableProxy) BindableProxyFactory.getBindableProxy(t.%s())).deepUnwrap());", getSetter(elm),
+                                                f.asType(), getGetter(elm)));
+                        sb.append(newLine);
+                        sb.append("} else {");
+                        sb.append(newLine);
+                        sb.append(String.format("  clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
+                        sb.append(newLine);
+                        sb.append("}");
+                        sb.append(newLine);
+                    }
                 });
 
         sb.append(" return clone;");
@@ -269,11 +292,19 @@ public class BindableProxyGenerator {
         sb.append(newLine);
     }
 
+    private boolean isBindableType(VariableElement elm) {
+        if (elm.asType().getKind().isPrimitive()) {
+            return false;
+        }
+        return MoreTypes.asTypeElement(elm.asType()).getAnnotation(Bindable.class) != null;
+    }
+
     private String getGetter(VariableElement variable) {
         String method = compileGetterMethodName(variable);
         return type.getEnclosedElements().stream()
                 .filter(e -> e.getKind().equals(ElementKind.METHOD))
                 .filter(e -> e.toString().equals(method))
+                .filter(e -> e.getModifiers().contains(Modifier.PUBLIC))
                 .findFirst().map(e -> e.getSimpleName().toString())
                 .orElseThrow(() -> new Error(String.format("Unable to find getter [%s] in [%s]", method, variable.getEnclosingElement())));
     }
@@ -299,6 +330,7 @@ public class BindableProxyGenerator {
         return type.getEnclosedElements().stream()
                 .filter(e -> e.getKind().equals(ElementKind.METHOD))
                 .filter(e -> e.toString().equals(method))
+                .filter(e -> e.getModifiers().contains(Modifier.PUBLIC))
                 .findFirst().map(e -> e.getSimpleName().toString())
                 .orElseThrow(() -> new Error(String.format("Unable to find setter [%s] in [%s]", method, variable.getEnclosingElement())));
     }
@@ -313,7 +345,7 @@ public class BindableProxyGenerator {
     }
 
     private void generatePropertyType(StringBuffer sb, VariableElement field) {
-        sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, false, false));", field.getSimpleName(), getFieldType(field.asType())));
+        sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, false));", field.getSimpleName(), getFieldType(field.asType()), isBindableType(field)));
         sb.append(newLine);
     }
 }

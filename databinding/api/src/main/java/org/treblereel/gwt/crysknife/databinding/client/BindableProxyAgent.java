@@ -110,7 +110,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
    * Copies the values of all properties to be able to compare them in case they
    * change outside a setter method.
    */
-  void copyValues() {
+  public void copyValues() {
     for (final String property : propertyTypes.keySet()) {
       if (!"this".equals(property)) {
         knownValues.put(property, proxy.get(property));
