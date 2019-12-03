@@ -48,7 +48,7 @@ public class ExpressionParser {
         if (!isExpression(pattern)) {
             throw new IllegalArgumentException("Invalid expression: " + pattern);
         }
-        if (pattern.lastIndexOf("${") != 0 || pattern.indexOf("}") != pattern.length() - 1) {
+        if (pattern.lastIndexOf("${") != 0 || pattern.indexOf('}') != pattern.length() - 1) {
             throw new IllegalArgumentException("Invalid expression: " + pattern);
         }
     }

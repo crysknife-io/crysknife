@@ -3,6 +3,9 @@ package org.treblereel.gwt.crysknife.generator;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,10 +18,8 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -32,9 +33,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
-import javax.tools.FileObject;
-import javax.tools.JavaFileManager;
-import javax.tools.StandardLocation;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -113,6 +111,7 @@ import elemental2.dom.HTMLTextAreaElement;
 import elemental2.dom.HTMLTrackElement;
 import elemental2.dom.HTMLUListElement;
 import elemental2.dom.HTMLVideoElement;
+import org.apache.commons.io.IOUtils;
 import org.gwtproject.event.dom.client.BlurEvent;
 import org.gwtproject.event.dom.client.CanPlayThroughEvent;
 import org.gwtproject.event.dom.client.ChangeEvent;
@@ -151,6 +150,9 @@ import org.gwtproject.event.dom.client.TouchCancelEvent;
 import org.gwtproject.event.dom.client.TouchEndEvent;
 import org.gwtproject.event.dom.client.TouchMoveEvent;
 import org.gwtproject.event.dom.client.TouchStartEvent;
+import org.gwtproject.resources.context.AptContext;
+import org.gwtproject.resources.ext.ResourceOracle;
+import org.gwtproject.resources.rg.resource.impl.ResourceOracleImpl;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.jboss.gwt.elemento.processor.AbortProcessingException;
 import org.jboss.gwt.elemento.processor.ExpressionParser;
@@ -293,21 +295,21 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     private IOCContext iocContext;
-    private Filer filer;
-    private RoundEnvironment roundEnvironment;
     private ProcessingEnvironment processingEnvironment;
     private Messager messager;
     private BeanDefinition beanDefinition;
+    private ResourceOracle oracle;
 
     @Override
     public void register(IOCContext iocContext) {
         this.iocContext = iocContext;
-        this.roundEnvironment = iocContext.getGenerationContext().getRoundEnvironment();
         this.processingEnvironment = iocContext.getGenerationContext().getProcessingEnvironment();
-        this.filer = processingEnvironment.getFiler();
         this.messager = processingEnvironment.getMessager();
 
         iocContext.register(Templated.class, WiringElementType.CLASS_DECORATOR, this);
+
+        oracle = new ResourceOracleImpl(new AptContext(iocContext.getGenerationContext().getProcessingEnvironment(),
+                                                       iocContext.getGenerationContext().getRoundEnvironment()));
     }
 
     @Override
@@ -357,13 +359,19 @@ public class TemplatedGenerator extends IOCGenerator {
             List<String> postfixes = Arrays.asList(".css", ".gss", ".less");
             String path = type.getQualifiedName().toString().replaceAll("\\.", "/");
             for (String postfix : postfixes) {
-                FileObject file = findTemplate(path + postfix, false);
-                if (new File(file.toUri()).exists()) {
-                    return new StyleSheet(type.getSimpleName() + "" + postfix, new File(file.toUri()));
+                URL file = oracle.findResource(path, postfix);
+                try {
+                    if (file != null && new File(file.toURI()).exists()) {
+                        return new StyleSheet(type.getSimpleName() + "" + postfix, new File(file.toURI()));
+                    }
+                } catch (URISyntaxException e) {
                 }
             }
         } else {
-            return new StyleSheet(templated.stylesheet(), new File(getFileObject(templated.stylesheet()).toUri()));
+            try {
+                return new StyleSheet(templated.stylesheet(), new File(oracle.findResource(templated.stylesheet()).toURI()));
+            } catch (URISyntaxException e) {
+            }
         }
         System.out.println(String.format("Unable to find stylesheet for %s", type.getQualifiedName()));
 
@@ -415,7 +423,7 @@ public class TemplatedGenerator extends IOCGenerator {
                                         "root",
                                         new CastExpr(new ClassOrInterfaceType().setName(element), new MethodCallExpr(new FieldAccessExpr(
                                                 new NameExpr("elemental2.dom.DomGlobal"), "document"),
-                                                                                                                                          "createElement").addArgument(
+                                                                                                                     "createElement").addArgument(
                                                 new StringLiteralExpr(templateContext.getRoot().getTag()))),
                                         com.github.javaparser.ast.Modifier.Keyword.PRIVATE,
                                         com.github.javaparser.ast.Modifier.Keyword.FINAL);
@@ -428,7 +436,7 @@ public class TemplatedGenerator extends IOCGenerator {
                 args.add(argument.getName());
             }
             StringJoiner joiner = new StringJoiner(",");
-            args.stream().forEach(arg -> joiner.add(arg));
+            args.stream().forEach(joiner::add);
             constructor.getBody().addStatement("super(" + joiner.toString() + ");");
 
         }
@@ -467,7 +475,7 @@ public class TemplatedGenerator extends IOCGenerator {
                 inner.setInterface(true);
                 inner.addAnnotation("Resource");
 
-                new JavaParser().parseBodyDeclaration("@Source(\"" + templateContext.getStylesheet().getStyle() + "\") @NotStrict CssResource getStyle();").ifSuccessful(result -> inner.addMember(result));
+                new JavaParser().parseBodyDeclaration("@Source(\"" + templateContext.getStylesheet().getStyle() + "\") @NotStrict CssResource getStyle();").ifSuccessful(inner::addMember);
                 builder.getClassDeclaration().addMember(inner);
 
                 String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";
@@ -523,13 +531,12 @@ public class TemplatedGenerator extends IOCGenerator {
             }
 
             ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new AssignExpr().setTarget(instance).setValue(resolveElement)));
-
             ifStmt.setElseStmt(new BlockStmt().addAndGetStatement(new MethodCallExpr(new ClassOrInterfaceType()
                                                                                              .setName("TemplateUtil").getNameAsExpression(), "replaceElement")
                                                                           .addArgument("this.instance.getElement()")
                                                                           .addArgument(new StringLiteralExpr(element.getSelector()))
-                                                                          .addArgument("this.instance." + element.getName())));
-
+                                                                          .addArgument("this.instance." + element.getName() + (element.getKind()
+                                                                                  .equals(DataElementInfo.Kind.IsElement) ? ".getElement()" : ""))));
             builder.getGetMethodDeclaration()
                     .getBody()
                     .get().addAndGetStatement(ifStmt);
@@ -569,13 +576,11 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     private void setAttributes(BlockStmt block, TemplateContext templateContext) {
-        templateContext.getRoot().getAttributes().forEach(attribute -> {
-            block.addAndGetStatement(new MethodCallExpr(
-                    new FieldAccessExpr(
-                            new ThisExpr(), "root"), "setAttribute")
-                                             .addArgument(new StringLiteralExpr(attribute.getKey()))
-                                             .addArgument(new StringLiteralExpr(attribute.getValue())));
-        });
+        templateContext.getRoot().getAttributes().forEach(attribute -> block.addAndGetStatement(new MethodCallExpr(
+                new FieldAccessExpr(
+                        new ThisExpr(), "root"), "setAttribute")
+                                         .addArgument(new StringLiteralExpr(attribute.getKey()))
+                                         .addArgument(new StringLiteralExpr(attribute.getValue()))));
     }
 
     private String generatedClassName(TypeElement type, String prefix, String suffix) {
@@ -823,12 +828,12 @@ public class TemplatedGenerator extends IOCGenerator {
         org.jsoup.nodes.Element root = null;
         String fqTemplate = org.jboss.gwt.elemento.processor.TypeSimplifier.packageNameOf(type).replace('.', '/') + "/" + templateSelector.template;
 
-        FileObject templateResource = getFileObject(fqTemplate);
-        if (templateResource == null) {
-            abortWithError(type, "Cannot find template \"%s\". Please make sure the template exists.", fqTemplate);
-        }
         try {
-            Document document = Jsoup.parse(templateResource.getCharContent(true).toString());
+            URL url = oracle.findResource(fqTemplate);
+            if (url == null) {
+                abortWithError(type, "Cannot find template \"%s\". Please make sure the template exists.", fqTemplate);
+            }
+            Document document = Jsoup.parse(IOUtils.toString(oracle.findResource(fqTemplate), Charset.defaultCharset()));
             if (templateSelector.hasSelector()) {
                 String query = "[data-field=" + templateSelector.selector + "]";
                 Elements selector = document.select(query);
@@ -849,50 +854,6 @@ public class TemplatedGenerator extends IOCGenerator {
             abortWithError(type, "Unable to read template \"%s\": %s", fqTemplate, e.getMessage());
         }
         return root;
-    }
-
-    private FileObject getFileObject(String fqTemplate) {
-        JavaFileManager.Location[] locations = new JavaFileManager.Location[]{
-                StandardLocation.SOURCE_PATH,
-                StandardLocation.CLASS_PATH,
-                StandardLocation.SOURCE_OUTPUT,
-                StandardLocation.CLASS_OUTPUT,
-        };
-
-        FileObject templateResource = null;
-        for (JavaFileManager.Location location : locations) {
-            try {
-
-                FileObject temp = filer.getResource(location, "", fqTemplate);
-                if (new File(temp.getName()).exists()) {
-                    templateResource = temp;
-                }
-            } catch (IOException e) {
-
-            }
-        }
-        return templateResource;
-    }
-
-    private FileObject findTemplate(String name, boolean log) {
-        FileObject resource;
-        JavaFileManager.Location[] locations = new JavaFileManager.Location[]{
-                StandardLocation.SOURCE_PATH,
-                StandardLocation.CLASS_PATH,
-                StandardLocation.SOURCE_OUTPUT,
-                StandardLocation.CLASS_OUTPUT,
-        };
-        for (JavaFileManager.Location location : locations) {
-            try {
-                resource = filer.getResource(location, "", name);
-                if (resource != null) {
-                    return resource;
-                }
-            } catch (IOException ignored) {
-
-            }
-        }
-        return null;
     }
 
     private boolean isAssignable(TypeElement subType, Class<?> baseType) {
