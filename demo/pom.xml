@@ -11,7 +11,7 @@
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
-    <j2cl.maven.plugin.version>0.1.1-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.11-SNAPSHOT</j2cl.maven.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
   </properties>
 
@@ -194,7 +194,7 @@
       <plugin>
         <groupId>com.vertispan.j2cl</groupId>
         <artifactId>j2cl-maven-plugin</artifactId>
-        <version>0.11-SNAPSHOT</version>
+        <version>${j2cl.maven.plugin.version}</version>
         <executions>
           <execution>
             <id>build-js</id>
@@ -211,6 +211,7 @@
                     <compilationLevel>ADVANCED</compilationLevel>
           -->
           <entrypoint>org.treblereel.client.App</entrypoint>
+          <jsinteropAnnotationsJar>com.google.jsinterop:jsinterop-annotations:1.0.2</jsinteropAnnotationsJar>
           <externs>
           </externs>
           <defines>
