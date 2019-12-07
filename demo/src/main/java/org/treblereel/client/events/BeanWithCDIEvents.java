@@ -28,21 +28,21 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    HTMLDivElement form;
+    protected HTMLDivElement form;
 
     @Inject
     @DataField
-    HTMLInputElement textBox;
+    protected HTMLInputElement textBox;
 
     @Inject
-    Event<User> eventUser;
+    protected Event<User> eventUser;
 
     @Inject
-    Event<Address> eventAddress;
+    protected Event<Address> eventAddress;
 
     @Inject
     @DataField
-    HTMLButtonElement sendUserEvent, sendAddressEvent;
+    protected HTMLButtonElement sendUserEvent, sendAddressEvent;
 
     @PostConstruct
     public void init() {
@@ -65,11 +65,11 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
         });
     }
 
-    public void OnUserEvent(@Observes User user) {
+    public void onUserEvent(@Observes User user) {
         setText(user.toString());
     }
 
-    public void OnAddressEvent(@Observes Address address) {
+    public void onAddressEvent(@Observes Address address) {
         setText(address.toString());
     }
 

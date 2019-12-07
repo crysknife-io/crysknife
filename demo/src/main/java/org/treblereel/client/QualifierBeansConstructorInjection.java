@@ -15,9 +15,9 @@ import org.treblereel.client.qualifiers.QualifierTwo;
 @Singleton
 public class QualifierBeansConstructorInjection {
 
-    QualifierBean one;
+    private QualifierBean one;
 
-    QualifierBean two;
+    private QualifierBean two;
 
     @Inject
     public QualifierBeansConstructorInjection(@QualifierOne QualifierBean one,

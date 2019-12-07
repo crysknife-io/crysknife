@@ -7,9 +7,11 @@ import javax.inject.Singleton;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLInputElement;
-import elemental2.dom.HTMLLabelElement;
+import jsinterop.base.Js;
 import org.gwtproject.event.dom.client.ClickEvent;
+import org.gwtproject.user.client.ui.TextBox;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
@@ -27,45 +29,35 @@ import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.Prop
 public class Databinding implements IsElement<HTMLDivElement> {
 
     @Inject
-    DataBinder<Customer> dataBinder;
-
-    Customer customer;
-
+    protected DataBinder<Customer> dataBinder;
+    @DataField
+    @Inject
+    protected TextBox nameBox;
+    @DataField
+    @Inject
+    protected MyTextBox cityBox;
     @Inject
     @DataField
-    HTMLInputElement nameBox;
-
+    protected HTMLInputElement streetBox;
     @Inject
     @DataField
-    HTMLInputElement cityBox;
-
+    protected HTMLInputElement ageBox;
     @Inject
     @DataField
-    HTMLInputElement streetBox;
-
+    protected HTMLInputElement resultBox;
     @Inject
     @DataField
-    HTMLInputElement ageBox;
-
+    protected HTMLButtonElement modelBtn;
     @Inject
     @DataField
-    HTMLInputElement resultBox;
-
-    @Inject
-    @DataField
-    HTMLButtonElement modelBtn;
-
-    @Inject
-    @DataField
-    HTMLButtonElement workingModelBtn;
-
+    protected HTMLButtonElement workingModelBtn;
     @Inject
     @DataField("pauseBtn")
-    HTMLButtonElement pause;
-
+    protected HTMLButtonElement pause;
     @Inject
     @DataField("resumeBtn")
-    HTMLButtonElement resume;
+    protected HTMLButtonElement resume;
+    private Customer customer;
 
     @PostConstruct
     public void init() {
@@ -81,10 +73,16 @@ public class Databinding implements IsElement<HTMLDivElement> {
             DomGlobal.console.log("new value " + event.toString());
             onPropertyChange(event.toString());
         });
+
     }
 
     private void onPropertyChange(String state) {
         resultBox.value = state;
+    }
+
+    @EventHandler("cityBox")
+    void onCityClick(final ClickEvent e) {
+        DomGlobal.console.log("cityBox click");
     }
 
     @EventHandler("modelBtn")
@@ -98,12 +96,12 @@ public class Databinding implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("pauseBtn")
-    void pause(final ClickEvent e) {
+    void onPause(final ClickEvent e) {
         dataBinder.pause();
     }
 
     @EventHandler("resumeBtn")
-    void resume(final ClickEvent e) {
+    void onResume(final ClickEvent e) {
         dataBinder.resume(StateSync.FROM_UI);
     }
 }

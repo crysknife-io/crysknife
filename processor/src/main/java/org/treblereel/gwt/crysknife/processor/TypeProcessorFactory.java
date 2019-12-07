@@ -3,12 +3,9 @@ package org.treblereel.gwt.crysknife.processor;
 import java.util.Optional;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 
@@ -23,7 +20,7 @@ public class TypeProcessorFactory {
             TypeMirror type = (element.getKind().isField() ?
                     MoreElements.asVariable(element).asType() :
                     element.asType());
-            if(type.equals(meta.exactType.asType())) {
+            if (type.equals(meta.exactType.asType())) {
                 return Optional.of(new ExactTypeProcessor(generator));
             }
         }

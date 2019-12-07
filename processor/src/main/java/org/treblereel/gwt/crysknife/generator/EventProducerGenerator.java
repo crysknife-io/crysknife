@@ -79,6 +79,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
                 .getTypeArguments().get(0) + ".class)");
     }
 
+    @Override
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
@@ -89,6 +90,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         classBuilder.addStatementToConstructor(assign);
     }
 
+    @Override
     public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         MethodDeclaration getMethodDeclaration = classBuilder
                 .addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);

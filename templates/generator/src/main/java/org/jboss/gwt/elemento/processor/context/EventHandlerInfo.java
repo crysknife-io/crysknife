@@ -2,6 +2,8 @@ package org.jboss.gwt.elemento.processor.context;
 
 import java.util.Arrays;
 
+import javax.lang.model.type.TypeMirror;
+
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 6/2/19

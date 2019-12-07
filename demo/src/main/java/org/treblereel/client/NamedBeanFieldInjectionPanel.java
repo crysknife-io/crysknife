@@ -3,7 +3,6 @@ package org.treblereel.client;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
@@ -26,35 +25,35 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    HTMLDivElement form;
+    protected HTMLDivElement form;
 
     @Inject
     @DataField
-    HTMLInputElement textBox;
+    protected HTMLInputElement textBox;
 
     @Inject
     @DataField
-    HTMLButtonElement birdBtn;
+    protected HTMLButtonElement birdBtn;
 
     @Inject
     @DataField
-    HTMLButtonElement cowBtn;
+    protected HTMLButtonElement cowBtn;
 
     @Inject
     @DataField
-    HTMLButtonElement dogBtn;
+    protected HTMLButtonElement dogBtn;
 
     @Inject
     @Named("dog")
-    Animal dog;
+    protected Animal dog;
 
     @Inject
     @Named("cow")
-    Animal cow;
+    protected Animal cow;
 
     @Inject
     @Named("bird")
-    Animal bird;
+    protected Animal bird;
 
     private void setText(String text) {
         textBox.value = text;

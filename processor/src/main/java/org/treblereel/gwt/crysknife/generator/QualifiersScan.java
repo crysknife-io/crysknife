@@ -40,9 +40,7 @@ public class QualifiersScan {
                 .getElementsAnnotatedWith(Qualifier.class)
                 .forEach(qualified -> iocContext.getGenerationContext()
                         .getRoundEnvironment()
-                        .getElementsAnnotatedWith(MoreElements.asType(qualified)).forEach(element -> {
-                            processAnnotation(element, qualified);
-                        }));
+                        .getElementsAnnotatedWith(MoreElements.asType(qualified)).forEach(element -> processAnnotation(element, qualified)));
     }
 
     private void processDefaultAnnotation() {
@@ -54,9 +52,7 @@ public class QualifiersScan {
         iocContext.getGenerationContext()
                 .getRoundEnvironment()
                 .getElementsAnnotatedWith(Default.class)
-                .forEach(annotated -> {
-                    processAnnotation(annotated, qualified);
-                });
+                .forEach(annotated -> processAnnotation(annotated, qualified));
     }
 
     private void processAnnotation(Element element, Element qualified) {

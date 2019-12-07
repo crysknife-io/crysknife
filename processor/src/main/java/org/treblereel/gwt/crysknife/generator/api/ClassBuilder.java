@@ -100,7 +100,7 @@ public class ClassBuilder {
     }
 
     public void addStatementToConstructor(Expression expr) {
-        if(!statementToConstructor.contains(expr)) {
+        if (!statementToConstructor.contains(expr)) {
             getConstructorDeclaration().getBody().addStatement(expr);
             statementToConstructor.add(expr);
         }
@@ -115,9 +115,6 @@ public class ClassBuilder {
     }
 
     public FieldDeclaration addFieldWithInitializer(String type, String name, Expression initializer, Modifier.Keyword... modifiers) {
-        // if (fields.containsKey(name)) {
-        //     return fields.get(name);
-        // }
         FieldDeclaration fieldDeclaration = getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
         fields.put(name, fieldDeclaration);
         return fieldDeclaration;

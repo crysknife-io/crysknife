@@ -20,6 +20,10 @@ import com.google.auto.common.MoreElements;
  */
 public class Utils {
 
+    private Utils() {
+
+    }
+
     public static String getQualifiedName(Element elm) {
         if (elm.getKind().equals(ElementKind.FIELD) || elm.getKind().equals(ElementKind.PARAMETER)) {
             VariableElement variableElement = MoreElements.asVariable(elm);
@@ -35,7 +39,7 @@ public class Utils {
             TypeElement typeElement = MoreElements.asType(elm);
             return typeElement.getQualifiedName().toString();
         }
-        throw new Error("unable to process bean " + elm.toString());
+        throw new Error("Unable to process bean " + elm.toString());
     }
 
     public static String getQualifiedFactoryName(TypeElement bean) {

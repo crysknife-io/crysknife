@@ -13,6 +13,9 @@
  */
 package org.jboss.gwt.elemento.template;
 
+import java.util.Collection;
+
+import elemental2.core.JsArray;
 import elemental2.dom.Attr;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
@@ -24,6 +27,8 @@ import elemental2.dom.TreeWalker;
 import jsinterop.base.Js;
 import org.gwtproject.safehtml.shared.SafeHtml;
 import org.gwtproject.safehtml.shared.SafeHtmlUtils;
+import org.gwtproject.user.client.ui.RootPanel;
+import org.gwtproject.user.client.ui.Widget;
 import org.jboss.gwt.elemento.core.IsElement;
 
 /**
@@ -40,10 +45,9 @@ public final class TemplateUtil {
     }
 
     // ------------------------------------------------------ HTMLElement methods
-    public static HTMLElement resolveElement(HTMLElement context, String identifier) {
+    public static <E> E resolveElement(HTMLElement context, String identifier) {
         Element element = DATA_ELEMENT.select(context, identifier);
-        HTMLElement htmlElement = Js.cast(element);
-        return htmlElement;
+        return Js.cast(element);
     }
 
     public static <E extends HTMLElement> E resolveElementAs(HTMLElement context, String identifier) {
@@ -62,11 +66,12 @@ public final class TemplateUtil {
         if (oldElement != null && oldElement.parentNode != null) {
             oldElement.parentNode.replaceChild(newElement, oldElement);
             if (oldElement.hasAttributes()) {
-                for (String attributeName : oldElement.getAttributeNames().asList()) {
+                for (String attributeName : ((JsArray<String>)Js.uncheckedCast(oldElement.getAttributeNames())).asList()) {
                     newElement.setAttribute(attributeName, oldElement.getAttribute(attributeName));
                 }
             }
-            if(oldElement.innerHTML != null){
+
+            if(newElement.innerHTML.isEmpty() &&  !oldElement.innerHTML.isEmpty()){
                 newElement.innerHTML = oldElement.innerHTML;
             }
         }
@@ -141,6 +146,18 @@ public final class TemplateUtil {
             if (currentValue != null && currentValue.contains(expression)) {
                 attribute.nodeValue = currentValue.replace(expression, value);
             }
+        }
+    }
+
+    public static void initTemplated(final org.gwtproject.dom.client.Element wrapped, final Collection<Widget> dataFields) {
+        // All template fragments are contained in a single element, during initialization.
+        wrapped.removeFromParent();
+        final TemplateWidget widget = new TemplateWidget(wrapped, dataFields);
+        widget.onAttach();
+        try {
+            RootPanel.detachOnWindowClose(widget);
+        } catch (Exception e) {
+
         }
     }
 

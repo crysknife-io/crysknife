@@ -61,12 +61,11 @@ public class ComponentScanner {
                 elements.put(annotation, new HashSet<>());
             }
             context.getRoundEnvironment().getElementsAnnotatedWith(annotation).forEach(element -> {
-                if(element.getKind().equals(ElementKind.CONSTRUCTOR)) {
+                if (element.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     ExecutableType constructor = MoreTypes.asExecutable(element.asType());
-                    if( constructor.getParameterTypes().size() > 0) {
-                        constructor.getParameterTypes().forEach(param -> {
-                            elements.get(annotation).add(((DeclaredType) param).asElement());
-                        });
+                    if (constructor.getParameterTypes().size() > 0) {
+                        constructor.getParameterTypes().forEach(param -> elements.get(annotation)
+                                .add(((DeclaredType) param).asElement()));
                     }
                 } else {
                     elements.get(annotation).add(element);
@@ -79,18 +78,14 @@ public class ComponentScanner {
                 .getTypeElement(Object.class.getCanonicalName());
 
         // all types
-        elements.forEach((annotation, points) -> {
-            iocContext.getGenerators().keySet()
-                    .stream().filter(meta -> (meta.annotation.equals(annotation.getQualifiedName().toString())
-                    && meta.exactType.equals(object)))
-                    .forEach(meta -> {
-                        points.stream().forEach(point -> {
-                            IOCGenerator generator = iocContext.getGenerators().get(meta).stream().findFirst().get();
-                            TypeProcessorFactory.getTypeProcessor(meta, generator, point)
-                                    .ifPresent(processor -> processor.process(iocContext, point));
-                        });
-                    });
-        });
+        elements.forEach((annotation, points) -> iocContext.getGenerators().keySet()
+                .stream().filter(meta -> (meta.annotation.equals(annotation.getQualifiedName().toString())
+                        && meta.exactType.equals(object)))
+                .forEach(meta -> points.stream().forEach(point -> {
+                    IOCGenerator generator = iocContext.getGenerators().get(meta).stream().findFirst().get();
+                    TypeProcessorFactory.getTypeProcessor(meta, generator, point)
+                            .ifPresent(processor -> processor.process(iocContext, point));
+                })));
 
         //exactly on type
         Set<IOCContext.IOCGeneratorMeta> metas = iocContext.getGenerators().keySet()

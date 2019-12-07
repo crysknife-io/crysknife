@@ -1,7 +1,6 @@
 package org.treblereel.gwt.crysknife.processor;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -29,12 +28,11 @@ public class ExactTypeProcessor extends TypeProcessor {
                     element.asType());
             TypeElement typeElement = MoreTypes.asTypeElement(mirror);
             BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
-            if (typeElement.getTypeParameters().size() > 0) {
+            if (!typeElement.getTypeParameters().isEmpty()) {
                 TypeMirror type = element.asType();
                 beanDefinition.getDeclaredTypes().add(MoreTypes.asDeclared(type));
             }
             beanDefinition.setGenerator(generator);
         }
     }
-
 }

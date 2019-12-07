@@ -1,99 +1,33 @@
 package org.treblereel.client;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import jsinterop.annotations.JsFunction;
+import org.gwtproject.core.client.EntryPoint;
 import org.gwtproject.resources.client.ResourceCallback;
 import org.gwtproject.resources.client.ResourceException;
-import org.gwtproject.core.client.EntryPoint;
-import org.treblereel.client.databinding.Customer;
-import org.treblereel.client.databinding.Databinding;
+import org.gwtproject.user.client.ui.RootPanel;
 import org.treblereel.client.events.Address;
-import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.events.User;
-import org.treblereel.client.inject.DependentBean;
-import org.treblereel.client.inject.Injector;
-import org.treblereel.client.inject.cyclic.BeanOne;
-import org.treblereel.client.inject.iface.IBean;
 import org.treblereel.client.resources.TextResource;
-import org.treblereel.client.template.TemplatedBean;
 import org.treblereel.gwt.crysknife.client.Application;
-import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
-import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
 
 @Application
 @ComponentScan("org.treblereel.client")
 public class App implements EntryPoint {
 
     @Inject
-    Injector injector;
+    protected HTMLDivElement toast;
 
     @Inject
-    BeanManager beanManager;
+    protected TextResource textResource;
 
     @Inject
-    NamedBeanFieldInjectionPanel namedBeanFieldInjectionPanel;
-
-    @Inject
-    NamedBeanConstructorInjectionPanel namedBeanConstructorInjectionPanel;
-
-    @Inject
-    DependentBean dependentBean;
-
-    @Inject
-    SingletonBeans singletonBeans;
-
-    @Inject
-    DependentBeans dependentBeans;
-
-    @Inject
-    DependentBeans dependentBeans1;
-
-    @Inject
-    TransitiveInjection transitiveInjection;
-
-    @Inject
-    IBean iBean;
-
-    @Inject
-    BeanWithCDIEvents beanWithCDIEvents;
-
-    @Inject
-    Event<User> eventUser;
-
-    @Inject
-    HTMLDivElement toast;
-
-    @Inject
-    TemplatedBean templatedBean;
-
-    @Inject
-    QualifierBeans qualifierBeans;
-
-    @Inject
-    QualifierBeansConstructorInjection qualifierBeansConstructorInjection;
-
-    @Inject
-    HTMLButtonElement element;
-
-    @Inject
-    TextResource textResource;
-
-    @Inject
-    BeanOne one;
-
-    @Inject
-    protected DataBinder<Customer> dataBinder;
-
-    @Inject
-    Databinding databinding;
+    protected UI ui;
 
     @Override
     public void onModuleLoad() {
@@ -103,16 +37,8 @@ public class App implements EntryPoint {
     @PostConstruct
     public void init() {
 
+        DomGlobal.document.body.appendChild(ui.getElement());
 
-        DomGlobal.document.body.appendChild(dependentBeans.getElement());
-        DomGlobal.document.body.appendChild(singletonBeans.getElement());
-        DomGlobal.document.body.appendChild(namedBeanFieldInjectionPanel.getElement());
-        DomGlobal.document.body.appendChild(namedBeanConstructorInjectionPanel.getElement());
-        DomGlobal.document.body.appendChild(transitiveInjection.getElement());
-        DomGlobal.document.body.appendChild(beanWithCDIEvents.getElement());
-        DomGlobal.document.body.appendChild(databinding.getElement());
-
-        DomGlobal.document.body.appendChild(element);
         DomGlobal.console.log(textResource.helloWorldRelative().getText());
 
         try {
@@ -132,16 +58,7 @@ public class App implements EntryPoint {
         }
 
         initToast();
-
     }
-
-    @FunctionalInterface
-    @JsFunction
-    interface FnWithoutArgs {
-        void onInvoke();
-    }
-
-
 
     private void initToast() {
         toast.id = "snackbar";
@@ -163,5 +80,4 @@ public class App implements EntryPoint {
 
         DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
     }
-
 }

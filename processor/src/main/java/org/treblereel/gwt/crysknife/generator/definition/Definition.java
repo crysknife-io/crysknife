@@ -39,9 +39,7 @@ public abstract class Definition {
 
     public void generateDecorators(ClassBuilder builder) {
         decorators.keySet().stream().sorted(iOCGeneratorcomparator)
-                .forEach(decorator -> {
-                    (decorator).generateBeanFactory(builder, this);
-                });
+                .forEach(decorator -> (decorator).generateBeanFactory(builder, this));
     }
 
     public <T extends Definition> T addDecorator(IOCGenerator generator, Definition definition) {

@@ -38,7 +38,7 @@ public class FieldTypeProcessor extends TypeProcessor {
             TypeMirror mirror = MoreElements.asVariable(element).asType();
             TypeElement typeElement = MoreTypes.asTypeElement(mirror);
 
-            if (typeElement.getTypeParameters().size() > 0) {
+            if (!typeElement.getTypeParameters().isEmpty()) {
                 TypeMirror type = element.asType();
                 beanDefinition.getDeclaredTypes().add(MoreTypes.asDeclared(type));
             }

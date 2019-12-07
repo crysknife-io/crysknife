@@ -85,8 +85,6 @@ public class IOCContext {
         return blacklist;
     }
 
-    private Set<TypeElement> inProcess = new HashSet<>();
-
     public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
         BeanDefinition beanDefinition;
         if (getBeans().containsKey(typeElement)) {

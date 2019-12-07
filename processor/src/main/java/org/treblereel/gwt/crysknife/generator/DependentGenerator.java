@@ -7,7 +7,6 @@ import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
-import org.treblereel.gwt.crysknife.generator.definition.Definition;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -30,6 +29,5 @@ public class DependentGenerator extends ScopedBeanGenerator {
         builder.getGetMethodDeclaration().getBody()
                 .get()
                 .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
-
     }
 }

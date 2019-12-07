@@ -26,24 +26,24 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
 public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @DataField
-    HTMLDivElement form;
+    protected HTMLDivElement form;
 
     @Inject
     @DataField
-    HTMLInputElement textBox;
+    protected HTMLInputElement textBox;
 
     @Inject
     @DataField
-    HTMLButtonElement checkBtn;
+    protected HTMLButtonElement checkBtn;
 
     @Inject
-    DependentBean beanOne1Instance;
+    protected DependentBean beanOne1Instance;
 
     @Inject
-    DependentBean beanOne2Instance;
+    protected DependentBean beanOne2Instance;
 
     @Inject
-    TextResource textResource;
+    protected TextResource textResource;
 
     @Inject
     public DependentBeans(HTMLSelectElement nativeSelect,

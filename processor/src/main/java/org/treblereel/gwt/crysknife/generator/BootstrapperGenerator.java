@@ -50,11 +50,12 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
         classBuilder.addParametersToConstructor(arg);
 
-        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
-            iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(classBuilder, fieldPoint);
-        });
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> iocContext.getBeans()
+                .get(fieldPoint.getType())
+                .generateBeanCall(iocContext, classBuilder, fieldPoint));
 
-        AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance")).setValue(new NameExpr("application"));
+        AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance"))
+                .setValue(new NameExpr("application"));
         classBuilder.addStatementToConstructor(assign);
     }
 
@@ -91,7 +92,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
             classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
                     new AssignExpr().setTarget(fieldAccessExpr)
                             .setValue(iocContext.getBean(fieldPoint.getType())
-                                              .generateBeanCall(classBuilder, fieldPoint)));
+                                              .generateBeanCall(iocContext, classBuilder, fieldPoint)));
         });
     }
 

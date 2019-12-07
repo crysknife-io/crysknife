@@ -5,17 +5,6 @@ import java.util.List;
 
 import javax.lang.model.element.TypeElement;
 
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import org.treblereel.gwt.crysknife.generator.context.IOCContext;
-import org.treblereel.gwt.crysknife.util.Utils;
-
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/3/19
@@ -35,5 +24,4 @@ public class ConstructorPoint extends Point {
     public List<FieldPoint> getArguments() {
         return arguments;
     }
-
 }

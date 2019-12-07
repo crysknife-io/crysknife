@@ -10,7 +10,6 @@ import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
-import org.treblereel.gwt.crysknife.generator.definition.Definition;
 
 /**
  * @author Dmitrii Tikhomirov

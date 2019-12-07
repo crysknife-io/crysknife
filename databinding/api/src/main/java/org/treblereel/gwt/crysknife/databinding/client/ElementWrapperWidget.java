@@ -19,8 +19,11 @@ package org.treblereel.gwt.crysknife.databinding.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
+import org.gwtproject.dom.client.BodyElement;
+import org.gwtproject.dom.client.Document;
 import org.gwtproject.dom.client.Element;
 import org.gwtproject.dom.client.InputElement;
 import org.gwtproject.dom.client.TextAreaElement;
@@ -39,12 +42,22 @@ import org.treblereel.gwt.crysknife.databinding.client.NativeHasValueAccessors.A
 /**
  * A widget that wraps an {@link Element} to support the registration of event listeners and data
  * binding.
- *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author Christian Sadilek <csadilek@redhat.com>
  */
 public abstract class ElementWrapperWidget<T> extends Widget {
+
     private static Map<Object, ElementWrapperWidget<?>> widgetMap = new HashMap<>();
+    private EventListener listener = event -> ElementWrapperWidget.super.onBrowserEvent(event);
+
+    private ElementWrapperWidget(final Element wrapped) {
+        if (wrapped == null) {
+            throw new IllegalArgumentException(
+                    "Element to be wrapped must not be null - Did you forget to initialize or @Inject a UI field?");
+        }
+        this.setElement(wrapped);
+        DOM.setEventListener(this.getElement(), this);
+    }
 
     public static ElementWrapperWidget<?> getWidget(final Element element) {
         return getWidget(element, null);
@@ -58,17 +71,34 @@ public abstract class ElementWrapperWidget<T> extends Widget {
         return getWidget((Object) element, valueType);
     }
 
+    private static boolean isElementChildOfWidget(Element element) {
+        // Walk up the DOM hierarchy, looking for any widget with an event listener
+        // set. Though it is not dependable in the general case that a widget will
+        // have set its element's event listener at all times, it *is* dependable
+        // if the widget is attached. Which it will be in this case.
+        element = element.getParentElement();
+        BodyElement body = Document.get().getBody();
+        while ((element != null) && (body != element)) {
+            if (Event.getEventListener(element) != null) {
+                return true;
+            }
+            element = element.getParentElement().cast();
+        }
+        return false;
+    }
+
     public static ElementWrapperWidget<?> getWidget(final Object obj, final Class<?> valueType) {
         final Element element = asElement(obj);
         ElementWrapperWidget<?> widget = widgetMap.get(element);
         if (widget == null) {
             widget = createElementWrapperWidget(element, valueType);
-            // Always call onAttach so that events propogatge even if this has no widget parent.
-            widget.onAttach();
-            RootPanel.detachOnWindowClose(widget);
+            if (!widget.isAttached()) {
+                widget.onAttach();
+            }
+            if(!isElementChildOfWidget(widget.getElement()))
+                RootPanel.detachOnWindowClose(widget);
             widgetMap.put(element, widget);
-        }
-        else if (valueType != null && !valueType.equals(widget.getValueType())) {
+        } else if (valueType != null && !valueType.equals(widget.getValueType())) {
             throw new RuntimeException(
                     "There already exists a widget for the given element with a different value type. Expected "
                             + widget.getValueType().getName() + " but was passed in " + valueType.getName());
@@ -81,23 +111,20 @@ public abstract class ElementWrapperWidget<T> extends Widget {
         return Js.uncheckedCast(obj);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private static ElementWrapperWidget<?> createElementWrapperWidget(final Element element, final Class<?> valueType) {
         if (valueType != null) {
             final Accessor accessor;
             if (NativeHasValueAccessors.hasValueAccessor(element)) {
                 accessor = NativeHasValueAccessors.getAccessor(element);
-            }
-            else {
+            } else {
                 accessor = new DefaultAccessor((HasValue) element);
             }
 
             return new JsTypeHasValueElementWrapperWidget<>(element, accessor, valueType);
-        }
-        else if (InputElement.is(element) || TextAreaElement.is(element)) {
+        } else if (InputElement.is(element) || TextAreaElement.is(element)) {
             return new InputElementWrapperWidget<>(element);
-        }
-        else {
+        } else {
             return new DefaultElementWrapperWidget<>(element);
         }
     }
@@ -105,8 +132,7 @@ public abstract class ElementWrapperWidget<T> extends Widget {
     public static Class<?> getValueClassForInputType(final String inputType) {
         if ("checkbox".equalsIgnoreCase(inputType) || "radio".equalsIgnoreCase(inputType)) {
             return Boolean.class;
-        }
-        else {
+        } else {
             return String.class;
         }
     }
@@ -122,6 +148,22 @@ public abstract class ElementWrapperWidget<T> extends Widget {
     public static ElementWrapperWidget<?> removeWidget(final ElementWrapperWidget<?> widget) {
         return widgetMap.remove(widget.getElement());
     }
+
+    public void setEventListener(final int eventsToSink, final EventListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException("EventListener cannot be null.");
+        }
+
+        sinkEvents(eventsToSink);
+        this.listener = listener;
+    }
+
+    @Override
+    public void onBrowserEvent(final Event event) {
+        listener.onBrowserEvent(event);
+    }
+
+    public abstract Class<?> getValueType();
 
     private static abstract class HasValueElementWrapperWidget<T> extends ElementWrapperWidget<T> implements HasValue<T> {
 
@@ -144,7 +186,6 @@ public abstract class ElementWrapperWidget<T> extends Widget {
         public HandlerRegistration addValueChangeHandler(final ValueChangeHandler<T> handler) {
             return valueChangeManager.addValueChangeHandler(handler);
         }
-
     }
 
     private static class DefaultAccessor<T> implements Accessor<T> {
@@ -172,7 +213,6 @@ public abstract class ElementWrapperWidget<T> extends Widget {
                 throw new RuntimeException("Unable to invoke setValue(T value) on JsType: " + t.getMessage(), t);
             }
         }
-
     }
 
     private static class JsTypeHasValueElementWrapperWidget<T> extends HasValueElementWrapperWidget<T> {
@@ -200,13 +240,27 @@ public abstract class ElementWrapperWidget<T> extends Widget {
         public Class<?> getValueType() {
             return valueType;
         }
-
     }
 
     private static class InputElementWrapperWidget<T> extends HasValueElementWrapperWidget<T> {
 
         private InputElementWrapperWidget(final Element element) {
             super(element);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public T getValue() {
+            final String inputType = getElement().getPropertyString("type");
+            final Class<?> valueType = getValueClassForInputType(inputType);
+            if (Boolean.class.equals(valueType)) {
+                return (T) (Boolean) getElement().getPropertyBoolean("checked");
+            } else if (String.class.equals(valueType)) {
+                final Object rawValue = getElement().getPropertyObject("value");
+                return (T) (rawValue != null ? rawValue : "");
+            } else {
+                throw new RuntimeException("Unrecognized input element type [" + inputType + "]");
+            }
         }
 
         @Override
@@ -223,28 +277,10 @@ public abstract class ElementWrapperWidget<T> extends Widget {
             }
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
-        public T getValue() {
-            final String inputType = getElement().getPropertyString("type");
-            final Class<?> valueType = getValueClassForInputType(inputType);
-            if (Boolean.class.equals(valueType)) {
-                return (T) (Boolean) getElement().getPropertyBoolean("checked");
-            }
-            else if (String.class.equals(valueType)) {
-                final Object rawValue = getElement().getPropertyObject("value");
-                return (T) (rawValue != null ? rawValue : "");
-            }
-            else {
-                throw new RuntimeException("Unrecognized input element type [" + inputType + "]");
-            }
-        }
-
         @Override
         public Class<?> getValueType() {
             return getValueClassForInputType(getElement().getPropertyString("type"));
         }
-
     }
 
     private static class DefaultElementWrapperWidget<T> extends ElementWrapperWidget<T> implements HasHTML {
@@ -277,34 +313,5 @@ public abstract class ElementWrapperWidget<T> extends Widget {
         public Class<?> getValueType() {
             return String.class;
         }
-
     }
-
-    private EventListener listener = event -> ElementWrapperWidget.super.onBrowserEvent(event);
-
-    private ElementWrapperWidget(final Element wrapped) {
-        if (wrapped == null) {
-            throw new IllegalArgumentException(
-                    "Element to be wrapped must not be null - Did you forget to initialize or @Inject a UI field?");
-        }
-        this.setElement(wrapped);
-        DOM.setEventListener(this.getElement(), this);
-    }
-
-    public void setEventListener(final int eventsToSink, final EventListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException("EventListener cannot be null.");
-        }
-
-        sinkEvents(eventsToSink);
-        this.listener = listener;
-    }
-
-    @Override
-    public void onBrowserEvent(final Event event) {
-        listener.onBrowserEvent(event);
-    }
-
-    public abstract Class<?> getValueType();
-
 }
