@@ -21,8 +21,9 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -73,11 +74,9 @@ public class BeanDefinition extends Definition {
     public void generateDecorators(ClassBuilder builder) {
         super.generateDecorators(builder);
 
-        executableDefinitions.forEach((gen, defs) -> {
-            defs.forEach(def -> {
-                gen.generateBeanFactory(builder, def);
-            });
-        });
+        executableDefinitions.forEach((gen, defs) -> defs.forEach(def -> {
+            gen.generateBeanFactory(builder, def);
+        }));
     }
 
     public void setGenerator(IOCGenerator iocGenerator) {
@@ -88,25 +87,50 @@ public class BeanDefinition extends Definition {
         }
     }
 
-    public Expression generateBeanCall(ClassBuilder builder, FieldPoint fieldPoint) {
+    public Expression generateBeanCall(IOCContext context, ClassBuilder builder, FieldPoint fieldPoint) {
         if (generator.isPresent()) {
             IOCGenerator iocGenerator = generator.get();
             return ((BeanIOCGenerator) iocGenerator).generateBeanCall(builder, fieldPoint, this);
-        } else{
-            throw new Error("Unable to find generator for " + getQualifiedName() );
+        } else {
+            if (maybeProcessableAsCommonBean(fieldPoint.getType())) {
+                //we ll use direct object construction, lets ignore factory creation
+                context.getBlacklist().add(fieldPoint.getType().getQualifiedName().toString());
+                context.getGenerationContext().getProcessingEnvironment()
+                        .getMessager()
+                        .printMessage(Diagnostic.Kind.WARNING, String.format("Unable to determine bean type for %s, it will be processed as common bean ",
+                                                                             fieldPoint.getType().getQualifiedName().toString()));
+                return new ObjectCreationExpr().setType(new ClassOrInterfaceType()
+                                                                .setName(fieldPoint.getType().getQualifiedName().toString()));
+            }
+            throw new Error("Unable to find generator for " + getQualifiedName());
         }
+    }
+
+    private boolean maybeProcessableAsCommonBean(TypeElement candidate) {
+        if (candidate.getKind().isClass() && !candidate.getModifiers().contains(Modifier.ABSTRACT)
+                && candidate.getModifiers().contains(Modifier.PUBLIC)) {
+            long count = candidate.getEnclosedElements().stream().filter(elm -> {
+                return elm.getKind().equals(ElementKind.CONSTRUCTOR);
+            }).filter(elm -> MoreElements.asExecutable(elm).getParameters().size() == 0)
+                    .filter(elm -> elm.getModifiers().contains(Modifier.PUBLIC)).count();
+            if (count == 1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void processInjections(IOCContext context) {
         Elements elements = context.getGenerationContext().getElements();
         elements.getAllMembers(element).forEach(mem -> {
-            if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR) || mem.getKind().equals(ElementKind.FIELD))) {
+            if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
+                    || mem.getKind().equals(ElementKind.FIELD))) {
                 if (mem.getModifiers().contains(Modifier.PRIVATE)) {
                     context.getGenerationContext()
                             .getProcessingEnvironment()
                             .getMessager()
                             .printMessage(Diagnostic.Kind.ERROR,
-                                          String.format("Field [%s] in [%s] must not be private \n", mem,  getQualifiedName()));
+                                          String.format("Field [%s] in [%s] must not be private \n", mem, getQualifiedName()));
                     throw new Error();
                 }
                 if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
@@ -153,7 +177,7 @@ public class BeanDefinition extends Definition {
                 " generator = [ " + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]" +
                 " ] , element= [" + element +
                 " ] , dependsOn= [ " + dependsOn.stream().map(m -> Utils.getQualifiedName(m.element)).collect(Collectors.joining(", ")) +
-                " ] , executables= [ " + executableDefinitions.values().stream().map(m -> m.toString()).collect(Collectors.joining(", ")) +
+                " ] , executables= [ " + executableDefinitions.values().stream().map(Object::toString).collect(Collectors.joining(", ")) +
                 " ]}";
     }
 
@@ -235,50 +259,5 @@ public class BeanDefinition extends Definition {
         public BeanDefinition build() {
             return beanDefinition;
         }
-
-  /*      private void processInjections() {
-            elements.getAllMembers(beanDefinition.element).forEach(mem -> {
-                if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR) || mem.getKind().equals(ElementKind.FIELD))) {
-                    if (mem.getModifiers().contains(Modifier.PRIVATE)) {
-                        System.out.println("Error, field must not be private " + mem + " in " + beanDefinition.getQualifiedName());
-                        throw new Error();
-                    }
-                    if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
-                        ExecutableElement elms = MoreElements.asExecutable(mem);
-                        beanDefinition.constructorInjectionPoint = new ConstructorPoint(Utils.getQualifiedName(beanDefinition.element), beanDefinition.element);
-
-                        for (int i = 0; i < elms.getParameters().size(); i++) {
-                            FieldPoint field = parseField(elms.getParameters().get(i));
-                            beanDefinition.getConstructorInjectionPoint().addArgument(field);
-                        }
-                    } else if (mem.getKind().equals(ElementKind.FIELD)) {
-                        FieldPoint fiend = parseField(mem);
-                        beanDefinition.fieldInjectionPoints.add(fiend);
-                    }
-                }
-            });
-        }
-
-        //TODO refactoring needed here
-        private FieldPoint parseField(Element type) {
-            FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
-            if (context.getQualifiers().containsKey(field.getType())) {
-                BeanDefinition bean = null;
-                for (AnnotationMirror mirror : context.getGenerationContext()
-                        .getProcessingEnvironment()
-                        .getElementUtils()
-                        .getAllAnnotationMirrors(type)) {
-                    bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
-                }
-                if (bean != null) {
-                    beanDefinition.dependsOn.add(bean);
-                    field.setType(bean.getType());
-                }
-            } else if (!field.isNamed()) {
-                BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(field.getType());
-                beanDefinition.dependsOn.add(fieldBeanDefinition);
-            }
-            return field;
-        }*/
     }
 }

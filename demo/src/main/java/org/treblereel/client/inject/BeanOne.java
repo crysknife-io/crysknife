@@ -47,5 +47,4 @@ public class BeanOne {
         return car.whoAmI();
     }
 
-    ;
 }

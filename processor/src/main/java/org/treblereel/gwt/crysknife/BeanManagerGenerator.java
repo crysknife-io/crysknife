@@ -40,9 +40,9 @@ import org.treblereel.gwt.crysknife.util.Utils;
  */
 public class BeanManagerGenerator {
 
-    private final String className = "BeanManager";
-    private final String packageName = "org.treblereel.gwt.crysknife.client";
-    private final String qualifiedBootstrapName = packageName + "." + className;
+    private static final String className = "BeanManager";
+    private static final String packageName = "org.treblereel.gwt.crysknife.client";
+    private static final String qualifiedBootstrapName = packageName + "." + className;
 
     private final IOCContext iocContext;
 
@@ -55,11 +55,9 @@ public class BeanManagerGenerator {
     }
 
     void generate() {
-
         try {
             build();
         } catch (IOException e) {
-            e.printStackTrace();
             throw new Error(e);
         }
     }
@@ -106,13 +104,11 @@ public class BeanManagerGenerator {
                 }
             }
 
-            iocContext.getQualifiers().forEach((type, beans) -> {
-                beans.forEach((annotation, definition) -> {
-                    if (definition.getType().getAnnotation(Named.class) == null) {
-                        generateInitEntry(init, type, definition.getType(), annotation);
-                    }
-                });
-            });
+            iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation, definition) -> {
+                if (definition.getType().getAnnotation(Named.class) == null) {
+                    generateInitEntry(init, type, definition.getType(), annotation);
+                }
+            }));
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field) {
@@ -120,11 +116,9 @@ public class BeanManagerGenerator {
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory, String annotation) {
-            if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
-/*                ClassOrInterfaceType type = new ClassOrInterfaceType();
-                type.setName(Provider.class.getSimpleName());
-                type.setTypeArguments(new ClassOrInterfaceType().setName(field.getQualifiedName().toString()));*/
+            System.out.println("? "+iocContext.getBean(field));
 
+            if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
                 MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
                         .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
                         .addArgument(new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(factory)), "create"));

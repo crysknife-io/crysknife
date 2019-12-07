@@ -123,8 +123,6 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
         HTML_ELEMENTS.put(HTMLVideoElement.class, "video");
     }
 
-    private IOCContext iocContext;
-
     @Override
     public void register(IOCContext iocContext) {
         this.iocContext = iocContext;
@@ -158,8 +156,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
         try {
             clazz = Class.forName(beanDefinition.getType().getQualifiedName().toString());
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            throw new Error("Unable to process " + beanDefinition.getType().getQualifiedName().toString());
+            throw new Error("Unable to process " + beanDefinition.getType().getQualifiedName().toString() + " " + e.getMessage());
         }
 
         if (!HTML_ELEMENTS.containsKey(clazz)) {

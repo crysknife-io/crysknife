@@ -5,12 +5,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import elemental2.dom.CSSProperties;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLInputElement;
-import elemental2.dom.HTMLLabelElement;
 import elemental2.dom.MouseEvent;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.named.Vehicle;
@@ -29,23 +26,23 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
 
     @Inject
     @DataField
-    HTMLDivElement form;
+    protected HTMLDivElement form;
 
     @Inject
     @DataField
-    HTMLInputElement textBox;
+    protected HTMLInputElement textBox;
 
     @Inject
     @DataField
-    HTMLButtonElement helicopterBtn;
+    protected HTMLButtonElement helicopterBtn;
 
     @Inject
     @DataField
-    HTMLButtonElement carBtn;
+    protected HTMLButtonElement carBtn;
 
-    Vehicle car;
+    protected Vehicle car;
 
-    Vehicle helicopter;
+    protected Vehicle helicopter;
 
     @Inject
     NamedBeanConstructorInjectionPanel(@Named("Helicopter") Vehicle helicopter, @Named("Car") Vehicle car) {
@@ -81,6 +78,5 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
     protected void onClickHelicopter(@ForEvent("click") final MouseEvent event) {
         setText(helicopter.whoAmI());
     }
-
 }
 

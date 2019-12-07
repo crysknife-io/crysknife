@@ -24,18 +24,18 @@ public class TransitiveInjection implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    HTMLDivElement form;
+    protected HTMLDivElement form;
 
     @Inject
     @DataField
-    HTMLInputElement textBox;
+    protected HTMLInputElement textBox;
 
     @Inject
     @DataField
-    HTMLButtonElement checkBtn;
+    protected HTMLButtonElement checkBtn;
 
     @Inject
-    Injector injector;
+    protected Injector injector;
 
     private void setText(String text) {
         textBox.value = text;

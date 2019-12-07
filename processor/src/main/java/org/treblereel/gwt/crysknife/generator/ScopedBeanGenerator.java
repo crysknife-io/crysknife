@@ -106,25 +106,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
                 .get().addStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "instance")));
     }
 
-    public void generateInstanceGetMethodInitializer(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
-        ThisExpr clazz = new ThisExpr();
-        FieldAccessExpr instance = new FieldAccessExpr(clazz, "instance");
-        FieldAccessExpr field = new FieldAccessExpr(instance, fieldPoint.getName());
-        MethodCallExpr call;
-        if (MoreTypes.asTypeElement(fieldPoint.getField().asType()).getTypeParameters().size() > 0) {
-            MethodCallExpr instanceCall = new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
-            call = new MethodCallExpr(instanceCall, "get");
-            MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().forEach(tp -> {
-                //TODO
-                call.addArgument(new FieldAccessExpr(new NameExpr(tp.toString()), "class"));
-            });
-        } else {
-            call = new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
-        }
-
-        classBuilder.getGetMethodDeclaration().getBody().get().addStatement(new AssignExpr().setTarget(field).setValue(call));
-    }
-
     public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
         beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
@@ -135,7 +116,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
                     new AssignExpr().setTarget(fieldAccessExpr)
                             .setValue(iocContext.getBeans()
                                               .get(fieldPoint.getType())
-                                              .generateBeanCall(classBuilder, fieldPoint)));
+                                              .generateBeanCall(iocContext, classBuilder, fieldPoint)));
         });
     }
 
@@ -208,7 +189,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         newInstance.setType(point.getType().getSimpleName().toString());
 
         for (FieldPoint argument : point.getArguments()) {
-            newInstance.addArgument(iocContext.getBeans().get(argument.getType()).generateBeanCall(classBuilder, argument));
+            newInstance.addArgument(iocContext.getBeans().get(argument.getType()).generateBeanCall(iocContext, classBuilder, argument));
         }
         return new AssignExpr().setTarget(instance).setValue(newInstance);
     }
@@ -216,9 +197,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     @Override
     public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
         generateFactoryFieldDeclaration(clazz, fieldPoint, beanDefinition);
-        //generateInstanceGetMethodInitializer(clazz, fieldPoint, beanDefinition);
         generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
-
         return new MethodCallExpr(new NameExpr(Utils.toVariableName(fieldPoint.getType())), "get");
     }
 }

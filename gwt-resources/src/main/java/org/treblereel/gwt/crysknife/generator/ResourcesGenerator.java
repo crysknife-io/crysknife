@@ -40,7 +40,6 @@ public class ResourcesGenerator extends BeanIOCGenerator {
 
     }
 
-    //@Override
     public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType type = new ClassOrInterfaceType();
@@ -54,12 +53,10 @@ public class ResourcesGenerator extends BeanIOCGenerator {
         classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
-    //@Override
     public String getFactoryVariableName() {
         return "";
     }
 
-    //@Override
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
         String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
