@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.enterprise.inject.Default;
+import javax.inject.Named;
 import javax.inject.Qualifier;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -31,16 +32,34 @@ public class QualifiersScan {
 
     public void process() {
         processQualifierAnnotation();
+        processNamedAnnotation();
         processDefaultAnnotation();
     }
 
+    private void processNamedAnnotation() {
+        iocContext.getTypeElementsByAnnotation(Named.class.getCanonicalName()).forEach(named -> {
+            named.getInterfaces().forEach(parent -> {
+                BeanDefinition iface = iocContext.getBeanDefinitionOrCreateAndReturn(MoreTypes.asTypeElement(parent));
+                if (!iocContext.getQualifiers().containsKey(iface.getType())) {
+                    iocContext.getQualifiers().put(iface.getType(), new HashMap<>());
+                }
+                iocContext.getQualifiers()
+                        .get(iface.getType())
+                        .put(named.getAnnotation(Named.class).value(),
+                             iocContext.getBeanDefinitionOrCreateAndReturn(named));
+            });
+        });
+    }
+
     private void processQualifierAnnotation() {
-        iocContext.getGenerationContext()
-                .getRoundEnvironment()
-                .getElementsAnnotatedWith(Qualifier.class)
-                .forEach(qualified -> iocContext.getGenerationContext()
-                        .getRoundEnvironment()
-                        .getElementsAnnotatedWith(MoreElements.asType(qualified)).forEach(element -> processAnnotation(element, qualified)));
+        iocContext.getTypeElementsByAnnotation(Qualifier.class.getCanonicalName()).forEach(qualified -> {
+            iocContext.getFieldsByAnnotation(qualified.getQualifiedName().toString()).forEach(candidate -> {
+                processAnnotation(candidate, qualified);
+            });
+            iocContext.getTypeElementsByAnnotation(qualified.getQualifiedName().toString()).forEach(candidate -> {
+                processAnnotation(candidate, qualified);
+            });
+        });
     }
 
     private void processDefaultAnnotation() {

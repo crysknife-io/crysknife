@@ -8,8 +8,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.inject.Scope;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 @Target({ElementType.METHOD, ElementType.TYPE, ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RUNTIME)
 @Documented
 @Scope
 @Inherited

@@ -90,7 +90,7 @@ public class ApplicationProcessor extends AbstractProcessor {
                     .getGenerationContext()
                     .getElements()
                     .getTypeElement(BeanManager.class.getCanonicalName());
-
+            //TODO this should be replaced
             IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Inject.class.getCanonicalName(),
                                                                                type,
                                                                                WiringElementType.FIELD_TYPE);

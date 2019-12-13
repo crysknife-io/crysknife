@@ -116,8 +116,6 @@ public class BeanManagerGenerator {
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory, String annotation) {
-            System.out.println("? "+iocContext.getBean(field));
-
             if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
                 MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
                         .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))

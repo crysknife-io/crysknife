@@ -34,13 +34,6 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
-  <scm>
-    <url>https://github.com/treblereel/three4g</url>
-    <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
-    <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
-    <tag>HEAD</tag>
-  </scm>
-
   <dependencies>
     <dependency>
       <groupId>com.google.auto</groupId>
@@ -55,40 +48,38 @@
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
-      <version>3.13.1</version>
+      <version>${javaparser.core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>1.6</version>
+      <version>${apache.commons.commons-text.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>4.8.53</version>
+      <version>${classgraph.classgraph.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>28.1-jre</version>
+      <version>${google.guava.version}</version>
     </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -103,7 +94,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -137,12 +128,6 @@
                   </excludes>
                 </filter>
               </filters>
-<!--              <relocations>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>com.shaded.google.common</shadedPattern>
-                </relocation>
-              </relocations>-->
             </configuration>
           </execution>
         </executions>

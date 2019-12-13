@@ -22,11 +22,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  <scm>
-    <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
-    <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
-    <url>https://github.com/treblereel/three4g</url>
-  </scm>
   <organization>
     <name>Treblereel</name>
     <url>https://github.com/treblereel</url>
@@ -40,7 +35,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>

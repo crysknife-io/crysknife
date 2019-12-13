@@ -8,6 +8,7 @@ import elemental2.dom.HTMLDivElement;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.databinding.Databinding;
 import org.treblereel.client.events.BeanWithCDIEvents;
+import org.treblereel.client.mutationobserver.MutationObserverDemo;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.Templated;
 
@@ -46,6 +47,10 @@ public class UI implements IsElement<HTMLDivElement> {
     @Inject
     @DataField
     protected Databinding databinding;
+
+    @Inject
+    @DataField
+    protected MutationObserverDemo mutationObserverDemo;
 
     @PostConstruct
     public void init() {
