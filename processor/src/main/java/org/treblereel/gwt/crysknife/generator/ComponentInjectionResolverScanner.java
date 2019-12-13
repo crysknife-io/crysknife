@@ -73,13 +73,7 @@ public class ComponentInjectionResolverScanner {
     private void processFieldInjectionPoint(FieldPoint field, BeanDefinition definition) {
         BeanDefinition beanDefinition = null;
         if (field.isNamed()) {
-            if (!iocContext.getBlacklist().contains(field.getType().getQualifiedName().toString())) {
-                if(iocContext.getQualifiers().containsKey(field.getType())) {
-                    beanDefinition = iocContext.getQualifiers().get(field.getType()).get(field.getNamed());
-                }
-            } else {
-                beanDefinition = iocContext.getBeans().get(field.getType());
-            }
+            beanDefinition = iocContext.getBeans().get(field.getType());
         } else if (iocContext.getQualifiers().containsKey(field.getType())) {
             beanDefinition = getTypeQualifierValue(field.getField(), iocContext.getQualifiers().get(field.getType()));
         } else if (field.getType().getKind().isInterface()) {

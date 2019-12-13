@@ -8,13 +8,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 
 import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -35,8 +31,7 @@ public class ComponentScanner {
     }
 
     public void scan() {
-
-        Set<TypeElement> annotations = new HashSet<>();
+        Map<TypeElement, HashSet<Element>> elements = new HashMap<>();
 
         iocContext.getGenerators()
                 .keySet()
@@ -52,26 +47,25 @@ public class ComponentScanner {
                         .priority()))
                 .forEach(meta -> {
                     TypeElement annotation = context.getElements().getTypeElement(meta.annotation);
-                    annotations.add(annotation);
-                });
 
-        Map<TypeElement, HashSet<Element>> elements = new HashMap<>();
-        annotations.forEach(annotation -> {
-            if (!elements.containsKey(annotation)) {
-                elements.put(annotation, new HashSet<>());
-            }
-            context.getRoundEnvironment().getElementsAnnotatedWith(annotation).forEach(element -> {
-                if (element.getKind().equals(ElementKind.CONSTRUCTOR)) {
-                    ExecutableType constructor = MoreTypes.asExecutable(element.asType());
-                    if (constructor.getParameterTypes().size() > 0) {
-                        constructor.getParameterTypes().forEach(param -> elements.get(annotation)
-                                .add(((DeclaredType) param).asElement()));
+                    if (!elements.containsKey(annotation)) {
+                        elements.put(annotation, new HashSet<>());
                     }
-                } else {
-                    elements.get(annotation).add(element);
-                }
-            });
-        });
+                    //TODO replace by suppliers or not :)
+                    if (meta.wiringElementType.equals(WiringElementType.DEPENDENT_BEAN)) {
+                        elements.get(annotation).addAll(iocContext.getTypeElementsByAnnotation(meta.annotation));
+                    } else if (meta.wiringElementType.equals(WiringElementType.FIELD_TYPE)) {
+                        elements.get(annotation).addAll(iocContext.getFieldsByAnnotation(meta.annotation));
+                    } else if (meta.wiringElementType.equals(WiringElementType.METHOD_DECORATOR)) {
+                        elements.get(annotation).addAll(iocContext.getMethodsByAnnotation(meta.annotation));
+                    } else if (meta.wiringElementType.equals(WiringElementType.PRODUCER_ELEMENT)) {
+                        elements.get(annotation).addAll(iocContext.getMethodsByAnnotation(meta.annotation));
+                    } else if (meta.wiringElementType.equals(WiringElementType.CLASS_DECORATOR)) {
+                        elements.get(annotation).addAll(iocContext.getTypeElementsByAnnotation(meta.annotation));
+                    } else if (meta.wiringElementType.equals(WiringElementType.PARAMETER)) {
+                        elements.get(annotation).addAll(iocContext.getParametersByAnnotation(meta.annotation));
+                    }
+                });
 
         TypeElement object = iocContext.getGenerationContext()
                 .getElements()
@@ -100,5 +94,6 @@ public class ComponentScanner {
                                 .ifPresent(processor -> processor.process(iocContext, elm));
                     });
         });
+
     }
 }

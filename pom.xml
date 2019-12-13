@@ -43,9 +43,25 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.version>3.8.0</maven.compiler.version>
+        <maven.source.version>3.0.1</maven.source.version>
+        <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
+        <apache.commons.commons-lang3.version>3.9</apache.commons.commons-lang3.version>
+
+        <jsoup.version>1.11.3</jsoup.version>
+        <lesscss.version>1.7.0.1.1</lesscss.version>
+        <vertispan.jsinterop.base.version>1.0.0-SNAPSHOT</vertispan.jsinterop.base.version>
+        <google.guava.version>28.1-jre</google.guava.version>
+        <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
+
+        <gwtproject.version>1.0-SNAPSHOT</gwtproject.version>
+        <gwtproject.head.version>HEAD-SNAPSHOT</gwtproject.head.version>
+
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javapoet.version>1.11.1</javapoet.version>
+        <javaparser.core.version>3.13.1</javaparser.core.version>
+        <junit.version>4.11</junit.version>
+        <elemental2.version>1.0.0</elemental2.version>
         <auto.common.version>0.10</auto.common.version>
         <auto.service.version>1.0-rc6</auto.service.version>
     </properties>
@@ -54,10 +70,7 @@
         <module>annotations</module>
         <module>processor</module>
         <module>core</module>
-        <module>templates</module>
-        <module>elemental2</module>
-        <module>gwt-resources</module>
-        <module>databinding</module>
+        <module>ui</module>
     </modules>
 
     <dependencyManagement>

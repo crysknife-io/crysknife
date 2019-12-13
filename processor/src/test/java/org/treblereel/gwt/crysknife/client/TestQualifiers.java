@@ -6,6 +6,9 @@ import javax.inject.Inject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.treblereel.gwt.crysknife.client.injection.named.NamedBeanDefault;
+import org.treblereel.gwt.crysknife.client.injection.named.NamedBeanOne;
+import org.treblereel.gwt.crysknife.client.injection.named.NamedBeanTwo;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBean;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanDefault;
 import org.treblereel.gwt.crysknife.client.injection.qualifiers.QualifierBeanOne;
@@ -56,5 +59,27 @@ public class TestQualifiers {
         Assert.assertNotNull(app.applicationScopedConstructorInjection.bean2);
         Assert.assertEquals(app.applicationScopedConstructorInjection.bean, app.applicationScopedConstructorInjection.bean2);
         Assert.assertEquals(app.applicationScopedConstructorInjection.bean.say(), app.applicationScopedConstructorInjection.bean2.say());
+    }
+
+    @Inject
+    public void testNamedConstructorInjection() {
+        Assert.assertNotNull(app.namedConstructorInjection);
+        Assert.assertNotNull(app.namedConstructorInjection.one);
+        Assert.assertNotNull(app.namedConstructorInjection.two);
+        Assert.assertNotNull(app.namedConstructorInjection.def);
+        Assert.assertEquals(app.namedConstructorInjection.one.say(), NamedBeanOne.class.getCanonicalName());
+        Assert.assertEquals(app.namedConstructorInjection.two.say(), NamedBeanTwo.class.getCanonicalName());
+        Assert.assertEquals(app.namedConstructorInjection.def.say(), NamedBeanDefault.class.getCanonicalName());
+    }
+
+    @Inject
+    public void testNamedFieldInjection() {
+        Assert.assertNotNull(app.namedFieldInjection);
+        Assert.assertNotNull(app.namedFieldInjection.one);
+        Assert.assertNotNull(app.namedFieldInjection.two);
+        Assert.assertNotNull(app.namedFieldInjection.def);
+        Assert.assertEquals(app.namedFieldInjection.one.say(), NamedBeanOne.class.getCanonicalName());
+        Assert.assertEquals(app.namedFieldInjection.two.say(), NamedBeanTwo.class.getCanonicalName());
+        Assert.assertEquals(app.namedFieldInjection.def.say(), NamedBeanDefault.class.getCanonicalName());
     }
 }

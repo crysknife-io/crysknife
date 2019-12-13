@@ -135,11 +135,11 @@ public class BeanDefinition extends Definition {
                 }
                 if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     ExecutableElement elms = MoreElements.asExecutable(mem);
-                    constructorInjectionPoint = new ConstructorPoint(Utils.getQualifiedName(element), element);
+                    constructorInjectionPoint = new ConstructorPoint(element.getQualifiedName().toString(), element);
 
                     for (int i = 0; i < elms.getParameters().size(); i++) {
                         FieldPoint field = parseField(elms.getParameters().get(i), context);
-                        getConstructorInjectionPoint().addArgument(field);
+                        constructorInjectionPoint.addArgument(field);
                     }
                 } else if (mem.getKind().equals(ElementKind.FIELD)) {
                     FieldPoint fiend = parseField(mem, context);
@@ -154,11 +154,15 @@ public class BeanDefinition extends Definition {
         FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
         if (context.getQualifiers().containsKey(field.getType())) {
             BeanDefinition bean = null;
-            for (AnnotationMirror mirror : context.getGenerationContext()
-                    .getProcessingEnvironment()
-                    .getElementUtils()
-                    .getAllAnnotationMirrors(type)) {
-                bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
+            if (field.isNamed()) {
+                bean = context.getQualifiers().get(field.getType()).get(field.getNamed());
+            } else {
+                for (AnnotationMirror mirror : context.getGenerationContext()
+                        .getProcessingEnvironment()
+                        .getElementUtils()
+                        .getAllAnnotationMirrors(type)) {
+                    bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
+                }
             }
             if (bean != null) {
                 dependsOn.add(bean);

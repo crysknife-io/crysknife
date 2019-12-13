@@ -110,6 +110,16 @@
       <artifactId>gwt-core</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>mutationobserver-api</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>mutationobserver-generator</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
 
   </dependencies>
 
