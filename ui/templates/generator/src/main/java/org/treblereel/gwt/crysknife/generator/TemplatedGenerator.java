@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+import javax.annotation.Resource;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -42,6 +43,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -155,10 +157,13 @@ import org.gwtproject.event.dom.client.TouchCancelEvent;
 import org.gwtproject.event.dom.client.TouchEndEvent;
 import org.gwtproject.event.dom.client.TouchMoveEvent;
 import org.gwtproject.event.dom.client.TouchStartEvent;
+import org.gwtproject.resources.client.ClientBundle;
+import org.gwtproject.resources.client.CssResource;
 import org.gwtproject.resources.context.AptContext;
 import org.gwtproject.resources.ext.ResourceOracle;
 import org.gwtproject.resources.rg.resource.impl.ResourceOracleImpl;
 import org.gwtproject.user.client.ui.IsWidget;
+import org.gwtproject.user.client.ui.UIObject;
 import org.gwtproject.user.client.ui.Widget;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.jboss.gwt.elemento.processor.AbortProcessingException;
@@ -184,11 +189,13 @@ import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.client.Reflect;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
+import org.treblereel.gwt.crysknife.templates.client.StyleInjector;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 import static java.util.Arrays.asList;
@@ -525,13 +532,14 @@ public class TemplatedGenerator extends IOCGenerator {
 
     private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
         if (templateContext.getStylesheet() != null) {
-            builder.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.templates.client.StyleInjector");
+            builder.getClassCompilationUnit().addImport(StyleInjector.class);
 
             if (!templateContext.getStylesheet().isLess()) {
-                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource");
-                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.CssResource.NotStrict");
-                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.Resource");
-                builder.getClassCompilationUnit().addImport("org.gwtproject.resources.client.ClientBundle.Source");
+                builder.getClassCompilationUnit().addImport(CssResource.class);
+                builder.getClassCompilationUnit().addImport(CssResource.NotStrict.class);
+                builder.getClassCompilationUnit().addImport(Resource.class);
+                builder.getClassCompilationUnit().addImport(ClientBundle.Source.class);
+
                 ClassOrInterfaceDeclaration inner = new ClassOrInterfaceDeclaration();
                 inner.setName("Stylesheet");
                 inner.setInterface(true);
@@ -574,9 +582,10 @@ public class TemplatedGenerator extends IOCGenerator {
 
     private void processDataFields(ClassBuilder builder, TemplateContext templateContext) {
         templateContext.getDataElements().forEach(element -> {
-            FieldAccessExpr instance = new FieldAccessExpr(new FieldAccessExpr(new ThisExpr(), "instance"), element.getName());
             MethodCallExpr resolveElement;
-            IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(instance, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
+            MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(element.getName());
+
+            IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(fieldAccessCallExpr, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
             if (element.needsCast()) {
                 resolveElement = new MethodCallExpr(new ClassOrInterfaceType()
                                                             .setName("TemplateUtil")
@@ -592,54 +601,83 @@ public class TemplatedGenerator extends IOCGenerator {
                         .addArgument(new StringLiteralExpr(element.getName()));
             }
 
-            ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new AssignExpr().setTarget(instance).setValue(resolveElement)));
-            ifStmt.setElseStmt(new BlockStmt().addAndGetStatement(new MethodCallExpr(new ClassOrInterfaceType()
-                                                                                             .setName("TemplateUtil").getNameAsExpression(), "replaceElement")
-                                                                          .addArgument("this.instance.getElement()")
-                                                                          .addArgument(new StringLiteralExpr(element.getSelector()))
-                                                                          .addArgument(getInstanceByElementKind(element))));
+            MethodCallExpr fieldSetCallExpr = new MethodCallExpr(
+                    new MethodCallExpr(
+                            new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
+                            .addArgument("instance"), "set")
+                    .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+                                         .addArgument(new StringLiteralExpr(
+                                                 Utils.getJsFieldName(getVariableElement(element.getName()))))
+                                         .addArgument("instance"))
+                    .addArgument(resolveElement);
+
+            ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(fieldSetCallExpr));
+            ifStmt.setElseStmt(new BlockStmt().
+                    addAndGetStatement(new MethodCallExpr(new ClassOrInterfaceType()
+                                                                  .setName("TemplateUtil").getNameAsExpression(), "replaceElement")
+                                               .addArgument("this.instance.getElement()")
+                                               .addArgument(new StringLiteralExpr(element.getSelector()))
+                                               .addArgument(getInstanceByElementKind(element, fieldAccessCallExpr))));
             builder.getGetMethodDeclaration()
                     .getBody()
                     .get().addAndGetStatement(ifStmt);
         });
     }
 
-    private String getInstanceByElementKind(DataElementInfo element) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("this.instance.");
-        sb.append(element.getName());
-        if (element.getKind()
-                .equals(DataElementInfo.Kind.IsElement)) {
-            sb.append(".getElement()");
+    private MethodCallExpr getFieldAccessCallExpr(String fieldName) {
+        VariableElement field = getVariableElement(fieldName);
+        return getFieldAccessCallExpr(field);
+    }
+
+    private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
+        return new MethodCallExpr(
+                new MethodCallExpr(
+                        new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
+                        .addArgument("instance"), "get")
+                .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+                                     .addArgument(new StringLiteralExpr(Utils.getJsFieldName(field)))
+                                     .addArgument("instance"));
+    }
+
+    private Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
+        if (element.getKind().equals(DataElementInfo.Kind.IsElement)) {
+            instance = new MethodCallExpr(
+                    new EnclosedExpr(
+                            new CastExpr(
+                                    new ClassOrInterfaceType()
+                                            .setName(IsElement.class.getCanonicalName()), instance)),
+                    "getElement");
         } else if (element.getKind()
                 .equals(DataElementInfo.Kind.IsWidget)) {
-            sb.append(".getElement()");
-            StringBuffer result = new StringBuffer();
-            result.append(Js.class.getCanonicalName());
-            result.append(".uncheckedCast(");
-            result.append(sb);
-            result.append(")");
-            return result.toString();
+
+            return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
+                                      "<" + HTMLElement.class.getCanonicalName() + ">uncheckedCast")
+                    .addArgument(new MethodCallExpr(
+                            new EnclosedExpr(
+                                    new CastExpr(
+                                            new ClassOrInterfaceType().setName(UIObject.class.getCanonicalName()), instance)), "getElement"));
         }
 
-        return sb.toString();
+        return new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()), instance));
+    }
+
+    private VariableElement getVariableElement(String elementName) {
+        return beanDefinition
+                .getType()
+                .getEnclosedElements()
+                .stream()
+                .filter(elm -> elm.getKind().equals(ElementKind.FIELD))
+                .filter(elm -> elm.getSimpleName().toString().equals(elementName))
+                .map(elm -> MoreElements.asVariable(elm))
+                .findFirst().orElseThrow(() -> new Error("Unable to find @DataField " + elementName + " in " + beanDefinition.getClassName()));
     }
 
     private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {
         templateContext.getEvents().forEach(event -> {
             for (String eventEvent : event.getEvents()) {
-                Expression instance = new FieldAccessExpr(
-                        new FieldAccessExpr(
-                                new ThisExpr(), "instance"),
-                        event.getInfo().getName());
+                MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(event.getInfo().getName());
 
-                if (event.getInfo().getKind().equals(DataElementInfo.Kind.IsWidget)) {
-                    instance = new NameExpr("(" + new CastExpr(new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()),
-                                                               new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
-                                                                       .addArgument(new MethodCallExpr(instance, "getElement"))).toString() + ")");
-                }
-
-                MethodCallExpr methodCallExpr = new MethodCallExpr(instance, "addEventListener")
+                MethodCallExpr methodCallExpr = new MethodCallExpr(getInstanceByElementKind(event.getInfo(), fieldAccessCallExpr), "addEventListener")
                         .addArgument(new StringLiteralExpr(eventEvent))
                         .addArgument(new NameExpr("e -> this.instance." + event.getMethodName() + "(jsinterop.base.Js.uncheckedCast(e))"));
 
@@ -653,6 +691,8 @@ public class TemplatedGenerator extends IOCGenerator {
     private void addImports(ClassBuilder builder) {
         builder.getClassCompilationUnit().addImport(DomGlobal.class);
         builder.getClassCompilationUnit().addImport(TemplateUtil.class);
+        builder.getClassCompilationUnit().addImport(Js.class);
+        builder.getClassCompilationUnit().addImport(Reflect.class);
     }
 
     private void setInnerHTML(BlockStmt block, TemplateContext templateContext) {
@@ -693,9 +733,6 @@ public class TemplatedGenerator extends IOCGenerator {
                 .forEach(field -> {
 
                     // verify the field
-                    if (field.getModifiers().contains(Modifier.PRIVATE)) {
-                        abortWithError(field, "@%s member must not be private, class " + field.getEnclosingElement() + ", field :  ", DataField.class.getSimpleName());
-                    }
                     if (field.getModifiers().contains(Modifier.STATIC)) {
                         abortWithError(field, "@%s member must not be static", DataField.class.getSimpleName());
                     }
@@ -899,7 +936,7 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     private String getIsElementTypeParameter(List<? extends TypeMirror> interfaces) {
-        String typeParam = "elemental2.dom.HTMLElement";
+        String typeParam = HTMLElement.class.getCanonicalName();
         for (TypeMirror interfaceMirror : interfaces) {
             if (MoreTypes.isTypeOf(IsElement.class, interfaceMirror)) {
                 DeclaredType interfaceDeclaration = MoreTypes.asDeclared(interfaceMirror);

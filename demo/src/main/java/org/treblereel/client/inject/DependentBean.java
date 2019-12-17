@@ -19,15 +19,15 @@ public class DependentBean {
 
     @Inject
     @Named("dog")
-    Animal dog;
+    private Animal dog;
 
     @Inject
     @Named("cow")
-    Animal cow;
+    private Animal cow;
 
     @Inject
     @Named("bird")
-    Animal bird;
+    private Animal bird;
 
     private int random;
 

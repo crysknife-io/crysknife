@@ -9,6 +9,7 @@ import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MouseEvent;
+import jsinterop.annotations.JsProperty;
 import org.jboss.gwt.elemento.core.IsElement;
 import org.treblereel.client.inject.named.Vehicle;
 import org.treblereel.gwt.crysknife.annotation.DataField;
@@ -26,23 +27,25 @@ public class NamedBeanConstructorInjectionPanel implements IsElement<HTMLDivElem
 
     @Inject
     @DataField
-    protected HTMLDivElement form;
+    @JsProperty
+    private HTMLDivElement form;
 
     @Inject
     @DataField
-    protected HTMLInputElement textBox;
+    private HTMLInputElement textBox;
 
     @Inject
     @DataField
-    protected HTMLButtonElement helicopterBtn;
+    @JsProperty
+    private HTMLButtonElement helicopterBtn;
 
     @Inject
     @DataField
-    protected HTMLButtonElement carBtn;
+    private HTMLButtonElement carBtn;
 
-    protected Vehicle car;
+    private Vehicle car;
 
-    protected Vehicle helicopter;
+    private Vehicle helicopter;
 
     @Inject
     NamedBeanConstructorInjectionPanel(@Named("Helicopter") Vehicle helicopter, @Named("Car") Vehicle car) {

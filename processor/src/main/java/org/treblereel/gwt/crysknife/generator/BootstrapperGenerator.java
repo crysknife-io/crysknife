@@ -9,11 +9,18 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.client.Instance;
+import org.treblereel.gwt.crysknife.client.Interceptor;
+import org.treblereel.gwt.crysknife.client.Reflect;
+import org.treblereel.gwt.crysknife.client.internal.Factory;
+import org.treblereel.gwt.crysknife.client.internal.OnFieldAccessed;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -62,7 +69,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName("org.treblereel.gwt.crysknife.client.Instance");
+        type.setName(Instance.class.getCanonicalName());
         type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
 
         classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
@@ -71,8 +78,10 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     @Override
     public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
         clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
-        clazz.getClassCompilationUnit().addImport("org.treblereel.gwt.crysknife.client.internal.Factory");
+        clazz.getClassCompilationUnit().addImport(Factory.class);
+        clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
         clazz.getClassCompilationUnit().addImport(Provider.class);
+        clazz.getClassCompilationUnit().addImport(Reflect.class);
         clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
         clazz.setClassName(beanDefinition.getType().getSimpleName().toString() + BOOTSTRAP_EXTENSION);
 
@@ -86,13 +95,27 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
 
+        ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
+        interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
+        interceptorCreationExpr.addArgument(new NameExpr("instance"));
+
+        classBuilder.getGetMethodDeclaration().getBody()
+                .get()
+                .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("interceptor")).setValue(interceptorCreationExpr));
+
+
+        classBuilder.getGetMethodDeclaration()
+                .getBody()
+                .get().addAndGetStatement(new AssignExpr()
+                                                  .setTarget(new NameExpr("instance"))
+                                                  .setValue(new MethodCallExpr(
+                                                          new NameExpr("interceptor"), "getProxy")));
+
         beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
-            FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new FieldAccessExpr(
-                    new ThisExpr(), "instance"), fieldPoint.getField().getSimpleName().toString());
-            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
-                    new AssignExpr().setTarget(fieldAccessExpr)
-                            .setValue(iocContext.getBean(fieldPoint.getType())
-                                              .generateBeanCall(iocContext, classBuilder, fieldPoint)));
+            classBuilder.getGetMethodDeclaration()
+                    .getBody()
+                    .get()
+                    .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint));
         });
     }
 

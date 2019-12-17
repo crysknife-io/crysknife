@@ -47,10 +47,25 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.google.jsinterop</groupId>
+      <artifactId>jsinterop-annotations</artifactId>
+      <version>${google.jsinterop.annotations.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vertispan.jsinterop</groupId>
+      <artifactId>base</artifactId>
+      <version>${vertispan.jsinterop.base.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.elemental2</groupId>
+      <artifactId>elemental2-dom</artifactId>
+      <version>${elemental2.version}</version>
     </dependency>
   </dependencies>
 

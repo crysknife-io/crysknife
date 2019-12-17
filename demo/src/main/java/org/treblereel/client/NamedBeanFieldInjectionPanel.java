@@ -25,35 +25,35 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    protected HTMLDivElement form;
+    private HTMLDivElement form;
 
     @Inject
     @DataField
-    protected HTMLInputElement textBox;
+    private HTMLInputElement textBox;
 
     @Inject
     @DataField
-    protected HTMLButtonElement birdBtn;
+    private HTMLButtonElement birdBtn;
 
     @Inject
     @DataField
-    protected HTMLButtonElement cowBtn;
+    private HTMLButtonElement cowBtn;
 
     @Inject
     @DataField
-    protected HTMLButtonElement dogBtn;
+    private HTMLButtonElement dogBtn;
 
     @Inject
     @Named("dog")
-    protected Animal dog;
+    private Animal dog;
 
     @Inject
     @Named("cow")
-    protected Animal cow;
+    private Animal cow;
 
     @Inject
     @Named("bird")
-    protected Animal bird;
+    private Animal bird;
 
     private void setText(String text) {
         textBox.value = text;

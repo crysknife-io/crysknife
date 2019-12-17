@@ -18,15 +18,15 @@ public class QualifierBeans {
 
     @Inject
     @QualifierOne
-    QualifierBean one;
+    private QualifierBean one;
 
     @Inject
     @QualifierTwo
-    QualifierBean two;
+    private QualifierBean two;
 
     @Inject
     @Default
-    QualifierBean three;
+    private QualifierBean three;
 
     @PostConstruct
     void init() {

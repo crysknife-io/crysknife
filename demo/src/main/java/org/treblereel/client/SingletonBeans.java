@@ -25,21 +25,21 @@ public class SingletonBeans implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField("root")
-    protected HTMLDivElement form;
+    private HTMLDivElement form;
 
     @Inject
     @DataField("input")
-    protected HTMLInputElement textBox;
+    private HTMLInputElement textBox;
 
     @Inject
     @DataField
-    protected HTMLButtonElement checkBtn;
+    private HTMLButtonElement checkBtn;
 
     @Inject
-    protected BeanOne beanOne1Instance;
+    private BeanOne beanOne1Instance;
 
     @Inject
-    protected BeanOne beanOne2Instance;
+    private BeanOne beanOne2Instance;
 
     @PostConstruct
     public void init() {

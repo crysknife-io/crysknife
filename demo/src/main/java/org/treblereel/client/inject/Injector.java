@@ -10,13 +10,13 @@ import org.treblereel.client.inject.iface.IBean;
 public class Injector {
 
     @Inject
-    BeanOne beanOne;
+    private BeanOne beanOne;
 
     @Inject
-    BeanTwo beanTwo;
+    private BeanTwo beanTwo;
 
     @Inject
-    IBean iBean;
+    private IBean iBean;
 
     public void say() {
         DomGlobal.console.log(this.getClass().getCanonicalName());

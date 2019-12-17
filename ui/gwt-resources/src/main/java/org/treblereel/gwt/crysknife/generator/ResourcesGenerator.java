@@ -90,6 +90,6 @@ public class ResourcesGenerator extends BeanIOCGenerator {
         classBuilder.getClassCompilationUnit().addImport(qualifiedImplName);
 
 
-        return new NameExpr("new " + theName + "();");
+        return new NameExpr("new " + theName + "()");
     }
 }

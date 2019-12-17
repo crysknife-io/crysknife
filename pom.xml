@@ -50,6 +50,7 @@
         <jsoup.version>1.11.3</jsoup.version>
         <lesscss.version>1.7.0.1.1</lesscss.version>
         <vertispan.jsinterop.base.version>1.0.0-SNAPSHOT</vertispan.jsinterop.base.version>
+        <google.jsinterop.annotations.version>1.0.2</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
 

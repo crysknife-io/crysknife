@@ -76,6 +76,15 @@
       <artifactId>guava</artifactId>
       <version>${google.guava.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.vertispan.j2cl</groupId>
+      <artifactId>frontend-javac</artifactId>
+      <version>0.5-SNAPSHOT</version>
+    </dependency>
+
+
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

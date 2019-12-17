@@ -30,6 +30,8 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.client.Instance;
+import org.treblereel.gwt.crysknife.client.internal.AbstractBeanManager;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.util.Utils;
@@ -167,8 +169,8 @@ public class BeanManagerGenerator {
             clazz.addImport(Map.class);
             clazz.addImport(HashMap.class);
             clazz.addImport(Annotation.class);
-            clazz.addImport("org.treblereel.gwt.crysknife.client.Instance");
-            clazz.addImport("org.treblereel.gwt.crysknife.client.internal.AbstractBeanManager");
+            clazz.addImport(Instance.class);
+            clazz.addImport(AbstractBeanManager.class);
 
             ClassOrInterfaceType factory = new ClassOrInterfaceType();
             factory.setName("AbstractBeanManager");

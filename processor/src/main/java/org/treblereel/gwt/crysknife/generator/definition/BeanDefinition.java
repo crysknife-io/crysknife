@@ -125,12 +125,12 @@ public class BeanDefinition extends Definition {
         elements.getAllMembers(element).forEach(mem -> {
             if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
                     || mem.getKind().equals(ElementKind.FIELD))) {
-                if (mem.getModifiers().contains(Modifier.PRIVATE)) {
+                if (mem.getModifiers().contains(Modifier.STATIC)) {
                     context.getGenerationContext()
                             .getProcessingEnvironment()
                             .getMessager()
                             .printMessage(Diagnostic.Kind.ERROR,
-                                          String.format("Field [%s] in [%s] must not be private \n", mem, getQualifiedName()));
+                                          String.format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
                     throw new Error();
                 }
                 if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {

@@ -60,13 +60,6 @@
       <scope>provided</scope>
     </dependency>
 
-<!--    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>gwt-widgets</artifactId>
-      <version>0.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>-->
-
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>gwt-resources</artifactId>
@@ -189,6 +182,13 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+          <configuration>
+            <packagingExcludes>WEB-INF/classes/**</packagingExcludes>
+          </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.0.1</version>
         <executions>
@@ -215,6 +215,11 @@
           </execution>
         </executions>
         <configuration>
+          <externs>
+          <extern>${project.basedir}/src/main/externs/test.js</extern>
+          </externs>
+
+
           <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir</defaultWebappDirectory>
           <compilationLevel>BUNDLE</compilationLevel>
           <!--
