@@ -71,6 +71,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         processPrepareForGenerationTasks();
 
         new FactoryGenerator(iocContext, context).generate();
+        new BeanInfoGenerator(iocContext, context).generate();
         new BeanManagerGenerator(iocContext, context).generate();
         return false;
     }

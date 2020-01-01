@@ -17,11 +17,11 @@ import elemental2.dom.HTMLHeadingElement;
 public class Elemental2Bean {
 
     @Inject
-    protected HTMLButtonElement buttonElement;
+    private HTMLButtonElement buttonElement;
 
     @Inject
     @Named("h5")
-    protected HTMLHeadingElement headingElement;
+    private HTMLHeadingElement headingElement;
 
     @PostConstruct
     public void init() {

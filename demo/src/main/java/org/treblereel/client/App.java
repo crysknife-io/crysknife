@@ -6,10 +6,11 @@ import javax.inject.Inject;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
+import jsinterop.annotations.JsFunction;
 import org.gwtproject.core.client.EntryPoint;
 import org.gwtproject.resources.client.ResourceCallback;
 import org.gwtproject.resources.client.ResourceException;
-import org.gwtproject.user.client.ui.RootPanel;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.User;
 import org.treblereel.client.resources.TextResource;
@@ -21,13 +22,19 @@ import org.treblereel.gwt.crysknife.client.ComponentScan;
 public class App implements EntryPoint {
 
     @Inject
-    protected HTMLDivElement toast;
+    private HTMLDivElement toast;
 
     @Inject
-    protected TextResource textResource;
+    private TextResource textResource;
 
     @Inject
-    protected UI ui;
+    private UI ui;
+
+    @Inject
+    private NamedBeanConstructorInjectionPanel namedBeanConstructorInjectionPanel;
+
+    @Inject
+    private SingletonBeans singletonBeans;
 
     @Override
     public void onModuleLoad() {
@@ -80,4 +87,5 @@ public class App implements EntryPoint {
 
         DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
     }
+
 }

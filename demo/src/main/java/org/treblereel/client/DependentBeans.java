@@ -26,7 +26,7 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
 public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @DataField
-    protected HTMLDivElement form;
+    private HTMLDivElement form;
 
     @Inject
     @DataField
@@ -34,16 +34,16 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    protected HTMLButtonElement checkBtn;
+    private HTMLButtonElement checkBtn;
 
     @Inject
-    protected DependentBean beanOne1Instance;
+    DependentBean beanOne1Instance;
 
     @Inject
-    protected DependentBean beanOne2Instance;
+    private DependentBean beanOne2Instance;
 
     @Inject
-    protected TextResource textResource;
+    private TextResource textResource;
 
     @Inject
     public DependentBeans(HTMLSelectElement nativeSelect,

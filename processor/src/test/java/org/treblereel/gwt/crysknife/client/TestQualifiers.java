@@ -25,18 +25,18 @@ public class TestQualifiers {
 
     App app = new App();
 
-    @Before
+    //@Before
     public void setup() {
         new AppBootstrap(app).initialize();
     }
 
-    @Test
+    //@Test
     public void testQualifierConstructorInjection() {
         Assert.assertEquals(QualifierBeanOne.class, app.qualifierConstructorInjection.qualifierBeanOne.getClass());
         Assert.assertEquals(QualifierBeanTwo.class.getCanonicalName(), app.qualifierConstructorInjection.qualifierBeanTwo.say());
     }
 
-    @Test
+    //@Test
     public void testQualifierFieldInjection() {
         Assert.assertEquals(QualifierFieldInjection.class, app.qualifierFieldInjection.getClass());
         Assert.assertEquals(QualifierBeanOne.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanOne.say());
@@ -44,7 +44,7 @@ public class TestQualifiers {
         Assert.assertEquals(QualifierBeanDefault.class.getCanonicalName(), app.qualifierFieldInjection.qualifierBeanDefault.say());
     }
 
-    @Test
+    //@Test
     public void testQualifierBeanManager() {
         Assert.assertEquals(QualifierBeanDefault.class, app.beanManager.lookupBean(QualifierBean.class).get().getClass());
         Assert.assertEquals(QualifierBeanDefault.class, app.beanManager.lookupBean(QualifierBean.class, Default.class).get().getClass());
@@ -52,7 +52,7 @@ public class TestQualifiers {
         Assert.assertEquals(QualifierBeanTwo.class, app.beanManager.lookupBean(QualifierBean.class, QualifierTwo.class).get().getClass());
     }
 
-    @Inject
+    //@Inject
     public void testApplicationScopedConstructorInjection() {
         Assert.assertNotNull(app.applicationScopedConstructorInjection);
         Assert.assertNotNull(app.applicationScopedConstructorInjection.bean);
@@ -61,7 +61,7 @@ public class TestQualifiers {
         Assert.assertEquals(app.applicationScopedConstructorInjection.bean.say(), app.applicationScopedConstructorInjection.bean2.say());
     }
 
-    @Inject
+    //@Inject
     public void testNamedConstructorInjection() {
         Assert.assertNotNull(app.namedConstructorInjection);
         Assert.assertNotNull(app.namedConstructorInjection.one);
@@ -72,7 +72,7 @@ public class TestQualifiers {
         Assert.assertEquals(app.namedConstructorInjection.def.say(), NamedBeanDefault.class.getCanonicalName());
     }
 
-    @Inject
+    //@Inject
     public void testNamedFieldInjection() {
         Assert.assertNotNull(app.namedFieldInjection);
         Assert.assertNotNull(app.namedFieldInjection.one);

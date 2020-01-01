@@ -17,6 +17,7 @@ import javax.lang.model.util.Types;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
+import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -101,7 +102,9 @@ public class ComponentInjectionResolverScanner {
 
     private BeanDefinition getTypeQualifierValue(VariableElement element, Map<String, BeanDefinition> qualifiers) {
 
-        for (AnnotationMirror annotation : iocContext.getGenerationContext().getElements().getAllAnnotationMirrors(element)) {
+        for (AnnotationMirror annotation : iocContext.getGenerationContext()
+                .getElements()
+                .getAllAnnotationMirrors(element)) {
             if (qualifiers.containsKey(annotation.toString())) {
                 return qualifiers.get(annotation.toString());
             }
