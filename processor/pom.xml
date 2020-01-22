@@ -83,8 +83,6 @@
       <version>0.5-SNAPSHOT</version>
     </dependency>
 
-
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -137,6 +135,16 @@
                   </excludes>
                 </filter>
               </filters>
+              <relocations>
+                <relocation>
+                  <pattern>com.google.common</pattern>
+                  <shadedPattern>org.treblereel.crysknife.com.google.common</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.auto</pattern>
+                  <shadedPattern>org.treblereel.crysknife.com.google.auto</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>

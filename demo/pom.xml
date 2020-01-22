@@ -11,7 +11,10 @@
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
+    <gwt.version>1.0-SNAPSHOT</gwt.version>
+    <elemental2.version>1.0.0</elemental2.version>
     <j2cl.maven.plugin.version>0.11-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl-compilation.level>BUNDLE</j2cl-compilation.level>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
   </properties>
 
@@ -19,7 +22,7 @@
     <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0</version>
+      <version>${elemental2.version}</version>
     </dependency>
 
     <dependency>
@@ -31,66 +34,71 @@
     <dependency>
       <groupId>org.gwtproject.event</groupId>
       <artifactId>gwt-event-dom</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>crysknife-annotations</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${gwt.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>elemental2-generator</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>gwt-resources</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-api</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-generator</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>databinding-api</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>databinding-generator</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>mutationobserver-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>mutationobserver-generator</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.vertispan.jsinterop</groupId>
@@ -101,20 +109,9 @@
     <dependency>
       <groupId>org.gwtproject.core</groupId>
       <artifactId>gwt-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${gwt.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>mutationobserver-api</artifactId>
-      <version>0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>mutationobserver-generator</artifactId>
-      <version>0.1-SNAPSHOT</version>
-    </dependency>
-
-  </dependencies>
+   </dependencies>
 
   <build>
     <resources>
@@ -215,22 +212,12 @@
           </execution>
         </executions>
         <configuration>
-          <externs>
-          <extern>${project.basedir}/src/main/externs/test.js</extern>
-          </externs>
-
-
           <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir</defaultWebappDirectory>
-          <compilationLevel>BUNDLE</compilationLevel>
-          <!--
-                    <compilationLevel>ADVANCED</compilationLevel>
-          -->
+          <compilationLevel>${j2cl-compilation.level}</compilationLevel>
           <entrypoint>org.treblereel.client.App</entrypoint>
           <jsinteropAnnotationsJar>com.google.jsinterop:jsinterop-annotations:1.0.2</jsinteropAnnotationsJar>
-          <externs>
-          </externs>
-          <defines>
-          </defines>
+          <externs></externs>
+          <defines></defines>
         </configuration>
       </plugin>
       <plugin>
@@ -243,6 +230,15 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <j2cl-compilation.level>ADVANCED</j2cl-compilation.level>
+      </properties>
+    </profile>
+  </profiles>
 
   <pluginRepositories>
     <pluginRepository>
