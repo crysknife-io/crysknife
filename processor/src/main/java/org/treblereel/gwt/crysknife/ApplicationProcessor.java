@@ -12,6 +12,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.inject.Inject;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
@@ -151,11 +152,17 @@ public class ApplicationProcessor extends AbstractProcessor {
                 .getElementsAnnotatedWith(Application.class);
 
         if (applications.size() == 0) {
-            System.out.println("no class annotated with @Application detected");
+            context.getProcessingEnvironment()
+                    .getMessager()
+                    .printMessage(Diagnostic.Kind.ERROR, "No class annotated with @Application detected\"");
+            throw new Error();
         }
 
         if (applications.size() > 1) {
-            System.out.println("there must only one class annotated with @Application");
+            context.getProcessingEnvironment()
+                    .getMessager()
+                    .printMessage(Diagnostic.Kind.ERROR, "There is must be only one class annotated with @Application\"");
+            throw new Error();
         }
         return applications.stream().findFirst();
     }
