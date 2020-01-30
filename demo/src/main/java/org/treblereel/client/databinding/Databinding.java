@@ -12,7 +12,7 @@ import elemental2.dom.HTMLInputElement;
 import jsinterop.base.Js;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.gwtproject.user.client.ui.TextBox;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.Templated;
@@ -27,6 +27,8 @@ import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.Prop
 @Singleton
 @Templated(value = "databinding.html")
 public class Databinding implements IsElement<HTMLDivElement> {
+
+    @DataField HTMLDivElement root;
 
     @Inject
     protected DataBinder<Customer> dataBinder;
@@ -74,6 +76,11 @@ public class Databinding implements IsElement<HTMLDivElement> {
             onPropertyChange(event.toString());
         });
 
+    }
+
+    @Override
+    public HTMLDivElement element() {
+        return root;
     }
 
     private void onPropertyChange(String state) {

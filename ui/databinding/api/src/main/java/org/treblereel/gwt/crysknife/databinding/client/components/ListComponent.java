@@ -33,7 +33,7 @@ import org.gwtproject.dom.client.TableSectionElement;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.client.TakesValue;
 import org.gwtproject.user.client.ui.IsWidget;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.databinding.client.api.Bindable;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.list.BindableListChangeHandler;
 
@@ -238,7 +238,7 @@ public interface ListComponent<M, C extends TakesValue<M>> extends IsElement, Ta
    */
   static <M, C extends TakesValue<M> & IsElement> Builder<M, C> forIsElementComponent(final Supplier<C> supplier,
           final Consumer<C> destroyer) {
-    return new Builder<>(root -> new DefaultListComponent<>(root, supplier, destroyer, c -> c.getElement()));
+    return new Builder<>(root -> new DefaultListComponent<>(root, supplier, destroyer, c -> c.element()));
   }
 
   /**

@@ -61,6 +61,11 @@
       <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.jboss.elemento</groupId>
+      <artifactId>elemento-core</artifactId>
+      <version>${elemento.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <version>${project.version}</version>

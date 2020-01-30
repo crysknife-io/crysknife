@@ -11,11 +11,14 @@ import jsinterop.annotations.JsFunction;
 import org.gwtproject.core.client.EntryPoint;
 import org.gwtproject.resources.client.ResourceCallback;
 import org.gwtproject.resources.client.ResourceException;
+import org.jboss.elemento.Elements;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.User;
 import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
+
+import static org.jboss.elemento.Elements.body;
 
 @Application
 @ComponentScan("org.treblereel.client")
@@ -43,9 +46,7 @@ public class App implements EntryPoint {
 
     @PostConstruct
     public void init() {
-
-        DomGlobal.document.body.appendChild(ui.getElement());
-
+        body().add(ui);
         DomGlobal.console.log(textResource.helloWorldRelative().getText());
 
         try {

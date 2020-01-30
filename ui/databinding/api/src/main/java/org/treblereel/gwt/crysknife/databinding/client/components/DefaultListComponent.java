@@ -79,7 +79,7 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
   }
 
   @Override
-  public HTMLElement getElement() {
+  public HTMLElement element() {
     return Js.uncheckedCast(root);
   }
 

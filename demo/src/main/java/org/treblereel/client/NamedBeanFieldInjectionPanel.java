@@ -8,7 +8,7 @@ import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MouseEvent;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.client.inject.named.Animal;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
@@ -60,7 +60,7 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement getElement() {
+    public HTMLDivElement element() {
         return form;
     }
 

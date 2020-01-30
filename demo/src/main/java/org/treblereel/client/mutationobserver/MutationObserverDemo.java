@@ -11,7 +11,7 @@ import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MutationRecord;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.gwtproject.user.client.ui.Button;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.Templated;
@@ -27,6 +27,8 @@ import org.treblereel.gwt.crysknife.mutationobserver.client.api.OnDetach;
 @Singleton
 @Templated(value = "mutationobserverdemo.html#mutationobserverdemo")
 public class MutationObserverDemo implements IsElement<HTMLDivElement> {
+
+    @DataField HTMLDivElement mutationobserverdemo;
 
     @DataField
     @Inject
@@ -106,5 +108,10 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     protected void onDetach(MutationRecord mutationRecord) {
         DomGlobal.console.log("on detach " + mutationRecord);
         textBox.value = "    on detach " + mutationRecord;
+    }
+
+    @Override
+    public HTMLDivElement element() {
+        return mutationobserverdemo;
     }
 }
