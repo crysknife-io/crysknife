@@ -165,7 +165,7 @@ import org.gwtproject.resources.rg.resource.impl.ResourceOracleImpl;
 import org.gwtproject.user.client.ui.IsWidget;
 import org.gwtproject.user.client.ui.UIObject;
 import org.gwtproject.user.client.ui.Widget;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.jboss.gwt.elemento.processor.AbortProcessingException;
 import org.jboss.gwt.elemento.processor.ExpressionParser;
 import org.jboss.gwt.elemento.processor.ProcessingException;
@@ -473,7 +473,7 @@ public class TemplatedGenerator extends IOCGenerator {
 
             MethodCallExpr doInit = new MethodCallExpr(new ClassOrInterfaceType()
                                                                .setName("TemplateUtil").getNameAsExpression(), "initTemplated")
-                    .addArgument(Js.class.getCanonicalName() + ".uncheckedCast(this.instance.getElement())")
+                    .addArgument(Js.class.getCanonicalName() + ".uncheckedCast(this.instance.element())")
                     .addArgument("widgets");
 
             builder.getGetMethodDeclaration()
@@ -512,15 +512,15 @@ public class TemplatedGenerator extends IOCGenerator {
         setAttributes(constructor.getBody(), templateContext);
         setInnerHTML(constructor.getBody(), templateContext);
 
-        addGetElement(wrapper, templateContext);
+        addElementMethod(wrapper, templateContext);
 
         builder.getClassDeclaration().addMember(wrapper);
     }
 
-    private void addGetElement(ClassOrInterfaceDeclaration wrapper, TemplateContext templateContext) {
+    private void addElementMethod(ClassOrInterfaceDeclaration wrapper, TemplateContext templateContext) {
         String element = getElementFromTag(templateContext);
 
-        MethodDeclaration method = wrapper.addMethod("getElement",
+        MethodDeclaration method = wrapper.addMethod("element",
                                                      com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
         method.addAnnotation(Override.class);
         method.setType(element);
@@ -591,13 +591,13 @@ public class TemplatedGenerator extends IOCGenerator {
                                                             .setName("TemplateUtil")
                                                             .getNameAsExpression(), "resolveElementAs")
                         .setTypeArguments(new ClassOrInterfaceType().setName(element.getType()))
-                        .addArgument("this.instance.getElement()")
+                        .addArgument("this.instance.element()")
                         .addArgument(new StringLiteralExpr(element.getSelector()));
             } else {
                 resolveElement = new MethodCallExpr(new ClassOrInterfaceType()
                                                             .setName("TemplateUtil")
                                                             .getNameAsExpression(), "resolveElement")
-                        .addArgument("this.instance.getElement()")
+                        .addArgument("this.instance.element()")
                         .addArgument(new StringLiteralExpr(element.getName()));
             }
 
@@ -615,7 +615,7 @@ public class TemplatedGenerator extends IOCGenerator {
             ifStmt.setElseStmt(new BlockStmt().
                     addAndGetStatement(new MethodCallExpr(new ClassOrInterfaceType()
                                                                   .setName("TemplateUtil").getNameAsExpression(), "replaceElement")
-                                               .addArgument("this.instance.getElement()")
+                                               .addArgument("this.instance.element()")
                                                .addArgument(new StringLiteralExpr(element.getSelector()))
                                                .addArgument(getInstanceByElementKind(element, fieldAccessCallExpr))));
             builder.getGetMethodDeclaration()
@@ -646,7 +646,7 @@ public class TemplatedGenerator extends IOCGenerator {
                             new CastExpr(
                                     new ClassOrInterfaceType()
                                             .setName(IsElement.class.getCanonicalName()), instance)),
-                    "getElement");
+                    "element");
         } else if (element.getKind()
                 .equals(DataElementInfo.Kind.IsWidget)) {
 

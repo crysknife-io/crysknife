@@ -47,6 +47,7 @@
         <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
         <apache.commons.commons-lang3.version>3.9</apache.commons.commons-lang3.version>
 
+        <elemento.version>1.0.0-rc1</elemento.version>
         <jsoup.version>1.11.3</jsoup.version>
         <lesscss.version>1.7.0.1.1</lesscss.version>
         <vertispan.jsinterop.base.version>1.0.0-SNAPSHOT</vertispan.jsinterop.base.version>

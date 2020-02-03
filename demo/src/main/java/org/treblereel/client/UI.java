@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import elemental2.dom.HTMLDivElement;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.client.databinding.Databinding;
 import org.treblereel.client.events.BeanWithCDIEvents;
 import org.treblereel.client.mutationobserver.MutationObserverDemo;
@@ -19,6 +19,9 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
 @Singleton
 @Templated(value = "ui.html")
 public class UI implements IsElement<HTMLDivElement> {
+
+    @Inject
+    @DataField HTMLDivElement root;
 
     @Inject
     @DataField
@@ -55,5 +58,10 @@ public class UI implements IsElement<HTMLDivElement> {
     @PostConstruct
     public void init() {
 
+    }
+
+    @Override
+    public HTMLDivElement element() {
+        return root;
     }
 }

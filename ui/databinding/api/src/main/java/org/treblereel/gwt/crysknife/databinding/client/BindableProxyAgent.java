@@ -49,7 +49,7 @@ import org.gwtproject.user.client.ui.HasText;
 import org.gwtproject.user.client.ui.HasValue;
 import org.gwtproject.user.client.ui.ValueBoxBase;
 import org.gwtproject.user.client.ui.Widget;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.databinding.client.api.Convert;
 import org.treblereel.gwt.crysknife.databinding.client.api.Converter;
 import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
@@ -144,9 +144,9 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
         if (component instanceof HasValue) {
             registrar = mergeHasValueChangeHandler(component, modelUpdater, registrar);
         } else if (component instanceof IsElement) {
-            registrar = mergeNativeChangeEventListener(((IsElement) component).getElement(), uiGetter, modelUpdater, registrar);
+            registrar = mergeNativeChangeEventListener(((IsElement) component).element(), uiGetter, modelUpdater, registrar);
         } else if (component instanceof IsElement) {
-            registrar = mergeNativeChangeEventListener(((IsElement) component).getElement(), uiGetter, modelUpdater, registrar);
+            registrar = mergeNativeChangeEventListener(((IsElement) component).element(), uiGetter, modelUpdater, registrar);
         } else if (isElement(component)) {
             registrar = mergeNativeChangeEventListener(component, uiGetter, modelUpdater, registrar);
         }
@@ -157,9 +157,9 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
             } else if (component instanceof ElementWrapperWidget) {
                 registrar = mergeNativeKeyUpEventListener(((ElementWrapperWidget) component).getElement(), uiGetter, modelUpdater, registrar);
             } else if (component instanceof IsElement) {
-                registrar = mergeNativeKeyUpEventListener(((IsElement) component).getElement(), uiGetter, modelUpdater, registrar);
+                registrar = mergeNativeKeyUpEventListener(((IsElement) component).element(), uiGetter, modelUpdater, registrar);
             } else if (component instanceof IsElement) {
-                registrar = mergeNativeKeyUpEventListener(((IsElement) component).getElement(), uiGetter, modelUpdater, registrar);
+                registrar = mergeNativeKeyUpEventListener(((IsElement) component).element(), uiGetter, modelUpdater, registrar);
             } else if (isElement(component)) {
                 registrar = mergeNativeKeyUpEventListener(component, uiGetter, modelUpdater, registrar);
             } else {
@@ -355,9 +355,9 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
         } else if (component instanceof HasText) {
             return createHasTextGetter((HasText) component);
         } else if (component instanceof IsElement) {
-            return maybeCreateElementValueGetter(BoundUtil.asElement(((IsElement) component).getElement()));
+            return maybeCreateElementValueGetter(BoundUtil.asElement(((IsElement) component).element()));
         } else if (component instanceof IsElement) {
-            return maybeCreateElementValueGetter(BoundUtil.asElement(((IsElement) component).getElement()));
+            return maybeCreateElementValueGetter(BoundUtil.asElement(((IsElement) component).element()));
         } else if (isElement(component)) {
             return maybeCreateElementValueGetter(BoundUtil.asElement(component));
         } else {
@@ -707,9 +707,9 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
 
     private Object getUIPart(final Object component) {
         if (component instanceof IsElement) {
-            return ((IsElement) component).getElement();
+            return ((IsElement) component).element();
         } else if (component instanceof IsElement) {
-            return ((IsElement) component).getElement();
+            return ((IsElement) component).element();
         } else {
             return component;
         }

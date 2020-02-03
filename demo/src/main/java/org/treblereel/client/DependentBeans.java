@@ -10,7 +10,7 @@ import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLSelectElement;
 import org.gwtproject.event.dom.client.ClickEvent;
-import org.jboss.gwt.elemento.core.IsElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.annotation.DataField;
@@ -76,7 +76,7 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement getElement() {
+    public HTMLDivElement element() {
         return form;
     }
 }
