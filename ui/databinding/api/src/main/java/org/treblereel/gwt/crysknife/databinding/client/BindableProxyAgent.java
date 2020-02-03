@@ -27,8 +27,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import jsinterop.annotations.JsFunction;
@@ -50,6 +48,7 @@ import org.gwtproject.user.client.ui.HasValue;
 import org.gwtproject.user.client.ui.ValueBoxBase;
 import org.gwtproject.user.client.ui.Widget;
 import org.jboss.elemento.IsElement;
+import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.databinding.client.api.Convert;
 import org.treblereel.gwt.crysknife.databinding.client.api.Converter;
 import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
@@ -86,7 +85,7 @@ import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.Prop
 public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
 
     public final Map<String, PropertyType> propertyTypes = new HashMap<>();
-    final Multimap<String, Binding> bindings = LinkedHashMultimap.create();
+    final Multimap<String, Binding> bindings = new Multimap<>();
     final Map<String, DataBinder> binders = new HashMap<>();
     final Map<String, Object> knownValues = new HashMap<>();
     final Collection<HandlerRegistration> modelChangeHandlers = new ArrayList<>();
