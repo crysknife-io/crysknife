@@ -22,10 +22,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
 import org.gwtproject.event.dom.client.KeyUpEvent;
 import org.gwtproject.event.logical.shared.ValueChangeEvent;
+import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.databinding.client.Assert;
 import org.treblereel.gwt.crysknife.databinding.client.BindableProxy;
 import org.treblereel.gwt.crysknife.databinding.client.BindableProxyAgent;
@@ -54,7 +53,7 @@ import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.Prop
  */
 public class DataBinder<T> implements HasPropertyChangeHandlers {
   private final PropertyChangeHandlerSupport propertyChangeHandlerSupport = new PropertyChangeHandlerSupport();
-  private Multimap<String, Binding> bindings = LinkedHashMultimap.create();
+  private Multimap<String, Binding> bindings = new Multimap<>();
 
   private T proxy;
   private T paused;
@@ -452,7 +451,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
     }
 
     // replay all bindings
-    final Multimap<String, Binding> bindings = LinkedHashMultimap.create();
+    final Multimap<String, Binding> bindings = new Multimap<>();
     for (final Binding b : this.bindings.values()) {
       // must be checked before unbind() removes the handlers
       final boolean bindOnKeyUp = b.needsKeyUpBinding();

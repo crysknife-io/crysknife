@@ -42,6 +42,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>com.google.auto</groupId>
+      <artifactId>auto-common</artifactId>
+      <version>${auto.common.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>databinding-api</artifactId>
       <version>${project.version}</version>

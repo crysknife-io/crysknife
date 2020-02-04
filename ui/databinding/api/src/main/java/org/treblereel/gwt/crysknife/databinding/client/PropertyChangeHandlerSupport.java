@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeEvent;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;
 
@@ -35,21 +34,21 @@ import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.Prop
  */
 public class PropertyChangeHandlerSupport {
   final List<PropertyChangeHandler<?>> handlers = new ArrayList<PropertyChangeHandler<?>>();
-  final Multimap<String, PropertyChangeHandler<?>> specificPropertyHandlers = ArrayListMultimap.create();
+  final Multimap<String, PropertyChangeHandler<?>> specificPropertyHandlers = new Multimap<>();
 
   public Collection<PropertyChangeHandler<?>> removePropertyChangeHandlers() {
-    final Collection<PropertyChangeHandler<?>> removedHandlers = new ArrayList<PropertyChangeHandler<?>>(handlers);
+    final Collection<PropertyChangeHandler<?>> removedHandlers = new ArrayList<>(handlers);
     handlers.clear();
 
     return removedHandlers;
   }
 
-  public Multimap<String, PropertyChangeHandler<?>> removeSpecificPropertyChangeHandlers() {
+/*  public Multimap<String, PropertyChangeHandler<?>> removeSpecificPropertyChangeHandlers() {
     final Multimap<String, PropertyChangeHandler<?>> removed = ArrayListMultimap.create(specificPropertyHandlers);
     specificPropertyHandlers.clear();
 
     return removed;
-  }
+  }*/
 
   /**
    * Adds a {@link PropertyChangeHandler} that will be notified when any
