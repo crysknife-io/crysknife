@@ -1,0 +1,16 @@
+= Getting started with {prod}
+
+This chapter describes how to start using {prod}.
+
+== Prerequisites
+
+* Installed Java Development Kit (JDK) version 1.8+
+* Installed Apache Maven 3.6+
+
+////
+== Creating a J2CL Maven project to enable {prod}
+
+// To Do
+
+== Adding {prod} to existing J2CL Maven project
+////

@@ -1,0 +1,33 @@
+= About {prod}
+This project is a proof of concept.
+
+{prod} is a {cdi} (CDI) framework. {prod} implements CDI specifications and is inspired by the link:http://erraiframework.org/[Errai framework] created by {rh}. Errai is only GWT2-compatible, while {prod} uses J2CL and has no GWT2 dependencies.
+
+{prod} is based on annotation processors code generation and supports the following features among others:
+
+* CDI stereotypes
+* HTML templates
+* Data Binding library
+
+This link:https://crysknife.cloud.unispace.io/[demo page] shows how {prod} can be used on a simple page compiled with J2CL ({mvn-plgn}).
+
+== Under the hood
+{prod} was inspired by {gwt} and Errai and relies on several other technologies (and various GWT comunity projects).
+
+=== {gwt} (GWT)
+//Errai uses GWT to accomplish the translation of concepts such as CDI into the browser, which enables a consistent client and server programming experience.
+
+GWT:: An open-source development toolkit that is built around a Java-to-JavaScript compiler. GWT allows to develop and optimize high-performance web applications.
+
+////
+Errai::
+=== Errai by {rh}
+
+=== Google J2CL (Java-to-Closure-JavaScript Compiler)
+
+=== {cdi} (CDI) framework
+
+=== Google Closure Compiler
+
+=== {mvn-plgn} by Vertispan
+////

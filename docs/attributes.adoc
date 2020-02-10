@@ -9,3 +9,5 @@
 :mvn-plgn-ver: 0.12-SNAPSHOT
 :cdi: Contexts and Dependency Injection
 :gwt: Google Web Toolkit
+
+:rh: Red{nbsp}Hat
