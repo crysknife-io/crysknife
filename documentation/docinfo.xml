@@ -1,0 +1,19 @@
+<productname>{prod}</productname>
+<productnumber>{prod-ver}</productnumber>
+<title>How to use {prod}</title>
+<subtitle>Installing and using {prod} {prod-ver}</subtitle>
+<abstract>
+  <para>
+    {prod} is awe.
+  </para>
+</abstract>
+<pubsnumber>0</pubsnumber>
+<authorgroup>
+  <author>
+    <firstname>Oss</firstname>
+    <email>high.on.toes@gmail.com</email>
+  </author>
+<org>
+  <orgname>Arrakis LTD</orgname>
+</org>
+</authorgroup>

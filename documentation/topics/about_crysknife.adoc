@@ -1,0 +1,19 @@
+= About {prod}
+This project is a proof of concept for the {cdi} framework (CDI). It supports some popular features and is based on annotation processors generation. It has no GWT 2 dependencies. Demo shows usage of a simple page compiled with J2CL (with {mvn-plgn}).
+
+== Prerequisites
+* Java Development Kit (JDK) version 1.8+
+* Apache Maven 3.6+
+
+== Under the hood
+{prod} was inspired by {gwt} and relies on several other technologies.
+
+=== {gwt} (GWT)
+
+=== J2CL
+
+=== {cdi} (CDI) framework
+
+=== Google Closure Compiler
+
+=== {mvn-plgn}
