@@ -1,0 +1,11 @@
+//Product
+:prod: Crysknife
+:prod-ver: 0.1-SNAPSHOT
+
+//Technologies
+:jdk-ver: 1.8
+:mvn-ver: 3.6
+:mvn-plgn: j2cl-maven-plugin
+:mvn-plgn-ver: 0.12-SNAPSHOT
+:cdi: Contexts and Dependency Injection
+:gwt: Google Web Toolkit
