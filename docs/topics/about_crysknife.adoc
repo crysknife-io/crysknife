@@ -5,9 +5,13 @@ This project is a proof of concept.
 
 {prod} is based on annotation processors code generation and supports the following features among others:
 
-* CDI stereotypes
+* @Singleton and @Dependent scopes
+* lazy fields and constructor injections
+* @PostContract
+* transitive injections
+* @Named qualifiers and @Produces for custom objects like Elemental2 widgets
 * HTML templates
-* Data Binding library
+* Data binding
 
 This link:https://crysknife.cloud.unispace.io/[demo page] shows how {prod} can be used on a simple page compiled with J2CL ({mvn-plgn}).
 
