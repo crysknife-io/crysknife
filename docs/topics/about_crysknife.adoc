@@ -14,20 +14,9 @@ This link:https://crysknife.cloud.unispace.io/[demo page] shows how {prod} can b
 == Under the hood
 {prod} was inspired by {gwt} and Errai and relies on several other technologies (and various GWT comunity projects).
 
-=== {gwt} (GWT)
-//Errai uses GWT to accomplish the translation of concepts such as CDI into the browser, which enables a consistent client and server programming experience.
-
-GWT:: An open-source development toolkit that is built around a Java-to-JavaScript compiler. GWT allows to develop and optimize high-performance web applications.
-
-////
-Errai::
-=== Errai by {rh}
-
-=== Google J2CL (Java-to-Closure-JavaScript Compiler)
-
-=== {cdi} (CDI) framework
-
-=== Google Closure Compiler
-
-=== {mvn-plgn} by Vertispan
-////
+GWT:: An open-source development toolkit that is built around a Java-to-JavaScript compiler. GWT allows to develop and optimize high-performance web applications. &mdash; http://www.gwtproject.org/
+Errai:: A GWT-based framework developed by {rh}. It allows to build rich web applications using Java. &mdash; http://erraiframework.org/
+J2CL:: Google's Java-to-Closure-JavaScript transpiler allows to compile Java to Closure-style JavaScript. &mdash; https://github.com/google/j2cl
+CDI:: A Dependency Injection framework for Java. &mdash; http://cdi-spec.org/
+Closure Compiler:: Google's Closure Compiler parses and optimizes JavaScript code making it run faster. &mdash; https://developers.google.com/closure/compiler
+{mvn-plgn-full}:: Vertispan's Maven Plugin for J2CL helps to build GWT projects with Maven. &mdash; https://github.com/Vertispan/j2clmavenplugin
