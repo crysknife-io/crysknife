@@ -1,0 +1,31 @@
+= Getting started with {prod}
+
+This chapter describes how to start using {prod}.
+
+== Prerequisites
+
+* Installed Java Development Kit (JDK) version 1.8+
+* Installed Apache Maven 3.6+
+
+////
+== Creating a J2CL Maven project to enable {prod}
+we're working to
+Meanwhile please use the following workflow:
+
+1) Simple J2CL application
+https://github.com/treblereel/j2cl-tests
+git clone git@github.com:treblereel/j2cl-tests.git
+
+How to build
+
+    'git clone git@github.com:treblereel/crysknife.git'
+    'mvn clean install'
+    to run demo run 'mvn clean j2cl:watch' within crysknife/demo folder
+    1 open another console and run 'mvn tomcat7:run' 2 open browser http://127.0.0.1:8080/demo
+    to build a .war run 'mvn clean package -Pbuild' within crysknife/demo folder
+
+
+// To Do
+
+== Adding {prod} to existing J2CL Maven project
+////
