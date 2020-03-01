@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.treblereel.gwt.crysknife.databinding.client;
+package org.treblereel.gwt.crysknife.client.internal;
 
 /**
  * Non-instantiable utility for self-checking code.

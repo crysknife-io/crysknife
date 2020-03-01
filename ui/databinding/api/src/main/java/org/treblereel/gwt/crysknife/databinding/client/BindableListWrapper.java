@@ -27,6 +27,7 @@ import java.util.ListIterator;
 import java.util.Map;
 
 import org.gwtproject.event.shared.HandlerRegistration;
+import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.list.BindableListChangeHandler;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeEvent;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;

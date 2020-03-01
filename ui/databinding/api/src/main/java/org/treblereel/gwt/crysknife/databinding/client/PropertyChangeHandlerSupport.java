@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeEvent;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;
@@ -33,7 +34,7 @@ import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.Prop
  * @author Christian Sadilek <csadilek@redhat.com>
  */
 public class PropertyChangeHandlerSupport {
-  final List<PropertyChangeHandler<?>> handlers = new ArrayList<PropertyChangeHandler<?>>();
+  final List<PropertyChangeHandler<?>> handlers = new ArrayList<>();
   final Multimap<String, PropertyChangeHandler<?>> specificPropertyHandlers = new Multimap<>();
 
   public Collection<PropertyChangeHandler<?>> removePropertyChangeHandlers() {

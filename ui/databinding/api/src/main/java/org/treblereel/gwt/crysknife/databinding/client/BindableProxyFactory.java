@@ -22,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.databinding.client.api.Bindable;
 
 /**
