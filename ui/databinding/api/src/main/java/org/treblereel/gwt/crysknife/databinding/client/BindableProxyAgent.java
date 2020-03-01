@@ -48,6 +48,7 @@ import org.gwtproject.user.client.ui.HasValue;
 import org.gwtproject.user.client.ui.ValueBoxBase;
 import org.gwtproject.user.client.ui.Widget;
 import org.jboss.elemento.IsElement;
+import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.databinding.client.api.Convert;
 import org.treblereel.gwt.crysknife.databinding.client.api.Converter;

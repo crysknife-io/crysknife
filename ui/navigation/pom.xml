@@ -4,14 +4,18 @@
 
   <parent>
     <groupId>org.treblereel.gwt.crysknife</groupId>
-    <artifactId>crysknife-parent</artifactId>
+    <artifactId>ui-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>ui-parent</artifactId>
-  <description>UI parent</description>
+  <artifactId>navigation-parent</artifactId>
   <packaging>pom</packaging>
+
+
+  <name>navigation-parent</name>
+  <description>Navigation parent</description>
+  <url>https://github.com/treblereel</url>
 
   <developers>
     <developer>
@@ -20,15 +24,6 @@
       <email>chani@me.com</email>
     </developer>
   </developers>
-
-  <modules>
-    <module>elemental2</module>
-    <module>gwt-resources</module>
-    <module>templates</module>
-    <module>databinding</module>
-    <module>mutationobserver</module>
-    <module>navigation</module>
-  </modules>
 
   <licenses>
     <license>
@@ -43,4 +38,8 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
+  <modules>
+    <module>api</module>
+    <module>generator</module>
+  </modules>
 </project>

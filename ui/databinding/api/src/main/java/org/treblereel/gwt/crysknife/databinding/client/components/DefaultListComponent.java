@@ -29,10 +29,9 @@ import java.util.function.Supplier;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
 import org.gwtproject.dom.client.Element;
-import org.gwtproject.dom.client.Node;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.client.TakesValue;
-import org.treblereel.gwt.crysknife.databinding.client.Assert;
+import org.treblereel.gwt.crysknife.client.internal.Assert;
 
 /**
  * The default implementation of a {@link ListComponent}. Accepts as argument functions for creating and destorying UI

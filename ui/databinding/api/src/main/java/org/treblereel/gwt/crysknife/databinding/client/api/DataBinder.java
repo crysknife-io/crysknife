@@ -24,8 +24,10 @@ import java.util.Set;
 
 import org.gwtproject.event.dom.client.KeyUpEvent;
 import org.gwtproject.event.logical.shared.ValueChangeEvent;
+import org.gwtproject.user.client.ui.HasValue;
+import org.gwtproject.user.client.ui.Widget;
+import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
-import org.treblereel.gwt.crysknife.databinding.client.Assert;
 import org.treblereel.gwt.crysknife.databinding.client.BindableProxy;
 import org.treblereel.gwt.crysknife.databinding.client.BindableProxyAgent;
 import org.treblereel.gwt.crysknife.databinding.client.BindableProxyFactory;

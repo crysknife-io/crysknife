@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,8 +15,15 @@ import java.util.Set;
  */
 public class Multimap<K, V> {
 
-    private HashMap<K, List<V>> holder = new HashMap<>();
+    protected Map<K, List<V>> holder;
 
+    protected Multimap(Map<K, List<V>> holder) {
+        this.holder = holder;
+    }
+
+    public Multimap() {
+        this(new HashMap<>());
+    }
 
     public void put(K key, V value) {
         if(!holder.containsKey(key)) {
