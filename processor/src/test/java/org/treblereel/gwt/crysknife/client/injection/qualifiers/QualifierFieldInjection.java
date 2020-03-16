@@ -1,5 +1,6 @@
 package org.treblereel.gwt.crysknife.client.injection.qualifiers;
 
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -19,5 +20,6 @@ public class QualifierFieldInjection {
     public QualifierBean qualifierBeanTwo;
 
     @Inject
+    @Default
     public QualifierBean qualifierBeanDefault;
 }

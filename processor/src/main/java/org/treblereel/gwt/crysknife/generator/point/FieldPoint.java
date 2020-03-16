@@ -8,7 +8,6 @@ import javax.lang.model.element.VariableElement;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
-import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -33,11 +32,14 @@ public class FieldPoint extends Point {
         return field;
     }
 
-    public boolean isNamed() {
-        return field.getAnnotation(Named.class) != null;
+    public TypeElement getEnclosingElement() {
+        if (field.getEnclosingElement().getKind().isClass()) {
+            return MoreElements.asType(field.getEnclosingElement());
+        } else {
+            return MoreElements.asType(field.getEnclosingElement().getEnclosingElement());
+        }
     }
 
-    //TODO
     public boolean isQualified() {
         throw new UnsupportedOperationException();
     }
@@ -47,11 +49,8 @@ public class FieldPoint extends Point {
     }
 
     @Override
-    public String toString() {
-        return "FieldPoint{" +
-                "injection=" + Utils.getQualifiedName(type) +
-                " name=" + name +
-                '}';
+    public int hashCode() {
+        return Objects.hash(type);
     }
 
     @Override
@@ -67,7 +66,15 @@ public class FieldPoint extends Point {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(type);
+    public String toString() {
+        return "FieldPoint{" +
+                "injection=" + type +
+                " name=" + name +
+                (isNamed() ? getNamed() : "") +
+                '}';
+    }
+
+    public boolean isNamed() {
+        return field.getAnnotation(Named.class) != null;
     }
 }

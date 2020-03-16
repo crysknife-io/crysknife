@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -30,6 +31,7 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.Instance;
 import org.treblereel.gwt.crysknife.client.internal.AbstractBeanManager;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
@@ -92,19 +94,39 @@ public class BeanManagerGenerator {
             return clazz;
         }
 
+        private void initClass() {
+            clazz.setPackageDeclaration(packageName);
+            classDeclaration = clazz.addClass(className + "Impl");
+            clazz.addImport(Provider.class);
+            clazz.addImport(Map.class);
+            clazz.addImport(HashMap.class);
+            clazz.addImport(Annotation.class);
+            clazz.addImport(Instance.class);
+            clazz.addImport(AbstractBeanManager.class);
+
+            ClassOrInterfaceType factory = new ClassOrInterfaceType();
+            factory.setName("AbstractBeanManager");
+
+            classDeclaration.getExtendedTypes().add(factory);
+        }
+
+        private void addFields() {
+            addBeanInstance();
+        }
+
         private void initInitMethod() {
             MethodDeclaration init = classDeclaration.addMethod("init", Modifier.Keyword.PRIVATE);
 
             TypeElement beanManager = generationContext
                     .getElements()
-                    .getTypeElement("org.treblereel.gwt.crysknife.client.BeanManager");
+                    .getTypeElement(BeanManager.class.getCanonicalName());
             generateInitEntry(init, beanManager);
 
-            for (TypeElement field : iocContext.getOrderedBeans()) {
-                if (field.getKind().equals(ElementKind.CLASS) && field.getAnnotation(Application.class) == null) {
-                    generateInitEntry(init, field);
-                }
-            }
+            iocContext.getOrderedBeans().stream()
+                    .filter(field -> (field.getAnnotation(Application.class) == null))
+                    .filter(field -> field.getKind().equals(ElementKind.CLASS))
+                    .collect(Collectors.toSet())
+                    .forEach(field -> generateInitEntry(init, field));
 
             iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation, definition) -> {
                 if (definition.getType().getAnnotation(Named.class) == null) {
@@ -113,11 +135,27 @@ public class BeanManagerGenerator {
             }));
         }
 
+        private void addGetInstanceMethod() {
+            getMethodDeclaration = classDeclaration.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+            getMethodDeclaration.setType("BeanManager");
+            addGetBody();
+        }
+
+        private void addBeanInstance() {
+            ClassOrInterfaceType type = new ClassOrInterfaceType();
+            type.setName("BeanManagerImpl");
+            classDeclaration.addField(type, "instance", Modifier.Keyword.STATIC, Modifier.Keyword.PRIVATE);
+        }
+
         private void generateInitEntry(MethodDeclaration init, TypeElement field) {
             generateInitEntry(init, field, field, null);
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory, String annotation) {
+            if (field.toString().equals(BeanManager.class.getCanonicalName())) {
+
+            }
+
             if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
                 MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
                         .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
@@ -127,22 +165,6 @@ public class BeanManagerGenerator {
                 }
                 init.getBody().get().addAndGetStatement(call);
             }
-        }
-
-        private void addGetInstanceMethod() {
-            getMethodDeclaration = classDeclaration.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-            getMethodDeclaration.setType("BeanManager");
-            addGetBody();
-        }
-
-        private void addFields() {
-            addBeanInstance();
-        }
-
-        private void addBeanInstance() {
-            ClassOrInterfaceType type = new ClassOrInterfaceType();
-            type.setName("BeanManagerImpl");
-            classDeclaration.addField(type, "instance", Modifier.Keyword.STATIC, Modifier.Keyword.PRIVATE);
         }
 
         private void addGetBody() {
@@ -160,22 +182,6 @@ public class BeanManagerGenerator {
                     .get()
                     .getStatements()
                     .add(new ReturnStmt(instance));
-        }
-
-        private void initClass() {
-            clazz.setPackageDeclaration(packageName);
-            classDeclaration = clazz.addClass(className + "Impl");
-            clazz.addImport(Provider.class);
-            clazz.addImport(Map.class);
-            clazz.addImport(HashMap.class);
-            clazz.addImport(Annotation.class);
-            clazz.addImport(Instance.class);
-            clazz.addImport(AbstractBeanManager.class);
-
-            ClassOrInterfaceType factory = new ClassOrInterfaceType();
-            factory.setName("AbstractBeanManager");
-
-            classDeclaration.getExtendedTypes().add(factory);
         }
 
         protected Expression generateInstanceInitializer() {

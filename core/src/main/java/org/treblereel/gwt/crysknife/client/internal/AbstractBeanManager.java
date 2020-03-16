@@ -27,24 +27,27 @@ public abstract class AbstractBeanManager implements BeanManager {
 
     }
 
-    protected void register(Class type, Provider provider) {
-        register(type, provider, Default.class);
-    }
-
-    protected void register(Class type, Provider provider, Class<? extends Annotation> annotation) {
-        if(!beanStore.containsKey(type)){
-            beanStore.put(type, new HashMap<>());
-        }
-        beanStore.get(type).put(annotation, provider);
-    }
-
     @Override
     public <T> Instance<T> lookupBean(Class type, Class<? extends Annotation> qualifier) {
-        return new InstanceImpl<T>(beanStore.get(type).get(qualifier));
+        if (beanStore.get(type) != null && beanStore.get(type).containsKey(qualifier)) {
+            return new InstanceImpl<T>(beanStore.get(type).get(qualifier));
+        }
+        throw new Error("Unable to find the bean [" + type.getCanonicalName() + "] with the qualifier [" + qualifier.getCanonicalName() + "]");
     }
 
     @Override
     public <T> Instance<T> lookupBean(Class type) {
         return lookupBean(type, Default.class);
+    }
+
+    protected void register(Class type, Provider provider) {
+        register(type, provider, Default.class);
+    }
+
+    protected void register(Class type, Provider provider, Class<? extends Annotation> annotation) {
+        if (!beanStore.containsKey(type)) {
+            beanStore.put(type, new HashMap<>());
+        }
+        beanStore.get(type).put(annotation, provider);
     }
 }

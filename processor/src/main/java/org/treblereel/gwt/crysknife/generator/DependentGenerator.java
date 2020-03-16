@@ -12,13 +12,16 @@ import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/2/19
  */
-@Generator(priority = 100)
+@Generator(priority = 2)
 public class DependentGenerator extends ScopedBeanGenerator {
 
+    public DependentGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        iocContext.register(Dependent.class, WiringElementType.DEPENDENT_BEAN, this);
-        this.iocContext = iocContext;
+    public void register() {
+        iocContext.register(Dependent.class, WiringElementType.BEAN, this);
     }
 
     @Override

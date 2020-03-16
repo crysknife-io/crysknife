@@ -1,4 +1,4 @@
-package org.treblereel.gwt.crysknife.generator;
+package org.treblereel.gwt.crysknife.generator.scanner;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,6 +12,8 @@ import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
 import org.treblereel.gwt.crysknife.annotation.Generator;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
+import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.processor.TypeProcessorFactory;
@@ -52,7 +54,7 @@ public class ComponentScanner {
                         elements.put(annotation, new HashSet<>());
                     }
                     //TODO replace by suppliers or not :)
-                    if (meta.wiringElementType.equals(WiringElementType.DEPENDENT_BEAN)) {
+                    if (meta.wiringElementType.equals(WiringElementType.BEAN)) {
                         elements.get(annotation).addAll(iocContext.getTypeElementsByAnnotation(meta.annotation));
                     } else if (meta.wiringElementType.equals(WiringElementType.FIELD_TYPE)) {
                         elements.get(annotation).addAll(iocContext.getFieldsByAnnotation(meta.annotation));

@@ -3,7 +3,6 @@ package org.treblereel.gwt.crysknife.client.internal;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import elemental2.dom.DomGlobal;
 import jsinterop.base.Js;
 
 /**
@@ -21,7 +20,6 @@ public final class OnFieldAccessed implements BiFunction<Object, String, Object>
     @Override
     public Object apply(Object o, String propertyKey) {
         if (Js.asPropertyMap(o).get(propertyKey) == null) {
-            DomGlobal.console.log("propertyKey null, set value ...");
             Js.asPropertyMap(o).set(propertyKey, supplier.get());
         }
         return Js.asPropertyMap(o).get(propertyKey);

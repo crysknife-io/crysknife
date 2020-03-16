@@ -43,7 +43,7 @@ public class Graph {
                     graph.putEdge(scan, deps.getType());
                 }
 
-                if(!state.contains(deps.getType())) {
+                if (!state.contains(deps.getType())) {
                     stack.push(deps.getType());
                     state.add(deps.getType());
                 }
@@ -53,5 +53,11 @@ public class Graph {
         Traverser.forGraph(graph)
                 .depthFirstPostOrder(application)
                 .forEach(bean -> context.getOrderedBeans().add(bean));
+
+        context.getBeans().forEach((bean, definition) -> {
+            if (!context.getOrderedBeans().contains(bean)) {
+                context.getOrderedBeans().add(bean);
+            }
+        });
     }
 }

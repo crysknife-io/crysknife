@@ -1,4 +1,4 @@
-package org.treblereel.gwt.crysknife.generator;
+package org.treblereel.gwt.crysknife.generator.scanner;
 
 import java.util.HashMap;
 import java.util.HashSet;

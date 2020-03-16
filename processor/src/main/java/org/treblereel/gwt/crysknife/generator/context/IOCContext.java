@@ -25,6 +25,7 @@ import io.github.classgraph.ScanResult;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
+import org.treblereel.gwt.crysknife.logger.TreeLogger;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -107,6 +108,10 @@ public class IOCContext {
     }
 
     public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
+        if (typeElement.toString().equals("org.treblereel.client.databinding.Street")) {
+            //throw new NullPointerException();
+        }
+
         BeanDefinition beanDefinition;
         if (getBeans().containsKey(typeElement)) {
             return getBeans().get(typeElement);

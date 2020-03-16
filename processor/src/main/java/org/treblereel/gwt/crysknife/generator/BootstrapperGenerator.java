@@ -37,42 +37,18 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     private String BOOTSTRAP_EXTENSION = "Bootstrap";
 
+    public BootstrapperGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        iocContext.register(Application.class, WiringElementType.DEPENDENT_BEAN, this);
-        this.iocContext = iocContext;
+    public void register() {
+        iocContext.register(Application.class, WiringElementType.BEAN, this);
     }
 
     @Override
     public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
         super.generateBeanFactory(clazz, definition);
-    }
-
-    @Override
-    public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        classBuilder.addConstructorDeclaration();
-        Parameter arg = new Parameter();
-        arg.setName("application");
-        arg.setType(beanDefinition.getType().getSimpleName().toString());
-
-        classBuilder.addParametersToConstructor(arg);
-
-        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> iocContext.getBeans()
-                .get(fieldPoint.getType())
-                .generateBeanCall(iocContext, classBuilder, fieldPoint));
-
-        AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance"))
-                .setValue(new NameExpr("application"));
-        classBuilder.addStatementToConstructor(assign);
-    }
-
-    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName(Instance.class.getCanonicalName());
-        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
-
-        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     @Override
@@ -103,7 +79,6 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
                 .get()
                 .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("interceptor")).setValue(interceptorCreationExpr));
 
-
         classBuilder.getGetMethodDeclaration()
                 .getBody()
                 .get().addAndGetStatement(new AssignExpr()
@@ -120,6 +95,24 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     }
 
     @Override
+    public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        classBuilder.addConstructorDeclaration();
+        Parameter arg = new Parameter();
+        arg.setName("application");
+        arg.setType(beanDefinition.getType().getSimpleName().toString());
+
+        classBuilder.addParametersToConstructor(arg);
+
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> iocContext.getBeans()
+                .get(fieldPoint.getType())
+                .generateBeanCall(iocContext, classBuilder, fieldPoint));
+
+        AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance"))
+                .setValue(new NameExpr("application"));
+        classBuilder.addStatementToConstructor(assign);
+    }
+
+    @Override
     public void generateInstanceGetMethodReturn(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
 
     }
@@ -127,6 +120,15 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     @Override
     public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
 
+    }
+
+    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName(Instance.class.getCanonicalName());
+        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
+
+        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
     }
 
     @Override

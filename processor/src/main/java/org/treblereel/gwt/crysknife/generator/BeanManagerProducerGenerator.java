@@ -18,10 +18,13 @@ import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 @Generator()
 public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
 
+    public BeanManagerProducerGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
+    public void register() {
         iocContext.register(Inject.class, BeanManager.class, WiringElementType.FIELD_TYPE, this);
-        this.iocContext = iocContext;
     }
 
     @Override

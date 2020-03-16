@@ -1,5 +1,7 @@
 package org.treblereel.gwt.crysknife;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -9,7 +11,6 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
-import javax.inject.Inject;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
@@ -22,17 +23,15 @@ import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
-import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
-import org.treblereel.gwt.crysknife.generator.ComponentInjectionResolverScanner;
-import org.treblereel.gwt.crysknife.generator.ComponentScanner;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
-import org.treblereel.gwt.crysknife.generator.QualifiersScan;
-import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
-import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.graph.Graph;
+import org.treblereel.gwt.crysknife.generator.scanner.ComponentInjectionResolverScanner;
+import org.treblereel.gwt.crysknife.generator.scanner.ComponentScanner;
+import org.treblereel.gwt.crysknife.generator.scanner.ProducersScan;
+import org.treblereel.gwt.crysknife.generator.scanner.QualifiersScan;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -65,85 +64,19 @@ public class ApplicationProcessor extends AbstractProcessor {
 
         processComponentScanAnnotation();
         initAndRegisterGenerators();
+
         processQualifiersScan();
         processComponentScan();
         processInjectionScan();
+        processProducersScan();
+        fireIOCGeneratorBefore();
         processGraph();
-        processPrepareForGenerationTasks();
-
-        new FactoryGenerator(iocContext, context).generate();
+        new FactoryGenerator(iocContext, context).generate(); //???
         new BeanInfoGenerator(iocContext, context).generate();
         new BeanManagerGenerator(iocContext, context).generate();
+        fireIOCGeneratorAfter();
+
         return false;
-    }
-
-    private void processPrepareForGenerationTasks() {
-        TypeElement beanManager = iocContext.getGenerationContext()
-                .getProcessingEnvironment()
-                .getElementUtils()
-                .getTypeElement("org.treblereel.gwt.crysknife.client.BeanManager");
-
-        Optional<TypeElement> ifPresent = iocContext.getBeans().keySet()
-                .stream().filter(dep -> dep.equals(beanManager)).findFirst();
-        if (!ifPresent.isPresent()) {
-            BeanDefinition beanManagerDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(beanManager);
-
-            TypeElement type = iocContext
-                    .getGenerationContext()
-                    .getElements()
-                    .getTypeElement(BeanManager.class.getCanonicalName());
-            //TODO this should be replaced
-            IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Inject.class.getCanonicalName(),
-                                                                               type,
-                                                                               WiringElementType.FIELD_TYPE);
-            beanManagerDefinition.setGenerator(iocContext.getGenerators().get(meta).stream().findFirst().get());
-            iocContext.getBeans().put(beanManager, beanManagerDefinition);
-        }
-    }
-
-    private void processQualifiersScan() {
-        new QualifiersScan(iocContext).process();
-    }
-
-    private void processGraph() {
-        new Graph(iocContext).process(application);
-    }
-
-    private void initAndRegisterGenerators() {
-        try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
-            ClassInfoList routeClassInfoList = scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
-            for (ClassInfo routeClassInfo : routeClassInfoList) {
-                try {
-                    ((IOCGenerator) Class.forName(routeClassInfo.getName()).newInstance()).register(iocContext);
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                    throw new Error(e);
-                }
-            }
-        }
-    }
-
-    private void processInjectionScan() {
-        new ComponentInjectionResolverScanner(iocContext).scan();
-    }
-
-    private void processComponentScan() {
-        new ComponentScanner(iocContext, context).scan();
-    }
-
-    private void processComponentScanAnnotation() {
-        packages = new HashSet<>();
-        context.getRoundEnvironment()
-                .getElementsAnnotatedWith(ComponentScan.class)
-                .forEach(componentScan -> {
-                    String[] values = componentScan.getAnnotation(ComponentScan.class).value();
-                    for (String aPackage : values) {
-                        packages.add(aPackage);
-                    }
-                });
-
-        if (packages.isEmpty()) {
-            packages.add(MoreElements.getPackage(application).getQualifiedName().toString());
-        }
     }
 
     private Optional<TypeElement> processApplicationAnnotation(IOCContext iocContext) {
@@ -165,5 +98,63 @@ public class ApplicationProcessor extends AbstractProcessor {
             throw new Error();
         }
         return applications.stream().findFirst();
+    }
+
+    private void processComponentScanAnnotation() {
+        packages = new HashSet<>();
+        context.getRoundEnvironment()
+                .getElementsAnnotatedWith(ComponentScan.class)
+                .forEach(componentScan -> {
+                    String[] values = componentScan.getAnnotation(ComponentScan.class).value();
+                    for (String aPackage : values) {
+                        packages.add(aPackage);
+                    }
+                });
+
+        if (packages.isEmpty()) {
+            packages.add(MoreElements.getPackage(application).getQualifiedName().toString());
+        }
+    }
+
+    private void initAndRegisterGenerators() {
+        try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
+            ClassInfoList routeClassInfoList = scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
+            for (ClassInfo routeClassInfo : routeClassInfoList) {
+                try {
+                    Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(IOCContext.class);
+                    ((IOCGenerator) c.newInstance(iocContext)).register();
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    throw new Error(e);
+                }
+            }
+        }
+    }
+
+    private void fireIOCGeneratorBefore() {
+        iocContext.getGenerators().forEach((meta, generator) -> generator.before());
+    }
+
+    private void processQualifiersScan() {
+        new QualifiersScan(iocContext).process();
+    }
+
+    private void processComponentScan() {
+        new ComponentScanner(iocContext, context).scan();
+    }
+
+    private void processInjectionScan() {
+        new ComponentInjectionResolverScanner(iocContext).scan();
+    }
+
+    private void processProducersScan() {
+        new ProducersScan(iocContext).scan();
+    }
+
+    private void processGraph() {
+        new Graph(iocContext).process(application);
+    }
+
+    private void fireIOCGeneratorAfter() {
+        iocContext.getGenerators().forEach((meta, generator) -> generator.after());
     }
 }

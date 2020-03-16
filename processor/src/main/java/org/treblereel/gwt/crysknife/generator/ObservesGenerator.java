@@ -29,8 +29,12 @@ import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
 @Generator(priority = 1000)
 public class ObservesGenerator extends IOCGenerator {
 
+    public ObservesGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
+    public void register() {
         iocContext.register(Observes.class, WiringElementType.PARAMETER, this);
     }
 

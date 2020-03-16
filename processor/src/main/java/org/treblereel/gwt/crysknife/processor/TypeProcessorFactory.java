@@ -26,7 +26,7 @@ public class TypeProcessorFactory {
         }
 
         switch (meta.wiringElementType) {
-            case DEPENDENT_BEAN:
+            case BEAN:
                 return Optional.of(new DependentTypeProcessor(generator));
             case PRODUCER_ELEMENT:
                 return Optional.of(new ProducerTypeProcessor(generator));

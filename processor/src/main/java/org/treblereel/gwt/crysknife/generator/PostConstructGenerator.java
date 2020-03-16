@@ -18,8 +18,12 @@ import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
 @Generator(priority = 100000)
 public class PostConstructGenerator extends IOCGenerator {
 
+    public PostConstructGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
+    public void register() {
         iocContext.register(PostConstruct.class, WiringElementType.METHOD_DECORATOR, this);
     }
 
