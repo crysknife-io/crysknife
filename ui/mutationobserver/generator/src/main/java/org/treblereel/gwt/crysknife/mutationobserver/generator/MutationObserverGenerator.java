@@ -36,15 +36,16 @@ import org.treblereel.gwt.crysknife.mutationobserver.client.api.OnDetach;
 @Generator(priority = 100002)
 public class MutationObserverGenerator extends ScopedBeanGenerator {
 
-    private IOCContext iocContext;
-
     private TypeMirror htmlElement;
 
     private BeanDefinition mutationObserverBeanDefinition;
 
+    public MutationObserverGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        this.iocContext = iocContext;
+    public void register() {
         iocContext.register(OnAttach.class, WiringElementType.METHOD_DECORATOR, this);
         iocContext.register(OnDetach.class, WiringElementType.METHOD_DECORATOR, this);
 

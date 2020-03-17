@@ -308,15 +308,17 @@ public class TemplatedGenerator extends IOCGenerator {
         EVENTS.put(TouchStartEvent.class.getCanonicalName(), "touchstart");
     }
 
-    private IOCContext iocContext;
     private ProcessingEnvironment processingEnvironment;
     private Messager messager;
     private BeanDefinition beanDefinition;
     private ResourceOracle oracle;
 
+    public TemplatedGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        this.iocContext = iocContext;
+    public void register() {
         this.processingEnvironment = iocContext.getGenerationContext().getProcessingEnvironment();
         this.messager = processingEnvironment.getMessager();
 

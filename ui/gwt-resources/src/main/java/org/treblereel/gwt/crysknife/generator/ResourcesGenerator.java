@@ -29,10 +29,13 @@ import org.treblereel.gwt.crysknife.util.Utils;
 @Generator(priority = 101)
 public class ResourcesGenerator extends BeanIOCGenerator {
 
+    public ResourcesGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        this.iocContext = iocContext;
-        iocContext.register(Resource.class, WiringElementType.DEPENDENT_BEAN, this);
+    public void register() {
+        iocContext.register(Resource.class, WiringElementType.BEAN, this);
     }
 
     @Override

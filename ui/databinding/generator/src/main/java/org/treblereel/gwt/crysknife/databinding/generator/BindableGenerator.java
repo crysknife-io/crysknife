@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
@@ -44,16 +45,17 @@ import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 @Generator(priority = 100002)
 public class BindableGenerator extends ScopedBeanGenerator {
 
-    private IOCContext iocContext;
+    public BindableGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
 
     @Override
-    public void register(IOCContext iocContext) {
-        this.iocContext = iocContext;
-        iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); //PARAMETER
+    public void register() {
+        //iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); //PARAMETER
+        iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); //PARAMETER
         TypeElement type = iocContext.getGenerationContext().getElements().getTypeElement(DataBinder.class.getCanonicalName());
         BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
         beanDefinition.setGenerator(this);
-        iocContext.getBeans().put(type, beanDefinition);
         iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
     }
 
