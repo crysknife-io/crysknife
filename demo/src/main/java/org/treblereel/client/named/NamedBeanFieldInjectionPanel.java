@@ -1,4 +1,6 @@
-package org.treblereel.client;
+package org.treblereel.client.named;
+
+import java.util.function.Supplier;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -14,12 +16,14 @@ import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Dependent
+//@Page(path = "ZZZZ")
 @Templated("namedbeanfieldinjectionpanel.html")
 public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
 
@@ -78,4 +82,5 @@ public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {
     protected void onClickDog(@ForEvent("click") final MouseEvent event) {
         setText(dog.say());
     }
+
 }

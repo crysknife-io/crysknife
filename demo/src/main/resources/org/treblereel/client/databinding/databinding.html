@@ -6,6 +6,26 @@
 </head>
 <body>
 <div data-field="root">
+
+    <span>HOWTO: </span>
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    protected DataBinder&lt;Customer&gt; dataBinder;\n
+    </pre>
+
+    <span>@Bindable annotation must be added to Customer</span>
+    <pre class="prettyprint lang-java">
+    @Bindable\n
+    public class Customer {\n
+    \n
+    private String name;\n
+    \n
+    private Address address;\n
+    \n
+        ...\n
+    }
+    </pre>
+
     <label setfor="nameBox" class="control-label">Data binding demo, City ('Address.city') and Street('Address.Street.name') are transitive beans</label>
     <div class="form-group" data-field="form">
         <input id="nameBox" class="input-inline" style="width: 200px;" data-field="nameBox" placeholder="name"> Name
@@ -14,11 +34,11 @@
         <input id="ageBox" type="number" class="input-inline" style="width: 200px;" data-field="ageBox" placeholder="age"> Age
     </div>
     <div class="form-group" data-field="form">
-        <button class="input-inline btn-success" style="width: 100px;" data-field="modelBtn">show model</button>
-        <button class="input-inline btn-success" style="width: 200px;" data-field="workingModelBtn">show working model</button>
+        <button class="btn btn-success" style="width: 120px;" data-field="modelBtn">show model</button>
+        <button class="btn btn-success" style="width: 200px;" data-field="workingModelBtn">show working model</button>
 
-        <button class="input-inline btn-warning" style="width: 100px;" data-field="pauseBtn">pause</button>
-        <button class="input-inline btn-success" style="width: 100px;" data-field="resumeBtn">resume</button>
+        <button class="btn btn-warning" style="width: 100px;" data-field="pauseBtn">pause</button>
+        <button class="btn btn-success" style="width: 100px;" data-field="resumeBtn">resume</button>
     </div>
     <input class="control-label" data-field="resultBox" style="width: 800px;" disabled>
 </div>

@@ -1,4 +1,4 @@
-package org.treblereel.client;
+package org.treblereel.client.singletonbeans;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -14,12 +14,14 @@ import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
+@Page
 @Templated("singletonbeans.html")
 public class SingletonBeans implements IsElement<HTMLDivElement> {
 

@@ -6,8 +6,23 @@
 </head>
 <body>
 <div class="form-group" data-field="form">
+
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    @Named("dog")\n
+    private Animal dog;\n
+    \n
+    @Inject\n
+    @Named("cow")\n
+    private Animal cow;\n
+    \n
+    @Inject\n
+    @Named("bird")\n
+    private Animal bird;\n
+    </pre>
+
     <label setfor="textBoxNamedBeanFieldInjectionPanel" class="control-label">@Named beans, field injection</label>
-    <input id="textBoxNamedBeanFieldInjectionPanel" disabled="" class="form-control" style="width: 300px;" data-field="textBox">
+    <input disabled="" class="form-control" style="width: 300px;" data-field="textBox">
     <button class="btn btn-default" data-field="birdBtn">Bird</button>
     <button class="btn btn-default" data-field="cowBtn">Cow</button>
     <button class="btn btn-default" data-field="dogBtn">Dog</button>

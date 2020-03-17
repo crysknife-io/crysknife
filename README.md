@@ -2,6 +2,8 @@
 
 This project is a proof of concept for a CDI-like Dependency Injection framework with a support of some popular features. It’s based on annotation processors code generation and has no GWT2 dependencies.
 
+Demo: https://crysknife.cloud.unispace.io
+
 At this point Crysknife supports:
 
 * @Singleton and @Dependent scopes

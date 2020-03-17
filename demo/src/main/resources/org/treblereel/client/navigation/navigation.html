@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="form-group" data-field="root">
+
+    <span>initialization</span>
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    private Navigation navigation;\n
+    \n
+    @PostConstruct\n
+    public void init() {\n
+        container.appendChild(navigation.getContentPanel().element());\n
+    }\n
+    </pre>
+
+    <span>default page declaration</span>
+    <pre class="prettyprint lang-java">
+    @Page(role = DefaultPage.class)\n
+    @Singleton\n
+    @Page(role = DefaultPage.class)\n
+    @Templated(value = "about.html")\n
+    public class About implements IsElement&lt;HTMLDivElement&gt; {\n
+    \n
+    }\n
+    </pre>
+
+    <span>custom page path</span>
+    <pre class="prettyprint lang-java">
+    @Page(path = "navigation")\n
+    @Singleton\n
+    @Templated("navigation.html")\n
+    public class WidgetPanel implements IsElement&lt;HTMLDivElement&gt; {\n
+    \n
+    }\n
+    </pre>
+
+    <span>programmatic navigation</span>
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    TransitionTo&lt;NamedBeanFieldInjectionPanel&gt; toNamedBeanFieldInjectionPanel;\n
+    \n
+    \n
+    toNamedBeanFieldInjectionPanel.go();\n
+    </pre>
+
+    <span>Events: </span>
+    <pre class="prettyprint lang-java">
+    @PageShown\n
+    public void onPageShown() {\n
+    }\n
+    \n
+    @PageShowing\n
+    public void onPageShowing() {\n
+    }\n
+    \n
+    @PageHidden\n
+    public void onPageHidden() {\n
+    }\n
+    \n
+    @PageHiding\n
+    public void onPageHiding() {\n
+    }\n
+    </pre>
+
+    <div>
+        <button class="btn btn-default" data-field="button">goto About page</button>
+    </div>
+</div>
+</body>
+</html>

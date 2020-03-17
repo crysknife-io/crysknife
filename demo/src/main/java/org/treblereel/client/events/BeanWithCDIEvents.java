@@ -17,18 +17,20 @@ import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/31/19
  */
 @Singleton
+@Page
 @Templated("beanwithcdievents.html")
 public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    protected HTMLDivElement form;
+    protected HTMLDivElement root;
 
     @Inject
     @DataField
@@ -79,7 +81,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
 
     @Override
     public HTMLDivElement element() {
-        return form;
+        return root;
     }
 
     @EventHandler("sendAddressEvent")

@@ -19,12 +19,14 @@ import org.treblereel.gwt.crysknife.annotation.Templated;
 import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
 import org.treblereel.gwt.crysknife.databinding.client.api.StateSync;
 import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;
+import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 11/18/19
  */
 @Singleton
+@Page
 @Templated(value = "databinding.html")
 public class Databinding implements IsElement<HTMLDivElement> {
 

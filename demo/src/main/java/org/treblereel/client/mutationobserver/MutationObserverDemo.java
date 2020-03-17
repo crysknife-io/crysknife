@@ -19,12 +19,14 @@ import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.mutationobserver.client.api.MutationObserver;
 import org.treblereel.gwt.crysknife.mutationobserver.client.api.OnAttach;
 import org.treblereel.gwt.crysknife.mutationobserver.client.api.OnDetach;
+import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 12/9/19
  */
 @Singleton
+@Page
 @Templated(value = "mutationobserverdemo.html#mutationobserverdemo")
 public class MutationObserverDemo implements IsElement<HTMLDivElement> {
 
