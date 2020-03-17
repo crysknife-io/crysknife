@@ -15,6 +15,10 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
  */
 public class TypeProcessorFactory {
 
+    private TypeProcessorFactory() {
+
+    }
+
     public static Optional<TypeProcessor> getTypeProcessor(IOCContext.IOCGeneratorMeta meta, IOCGenerator generator, Element element) {
         if (element.getKind().isField() || element.getKind().isClass()) {
             TypeMirror type = (element.getKind().isField() ?
@@ -39,7 +43,5 @@ public class TypeProcessorFactory {
             default:
                 return Optional.empty();
         }
-        // throw new IllegalArgumentException("Unable to find TypeProcessor for " + element + " in  "
-        //                                            + element.getEnclosingElement().toString() + " of " + meta.wiringElementType);
     }
 }

@@ -21,6 +21,7 @@ import org.treblereel.gwt.crysknife.client.Interceptor;
 import org.treblereel.gwt.crysknife.client.Reflect;
 import org.treblereel.gwt.crysknife.client.internal.Factory;
 import org.treblereel.gwt.crysknife.client.internal.OnFieldAccessed;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -86,12 +87,10 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
                                                   .setValue(new MethodCallExpr(
                                                           new NameExpr("interceptor"), "getProxy")));
 
-        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
-            classBuilder.getGetMethodDeclaration()
-                    .getBody()
-                    .get()
-                    .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint));
-        });
+        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> classBuilder.getGetMethodDeclaration()
+                .getBody()
+                .get()
+                .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint)));
     }
 
     @Override
@@ -138,7 +137,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
             String source = clazz.toSourceCode();
             build(fileName, source, context);
         } catch (IOException e1) {
-            throw new Error(e1);
+            throw new GenerationException(e1);
         }
     }
 }

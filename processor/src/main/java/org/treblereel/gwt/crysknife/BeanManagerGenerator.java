@@ -34,6 +34,7 @@ import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.Instance;
 import org.treblereel.gwt.crysknife.client.internal.AbstractBeanManager;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.util.Utils;
@@ -43,10 +44,6 @@ import org.treblereel.gwt.crysknife.util.Utils;
  * Created by treblereel 3/28/19
  */
 public class BeanManagerGenerator {
-
-    private static final String className = "BeanManager";
-    private static final String packageName = "org.treblereel.gwt.crysknife.client";
-    private static final String qualifiedBootstrapName = packageName + "." + className;
 
     private final IOCContext iocContext;
 
@@ -62,13 +59,13 @@ public class BeanManagerGenerator {
         try {
             build();
         } catch (IOException e) {
-            throw new Error(e);
+            throw new GenerationException(e);
         }
     }
 
     private void build() throws IOException {
         JavaFileObject builderFile = generationContext.getProcessingEnvironment().getFiler()
-                .createSourceFile(qualifiedBootstrapName + "Impl");
+                .createSourceFile(BeanManager.class.getCanonicalName() + "Impl");
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             out.append(new BeanManagerGeneratorBuilder().build().toString());
         }
@@ -82,10 +79,6 @@ public class BeanManagerGenerator {
 
         private MethodDeclaration getMethodDeclaration;
 
-        public BeanManagerGeneratorBuilder() {
-
-        }
-
         public CompilationUnit build() {
             initClass();
             addFields();
@@ -95,8 +88,8 @@ public class BeanManagerGenerator {
         }
 
         private void initClass() {
-            clazz.setPackageDeclaration(packageName);
-            classDeclaration = clazz.addClass(className + "Impl");
+            clazz.setPackageDeclaration(BeanManager.class.getPackage().getName());
+            classDeclaration = clazz.addClass(BeanManager.class.getSimpleName() + "Impl");
             clazz.addImport(Provider.class);
             clazz.addImport(Map.class);
             clazz.addImport(HashMap.class);
@@ -137,13 +130,13 @@ public class BeanManagerGenerator {
 
         private void addGetInstanceMethod() {
             getMethodDeclaration = classDeclaration.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-            getMethodDeclaration.setType("BeanManager");
+            getMethodDeclaration.setType(BeanManager.class.getSimpleName());
             addGetBody();
         }
 
         private void addBeanInstance() {
             ClassOrInterfaceType type = new ClassOrInterfaceType();
-            type.setName("BeanManagerImpl");
+            type.setName(BeanManager.class.getSimpleName() + "Impl");
             classDeclaration.addField(type, "instance", Modifier.Keyword.STATIC, Modifier.Keyword.PRIVATE);
         }
 
@@ -152,10 +145,6 @@ public class BeanManagerGenerator {
         }
 
         private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory, String annotation) {
-            if (field.toString().equals(BeanManager.class.getCanonicalName())) {
-
-            }
-
             if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
                 MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
                         .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
@@ -163,7 +152,7 @@ public class BeanManagerGenerator {
                 if (annotation != null) {
                     call.addArgument(annotation + ".class");
                 }
-                init.getBody().get().addAndGetStatement(call);
+                init.getBody().ifPresent(body -> body.addAndGetStatement(call));
             }
         }
 
@@ -174,20 +163,16 @@ public class BeanManagerGenerator {
             blockStmt.addAndGetStatement(generateInstanceInitializer());
             blockStmt.addAndGetStatement(new MethodCallExpr(instance, "init"));
             ifStmt.setThenStmt(blockStmt);
-            getMethodDeclaration.getBody()
-                    .get()
-                    .addAndGetStatement(ifStmt);
+            getMethodDeclaration.getBody().ifPresent(body -> body.addAndGetStatement(ifStmt));
 
-            getMethodDeclaration.getBody()
-                    .get()
-                    .getStatements()
-                    .add(new ReturnStmt(instance));
+            getMethodDeclaration.getBody().ifPresent(body -> body.getStatements()
+                    .add(new ReturnStmt(instance)));
         }
 
         protected Expression generateInstanceInitializer() {
             ObjectCreationExpr newInstance = new ObjectCreationExpr();
             newInstance.setType(new ClassOrInterfaceType()
-                                        .setName(className + "Impl"));
+                                        .setName(BeanManager.class.getSimpleName() + "Impl"));
             return new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance);
         }
     }

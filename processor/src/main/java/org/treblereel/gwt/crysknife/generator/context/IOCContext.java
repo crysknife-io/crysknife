@@ -22,10 +22,10 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
-import org.treblereel.gwt.crysknife.logger.TreeLogger;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -88,7 +88,7 @@ public class IOCContext {
         if (beans.containsKey(bean)) {
             return beans.get(bean);
         }
-        throw new Error(bean.toString());
+        throw new GenerationException(bean.toString());
     }
 
     public GenerationContext getGenerationContext() {
@@ -108,10 +108,6 @@ public class IOCContext {
     }
 
     public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
-        if (typeElement.toString().equals("org.treblereel.client.databinding.Street")) {
-            //throw new NullPointerException();
-        }
-
         BeanDefinition beanDefinition;
         if (getBeans().containsKey(typeElement)) {
             return getBeans().get(typeElement);
@@ -178,7 +174,7 @@ public class IOCContext {
                                 .map(a -> a.getAnnotationType().toString())
                                 .filter(a -> a.equals(annotation))
                                 .count() > 0).map(method -> ((ExecutableElement) method))
-                        .forEach(method -> results.add(method));
+                        .forEach(results::add);
             }
         }
         methodsByAnnotation.put(annotation, results);
@@ -244,7 +240,7 @@ public class IOCContext {
                                     .map(a -> a.getAnnotationType().toString())
                                     .filter(a -> a.equals(annotation))
                                     .count() > 0).map(method -> ((VariableElement) method))
-                            .forEach(method -> results.add(method));
+                            .forEach(results::add);
                 }
             }
         }

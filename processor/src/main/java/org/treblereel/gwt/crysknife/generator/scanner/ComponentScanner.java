@@ -91,10 +91,8 @@ public class ComponentScanner {
             TypeElement annotation = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils().getTypeElement(meta.annotation);
             elements.get(annotation).stream().filter(e -> (e.getKind().isField() || e.getKind().isClass()))
                     .filter(elm -> (elm.getKind().isField() ? MoreElements.asVariable(elm).asType() : elm.asType()).equals(meta.exactType.asType()))
-                    .forEach(elm -> {
-                        TypeProcessorFactory.getTypeProcessor(meta, iocContext.getGenerators().get(meta).stream().findFirst().get(), elm)
-                                .ifPresent(processor -> processor.process(iocContext, elm));
-                    });
+                    .forEach(elm -> TypeProcessorFactory.getTypeProcessor(meta, iocContext.getGenerators().get(meta).stream().findFirst().get(), elm)
+                            .ifPresent(processor -> processor.process(iocContext, elm)));
         });
 
     }

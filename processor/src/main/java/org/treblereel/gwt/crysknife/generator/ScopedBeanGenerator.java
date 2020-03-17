@@ -117,7 +117,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         methodDeclaration.setType(beanDefinition.getClassFactoryName());
         ObjectCreationExpr newInstance = new ObjectCreationExpr();
         newInstance.setType(new ClassOrInterfaceType().setName(beanDefinition.getClassFactoryName()));
-        methodDeclaration.getBody().get().getStatements().add(new ReturnStmt(newInstance));
+        methodDeclaration.getBody().ifPresent(body -> body.getStatements().add(new ReturnStmt(newInstance)));
     }
 
     protected MethodCallExpr getFieldAccessorExpression(ClassBuilder classBuilder, BeanDefinition beanDefinition, FieldPoint fieldPoint) {
@@ -177,6 +177,17 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         return newInstance.setType(definition.getClassName());
     }
 
+    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, TypeElement typeElement) {
+        String varName = Utils.toVariableName(typeElement);
+        ClassOrInterfaceType supplier = new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
+
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName(Instance.class.getSimpleName());
+        type.setTypeArguments(new ClassOrInterfaceType().setName(typeElement.getQualifiedName().toString()));
+        supplier.setTypeArguments(type);
+        classBuilder.addField(supplier, varName, Modifier.Keyword.PRIVATE);
+    }
+
     @Override
     public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
         generateFactoryFieldDeclaration(clazz, beanDefinition);
@@ -199,21 +210,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         addFactoryFieldInitialization(classBuilder, beanDefinition);
     }
 
-    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, FieldPoint fieldPoint) {
-        generateFactoryFieldDeclaration(classBuilder, fieldPoint.getType());
-    }
-
-    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, TypeElement typeElement) {
-        String varName = Utils.toVariableName(typeElement);
-        ClassOrInterfaceType supplier = new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
-
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName(Instance.class.getSimpleName());
-        type.setTypeArguments(new ClassOrInterfaceType().setName(typeElement.getQualifiedName().toString()));
-        supplier.setTypeArguments(type);
-        classBuilder.addField(supplier, varName, Modifier.Keyword.PRIVATE);
-    }
-
     public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
         ClassOrInterfaceType beanManager = new ClassOrInterfaceType().setName(getFactoryVariableName());
@@ -233,5 +229,9 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     public String getFactoryVariableName() {
         return "BeanManagerImpl";
+    }
+
+    protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, FieldPoint fieldPoint) {
+        generateFactoryFieldDeclaration(classBuilder, fieldPoint.getType());
     }
 }

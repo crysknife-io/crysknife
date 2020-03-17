@@ -17,7 +17,7 @@ import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
  */
 public abstract class Definition {
 
-    public static Comparator<IOCGenerator> iocGeneratorComparator = Comparator.comparing(h -> h.getClass().getAnnotation(Generator.class).priority());
+    public static final Comparator<IOCGenerator> iocGeneratorComparator = Comparator.comparing(h -> h.getClass().getAnnotation(Generator.class).priority());
 
     protected final Map<IOCGenerator, Set<ExecutableDefinition>> executableDefinitions = new HashMap<>();
 

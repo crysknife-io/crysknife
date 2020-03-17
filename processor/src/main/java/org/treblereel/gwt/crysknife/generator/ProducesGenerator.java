@@ -104,7 +104,7 @@ public class ProducesGenerator extends ScopedBeanGenerator {
                         new ThisExpr(), "holder"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
 
                 ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new AssignExpr().setTarget(new FieldAccessExpr(
-                        new ThisExpr(), "holder")).setValue(getMethodCallExpr(builder, (ProducerDefinition) definition))));
+                        new ThisExpr(), "holder")).setValue(getMethodCallExpr((ProducerDefinition) definition))));
 
                 builder.getGetMethodDeclaration().getBody()
                         .get()
@@ -116,8 +116,8 @@ public class ProducesGenerator extends ScopedBeanGenerator {
                                 new FieldAccessExpr(
                                         new ThisExpr(), "holder")));
             } else {
-                builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(
-                        new ReturnStmt(getMethodCallExpr(builder, (ProducerDefinition) definition)));
+                builder.getGetMethodDeclaration().getBody().ifPresent(body -> body.addAndGetStatement(
+                        new ReturnStmt(getMethodCallExpr((ProducerDefinition) definition))));
             }
         }
     }
@@ -137,7 +137,7 @@ public class ProducesGenerator extends ScopedBeanGenerator {
                 || method.getAnnotation(Singleton.class) != null;
     }
 
-    private MethodCallExpr getMethodCallExpr(ClassBuilder builder, ProducerDefinition definition) {
+    private MethodCallExpr getMethodCallExpr(ProducerDefinition definition) {
         CastExpr onCast = new CastExpr(
                 new ClassOrInterfaceType().setName(definition.getInstance().getSimpleName().toString()),
                 new MethodCallExpr(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), "producer"), "get"),"get"));

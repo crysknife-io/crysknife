@@ -24,8 +24,7 @@ public class FieldPoint extends Point {
 
     public static FieldPoint of(VariableElement injection) {
         TypeElement type = MoreElements.asType(MoreTypes.asElement(injection.asType()));
-        FieldPoint point = new FieldPoint(injection.getSimpleName().toString(), type, injection);
-        return point;
+        return new FieldPoint(injection.getSimpleName().toString(), type, injection);
     }
 
     public VariableElement getField() {

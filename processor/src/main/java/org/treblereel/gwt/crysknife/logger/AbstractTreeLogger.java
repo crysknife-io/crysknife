@@ -25,15 +25,10 @@ import org.treblereel.gwt.crysknife.exception.UnableToCompleteException;
 public abstract class AbstractTreeLogger extends TreeLogger {
 
   public static final Comparator<String> LOG_LINE_COMPARATOR =
-      new Comparator<String>() {
-        @Override
-        public int compare(String thisLine, String thatLine) {
-          return ComparisonChain.start()
+          (thisLine, thatLine) -> ComparisonChain.start()
               .compare(thisLine.indexOf(':'), thatLine.indexOf(':'))
               .compare(thisLine, thatLine)
               .result();
-        }
-      };
 
   private static class UncommittedBranchData {
 
@@ -71,7 +66,7 @@ public abstract class AbstractTreeLogger extends TreeLogger {
     StringBuffer message = new StringBuffer();
     Throwable currentCause = e;
     String causedBy = "";
-    HashSet<Throwable> seenCauses = new HashSet<Throwable>();
+    HashSet<Throwable> seenCauses = new HashSet<>();
     while (currentCause != null && !seenCauses.contains(currentCause)) {
       seenCauses.add(currentCause);
 

@@ -8,6 +8,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import com.github.javaparser.ast.expr.Expression;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -41,7 +42,7 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
         } catch (javax.annotation.processing.FilerException e1) {
             context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.NOTE, e1.getMessage());
         } catch (IOException e1) {
-            throw new Error(e1);
+            throw new GenerationException(e1);
         }
     }
 
@@ -52,7 +53,7 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             out.append(source);
         } catch (FilerException e) {
-            throw new Error(e);
+            throw new GenerationException(e);
         }
     }
 }

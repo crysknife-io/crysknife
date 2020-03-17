@@ -15,6 +15,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -44,11 +45,8 @@ public class ComponentInjectionResolverScanner {
                 .map(elm -> elm.getKey().annotation)
                 .collect(Collectors.toSet());
 
-        annotations.forEach(annotation -> {
-            iocContext.getTypeElementsByAnnotation(annotation).forEach(bean -> {
-                iocContext.getBeanDefinitionOrCreateAndReturn(bean);
-            });
-        });
+        annotations.forEach(annotation -> iocContext.getTypeElementsByAnnotation(annotation)
+                .forEach(bean -> iocContext.getBeanDefinitionOrCreateAndReturn(bean)));
 
         iocContext.getBeans().forEach((type, bean) -> {
             for (FieldPoint field : bean.getFieldInjectionPoints()) {
@@ -82,7 +80,7 @@ public class ComponentInjectionResolverScanner {
                 beanDefinition.setGenerator(gen);
                 iocContext.getBeans().put(bean, beanDefinition);
             } else {
-                throw new Error("Unable to find generator based on meta " + meta.toString());
+                throw new GenerationException("Unable to find generator based on meta " + meta.toString());
             }
         });
     }

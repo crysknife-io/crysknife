@@ -24,6 +24,7 @@ import io.github.classgraph.ScanResult;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -71,7 +72,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         processProducersScan();
         fireIOCGeneratorBefore();
         processGraph();
-        new FactoryGenerator(iocContext, context).generate(); //???
+        new FactoryGenerator(iocContext).generate();
         new BeanInfoGenerator(iocContext, context).generate();
         new BeanManagerGenerator(iocContext, context).generate();
         fireIOCGeneratorAfter();
@@ -88,14 +89,14 @@ public class ApplicationProcessor extends AbstractProcessor {
             context.getProcessingEnvironment()
                     .getMessager()
                     .printMessage(Diagnostic.Kind.ERROR, "No class annotated with @Application detected\"");
-            throw new Error();
+            throw new GenerationException();
         }
 
         if (applications.size() > 1) {
             context.getProcessingEnvironment()
                     .getMessager()
                     .printMessage(Diagnostic.Kind.ERROR, "There is must be only one class annotated with @Application\"");
-            throw new Error();
+            throw new GenerationException();
         }
         return applications.stream().findFirst();
     }
@@ -124,14 +125,10 @@ public class ApplicationProcessor extends AbstractProcessor {
                     Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(IOCContext.class);
                     ((IOCGenerator) c.newInstance(iocContext)).register();
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                    throw new Error(e);
+                    throw new GenerationException(e);
                 }
             }
         }
-    }
-
-    private void fireIOCGeneratorBefore() {
-        iocContext.getGenerators().forEach((meta, generator) -> generator.before());
     }
 
     private void processQualifiersScan() {
@@ -148,6 +145,10 @@ public class ApplicationProcessor extends AbstractProcessor {
 
     private void processProducersScan() {
         new ProducersScan(iocContext).scan();
+    }
+
+    private void fireIOCGeneratorBefore() {
+        iocContext.getGenerators().forEach((meta, generator) -> generator.before());
     }
 
     private void processGraph() {

@@ -25,6 +25,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -74,7 +75,7 @@ public class BeanDefinition extends Definition {
 
     public void setGenerator(IOCGenerator iocGenerator) {
         if (iocGenerator == null) {
-            throw new Error("Unable to set generator for " + this.toString());
+            throw new GenerationException("Unable to set generator for " + this.toString());
         } else {
             this.generator = Optional.of(iocGenerator);
         }
@@ -106,7 +107,7 @@ public class BeanDefinition extends Definition {
                 TypeElement named = context.getQualifiers().get(element).get(fieldPoint.getNamed()).element;
                 return context.getBean(named).generateBeanCall(context, builder, fieldPoint);
             }
-            throw new Error("Unable to find generator for " + getQualifiedName());
+            throw new GenerationException("Unable to find generator for " + getQualifiedName());
         }
     }
 
@@ -115,7 +116,7 @@ public class BeanDefinition extends Definition {
                 && candidate.getModifiers().contains(Modifier.PUBLIC)) {
             long count = candidate.getEnclosedElements().stream().filter(elm -> elm.getKind().equals(ElementKind.CONSTRUCTOR))
                     .filter(elm -> MoreElements.asExecutable(elm)
-                            .getParameters().size() == 0)
+                            .getParameters().isEmpty())
                     .filter(elm -> elm.getModifiers().contains(Modifier.PUBLIC)).count();
             if (count == 1) {
                 return true;
@@ -130,12 +131,7 @@ public class BeanDefinition extends Definition {
             if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
                     || mem.getKind().equals(ElementKind.FIELD))) {
                 if (mem.getModifiers().contains(Modifier.STATIC)) {
-                    context.getGenerationContext()
-                            .getProcessingEnvironment()
-                            .getMessager()
-                            .printMessage(Diagnostic.Kind.ERROR,
-                                          String.format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
-                    throw new Error();
+                    throw new GenerationException(String.format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
                 }
                 if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     ExecutableElement elms = MoreElements.asExecutable(mem);
@@ -166,9 +162,7 @@ public class BeanDefinition extends Definition {
         if (field.isNamed()) {
             context.getTypeElementsByAnnotation(Named.class.getCanonicalName())
                     .stream().filter(named -> named.getAnnotation(Named.class).value().equals(field.getNamed()))
-                    .findAny().ifPresent(elm -> {
-                getDependsOn().add(context.getBeanDefinitionOrCreateAndReturn(elm));
-            });
+                    .findAny().ifPresent(elm -> getDependsOn().add(context.getBeanDefinitionOrCreateAndReturn(elm)));
             bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
         } else if (context.getQualifiers().containsKey(field.getType())) {
             for (AnnotationMirror mirror : context.getGenerationContext().getElements()
@@ -257,14 +251,11 @@ public class BeanDefinition extends Definition {
 
         private BeanDefinition beanDefinition;
 
-        private Elements elements;
-
         private IOCContext context;
 
         BeanDefinitionBuilder(TypeElement element, IOCContext context) {
             this.context = context;
             this.beanDefinition = new BeanDefinition(element);
-            this.elements = context.getGenerationContext().getElements();
         }
 
         public BeanDefinition build() {

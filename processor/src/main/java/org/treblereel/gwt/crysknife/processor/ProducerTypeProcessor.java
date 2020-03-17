@@ -1,6 +1,5 @@
 package org.treblereel.gwt.crysknife.processor;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -9,9 +8,9 @@ import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
-import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.ProducerDefinition;
 
@@ -43,7 +42,6 @@ public class ProducerTypeProcessor extends TypeProcessor {
             IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Singleton.class.getCanonicalName(),
                                                                                obj,
                                                                                WiringElementType.BEAN);
-
 
             bean.setGenerator(context.getGenerators().get(meta).stream().findFirst().get());
             context.getBeans().put(MoreElements.asType(method.getEnclosingElement()), bean);

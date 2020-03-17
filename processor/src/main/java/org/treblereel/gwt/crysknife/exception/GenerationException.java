@@ -28,6 +28,7 @@ public class GenerationException extends RuntimeException {
         this.additionalFailureInfo = this.additionalFailureInfo + "\n" + info;
     }
 
+    @Override
     public String getMessage() {
         return super.getMessage() + this.additionalFailureInfo;
     }

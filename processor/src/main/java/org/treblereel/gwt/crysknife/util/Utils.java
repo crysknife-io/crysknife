@@ -15,6 +15,7 @@ import javax.lang.model.util.Elements;
 
 import com.google.auto.common.MoreElements;
 import jsinterop.annotations.JsProperty;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -26,26 +27,16 @@ public class Utils {
 
     }
 
-    public static String getQualifiedName(Element elm) {
-        if (elm.getKind().equals(ElementKind.FIELD) || elm.getKind().equals(ElementKind.PARAMETER)) {
-            VariableElement variableElement = MoreElements.asVariable(elm);
-            DeclaredType declaredType = (DeclaredType) variableElement.asType();
-            return declaredType.toString();
-        } else if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
-            ExecutableElement executableElement = MoreElements.asExecutable(elm);
-            return executableElement.getEnclosingElement().toString();
-        } else if (elm.getKind().equals(ElementKind.CLASS)) {
-            TypeElement typeElement = MoreElements.asType(elm);
-            return typeElement.getQualifiedName().toString();
-        } else if (elm.getKind().equals(ElementKind.INTERFACE)) {
-            TypeElement typeElement = MoreElements.asType(elm);
-            return typeElement.getQualifiedName().toString();
-        }
-        throw new Error("Unable to process bean " + elm.toString());
-    }
-
     public static String getQualifiedFactoryName(TypeElement bean) {
         return getPackageName(bean) + "." + getFactoryClassName(bean);
+    }
+
+    public static String getPackageName(TypeElement singleton) {
+        return MoreElements.getPackage(singleton).getQualifiedName().toString();
+    }
+
+    public static String getFactoryClassName(TypeElement bean) {
+        return bean.getSimpleName().toString() + "_Factory";
     }
 
     public static String getJsFieldName(VariableElement field) {
@@ -60,15 +51,11 @@ public class Utils {
                           .getQualifiedName()
                           .toString()
                           .replaceAll("\\.", "_"));
-        if(field.getModifiers().contains(Modifier.PRIVATE)) {
+        if (field.getModifiers().contains(Modifier.PRIVATE)) {
             sb.append("_");
         }
 
         return sb.toString();
-    }
-
-    public static String getFactoryClassName(TypeElement bean) {
-        return bean.getSimpleName().toString() + "_Factory";
     }
 
     public static Set<Element> getAnnotatedElements(
@@ -84,15 +71,26 @@ public class Utils {
         return found;
     }
 
-    public static String getPackageName(TypeElement singleton) {
-        return MoreElements.getPackage(singleton).getQualifiedName().toString();
+    public static String toVariableName(TypeElement injection) {
+        return toVariableName(getQualifiedName(injection));
     }
 
     public static String toVariableName(String name) {
         return name.toLowerCase().replaceAll("\\.", "_");
     }
 
-    public static String toVariableName(TypeElement injection) {
-        return toVariableName(getQualifiedName(injection));
+    public static String getQualifiedName(Element elm) {
+        if (elm.getKind().equals(ElementKind.FIELD) || elm.getKind().equals(ElementKind.PARAMETER)) {
+            VariableElement variableElement = MoreElements.asVariable(elm);
+            DeclaredType declaredType = (DeclaredType) variableElement.asType();
+            return declaredType.toString();
+        } else if (elm.getKind().equals(ElementKind.CONSTRUCTOR)) {
+            ExecutableElement executableElement = MoreElements.asExecutable(elm);
+            return executableElement.getEnclosingElement().toString();
+        } else if (elm.getKind().isClass() || elm.getKind().isInterface()) {
+            TypeElement typeElement = MoreElements.asType(elm);
+            return typeElement.getQualifiedName().toString();
+        }
+        throw new GenerationException("Unable to process bean " + elm.toString());
     }
 }

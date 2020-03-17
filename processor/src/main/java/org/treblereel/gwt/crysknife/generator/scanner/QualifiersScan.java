@@ -37,28 +37,22 @@ public class QualifiersScan {
     }
 
     private void processNamedAnnotation() {
-        iocContext.getTypeElementsByAnnotation(Named.class.getCanonicalName()).forEach(named -> {
-            named.getInterfaces().forEach(parent -> {
-                BeanDefinition iface = iocContext.getBeanDefinitionOrCreateAndReturn(MoreTypes.asTypeElement(parent));
-                if (!iocContext.getQualifiers().containsKey(iface.getType())) {
-                    iocContext.getQualifiers().put(iface.getType(), new HashMap<>());
-                }
-                iocContext.getQualifiers()
-                        .get(iface.getType())
-                        .put(named.getAnnotation(Named.class).value(),
-                             iocContext.getBeanDefinitionOrCreateAndReturn(named));
-            });
-        });
+        iocContext.getTypeElementsByAnnotation(Named.class.getCanonicalName()).forEach(named -> named.getInterfaces().forEach(parent -> {
+            BeanDefinition iface = iocContext.getBeanDefinitionOrCreateAndReturn(MoreTypes.asTypeElement(parent));
+            if (!iocContext.getQualifiers().containsKey(iface.getType())) {
+                iocContext.getQualifiers().put(iface.getType(), new HashMap<>());
+            }
+            iocContext.getQualifiers()
+                    .get(iface.getType())
+                    .put(named.getAnnotation(Named.class).value(),
+                         iocContext.getBeanDefinitionOrCreateAndReturn(named));
+        }));
     }
 
     private void processQualifierAnnotation() {
         iocContext.getTypeElementsByAnnotation(Qualifier.class.getCanonicalName()).forEach(qualified -> {
-            iocContext.getFieldsByAnnotation(qualified.getQualifiedName().toString()).forEach(candidate -> {
-                processAnnotation(candidate, qualified);
-            });
-            iocContext.getTypeElementsByAnnotation(qualified.getQualifiedName().toString()).forEach(candidate -> {
-                processAnnotation(candidate, qualified);
-            });
+            iocContext.getFieldsByAnnotation(qualified.getQualifiedName().toString()).forEach(candidate -> processAnnotation(candidate, qualified));
+            iocContext.getTypeElementsByAnnotation(qualified.getQualifiedName().toString()).forEach(candidate -> processAnnotation(candidate, qualified));
         });
     }
 

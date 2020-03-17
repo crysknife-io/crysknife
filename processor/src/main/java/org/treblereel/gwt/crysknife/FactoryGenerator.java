@@ -19,7 +19,7 @@ public class FactoryGenerator {
 
     private final IOCContext iocContext;
 
-    FactoryGenerator(IOCContext iocContext, GenerationContext generationContext) {
+    FactoryGenerator(IOCContext iocContext) {
         this.iocContext = iocContext;
     }
 
