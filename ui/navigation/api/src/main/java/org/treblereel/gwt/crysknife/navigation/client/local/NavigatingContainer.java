@@ -16,7 +16,7 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import elemental2.dom.HTMLElement;
+import org.jboss.elemento.IsElement;
 
 /**
  * Implemented by navigation containers that changes its content between Page
@@ -25,9 +25,12 @@ import elemental2.dom.HTMLElement;
  */
 public interface NavigatingContainer {
 
-    NavigationPanel getWidget();
-
-    void setWidget(HTMLElement w);
-
     void clear();
+
+    void setWidget(IsElement w);
+
+    IsElement getWidget();
+
+    IsElement asWidget();
+
 }

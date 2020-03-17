@@ -16,12 +16,10 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import java.lang.annotation.Annotation;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.gwtproject.user.client.ui.IsWidget;
+import org.jboss.elemento.IsElement;
 
 /**
  * Provides new instances of the {@link TransitionAnchorFactory} class, which
@@ -36,7 +34,7 @@ public class TransitionAnchorFactoryProvider {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   public TransitionAnchorFactory provide(Class<?>[] typeargs) {
-    Class<IsWidget> toPageType = (Class<IsWidget>) typeargs[0];
+    Class<IsElement> toPageType = (Class<IsElement>) typeargs[0];
     return new TransitionAnchorFactory<>(navigation, toPageType, htFactory);
   }
 

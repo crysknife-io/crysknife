@@ -16,18 +16,19 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import java.lang.annotation.Annotation;
-
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.gwtproject.user.client.ui.IsWidget;
+import org.jboss.elemento.IsElement;
 
 @Singleton
 public class PageTransitionProvider {
 
-  public TransitionTo provide(Class<?>[] typeargs) {
-    Class<IsWidget> toPageType = (Class<IsWidget>) typeargs[0];
-    return new TransitionTo<>(toPageType);
-  }
+    @Inject
+    Navigation navigation;
 
+    public TransitionTo provide(Class<?>[] typeargs) {
+        Class<IsElement> toPageType = (Class<IsElement>) typeargs[0];
+        return new TransitionTo<>(toPageType, navigation);
+    }
 }

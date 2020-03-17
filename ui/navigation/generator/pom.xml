@@ -42,20 +42,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.javaparser</groupId>
-      <artifactId>javaparser-core</artifactId>
-      <version>${javaparser.core.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
       <version>${elemental2.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event-dom</artifactId>
-      <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -65,67 +54,14 @@
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>elemental2-generator</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.resources</groupId>
-      <artifactId>gwt-resources-processor</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.resources</groupId>
-      <artifactId>gwt-resources-core</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.widgets</groupId>
-      <artifactId>gwt-widgets</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jsoup</groupId>
-      <artifactId>jsoup</artifactId>
-      <version>${jsoup.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.lesscss</groupId>
-      <artifactId>lesscss</artifactId>
-      <version>${lesscss.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${google.guava.version}</version>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>navigation-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

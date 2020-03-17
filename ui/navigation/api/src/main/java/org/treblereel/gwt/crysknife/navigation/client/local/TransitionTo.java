@@ -16,7 +16,6 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import org.treblereel.gwt.crysknife.client.BeanManagerImpl;
 import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.client.internal.collections.ImmutableMultimap;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
@@ -33,10 +32,11 @@ import org.treblereel.gwt.crysknife.navigation.client.local.spi.PageNode;
  * @param <P> The type of the target page ("to page")
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  */
-
 public final class TransitionTo<P> {
 
     private final Class<P> toPageWidgetType;
+
+    private Navigation navigation;
 
     /**
      * Creates a new PageTransition with the given attributes.
@@ -44,8 +44,9 @@ public final class TransitionTo<P> {
      * @param toPage The page type this transition goes to. Not null.
      * @throws NullPointerException if any of the arguments are null.
      */
-    TransitionTo(Class<P> toPage) {
+    public TransitionTo(Class<P> toPage, Navigation navigation) {
         this.toPageWidgetType = Assert.notNull(toPage);
+        this.navigation = navigation;
     }
 
     /**
@@ -80,8 +81,6 @@ public final class TransitionTo<P> {
      * it is displayed. Must not be null.
      */
     public void go(final Multimap<String, String> state) {
-        Navigation navigation = BeanManagerImpl.get().<Navigation>lookupBean(Navigation.class)
-                .get();
         navigation.goTo(toPageWidgetType, state);
     }
 }

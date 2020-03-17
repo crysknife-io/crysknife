@@ -16,28 +16,40 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import elemental2.dom.HTMLElement;
+import jsinterop.base.Js;
+import org.jboss.elemento.IsElement;
 
 /**
  * Uses SimplePanel as a navigating container.
+ *
  * @author Piotr Kosmowski
  */
 public class DefaultNavigatingContainer implements NavigatingContainer {
 
-    private NavigationPanel panel = new NavigationPanel();
+    private final NavigationPanel panel = new NavigationPanel();
 
-    public NavigationPanel getWidget() {
-        return panel;
-    }
+    private IsElement current;
 
-    public void setWidget(HTMLElement w) {
-        panel.getWidget().appendChild(w);
+    @Override
+    public IsElement getWidget() {
+        return current;
     }
 
     @Override
     public void clear() {
-        for (int i = 0; i < panel.getWidget().childElementCount; i++) {
-            panel.getWidget().removeChild(panel.getWidget().childNodes.getAt(i));
+        for (int i = 0; i < panel.element().childNodes.length; i++) {
+            panel.element().removeChild(panel.element().childNodes.getAt(i));
         }
     }
+
+    @Override
+    public void setWidget(IsElement w) {
+        this.current = w;
+        panel.element().appendChild(Js.uncheckedCast(w.element()));
+    }
+
+    public IsElement asWidget() {
+        return panel;
+    }
+
 }

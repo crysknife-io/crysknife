@@ -16,7 +16,7 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import elemental2.dom.HTMLElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationControl;
 
 /**
@@ -35,7 +35,7 @@ public interface ContentDelegation {
      * @param previousPage the previous page, <b>this can be null</b>.
      * @param control the delegation control for proceeding navigation process.
      */
-    void showContent(Object page, NavigatingContainer defaultContainer, HTMLElement widget, Object previousPage,
+    void showContent(Object page, NavigatingContainer defaultContainer, IsElement widget, Object previousPage,
                      DelegationControl control);
 
     /**
@@ -47,6 +47,6 @@ public interface ContentDelegation {
      * @param nextPage potential next requested page, <b>this can be null</b>.
      * @param control the delegation control for proceeding navigation process.
      */
-    void hideContent(Object page, NavigatingContainer defaultContainer, HTMLElement widget, Object nextPage,
+    void hideContent(Object page, NavigatingContainer defaultContainer, IsElement widget, Object nextPage,
                      DelegationControl control);
 }
