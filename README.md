@@ -8,7 +8,7 @@ At this point Crysknife supports:
 
 * @Singleton and @Dependent scopes
 * lazy fields and constructor injections
-* @PostContract
+* @PostConstruct
 * transitive injections
 * @Named qualifiers and @Produces for custom objects like Elemental2 widgets
 * HTML templates
