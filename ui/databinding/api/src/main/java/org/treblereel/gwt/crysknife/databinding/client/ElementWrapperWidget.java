@@ -91,10 +91,6 @@ public abstract class ElementWrapperWidget<T> extends Widget {
         final Element element = asElement(obj);
 
         ElementWrapperWidget<?> widget = widgetMap.get(element);
-
-        DomGlobal.console.log("valueType " + valueType);
-        DomGlobal.console.log("getWidget " + obj + " " + widget);
-
         if (widget == null) {
             widget = createElementWrapperWidget(element, valueType);
             if (!widget.isAttached()) {

@@ -14,8 +14,6 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local.pushstate;
 
-import java.util.logging.Logger;
-
 import elemental2.core.Global;
 import elemental2.dom.DomGlobal;
 import jsinterop.base.Js;
@@ -24,10 +22,10 @@ import org.gwtproject.event.logical.shared.HasValueChangeHandlers;
 import org.gwtproject.event.logical.shared.ValueChangeEvent;
 import org.gwtproject.event.logical.shared.ValueChangeHandler;
 import org.gwtproject.event.shared.Event;
-import org.gwtproject.event.shared.HandlerManager;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.history.client.History;
 import org.gwtproject.user.window.client.Window;
+import org.treblereel.gwt.crysknife.navigation.client.local.HandlerManager;
 
 /**
  * Enhances GWT's History implementation to add HTML5 pushState support.
@@ -51,8 +49,6 @@ import org.gwtproject.user.window.client.Window;
  * @author Christian Sadilek <csadilek@redhat.com>
  */
 public class HistoryImplPushState implements HasValueChangeHandlers<String> {
-
-    private static final Logger LOG = Logger.getLogger(HistoryImplPushState.class.getName());
 
     private HandlerManager handlers = new HandlerManager(null);
     private String token = "";

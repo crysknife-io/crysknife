@@ -20,6 +20,8 @@ import java.util.Collection;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.treblereel.gwt.crysknife.navigation.client.local.spi.NavigationGraph;
 import org.treblereel.gwt.crysknife.navigation.client.local.spi.PageNode;
@@ -28,28 +30,27 @@ import org.treblereel.gwt.crysknife.navigation.client.local.spi.PageNode;
  * This class is responsible for initializing and providing the {@link URLPatternMatcher} for the app.
  * @author Max Barkley <mbarkley@redhat.com>
  * @author Divya Dadlani <ddadlani@redhat.com>
- *
  */
+@Singleton
 public class URLPatternMatcherProvider {
 
-  @Produces @ApplicationScoped
-  public URLPatternMatcher createURLPatternMatcher(NavigationGraph navGraph) {
-    URLPatternMatcher patternMatcher = new URLPatternMatcher();
-    Collection<PageNode<?>> pages = navGraph.getAllPages();
+    @Inject
+    NavigationGraph navGraph;
 
-    for(PageNode<?> page : pages) {
-      patternMatcher.add(page.getURL(), page.name());
+    @Produces
+    @ApplicationScoped
+    public URLPatternMatcher createURLPatternMatcher() {
+        URLPatternMatcher patternMatcher = new URLPatternMatcher();
+        Collection<PageNode<?>> pages = navGraph.getAllPages();
+
+        for (PageNode<?> page : pages) {
+            patternMatcher.add(page.getURL(), page.name());
+        }
+
+        if (!navGraph.isEmpty()) {
+            PageNode<?> defaultPageNode = navGraph.getPageByRole(DefaultPage.class);
+            patternMatcher.setAsDefaultPage(defaultPageNode.name());
+        }
+        return patternMatcher;
     }
-
-    if (!navGraph.isEmpty()) {
-      PageNode<?> defaultPageNode = navGraph.getPageByRole(DefaultPage.class);
-      patternMatcher.setAsDefaultPage(defaultPageNode.name());
-    }
-    return patternMatcher;
-  }
-
-  @Produces @ApplicationScoped
-  public NavigationGraph createNavigationGraph() {
-    return new org.treblereel.gwt.crysknife.navigation.client.local.spi.NavigationGraphImpl();
-  }
 }

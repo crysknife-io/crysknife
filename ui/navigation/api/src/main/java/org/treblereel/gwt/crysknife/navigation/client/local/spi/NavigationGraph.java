@@ -23,7 +23,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.gwtproject.user.client.ui.IsWidget;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+
+import org.jboss.elemento.IsElement;
+import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.navigation.client.local.CreationalCallback;
 import org.treblereel.gwt.crysknife.navigation.client.local.PageRole;
@@ -31,6 +35,7 @@ import org.treblereel.gwt.crysknife.navigation.client.local.UniquePageRole;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.MissingPageRoleException;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.PageNotFoundException;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.TransitionTo;
+import org.treblereel.gwt.crysknife.navigation.client.shared.NavigationEvent;
 
 /**
  * The NavigationGraph is responsible for creating or retrieving instances of Page and PageTransition objects. It is
@@ -44,6 +49,12 @@ import org.treblereel.gwt.crysknife.navigation.client.local.api.TransitionTo;
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  */
 public abstract class NavigationGraph {
+
+  @Inject
+  protected BeanManager beanManager;
+
+  @Inject
+  protected Event<NavigationEvent> event;
 
   /**
    * Maps page names to the classes that implement them. The subclass's constructor is responsible for populating this
@@ -121,7 +132,7 @@ public abstract class NavigationGraph {
     return pagesByName.isEmpty();
   }
 
-  protected static final class PageNodeCreationalCallback<W extends IsWidget> implements
+  protected static final class PageNodeCreationalCallback<W extends IsElement> implements
                                                                               CreationalCallback<PageNode<W>> {
 
     @Override

@@ -20,5 +20,5 @@ package org.treblereel.gwt.crysknife.navigation.client.local;
  * @author Mike Brock
  */
 public interface CreationalCallback<T> {
-  public void callback(T beanInstance);
+  void callback(T beanInstance);
 }

@@ -26,12 +26,12 @@ import java.lang.annotation.Target;
 
 import javax.inject.Qualifier;
 
-import org.gwtproject.user.client.EventListener;
-import org.gwtproject.user.client.ui.Anchor;
+import elemental2.dom.EventListener;
+import elemental2.dom.HTMLAnchorElement;
 import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
- * A qualifier for {@link Anchor} elements linking to Errai Navigation {@link Page Pages}. An injected anchor with this
+ * A qualifier for {@link HTMLAnchorElement} elements linking to Errai Navigation {@link Page Pages}. An injected anchor with this
  * qualifier has an {@link EventListener} registered for "click" events that navigates to the Errai Navigation page
  * specified by the qualifier {@link #value()}.
  *

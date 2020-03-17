@@ -16,7 +16,7 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import elemental2.dom.HTMLElement;
+import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationControl;
 
 /**
@@ -26,15 +26,15 @@ import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationContro
 public class DefaultContentDelegation implements ContentDelegation {
 
     @Override
-    public void showContent(Object page, NavigatingContainer defaultContainer, HTMLElement widget, Object previousPage,
+    public void showContent(Object page, NavigatingContainer defaultContainer, IsElement IsElement, Object previousPage,
                             DelegationControl control) {
 
-        defaultContainer.setWidget(widget);
+        defaultContainer.setWidget(IsElement);
         control.proceed();
     }
 
     @Override
-    public void hideContent(Object page, NavigatingContainer defaultContainer, HTMLElement widget, Object nextPage,
+    public void hideContent(Object page, NavigatingContainer defaultContainer, IsElement widget, Object nextPage,
                             DelegationControl control) {
         defaultContainer.clear();
         control.proceed();

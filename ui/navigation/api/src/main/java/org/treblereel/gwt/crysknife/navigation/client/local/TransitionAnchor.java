@@ -16,10 +16,10 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.event.dom.client.ClickHandler;
-import org.gwtproject.event.logical.shared.AttachEvent;
-import org.gwtproject.user.client.ui.Anchor;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.Event;
+import elemental2.dom.EventListener;
+import elemental2.dom.HTMLAnchorElement;
 import org.treblereel.gwt.crysknife.client.internal.Assert;
 import org.treblereel.gwt.crysknife.client.internal.collections.ImmutableMultimap;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
@@ -36,12 +36,13 @@ import org.treblereel.gwt.crysknife.navigation.client.local.spi.PageNode;
  * @param <P> The type of the target page ("to page")
  * @author eric.wittmann@redhat.com
  */
-public final class TransitionAnchor<P> extends Anchor implements ClickHandler {
+public final class TransitionAnchor<P> implements EventListener {
 
   private final Navigation navigation;
   private final Class<P> toPageWidgetType;
   private final Multimap<String, String> state;
   private final HistoryTokenFactory htFactory;
+  private final HTMLAnchorElement anchor = (HTMLAnchorElement)DomGlobal.document.createElement("a");
 
   /**
    * Creates a new TransitionAnchor with the given attributes.
@@ -74,14 +75,16 @@ public final class TransitionAnchor<P> extends Anchor implements ClickHandler {
     this.toPageWidgetType = Assert.notNull(toPage);
     this.state = Assert.notNull(state);
     this.htFactory = Assert.notNull(htFactory);
-    addClickHandler(this);
-    addAttachHandler(new AttachEvent.Handler() {
+    anchor.addEventListener("click", this);
+
+    throw new UnsupportedOperationException();
+/*    addAttachHandler(new AttachEvent.Handler() {
       @Override
       public void onAttachOrDetach(AttachEvent event) {
         if (event.isAttached())
           initHref(toPage, state);
       }
-    });
+    });*/
   }
 
   /**
@@ -96,7 +99,7 @@ public final class TransitionAnchor<P> extends Anchor implements ClickHandler {
     PageNode<P> toPageInstance = navigation.getNavGraph().getPage(toPage);
     HistoryToken token = htFactory.createHistoryToken(toPageInstance.name(), state);
     String href = "#" + token.toString();
-    setHref(href);
+    anchor.href = href;
   }
 
   /**
@@ -104,18 +107,6 @@ public final class TransitionAnchor<P> extends Anchor implements ClickHandler {
    */
   public Class<P> toPageType() {
     return toPageWidgetType;
-  }
-
-  /**
-   * @see ClickHandler#onClick(ClickEvent)
-   */
-  @Override
-  public void onClick(ClickEvent event) {
-    if (isEnabled())
-      navigation.goTo(toPageWidgetType, this.state);
-
-    event.stopPropagation();
-    event.preventDefault();
   }
 
   /**
@@ -133,4 +124,12 @@ public final class TransitionAnchor<P> extends Anchor implements ClickHandler {
     navigation.goTo(toPageWidgetType, state);
   }
 
+  @Override
+  public void handleEvent(Event evt) {
+    throw new UnsupportedOperationException();
+/*    navigation.goTo(toPageWidgetType, this.state);
+
+    event.stopPropagation();
+    event.preventDefault();*/
+  }
 }

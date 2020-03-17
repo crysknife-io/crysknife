@@ -20,6 +20,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import elemental2.dom.HTMLDivElement;
+
 /**
  * {@link IOCProvider} to make the default navigation panel injectable.
  *
@@ -29,18 +31,18 @@ import javax.inject.Singleton;
  * @author Christian Sadilek <csadilek@redhat.com>
  */
 @Singleton
-public class NavigationPanelProvider implements Provider<NavigationPanel> {
+public class NavigationPanelProvider implements Provider<HTMLDivElement> {
 
   @Inject
   private Navigation navigation;
 
   @Override
-  public NavigationPanel get() {
-    if (!(navigation.getContentPanel() instanceof NavigationPanel)) {
-      throw new RuntimeException("Default navigation panel is not of type: " + NavigationPanel.class.getName()
+  public HTMLDivElement get() {
+    if (!(navigation.getContentPanel() instanceof HTMLDivElement)) {
+      throw new RuntimeException("Default navigation panel is not of type: " + HTMLDivElement.class.getName()
               + ". You replaced it with: " + navigation.getContentPanel().getClass().getName());
     }
 
-    return (NavigationPanel) navigation.getContentPanel();
+    return (HTMLDivElement) navigation.getContentPanel();
   }
 }

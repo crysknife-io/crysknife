@@ -17,28 +17,23 @@
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
 import org.gwtproject.event.logical.shared.ValueChangeEvent;
 import org.gwtproject.event.logical.shared.ValueChangeHandler;
 import org.gwtproject.event.shared.HandlerRegistration;
-import org.gwtproject.user.client.ui.Composite;
-import org.gwtproject.user.client.ui.IsWidget;
 import org.gwtproject.user.window.client.Window;
 import org.jboss.elemento.IsElement;
-import org.treblereel.gwt.crysknife.client.internal.collections.ImmutableMultimap;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationControl;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.NavigationControl;
@@ -48,6 +43,7 @@ import org.treblereel.gwt.crysknife.navigation.client.local.api.RedirectLoopExce
 import org.treblereel.gwt.crysknife.navigation.client.local.pushstate.PushStateUtil;
 import org.treblereel.gwt.crysknife.navigation.client.local.spi.NavigationGraph;
 import org.treblereel.gwt.crysknife.navigation.client.local.spi.PageNode;
+import org.treblereel.gwt.crysknife.navigation.client.shared.NavigationEvent;
 
 /**
  * Central control point for navigating between pages of the application.
@@ -70,14 +66,13 @@ public class Navigation {
      */
     final static int MAXIMUM_REDIRECTS = 99;
     private final NavigatingContainer navigatingContainer = new DefaultNavigatingContainer();
-    private final Map<IsWidget, HandlerRegistration> attachHandlerRegistrations = new HashMap<>();
     /**
      * Queued navigation requests which could not handled immediately.
      */
     private final Queue<Request> queuedRequests = new LinkedList<>();
     protected PageNode<Object> currentPage;
     protected Object currentComponent;
-    protected HTMLElement currentWidget;
+    protected IsElement currentWidget;
     protected HistoryToken currentPageToken;
     protected ContentDelegation contentDelegation = new DefaultContentDelegation();
     private PageNavigationErrorHandler navigationErrorHandler;
@@ -91,6 +86,8 @@ public class Navigation {
     private NavigationGraph navGraph;
     @Inject
     private HistoryTokenFactory historyTokenFactory;
+    @Inject
+    private Event<NavigationEvent> event;
 
     /**
      * Gets the application context used in pushstate URL paths. This application context should match the deployed
@@ -99,11 +96,11 @@ public class Navigation {
      * always starts with a slash and never ends with one.
      */
     public static String getAppContext() {
-      if (PushStateUtil.isPushStateActivated()) {
-        return getAppContextFromHostPage();
-      } else {
-        return "";
-      }
+        if (PushStateUtil.isPushStateActivated()) {
+            return getAppContextFromHostPage();
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -141,10 +138,10 @@ public class Navigation {
     }
 
     @PostConstruct
-    private void init() {
-      if (navGraph.isEmpty()) {
-        return;
-      }
+    void init() {
+        if (navGraph.isEmpty()) {
+            return;
+        }
 
         final String hash = Window.Location.getHash();
 
@@ -165,36 +162,37 @@ public class Navigation {
                         setAppContext(context);
                     }
                     token = historyTokenFactory.parseURL(event.getValue());
-
                     if (currentPage == null || !token.equals(currentPageToken)) {
-                        final PageNode<IsWidget> toPage = navGraph.getPage(token.getPageName());
+                        final PageNode<IsElement> toPage = navGraph.getPage(token.getPageName());
                         navigate(new Request<>(toPage, token), false);
                     }
                 } catch (final Exception e) {
-                  if (token == null) {
-                    navigationErrorHandler.handleInvalidURLError(e, event.getValue());
-                  } else {
-                    navigationErrorHandler.handleInvalidPageNameError(e, token.getPageName());
-                  }
+                    if (token == null) {
+                        navigationErrorHandler.handleInvalidURLError(e, event.getValue());
+                    } else {
+                        navigationErrorHandler.handleInvalidPageNameError(e, token.getPageName());
+                    }
                 }
             }
         });
 
         maybeConvertHistoryToken(hash);
+
+        HistoryWrapper.fireCurrentHistoryState();
     }
 
     protected String inferAppContext(String url) {
-      if (!(url.startsWith("/"))) {
-        url = "/" + url;
-      }
+        if (!(url.startsWith("/"))) {
+            url = "/" + url;
+        }
 
         final int indexOfNextSlash = url.indexOf("/", 1);
 
-      if (indexOfNextSlash < 0) {
-        return "";
-      } else {
-        return url.substring(0, indexOfNextSlash);
-      }
+        if (indexOfNextSlash < 0) {
+            return "";
+        } else {
+            return url.substring(0, indexOfNextSlash);
+        }
     }
 
     /**
@@ -211,11 +209,11 @@ public class Navigation {
      * @param handler An error handler for navigation. Setting this to null assigns the {@link DefaultNavigationErrorHandler}
      */
     public void setErrorHandler(final PageNavigationErrorHandler handler) {
-      if (handler == null) {
-        navigationErrorHandler = new DefaultNavigationErrorHandler(this);
-      } else {
-        navigationErrorHandler = handler;
-      }
+        if (handler == null) {
+            navigationErrorHandler = new DefaultNavigationErrorHandler(this);
+        } else {
+            navigationErrorHandler = handler;
+        }
     }
 
     /**
@@ -235,13 +233,13 @@ public class Navigation {
         } catch (final RedirectLoopException e) {
             throw e;
         } catch (final RuntimeException e) {
-          if (toPageInstance == null)
-          // This is an extremely unlikely case, so throwing an exception is preferable to going through the navigation error handler.
-          {
-            throw new PageNotFoundException("There is no page of type " + toPage.getName() + " in the navigation graph.");
-          } else {
-            navigationErrorHandler.handleInvalidPageNameError(e, toPageInstance.name());
-          }
+            if (toPageInstance == null)
+            // This is an extremely unlikely case, so throwing an exception is preferable to going through the navigation error handler.
+            {
+                throw new PageNotFoundException("There is no page of type " + toPage.getName() + " in the navigation graph.");
+            } else {
+                navigationErrorHandler.handleInvalidPageNameError(e, toPageInstance.name());
+            }
         }
     }
 
@@ -288,12 +286,11 @@ public class Navigation {
     }
 
     private <C> void navigate(final PageNode<C> toPageInstance) {
-        navigate(toPageInstance, ImmutableMultimap.of());
+        navigate(toPageInstance, new Multimap<>());
     }
 
     private <C> void navigate(final PageNode<C> toPageInstance, final Multimap<String, String> state) {
         final HistoryToken token = historyTokenFactory.createHistoryToken(toPageInstance.name(), state);
-        DomGlobal.console.debug("Navigating to " + toPageInstance.name() + " at url: " + token.toString());
         navigate(new Request<>(toPageInstance, token), true);
     }
 
@@ -335,8 +332,9 @@ public class Navigation {
      * Attach the content panel to the RootPanel if does not already have a parent.
      */
     private void maybeAttachContentPanel() {
-        if (getContentPanel().getWidget().parentElement == null) {
-            DomGlobal.document.body.appendChild(getContentPanel().getWidget());
+        IsElement<HTMLElement> panel = navigatingContainer.asWidget();
+        if (panel.element().parentNode == null) {
+            DomGlobal.document.body.appendChild(getContentPanel().element());
         }
     }
 
@@ -345,10 +343,10 @@ public class Navigation {
      * @param requestPage the next requested page, this can be null if there is none.
      */
     private void hideCurrentPage(Object requestPage, NavigationControl control) {
-        final NavigationPanel currentContent = navigatingContainer.getWidget();
+        final IsElement currentContent = navigatingContainer.getWidget();
 
         // Note: Optimized out in production mode
-        if (currentPage != null && (currentContent == null || currentWidget != currentContent.getWidget())) {
+        if (currentPage != null && (currentContent == null || currentWidget != currentContent)) {
             // This could happen if someone was manipulating the DOM behind our backs
             DomGlobal.console.log("Current content widget vanished or changed. " + "Not delivering pageHiding event to " + currentPage
                                           + ".");
@@ -380,93 +378,53 @@ public class Navigation {
             if (component == null) {
                 throw new NullPointerException("Target page " + request.pageNode + " returned a null content widget");
             }
-
-            final C unwrappedComponent = component;
-            HTMLElement widget = null;
-            if (unwrappedComponent instanceof IsWidget) {
-                widget = Js.uncheckedCast(((IsWidget) unwrappedComponent).asWidget().getElement());
-            } else if (unwrappedComponent instanceof IsElement) {
-                widget = ((IsElement) unwrappedComponent).element();
+            final IsElement widget;
+            if (component instanceof IsElement) {
+                widget = ((IsElement) component);
+            } else {
+                throw new RuntimeException("Page must implement IsElement, or be @Templated.");
             }
+
             maybeAttachContentPanel();
             currentPageToken = request.state;
-
-            DomGlobal.console.log("maybeShowPage " + component.getClass().getCanonicalName() + " " + widget.tagName);
-
-            pageHiding(unwrappedComponent, widget, request, fireEvent);
-
-/*      if ((unwrappedComponent instanceof Composite) && (getCompositeWidget((Composite) unwrappedComponent) == null)) {
-        final HandlerRegistration reg = widget.addAttachHandler(event -> {
-
-          if (event.isAttached() && currentWidget != unwrappedComponent) {
-            pageHiding(unwrappedComponent, widget, request, fireEvent);
-          }
-
-
-        });
-        attachHandlerRegistrations.put(widget, reg);
-      }
-      else {
-        pageHiding(unwrappedComponent, widget, request, fireEvent);
-      }*/
+            pageHiding(component, widget, request, fireEvent);
         });
     }
 
-    private <C, W extends HTMLElement> void pageHiding(final C component, final W componentWidget, final Request<C> request, final boolean fireEvent) {
-        DomGlobal.console.log("pageHiding " + component.getClass().getCanonicalName() + " " + componentWidget.tagName);
-
-        final HandlerRegistration reg = attachHandlerRegistrations.remove(component);
-        if (reg != null) {
-            reg.removeHandler();
-        }
-
-        final NavigationControl control = new NavigationControl(Navigation.this, new Runnable() {
-            @Override
-            public void run() {
-                NavigationControl showControl = new NavigationControl(Navigation.this, new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Object previousPage = currentComponent;
-                            setCurrentPage(request.pageNode);
-                            currentWidget = componentWidget;
-                            currentComponent = component;
-                            contentDelegation.showContent(component, navigatingContainer, currentWidget, previousPage, new DelegationControl(() -> {
+    private <C, W extends IsElement> void pageHiding(final C component, final W componentWidget, final Request<C> request, final boolean fireEvent) {
+        final NavigationControl control = new NavigationControl(Navigation.this, () -> {
+            NavigationControl showControl = new NavigationControl(Navigation.this, () -> {
+                try {
+                    Object previousPage = currentComponent;
+                    setCurrentPage(request.pageNode);
+                    currentWidget = componentWidget;
+                    currentComponent = component;
+                    contentDelegation.showContent(component, navigatingContainer, currentWidget,
+                                                  previousPage, new DelegationControl(() -> {
                                 request.pageNode.pageShown(component, request.state);
                             }));
-                        } finally {
-                            locked = false;
-                        }
-
-                        handleQueuedRequests(request, fireEvent);
-                    }
-                }, new Runnable() {
-                    @Override
-                    public void run() {
-                        locked = false;
-                    }
-                });
-
-                try {
-                    locked = true;
-                    hideCurrentPage(component, new NavigationControl(Navigation.this, () -> {
-                        request.pageNode.pageShowing(component, request.state, showControl);
-                    }));
-                } catch (Exception ex) {
+                } finally {
                     locked = false;
-                    throw ex;
                 }
-            }
-        }, new Runnable() {
-            @Override
-            public void run() {
-                hideCurrentPage(null, new NavigationControl(Navigation.this, () -> {
-                    setCurrentPage(null);
-                }));
-            }
-        });
 
-        if (currentPage != null && currentWidget != null && currentComponent != null && currentWidget == Js.uncheckedCast(navigatingContainer.getWidget())) {
+                handleQueuedRequests(request, fireEvent);
+            }, () -> locked = false);
+
+            try {
+                locked = true;
+                hideCurrentPage(component, new NavigationControl(Navigation.this, () -> {
+                    request.pageNode.pageShowing(component, request.state, showControl);
+                }));
+            } catch (Exception ex) {
+                throw ex;
+            } finally {
+                locked = false;
+            }
+        }, () -> hideCurrentPage(null, new NavigationControl(Navigation.this, () -> {
+            setCurrentPage(null);
+        })));
+
+        if (currentPage != null && currentWidget != null && currentComponent != null && currentWidget == navigatingContainer.getWidget()) {
             currentPage.pageHiding(currentComponent, control);
         } else {
             control.proceed();
@@ -495,7 +453,7 @@ public class Navigation {
      * this may return the state of page being navigated to before that page has actually been displayed.
      */
     public Multimap<String, String> getCurrentState() {
-        return (currentPageToken != null) ? currentPageToken.getState() : ImmutableMultimap.of();
+        return (currentPageToken != null) ? currentPageToken.getState() : new Multimap<>();
     }
 
     /**
@@ -504,8 +462,8 @@ public class Navigation {
      * @return The content panel of this Navigation instance. It is not recommended that client code modifies the contents
      * of this panel, because this Navigation instance may replace its contents at any time.
      */
-    public NavigationPanel getContentPanel() {
-        return navigatingContainer.getWidget();
+    public IsElement getContentPanel() {
+        return navigatingContainer.asWidget();
     }
 
     /**
