@@ -1,4 +1,4 @@
-package org.treblereel.client;
+package org.treblereel.client.named;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;

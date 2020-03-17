@@ -6,5 +6,5 @@ package org.treblereel.client.qualifiers;
  */
 public interface QualifierBean {
 
-    void say();
+    String say();
 }

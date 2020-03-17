@@ -1,0 +1,37 @@
+<div data-field="root">
+
+    <h2>crysknife</h2>
+    <p>
+    <p>This project is a proof of concept for a CDI-like Dependency Injection framework with a support of some popular features. It’s based on annotation processors code generation and has no GWT2 dependencies.</p>
+    <p>At this point Crysknife supports:</p>
+    <ul>
+        <li>@Singleton/@Application and @Dependent scopes</li>
+        <li>lazy fields and constructor injections</li>
+        <li>@PostContract</li>
+        <li>transitive injections</li>
+        <li>@Named qualifiers and @Produces for custom objects like Elemental2 widgets</li>
+        <li>HTML templates</li>
+        <li>Errai-like navigation</li>
+        <li>Data binding</li>
+    </ul>
+    <p>Demo shows how Crysknife is used on a simple page compiled with J2CL (with j2cl-maven-plugin).</p>
+    <p>Please, remember that this is a POC, nothing more at this moment.
+        Feel free to comment and criticize.</p>
+    <p>How to build:</p>
+    <ol>
+        <li>'git clone <a href="mailto:git@github.com">git@github.com</a>:treblereel/crysknife.git'</li>
+        <li>'mvn clean install'</li>
+        <li>To run demo, run 'mvn clean j2cl:watch' within crysknife/demo folder<br></li>
+        <li>Open another console and run 'mvn tomcat7:run'</li>
+        <li>Open in browser: <a href="http://127.0.0.1:8080/demo" rel="nofollow">http://127.0.0.1:8080/demo</a></li>
+        <li>To build a .war, run 'mvn clean package -Pbuild' within crysknife/demo folder</li>
+    </ol>
+    <p>Have fun and let J2CL win !</p>
+    </article>
+</div>
+</div>
+
+</p>
+
+<div class="line"></div>
+</div>

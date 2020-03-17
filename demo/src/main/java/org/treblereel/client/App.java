@@ -6,19 +6,13 @@ import javax.inject.Inject;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import jsinterop.annotations.JsFunction;
 import org.gwtproject.core.client.EntryPoint;
-import org.gwtproject.resources.client.ResourceCallback;
-import org.gwtproject.resources.client.ResourceException;
-import org.jboss.elemento.Elements;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.User;
+import org.treblereel.client.named.NamedBeanConstructorInjectionPanel;
 import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
-
-import static org.jboss.elemento.Elements.body;
 
 @Application
 @ComponentScan("org.treblereel.client")
@@ -31,13 +25,10 @@ public class App implements EntryPoint {
     private TextResource textResource;
 
     @Inject
-    private UI ui;
-
-    @Inject
     private NamedBeanConstructorInjectionPanel namedBeanConstructorInjectionPanel;
 
     @Inject
-    private SingletonBeans singletonBeans;
+    private Main main;
 
     @Override
     public void onModuleLoad() {
@@ -46,25 +37,7 @@ public class App implements EntryPoint {
 
     @PostConstruct
     public void init() {
-        body().add(ui);
-        DomGlobal.console.log(textResource.helloWorldRelative().getText());
-
-        try {
-            textResource.helloWorldExternal().getText(new ResourceCallback<org.gwtproject.resources.client.TextResource>() {
-                @Override
-                public void onError(ResourceException e) {
-                    DomGlobal.alert("[Error] " + e.getMessage());
-                }
-
-                @Override
-                public void onSuccess(org.gwtproject.resources.client.TextResource textResource) {
-                    DomGlobal.console.log("external " + textResource.getText());
-                }
-            });
-        } catch (ResourceException e) {
-            DomGlobal.alert("[Error] " + e.getMessage());
-        }
-
+        DomGlobal.document.body.appendChild(main.element());
         initToast();
     }
 
@@ -88,5 +61,4 @@ public class App implements EntryPoint {
 
         DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
     }
-
 }

@@ -5,7 +5,5 @@ package org.treblereel.client.inject.named;
  * Created by treblereel 2/22/19
  */
 public interface Vehicle {
-
-
     String whoAmI();
 }

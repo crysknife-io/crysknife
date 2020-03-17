@@ -19,7 +19,41 @@
     <title>Template • TodoMVC</title>
 </head>
 <body>
-<div data-field="info" class="info" aria-placeholder="todoapp">
+<div data-field="root">
+
+    <pre class="prettyprint lang-java">
+    @Singleton\n
+    @Templated("templated.html")\n
+    public class TemplatedBean implements IsElement&lt;HTMLDivElement&gt; {\n
+    \n
+        @Inject\n
+        @DataField\n
+        private HTMLDivElement root;\n
+    \n
+        @Inject\n
+        @DataField\n
+        private HTMLButtonElement button;\n
+    \n
+        @Inject\n
+        @DataField\n
+        private HTMLButtonElement button1;\n
+    \n
+        @PostConstruct\n
+        public void init() {\n
+        button1.textContent = " PressMe";\n
+        }\n
+    \n
+        @EventHandler("button")\n
+        public void onClick(final ClickEvent e) {\n
+    \n
+        }\n
+    \n
+        public HTMLDivElement element() {\n
+        return root;\n
+        }\n
+    }\n
+    </pre>
+
     <p>Buttons</p>
     <button data-field="button" value="Submit">Button</button>
     <button data-field="button1">Button1</button>

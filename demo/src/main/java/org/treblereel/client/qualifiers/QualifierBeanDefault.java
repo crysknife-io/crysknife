@@ -14,7 +14,7 @@ import elemental2.dom.DomGlobal;
 public class QualifierBeanDefault implements QualifierBean {
 
     @Override
-    public void say() {
-        DomGlobal.console.log("QualifierBeanDefault");
+    public String say() {
+        return this.getClass().getSimpleName();
     }
 }

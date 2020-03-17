@@ -1,6 +1,26 @@
-<div class="form-group" data-field="form">
-    <label setfor="BeanWithCDIEvents" class="control-label">Bean with Event&lt;User&gt; and Event&lt;Address&gt;</label>
-    <input id="BeanWithCDIEvents" disabled="" class="form-control" style="width: 300px;" data-field="textBox">
-    <button class="btn btn-default" data-field="sendUserEvent">User event</button>
-    <button class="btn btn-default" data-field="sendAddressEvent">Address event</button>
+<div data-field="root">
+
+    <span>Send:</span>
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    protected Event&lt;Address&gt; eventAddress;\n
+        .....\n
+     \n
+    eventAddress.fire(new Address());\n
+    \n
+    </pre>
+
+    <span>Receive:</span>
+    <pre class="prettyprint lang-java">
+    void onAddressEvent(@Observes Address address) {\n
+    }\n
+    </pre>
+
+
+    <div class="form-group" data-field="form">
+        <label setfor="BeanWithCDIEvents" class="control-label">Bean with Event&lt;User&gt; and Event&lt;Address&gt;</label>
+        <input id="BeanWithCDIEvents" disabled="" class="form-control" style="width: 300px;" data-field="textBox">
+        <button class="btn btn-default" data-field="sendUserEvent">User event</button>
+        <button class="btn btn-default" data-field="sendAddressEvent">Address event</button>
+    </div>
 </div>

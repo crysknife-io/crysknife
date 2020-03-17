@@ -1,4 +1,4 @@
-package org.treblereel.client;
+package org.treblereel.client.dependent;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -16,12 +16,14 @@ import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.annotation.DataField;
 import org.treblereel.gwt.crysknife.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
 @Singleton
+@Page(path = "dependent")
 @Templated(value = "dependentbeans.html")
 public class DependentBeans implements IsElement<HTMLDivElement> {
 

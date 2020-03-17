@@ -13,8 +13,8 @@ import elemental2.dom.DomGlobal;
 public class QualifierBeanTwo implements QualifierBean {
 
     @Override
-    public void say() {
-        DomGlobal.console.log("QualifierBeanTwo");
+    public String say() {
+        return this.getClass().getSimpleName();
     }
 
 }
