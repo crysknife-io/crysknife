@@ -123,9 +123,12 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
         HTML_ELEMENTS.put(HTMLVideoElement.class, "video");
     }
 
+    public Elemenatal2FactoryGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        this.iocContext = iocContext;
+    public void register() {
         HTML_ELEMENTS.keySet().forEach(clazz -> {
             iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
             iocContext.getBlacklist().add(clazz.getCanonicalName());
