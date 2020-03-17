@@ -5,7 +5,7 @@ package org.treblereel.gwt.crysknife.generator;
  * Created by treblereel 3/4/19
  */
 public enum WiringElementType {
-    DEPENDENT_BEAN,
+    BEAN,
     METHOD_DECORATOR,
     CLASS_DECORATOR,
     PRODUCER_ELEMENT,

@@ -8,8 +8,6 @@ import javax.tools.JavaFileObject;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.expr.LiteralExpr;
-import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import org.treblereel.gwt.crysknife.client.Reflect;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;

@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -24,6 +25,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.BeanIOCGenerator;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
@@ -71,20 +73,20 @@ public class BeanDefinition extends Definition {
         }
     }
 
+    public void setGenerator(IOCGenerator iocGenerator) {
+        if (iocGenerator == null) {
+            throw new GenerationException("Unable to set generator for " + this.toString());
+        } else {
+            this.generator = Optional.of(iocGenerator);
+        }
+    }
+
     public void generateDecorators(ClassBuilder builder) {
         super.generateDecorators(builder);
 
         executableDefinitions.forEach((gen, defs) -> defs.forEach(def -> {
             gen.generateBeanFactory(builder, def);
         }));
-    }
-
-    public void setGenerator(IOCGenerator iocGenerator) {
-        if (iocGenerator == null) {
-            throw new Error("Unable to set generator for " + this.toString());
-        } else {
-            this.generator = Optional.of(iocGenerator);
-        }
     }
 
     public Expression generateBeanCall(IOCContext context, ClassBuilder builder, FieldPoint fieldPoint) {
@@ -101,17 +103,20 @@ public class BeanDefinition extends Definition {
                                                                              fieldPoint.getType().getQualifiedName().toString()));
                 return new ObjectCreationExpr().setType(new ClassOrInterfaceType()
                                                                 .setName(fieldPoint.getType().getQualifiedName().toString()));
+            } else if (fieldPoint.isNamed()) {
+                TypeElement named = context.getQualifiers().get(element).get(fieldPoint.getNamed()).element;
+                return context.getBean(named).generateBeanCall(context, builder, fieldPoint);
             }
-            throw new Error("Unable to find generator for " + getQualifiedName());
+            throw new GenerationException("Unable to find generator for " + getQualifiedName());
         }
     }
 
     private boolean maybeProcessableAsCommonBean(TypeElement candidate) {
         if (candidate.getKind().isClass() && !candidate.getModifiers().contains(Modifier.ABSTRACT)
                 && candidate.getModifiers().contains(Modifier.PUBLIC)) {
-            long count = candidate.getEnclosedElements().stream().filter(elm -> {
-                return elm.getKind().equals(ElementKind.CONSTRUCTOR);
-            }).filter(elm -> MoreElements.asExecutable(elm).getParameters().size() == 0)
+            long count = candidate.getEnclosedElements().stream().filter(elm -> elm.getKind().equals(ElementKind.CONSTRUCTOR))
+                    .filter(elm -> MoreElements.asExecutable(elm)
+                            .getParameters().isEmpty())
                     .filter(elm -> elm.getModifiers().contains(Modifier.PUBLIC)).count();
             if (count == 1) {
                 return true;
@@ -126,12 +131,7 @@ public class BeanDefinition extends Definition {
             if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
                     || mem.getKind().equals(ElementKind.FIELD))) {
                 if (mem.getModifiers().contains(Modifier.STATIC)) {
-                    context.getGenerationContext()
-                            .getProcessingEnvironment()
-                            .getMessager()
-                            .printMessage(Diagnostic.Kind.ERROR,
-                                          String.format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
-                    throw new Error();
+                    throw new GenerationException(String.format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
                 }
                 if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
                     ExecutableElement elms = MoreElements.asExecutable(mem);
@@ -149,44 +149,43 @@ public class BeanDefinition extends Definition {
         });
     }
 
+    public String getQualifiedName() {
+        return qualifiedName;
+    }
+
     //TODO refactoring needed here
     private FieldPoint parseField(Element type, IOCContext context) {
+
         FieldPoint field = FieldPoint.of(MoreElements.asVariable(type));
-        if (context.getQualifiers().containsKey(field.getType())) {
-            BeanDefinition bean = null;
-            if (field.isNamed()) {
-                bean = context.getQualifiers().get(field.getType()).get(field.getNamed());
-            } else {
-                for (AnnotationMirror mirror : context.getGenerationContext()
-                        .getProcessingEnvironment()
-                        .getElementUtils()
-                        .getAllAnnotationMirrors(type)) {
-                    bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
-                }
+        BeanDefinition bean = null;
+
+        if (field.isNamed()) {
+            context.getTypeElementsByAnnotation(Named.class.getCanonicalName())
+                    .stream().filter(named -> named.getAnnotation(Named.class).value().equals(field.getNamed()))
+                    .findAny().ifPresent(elm -> getDependsOn().add(context.getBeanDefinitionOrCreateAndReturn(elm)));
+            bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
+        } else if (context.getQualifiers().containsKey(field.getType())) {
+            for (AnnotationMirror mirror : context.getGenerationContext().getElements()
+                    .getAllAnnotationMirrors(type)) {
+                bean = context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
             }
-            if (bean != null) {
-                dependsOn.add(bean);
-                field.setType(bean.getType());
-            }
-        } else if (!field.isNamed()) {
-            BeanDefinition fieldBeanDefinition = context.getBeanDefinitionOrCreateAndReturn(field.getType());
-            dependsOn.add(fieldBeanDefinition);
+        } else {
+            bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
+        }
+
+        if (bean != null) {
+            dependsOn.add(bean);
+            field.setType(bean.getType());
         }
         return field;
     }
 
-    @Override
-    public String toString() {
-        return "BeanDefinition {" +
-                " generator = [ " + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]" +
-                " ] , element= [" + element +
-                " ] , dependsOn= [ " + dependsOn.stream().map(m -> Utils.getQualifiedName(m.element)).collect(Collectors.joining(", ")) +
-                " ] , executables= [ " + executableDefinitions.values().stream().map(Object::toString).collect(Collectors.joining(", ")) +
-                " ]}";
-    }
-
     public Set<BeanDefinition> getDependsOn() {
         return dependsOn;
+    }
+
+    public TypeElement getType() {
+        return element;
     }
 
     @Override
@@ -206,16 +205,22 @@ public class BeanDefinition extends Definition {
         return Objects.equals(Utils.getQualifiedName(element), Utils.getQualifiedName(that.element));
     }
 
+    @Override
+    public String toString() {
+        return "BeanDefinition {" +
+                " generator = [ " + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]" +
+                " ] , element= [" + element +
+                " ] , dependsOn= [ " + dependsOn.stream().map(m -> Utils.getQualifiedName(m.element)).collect(Collectors.joining(", ")) +
+                " ] , executables= [ " + executableDefinitions.values().stream().map(Object::toString).collect(Collectors.joining(", ")) +
+                " ]}";
+    }
+
     public String getClassName() {
         return className;
     }
 
     public String getPackageName() {
         return packageName;
-    }
-
-    public String getQualifiedName() {
-        return qualifiedName;
     }
 
     public Map<IOCGenerator, Set<ExecutableDefinition>> getExecutableDefinitions() {
@@ -228,10 +233,6 @@ public class BeanDefinition extends Definition {
 
     public List<FieldPoint> getFieldInjectionPoints() {
         return fieldInjectionPoints;
-    }
-
-    public TypeElement getType() {
-        return element;
     }
 
     public Set<DeclaredType> getDeclaredTypes() {
@@ -250,14 +251,11 @@ public class BeanDefinition extends Definition {
 
         private BeanDefinition beanDefinition;
 
-        private Elements elements;
-
         private IOCContext context;
 
         BeanDefinitionBuilder(TypeElement element, IOCContext context) {
             this.context = context;
             this.beanDefinition = new BeanDefinition(element);
-            this.elements = context.getGenerationContext().getElements();
         }
 
         public BeanDefinition build() {

@@ -114,6 +114,12 @@ public class ClassBuilder {
         return getClassDeclaration().getImplementedTypes();
     }
 
+    public FieldDeclaration addFieldWithInitializer(Type type, String name, Expression initializer, Modifier.Keyword... modifiers) {
+        FieldDeclaration fieldDeclaration = getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
+        fields.put(name, fieldDeclaration);
+        return fieldDeclaration;
+    }
+
     public FieldDeclaration addFieldWithInitializer(String type, String name, Expression initializer, Modifier.Keyword... modifiers) {
         FieldDeclaration fieldDeclaration = getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
         fields.put(name, fieldDeclaration);

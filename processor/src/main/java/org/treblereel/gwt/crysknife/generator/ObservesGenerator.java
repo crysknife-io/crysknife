@@ -17,6 +17,7 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import org.treblereel.gwt.crysknife.annotation.Generator;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
@@ -29,8 +30,12 @@ import org.treblereel.gwt.crysknife.generator.definition.ExecutableDefinition;
 @Generator(priority = 1000)
 public class ObservesGenerator extends IOCGenerator {
 
+    public ObservesGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
+    public void register() {
         iocContext.register(Observes.class, WiringElementType.PARAMETER, this);
     }
 
@@ -41,7 +46,7 @@ public class ObservesGenerator extends IOCGenerator {
 
             ExecutableElement method = methodDefinition.getExecutableElement();
             if (method.getParameters().size() > 1) {
-                throw new Error("Method annotated with @Observes must contains only one param " + method.getEnclosingElement() + " " + method);
+                throw new GenerationException("Method annotated with @Observes must contains only one param " + method.getEnclosingElement() + " " + method);
             }
 
             classBuilder.getClassCompilationUnit().addImport(Consumer.class);

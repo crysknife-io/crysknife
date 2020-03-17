@@ -1,9 +1,10 @@
-package org.treblereel.gwt.crysknife.generator;
+package org.treblereel.gwt.crysknife.generator.scanner;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Default;
@@ -14,10 +15,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import org.treblereel.gwt.crysknife.exception.GenerationException;
+import org.treblereel.gwt.crysknife.generator.IOCGenerator;
+import org.treblereel.gwt.crysknife.generator.WiringElementType;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
-import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -27,13 +30,24 @@ public class ComponentInjectionResolverScanner {
 
     private final IOCContext iocContext;
 
-    private Set<TypeElement> unmanaged = new HashSet<>();
+    private Set<TypeElement> dependentBeans = new HashSet<>();
 
     public ComponentInjectionResolverScanner(IOCContext iocContext) {
         this.iocContext = iocContext;
     }
 
     public void scan() {
+
+        Set<String> annotations =  iocContext.getGenerators()
+                .entries()
+                .stream()
+                .filter(elm -> elm.getKey().wiringElementType.equals(WiringElementType.BEAN))
+                .map(elm -> elm.getKey().annotation)
+                .collect(Collectors.toSet());
+
+        annotations.forEach(annotation -> iocContext.getTypeElementsByAnnotation(annotation)
+                .forEach(bean -> iocContext.getBeanDefinitionOrCreateAndReturn(bean)));
+
         iocContext.getBeans().forEach((type, bean) -> {
             for (FieldPoint field : bean.getFieldInjectionPoints()) {
                 processFieldInjectionPoint(field, bean);
@@ -57,16 +71,16 @@ public class ComponentInjectionResolverScanner {
 
         IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Dependent.class.getCanonicalName(),
                                                                            type,
-                                                                           WiringElementType.DEPENDENT_BEAN);
+                                                                           WiringElementType.BEAN);
 
-        unmanaged.forEach(bean -> {
+        dependentBeans.forEach(bean -> {
             BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(bean);
             if (iocContext.getGenerators().get(meta).stream().findFirst().isPresent()) {
                 IOCGenerator gen = iocContext.getGenerators().get(meta).stream().findFirst().get();
                 beanDefinition.setGenerator(gen);
                 iocContext.getBeans().put(bean, beanDefinition);
             } else {
-                throw new Error("Unable to find generator based on meta " + meta.toString());
+                throw new GenerationException("Unable to find generator based on meta " + meta.toString());
             }
         });
     }
@@ -96,7 +110,7 @@ public class ComponentInjectionResolverScanner {
             field.setType(beanDefinition.getType());
         }
         if (!iocContext.getBeans().containsKey(field.getType())) {
-            unmanaged.add(field.getType());
+            dependentBeans.add(field.getType());
         }
     }
 

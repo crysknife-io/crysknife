@@ -20,14 +20,17 @@ import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 3/2/19
  */
-@Generator(priority = 100)
+@Generator(priority = 1)
 public class SingletonGenerator extends ScopedBeanGenerator {
 
+    public SingletonGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
+
     @Override
-    public void register(IOCContext iocContext) {
-        iocContext.register(Singleton.class, WiringElementType.DEPENDENT_BEAN, this);
-        iocContext.register(ApplicationScoped.class, WiringElementType.DEPENDENT_BEAN, this);
-        this.iocContext = iocContext;
+    public void register() {
+        iocContext.register(Singleton.class, WiringElementType.BEAN, this);
+        iocContext.register(ApplicationScoped.class, WiringElementType.BEAN, this);
     }
 
     @Override

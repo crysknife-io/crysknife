@@ -35,12 +35,14 @@ import org.treblereel.gwt.crysknife.util.Utils;
 @Generator(priority = 999)
 public class EventProducerGenerator extends ScopedBeanGenerator {
 
-    @Override
-    public void register(IOCContext iocContext) {
-        iocContext.register(Inject.class, Event.class, WiringElementType.DEPENDENT_BEAN, this);
-        iocContext.getBlacklist().add(Event.class.getCanonicalName());
+    public EventProducerGenerator(IOCContext iocContext) {
+        super(iocContext);
+    }
 
-        this.iocContext = iocContext;
+    @Override
+    public void register() {
+        iocContext.register(Inject.class, Event.class, WiringElementType.BEAN, this);
+        iocContext.getBlacklist().add(Event.class.getCanonicalName());
 
         TypeElement type = iocContext.getGenerationContext().getElements().getTypeElement(Event.class.getCanonicalName());
         BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);

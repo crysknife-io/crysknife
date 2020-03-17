@@ -24,4 +24,13 @@ public class ConstructorPoint extends Point {
     public List<FieldPoint> getArguments() {
         return arguments;
     }
+
+    @Override
+    public String toString() {
+        return "ConstructorPoint{" +
+                "arguments=" + arguments +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                '}';
+    }
 }

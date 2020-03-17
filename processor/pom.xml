@@ -126,6 +126,7 @@
                 <filter>
                   <excludes>
                     <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
+                    <exclude>org/treblereel/gwt/crysknife/logger/**</exclude>
                   </excludes>
                 </filter>
                 <filter>

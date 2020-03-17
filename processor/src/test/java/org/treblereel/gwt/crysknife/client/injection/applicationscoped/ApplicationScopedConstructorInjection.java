@@ -1,5 +1,6 @@
 package org.treblereel.gwt.crysknife.client.injection.applicationscoped;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -7,12 +8,12 @@ import javax.inject.Singleton;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 5/21/19
  */
-@Singleton
+@ApplicationScoped
 public class ApplicationScopedConstructorInjection {
 
     public ApplicationScopedBean bean;
 
-    @Inject
+    //@Inject
     public ApplicationScopedBean bean2;
 
     @Inject

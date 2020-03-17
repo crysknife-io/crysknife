@@ -1,6 +1,5 @@
 package org.treblereel.gwt.crysknife.client;
 
-import elemental2.dom.DomGlobal;
 import jsinterop.base.Js;
 
 /**
@@ -17,7 +16,6 @@ public final class ProxySetInterceptor implements SetFN {
 
     @Override
     public boolean onInvoke(Object object, String objectKey, Object value) {
-        DomGlobal.console.debug("invoked set [" + value + "] +interceptor [" + objectKey + "] for [" + target.getClass().getCanonicalName() + "]");
         Js.asPropertyMap(object).set(objectKey, value);
         return true;
     }

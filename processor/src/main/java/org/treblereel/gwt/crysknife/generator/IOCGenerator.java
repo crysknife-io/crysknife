@@ -10,8 +10,22 @@ import org.treblereel.gwt.crysknife.generator.definition.Definition;
  */
 public abstract class IOCGenerator {
 
-    public abstract void register(IOCContext iocContext);
+    protected final IOCContext iocContext;
+
+    public IOCGenerator(IOCContext iocContext) {
+        this.iocContext = iocContext;
+    }
+
+    public abstract void register();
 
     public abstract void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition);
+
+    public void before() {
+
+    }
+
+    public void after() {
+
+    }
 
 }

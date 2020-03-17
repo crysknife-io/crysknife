@@ -23,7 +23,6 @@ public class InstanceImpl<T> implements Instance<T> {
 
     @Override
     public void destroy(T var1) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
