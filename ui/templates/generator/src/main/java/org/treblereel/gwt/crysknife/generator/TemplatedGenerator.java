@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -159,6 +158,7 @@ import org.gwtproject.event.dom.client.TouchMoveEvent;
 import org.gwtproject.event.dom.client.TouchStartEvent;
 import org.gwtproject.resources.client.ClientBundle;
 import org.gwtproject.resources.client.CssResource;
+import org.gwtproject.resources.client.Resource;
 import org.gwtproject.resources.context.AptContext;
 import org.gwtproject.resources.ext.ResourceOracle;
 import org.gwtproject.resources.rg.resource.impl.ResourceOracleImpl;
