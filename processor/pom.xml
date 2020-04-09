@@ -130,9 +130,16 @@
                   </excludes>
                 </filter>
                 <filter>
-                  <artifact>*:*:*:*</artifact>
+                  <artifact>*:*</artifact>
                   <excludes>
                     <exclude>**/*.java</exclude>
+                    <exclude>jsinterop/base/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>com.google.jsinterop:base</artifact>
+                  <excludes>
+                    <exclude>jsinterop/base/**</exclude>
                   </excludes>
                 </filter>
               </filters>
