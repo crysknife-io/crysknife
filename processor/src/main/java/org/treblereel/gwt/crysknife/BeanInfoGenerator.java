@@ -45,11 +45,61 @@ public class BeanInfoGenerator {
         JavaFileObject builderFile = generationContext.getProcessingEnvironment().getFiler()
                 .createSourceFile(bean.getQualifiedName() + "Info");
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-            out.append(new BeanInfoGenerator.BeanInfoGeneratorBuilder(bean).build().toString());
+            out.append(generate(bean));
         }
     }
 
-    public class BeanInfoGeneratorBuilder {
+    private String generate(BeanDefinition bean) {
+        if (generationContext.isGwt2()) {
+            return new BeanInfoGenerator.BeanInfoJsniGeneratorBuilder(bean).build();
+        } else {
+            return new BeanInfoGenerator.BeanInfoGeneratorBuilder(bean).build().toString();
+        }
+    }
+
+    private class BeanInfoJsniGeneratorBuilder {
+
+        private final BeanDefinition bean;
+        private final StringBuilder clazz = new StringBuilder();
+        private final String newLine = System.lineSeparator();
+
+        public BeanInfoJsniGeneratorBuilder(BeanDefinition bean) {
+            this.bean = bean;
+        }
+
+        public String build() {
+            initClass();
+            addFields();
+            return clazz.append(newLine).append("}").toString();
+        }
+
+        private void initClass() {
+            clazz.append("package ").append(bean.getPackageName()).append(";");
+            clazz.append(newLine);
+            clazz.append("class ").append(bean.getClassName())
+                    .append("Info").append(" {");
+        }
+
+        private void addFields() {
+            for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
+                clazz.append(newLine);
+                clazz.append("public native void ")
+                        .append(fieldPoint.getName())
+                        .append("(");
+                clazz.append(bean.getClassName()).append(" ").append(" instance").append(",");
+                clazz.append("Object").append(" ").append(" value").append(")/*-{");
+                clazz.append(newLine);
+
+                clazz.append("    ")
+                        .append("instance.").append(bean.getQualifiedName())
+                        .append("::").append(fieldPoint.getName()).append("=").append("value;");
+
+                clazz.append(newLine).append("}-*/;");
+            }
+        }
+    }
+
+    private class BeanInfoGeneratorBuilder {
 
         private final BeanDefinition bean;
         private CompilationUnit clazz = new CompilationUnit();
@@ -65,6 +115,12 @@ public class BeanInfoGenerator {
             return clazz;
         }
 
+        private void initClass() {
+            clazz.setPackageDeclaration(bean.getPackageName());
+            classDeclaration = clazz.addClass(bean.getClassName() + "Info");
+            clazz.addImport(Reflect.class);
+        }
+
         private void addFields() {
             for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
                 classDeclaration.addFieldWithInitializer(String.class,
@@ -74,12 +130,6 @@ public class BeanInfoGenerator {
                                                          Modifier.Keyword.FINAL,
                                                          Modifier.Keyword.STATIC);
             }
-        }
-
-        private void initClass() {
-            clazz.setPackageDeclaration(bean.getPackageName());
-            classDeclaration = clazz.addClass(bean.getClassName() + "Info");
-            clazz.addImport(Reflect.class);
         }
     }
 }

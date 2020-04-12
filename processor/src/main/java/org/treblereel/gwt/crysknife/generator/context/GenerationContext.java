@@ -11,6 +11,8 @@ import javax.lang.model.util.Types;
  */
 public class GenerationContext {
 
+    private boolean isGwt2 = true;
+
     private final RoundEnvironment roundEnvironment;
 
     private final ProcessingEnvironment processingEnvironment;
@@ -35,5 +37,9 @@ public class GenerationContext {
 
     public ProcessingEnvironment getProcessingEnvironment() {
         return processingEnvironment;
+    }
+
+    public boolean isGwt2() {
+        return isGwt2;
     }
 }
