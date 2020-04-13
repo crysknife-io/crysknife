@@ -123,11 +123,11 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     protected Expression getFieldAccessorExpression(ClassBuilder classBuilder, BeanDefinition beanDefinition, FieldPoint fieldPoint) {
         if (iocContext.getGenerationContext().isGwt2()) {
-            return new AssignExpr().setTarget(new FieldAccessExpr(new FieldAccessExpr(
-                    new ThisExpr(), "instance"), fieldPoint.getName()))
-                    .setValue(iocContext.getBeans()
-                                      .get(fieldPoint.getType())
-                                      .generateBeanCall(iocContext, classBuilder, fieldPoint));
+            return new MethodCallExpr(beanDefinition.getClassName() + "Info." + fieldPoint.getName()).addArgument(
+                    new FieldAccessExpr(
+                            new ThisExpr(), "instance")).addArgument(iocContext.getBeans()
+                                                                             .get(fieldPoint.getType())
+                                                                             .generateBeanCall(iocContext, classBuilder, fieldPoint));
         }
 
         FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(

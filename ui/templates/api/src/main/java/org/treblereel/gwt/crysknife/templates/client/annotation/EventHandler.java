@@ -1,4 +1,4 @@
-package org.treblereel.gwt.crysknife.annotation;
+package org.treblereel.gwt.crysknife.templates.client.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

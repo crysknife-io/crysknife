@@ -176,7 +176,6 @@ import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
 import org.jboss.gwt.elemento.processor.context.RootElementInfo;
 import org.jboss.gwt.elemento.processor.context.StyleSheet;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
-import org.jboss.gwt.elemento.template.TemplateUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -184,11 +183,6 @@ import org.jsoup.select.Elements;
 import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
 import org.lesscss.LessSource;
-import org.treblereel.gwt.crysknife.annotation.DataField;
-import org.treblereel.gwt.crysknife.annotation.EventHandler;
-import org.treblereel.gwt.crysknife.annotation.ForEvent;
-import org.treblereel.gwt.crysknife.annotation.Generator;
-import org.treblereel.gwt.crysknife.annotation.Templated;
 import org.treblereel.gwt.crysknife.client.Reflect;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -196,6 +190,12 @@ import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.templates.client.StyleInjector;
+import org.treblereel.gwt.crysknife.templates.client.TemplateUtil;
+import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
+import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.templates.client.annotation.ForEvent;
+import org.treblereel.gwt.crysknife.annotation.Generator;
+import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 import static java.util.Arrays.asList;
@@ -603,17 +603,22 @@ public class TemplatedGenerator extends IOCGenerator {
                         .addArgument(new StringLiteralExpr(element.getName()));
             }
 
-            MethodCallExpr fieldSetCallExpr = new MethodCallExpr(
-                    new MethodCallExpr(
-                            new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
-                            .addArgument("instance"), "set")
-                    .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-                                         .addArgument(new StringLiteralExpr(
-                                                 Utils.getJsFieldName(getVariableElement(element.getName()))))
-                                         .addArgument("instance"))
-                    .addArgument(resolveElement);
+            MethodCallExpr fieldSetCallExpr;
+            if (iocContext.getGenerationContext().isGwt2()) {
+                fieldSetCallExpr = new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+                                                      element.getName())
+                        .addArgument("instance");
+            } else {
+                fieldSetCallExpr = new MethodCallExpr(new MethodCallExpr(
+                        new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
+                                                              .addArgument("instance"), "set")
+                        .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+                                             .addArgument(new StringLiteralExpr(
+                                                     Utils.getJsFieldName(getVariableElement(element.getName()))))
+                                             .addArgument("instance"));
+            }
 
-            ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(fieldSetCallExpr));
+            ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(fieldSetCallExpr.addArgument(resolveElement)));
             ifStmt.setElseStmt(new BlockStmt().
                     addAndGetStatement(new MethodCallExpr(new ClassOrInterfaceType()
                                                                   .setName("TemplateUtil").getNameAsExpression(), "replaceElement")
@@ -632,6 +637,12 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
+        if (iocContext.getGenerationContext().isGwt2()) {
+            return new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+                                      field.getSimpleName().toString())
+                    .addArgument("instance");
+        }
+
         return new MethodCallExpr(
                 new MethodCallExpr(
                         new NameExpr(Js.class.getSimpleName()), "asPropertyMap")

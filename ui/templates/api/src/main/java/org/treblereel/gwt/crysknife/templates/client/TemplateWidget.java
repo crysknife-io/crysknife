@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.gwt.elemento.template;
+package org.treblereel.gwt.crysknife.templates.client;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -23,7 +23,6 @@ import org.gwtproject.dom.client.Element;
 import org.gwtproject.user.client.ui.Composite;
 import org.gwtproject.user.client.ui.Panel;
 import org.gwtproject.user.client.ui.Widget;
-import org.treblereel.gwt.crysknife.annotation.Templated;
 
 /**
  * Used to merge a {@link Templated} onto a {@link Composite} component.

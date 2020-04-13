@@ -4,6 +4,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -11,16 +12,22 @@ import javax.lang.model.util.Types;
  */
 public class GenerationContext {
 
-    private boolean isGwt2 = true;
-
     private final RoundEnvironment roundEnvironment;
-
     private final ProcessingEnvironment processingEnvironment;
+    private boolean isGwt2 = false;
 
     public GenerationContext(RoundEnvironment roundEnvironment,
                              ProcessingEnvironment processingEnvironment) {
         this.roundEnvironment = roundEnvironment;
         this.processingEnvironment = processingEnvironment;
+
+        try {
+            Class.forName("com.google.gwt.core.client.GWT");
+            isGwt2 = true;
+            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,"GWT2 generation mode.");
+        } catch (ClassNotFoundException e) {
+
+        }
     }
 
     public Elements getElements() {

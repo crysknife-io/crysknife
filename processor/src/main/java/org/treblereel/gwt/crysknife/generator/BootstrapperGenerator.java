@@ -55,11 +55,15 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     @Override
     public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
         clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
-        clazz.getClassCompilationUnit().addImport(Factory.class);
-        clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
-        clazz.getClassCompilationUnit().addImport(Provider.class);
-        clazz.getClassCompilationUnit().addImport(Reflect.class);
         clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
+
+        if(!iocContext.getGenerationContext().isGwt2()) {
+            clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
+            clazz.getClassCompilationUnit().addImport(Reflect.class);
+            clazz.getClassCompilationUnit().addImport(Factory.class);
+            clazz.getClassCompilationUnit().addImport(Provider.class);
+        }
+
         clazz.setClassName(beanDefinition.getType().getSimpleName().toString() + BOOTSTRAP_EXTENSION);
 
         clazz.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
