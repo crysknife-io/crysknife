@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <inherits name="javax.annotation.Annotation"/>
+    <inherits name="javax.enterprise.context.Enterprise"/>
+    <inherits name="javax.enterprise.event.Event"/>
+    <inherits name="javax.enterprise.inject.CDI"/>
+    <inherits name="javax.inject.Inject"/>
+</module>
