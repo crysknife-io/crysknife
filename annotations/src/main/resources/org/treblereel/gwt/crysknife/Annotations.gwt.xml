@@ -5,4 +5,5 @@
     <inherits name="javax.enterprise.event.Event"/>
     <inherits name="javax.enterprise.inject.CDI"/>
     <inherits name="javax.inject.Inject"/>
+    <source path="client"/>
 </module>

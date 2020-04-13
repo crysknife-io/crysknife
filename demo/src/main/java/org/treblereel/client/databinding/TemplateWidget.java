@@ -23,7 +23,7 @@ import org.gwtproject.dom.client.Element;
 import org.gwtproject.user.client.ui.Composite;
 import org.gwtproject.user.client.ui.Panel;
 import org.gwtproject.user.client.ui.Widget;
-import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
 
 /**
  * Used to merge a {@link Templated} onto a {@link Composite} component.

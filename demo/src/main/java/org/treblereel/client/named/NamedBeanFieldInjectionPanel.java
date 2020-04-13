@@ -1,7 +1,5 @@
 package org.treblereel.client.named;
 
-import java.util.function.Supplier;
-
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -12,11 +10,10 @@ import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MouseEvent;
 import org.jboss.elemento.IsElement;
 import org.treblereel.client.inject.named.Animal;
-import org.treblereel.gwt.crysknife.annotation.DataField;
-import org.treblereel.gwt.crysknife.annotation.EventHandler;
-import org.treblereel.gwt.crysknife.annotation.ForEvent;
-import org.treblereel.gwt.crysknife.annotation.Templated;
-import org.treblereel.gwt.crysknife.navigation.client.local.Page;
+import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
+import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.templates.client.annotation.ForEvent;
+import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
 
 /**
  * @author Dmitrii Tikhomirov

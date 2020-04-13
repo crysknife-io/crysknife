@@ -88,8 +88,8 @@ public class ApplicationProcessor extends AbstractProcessor {
         if (applications.size() == 0) {
             context.getProcessingEnvironment()
                     .getMessager()
-                    .printMessage(Diagnostic.Kind.ERROR, "No class annotated with @Application detected\"");
-            throw new GenerationException();
+                    .printMessage(Diagnostic.Kind.WARNING, "No class annotated with @Application detected\"");
+            return Optional.empty();
         }
 
         if (applications.size() > 1) {

@@ -13,9 +13,9 @@ import org.gwtproject.event.dom.client.ClickEvent;
 import org.jboss.elemento.IsElement;
 import org.treblereel.client.inject.DependentBean;
 import org.treblereel.client.resources.TextResource;
-import org.treblereel.gwt.crysknife.annotation.DataField;
-import org.treblereel.gwt.crysknife.annotation.EventHandler;
-import org.treblereel.gwt.crysknife.annotation.Templated;
+import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
+import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
+import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
 import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**

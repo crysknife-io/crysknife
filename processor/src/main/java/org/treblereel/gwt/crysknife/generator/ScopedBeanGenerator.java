@@ -50,7 +50,9 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
             initClassBuilder(clazz, beanDefinition);
 
-            generateInterceptorFieldDeclaration(clazz);
+            if (!iocContext.getGenerationContext().isGwt2()) {
+                generateInterceptorFieldDeclaration(clazz);
+            }
 
             generateInstanceGetMethodBuilder(clazz, beanDefinition);
 
@@ -97,9 +99,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
         beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
-
-            MethodCallExpr interceptor = getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint);
-            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(interceptor);
+            Expression expr = getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint);
+            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(expr);
         });
     }
 
@@ -120,7 +121,15 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         methodDeclaration.getBody().ifPresent(body -> body.getStatements().add(new ReturnStmt(newInstance)));
     }
 
-    protected MethodCallExpr getFieldAccessorExpression(ClassBuilder classBuilder, BeanDefinition beanDefinition, FieldPoint fieldPoint) {
+    protected Expression getFieldAccessorExpression(ClassBuilder classBuilder, BeanDefinition beanDefinition, FieldPoint fieldPoint) {
+        if (iocContext.getGenerationContext().isGwt2()) {
+            return new MethodCallExpr(beanDefinition.getClassName() + "Info." + fieldPoint.getName()).addArgument(
+                    new FieldAccessExpr(
+                            new ThisExpr(), "instance")).addArgument(iocContext.getBeans()
+                                                                             .get(fieldPoint.getType())
+                                                                             .generateBeanCall(iocContext, classBuilder, fieldPoint));
+        }
+
         FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(
                 new ThisExpr(), "interceptor");
 
@@ -148,8 +157,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     protected Expression generateInstanceInitializer(ClassBuilder classBuilder, BeanDefinition definition) {
 
         instance = new FieldAccessExpr(new ThisExpr(), "instance");
-        FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");
-
         ObjectCreationExpr newInstance = generateNewInstanceCreationExpr(definition);
 
         //TODO refactoring
@@ -161,15 +168,23 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             }
         }
 
-        ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
-        interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
-        interceptorCreationExpr.addArgument(newInstance);
+        Expression instanceFieldAssignExpr;
+        if (iocContext.getGenerationContext().isGwt2()) {
+            instanceFieldAssignExpr = newInstance;
+        } else {
+            FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");
 
-        classBuilder.getGetMethodDeclaration().getBody()
-                .get()
-                .addAndGetStatement(new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
+            ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
+            interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
+            interceptorCreationExpr.addArgument(newInstance);
 
-        return new AssignExpr().setTarget(instance).setValue(new MethodCallExpr(interceptor, "getProxy"));
+            classBuilder.getGetMethodDeclaration().getBody()
+                    .get()
+                    .addAndGetStatement(new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
+            instanceFieldAssignExpr = new MethodCallExpr(interceptor, "getProxy");
+        }
+
+        return new AssignExpr().setTarget(instance).setValue(instanceFieldAssignExpr);
     }
 
     protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {

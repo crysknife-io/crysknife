@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.gwt.elemento.template;
+package org.treblereel.gwt.crysknife.templates.client;
 
 import java.util.Collection;
 
