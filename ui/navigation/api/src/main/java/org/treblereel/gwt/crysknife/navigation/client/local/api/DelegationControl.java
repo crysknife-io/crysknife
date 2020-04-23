@@ -18,33 +18,28 @@ package org.treblereel.gwt.crysknife.navigation.client.local.api;
 
 import org.treblereel.gwt.crysknife.navigation.client.local.ContentDelegation;
 
-/**
- * Instances of this class are passed to the {@link ContentDelegation}.
- */
+/** Instances of this class are passed to the {@link ContentDelegation}. */
 public class DelegationControl {
 
-  private final Runnable runnable;
+    private final Runnable runnable;
 
-  private boolean hasRun;
+    private boolean hasRun;
 
-  public DelegationControl(final Runnable runnable) {
-    this.runnable = runnable;
-  }
-
-  /**
-   * Causes page navigation to proceed.
-   */
-  public void proceed() {
-    if (!hasRun) {
-      runnable.run();
-      hasRun = true;
+    public DelegationControl(Runnable runnable) {
+        this.runnable = runnable;
     }
-    else {
-      throw new IllegalStateException("proceed() method can only be called once.");
-    }
-  }
 
-  public boolean hasRun() {
-    return hasRun;
-  }
+    /** Causes page navigation to proceed. */
+    public void proceed() {
+        if (!hasRun) {
+            runnable.run();
+            hasRun = true;
+        } else {
+            throw new IllegalStateException("proceed() method can only be called once.");
+        }
+    }
+
+    public boolean hasRun() {
+        return hasRun;
+    }
 }

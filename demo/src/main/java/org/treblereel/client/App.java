@@ -13,6 +13,8 @@ import org.treblereel.client.named.NamedBeanConstructorInjectionPanel;
 import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
+import org.treblereel.gwt.crysknife.navigation.client.local.DefaultPage;
+import org.treblereel.gwt.crysknife.navigation.client.local.Navigation;
 
 @Application
 @ComponentScan("org.treblereel.client")
@@ -30,6 +32,9 @@ public class App implements EntryPoint {
     @Inject
     private Main main;
 
+    @Inject
+    private Navigation navigation;
+
     @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -39,6 +44,7 @@ public class App implements EntryPoint {
     public void init() {
         DomGlobal.document.body.appendChild(main.element());
         initToast();
+        navigation.goToWithRole(DefaultPage.class);
     }
 
     private void initToast() {

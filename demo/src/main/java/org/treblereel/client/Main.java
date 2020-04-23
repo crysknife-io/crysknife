@@ -27,7 +27,7 @@ public class Main implements IsElement<HTMLDivElement> {
 
     @PostConstruct
     public void init() {
-        container.appendChild(navigation.getContentPanel().element());
+        navigation.setNavigationContainer(container);
     }
 
     @Override

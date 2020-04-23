@@ -34,7 +34,7 @@ import org.treblereel.gwt.crysknife.navigation.client.local.api.NavigationContro
  *
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  */
-public interface PageNode<C> {
+public interface PageNode<P> {
 
   /**
    * Returns the name of this page.
@@ -57,83 +57,82 @@ public interface PageNode<C> {
    *          The callback that will receive the widget to display for this page. The Widget will have the same runtime
    *          type as returned by {@link #contentType()}, and will never be null.
    */
-  void produceContent(CreationalCallback<C> callback);
+  void produceContent(CreationalCallback<P> callback);
 
   /**
    * Returns the type of widget that this page node's {@link #produceContent(CreationalCallback)} method will produce.
    *
    * @return The type of widget that supplies this page's content. Never null.
    */
-  Class<C> contentType();
+  Class<P> contentType();
 
   /**
    * Called by the framework when this page node is about to be displayed in the navigation content panel.
    * <p>
    * If this method throws an exception when called, framework behaviour is undefined.
    *
-   * @param widget
-   *          the widget instance that was just returned from a call to {@link #produceContent(CreationalCallback)}.
+   * @param page
+   *          the page instance that was just returned from a call to {@link #produceContent(CreationalCallback)}.
    *          Never null.
    * @param state
    *          the state of the page, parsed from the history token on the URL. Never null.
    */
-  void pageShowing(C widget, HistoryToken state, NavigationControl control);
+  void pageShowing(P page, HistoryToken state, NavigationControl control);
 
   /**
    * Called by the framework when this page node was displayed in the navigation content panel.
    * <p>
    * If this method throws an exception when called, framework behaviour is undefined.
    *
-   * @param widget
-   *          the widget instance that was just returned from a call to {@link #produceContent(CreationalCallback)}.
+   * @param page
+   *          the page instance that was just returned from a call to {@link #produceContent(CreationalCallback)}.
    *          Never null.
    * @param state
    *          the state of the page, parsed from the history token on the URL. Never null.
    */
-  void pageShown(C widget, HistoryToken state);
+  void pageShown(P page, HistoryToken state);
 
   /**
    * Called by the framework when this page node is about to be removed from the navigation content panel.
    * <p>
    * If this method throws an exception when called, framework behaviour is undefined.
    *
-   * @param widget
-   *          the widget instance (which is currently in the navigation content panel) that was previously used in the
-   *          call to {@link #pageShowing(C, HistoryToken, NavigationControl)}. Never null.
+   * @param page
+   *          the page instance (which is currently in the navigation content panel) that was previously used in the
+   *          call to {@link #pageShowing(P, HistoryToken, NavigationControl)}. Never null.
    */
-  void pageHiding(C widget, NavigationControl control);
+  void pageHiding(P page, NavigationControl control);
 
   /**
    * Called by the framework after this page has been removed from the navigation content panel.
    * <p>
    * If this method throws an exception when called, framework behaviour is undefined.
    *
-   * @param widget
-   *          the widget instance (which was in the navigation content panel) that was previously used in the call to
-   *          {@link #pageShowing(C, HistoryToken, NavigationControl)}. Never null.
+   * @param page
+   *          the page instance (which was in the navigation content panel) that was previously used in the call to
+   *          {@link #pageShowing(P, HistoryToken, NavigationControl)}. Never null.
    */
-  void pageHidden(C widget);
+  void pageHidden(P page);
 
   /**
    * Called by the framework when this page node state was updated {@link Navigation#updateState(Multimap)}.
    * <p>
    * If this method throws an exception when called, framework behaviour is undefined.
    *
-   * @param widget
-   *          the widget instance that was just returned from a call to {@link #produceContent(CreationalCallback)}.
+   * @param page
+   *          the page instance that was just returned from a call to {@link #produceContent(CreationalCallback)}.
    *          Never null.
    * @param state
    *          the state of the page, parsed from the history token on the URL. Never null.
    */
-  void pageUpdate(C widget, HistoryToken state);
+  void pageUpdate(P page, HistoryToken state);
 
   /**
    * Used by the framework to destroy {@link Dependent} scoped beans after a page is no longer needed. For
    * {@link ApplicationScoped} beans this method is a noop.
    *
-   * @param widget
-   *          The widget instance that will be destroyed if it is a dependent-scoped bean. Never null.
+   * @param page
+   *          The page instance that will be destroyed if it is a dependent-scoped bean. Never null.
    */
-  void destroy(C widget);
-
+  void destroy(P page);
 }
