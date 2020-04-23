@@ -16,7 +16,8 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import org.jboss.elemento.IsElement;
+import elemental2.dom.HTMLElement;
+import org.jboss.elemento.ElementsBag;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationControl;
 
 /**
@@ -27,26 +28,26 @@ import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationContro
 public interface ContentDelegation {
 
     /**
-     * Called when the page is showing its content (setting the container widget).
+     * Called when the page is showing its content (setting the navigation container).
      *
-     * @param page the current page being shown.
-     * @param defaultContainer the default content container.
-     * @param widget the widget reference object for the page.
+     * @param page         the current page being shown.
+     * @param container    the navigation container.
+     * @param elements     the element(s) of the current page.
      * @param previousPage the previous page, <b>this can be null</b>.
-     * @param control the delegation control for proceeding navigation process.
+     * @param control      the delegation control for proceeding navigation process.
      */
-    void showContent(Object page, NavigatingContainer defaultContainer, IsElement widget, Object previousPage,
-                     DelegationControl control);
+    void showContent(Object page, HTMLElement container, ElementsBag elements, Object previousPage,
+            DelegationControl control);
 
     /**
-     * Called when the page is hiding its content (clearing container).
+     * Called when the page is hiding its content (clearing the navigation container).
      *
-     * @param page the current page being hidden.
-     * @param defaultContainer the default content container.
-     * @param widget the widget reference object for the page.
-     * @param nextPage potential next requested page, <b>this can be null</b>.
-     * @param control the delegation control for proceeding navigation process.
+     * @param page      the current page being hidden.
+     * @param container the navigation container.
+     * @param elements  the element(s) of the current page.
+     * @param nextPage  potential next requested page, <b>this can be null</b>.
+     * @param control   the delegation control for proceeding navigation process.
      */
-    void hideContent(Object page, NavigatingContainer defaultContainer, IsElement widget, Object nextPage,
-                     DelegationControl control);
+    void hideContent(Object page, HTMLElement container, ElementsBag elements, Object nextPage,
+            DelegationControl control);
 }

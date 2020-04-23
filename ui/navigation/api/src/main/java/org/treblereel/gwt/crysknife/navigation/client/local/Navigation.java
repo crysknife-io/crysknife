@@ -17,22 +17,23 @@
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
-import org.gwtproject.event.logical.shared.ValueChangeEvent;
-import org.gwtproject.event.logical.shared.ValueChangeHandler;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.window.client.Window;
+import org.jboss.elemento.By;
+import org.jboss.elemento.Elements;
+import org.jboss.elemento.ElementsBag;
 import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationControl;
@@ -43,13 +44,17 @@ import org.treblereel.gwt.crysknife.navigation.client.local.api.RedirectLoopExce
 import org.treblereel.gwt.crysknife.navigation.client.local.pushstate.PushStateUtil;
 import org.treblereel.gwt.crysknife.navigation.client.local.spi.NavigationGraph;
 import org.treblereel.gwt.crysknife.navigation.client.local.spi.PageNode;
-import org.treblereel.gwt.crysknife.navigation.client.shared.NavigationEvent;
+
+import static elemental2.dom.DomGlobal.console;
+import static elemental2.dom.DomGlobal.document;
+import static org.jboss.elemento.Elements.removeChildrenFrom;
 
 /**
  * Central control point for navigating between pages of the application.
  * <p>
  * Configuration is decentralized: it is based on fields and annotations present in other application classes. This
  * configuration is gathered at compile time.
+ *
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  * @see Page
  * @see PageState
@@ -61,39 +66,17 @@ import org.treblereel.gwt.crysknife.navigation.client.shared.NavigationEvent;
 @ApplicationScoped
 public class Navigation {
 
-    /**
-     * Maximum number of successive redirects until Errai suspects an endless loop.
-     */
-    final static int MAXIMUM_REDIRECTS = 99;
-    private final NavigatingContainer navigatingContainer = new DefaultNavigatingContainer();
-    /**
-     * Queued navigation requests which could not handled immediately.
-     */
-    private final Queue<Request> queuedRequests = new LinkedList<>();
-    protected PageNode<Object> currentPage;
-    protected Object currentComponent;
-    protected IsElement currentWidget;
-    protected HistoryToken currentPageToken;
-    protected ContentDelegation contentDelegation = new DefaultContentDelegation();
-    private PageNavigationErrorHandler navigationErrorHandler;
-    private HandlerRegistration historyHandlerRegistration;
-    /**
-     * Indicates that a navigation request is currently processed.
-     */
-    private boolean locked = false;
-    private int redirectDepth = 0;
-    @Inject
-    private NavigationGraph navGraph;
-    @Inject
-    private HistoryTokenFactory historyTokenFactory;
-    @Inject
-    private Event<NavigationEvent> event;
+    // ------------------------------------------------------ static
+
+    /** Maximum number of successive redirects until Errai suspects an endless loop. */
+    private final static int MAXIMUM_REDIRECTS = 99;
 
     /**
      * Gets the application context used in pushstate URL paths. This application context should match the deployed
      * application context in your web.xml
-     * @return The application context. This may return the empty String (but never null). If non-empty, the return value
-     * always starts with a slash and never ends with one.
+     *
+     * @return The application context. This may return the empty string (but never null). If non-empty, the return
+     * value always starts with a slash and never ends with one.
      */
     public static String getAppContext() {
         if (PushStateUtil.isPushStateActivated()) {
@@ -106,6 +89,7 @@ public class Navigation {
     /**
      * Sets the application context used in pushstate URL paths. This application context should match the deployed
      * application context in your web.xml
+     *
      * @param path The context path. Never null.
      */
     public static void setAppContext(String path) {
@@ -117,25 +101,44 @@ public class Navigation {
     }
 
     private static String getAppContextFromHostPage() {
-        String context = getRawAppContextFromHostPage();
-        if (!context.isEmpty() && !context.startsWith("/")) {
+        String context = Js.uncheckedCast(Js.asPropertyMap(DomGlobal.window).get("erraiApplicationWebContext"));
+        context = context == null ? "" : context;
+        if (!context.startsWith("/")) {
             context = "/" + context;
         }
         if (context.endsWith("/")) {
             context = context.substring(0, context.length() - 1);
         }
-
         return context;
     }
 
-    private static String getRawAppContextFromHostPage() {
-        String erraiApplicationWebContext = Js.uncheckedCast(Js.asPropertyMap(DomGlobal.window).get("erraiApplicationWebContext"));
-        if (erraiApplicationWebContext != null || erraiApplicationWebContext.isEmpty()) {
-            return "";
-        } else {
-            return erraiApplicationWebContext;
-        }
-    }
+    // ------------------------------------------------------ instance
+
+    // Queued navigation requests which could not handled immediately.
+    private final Queue<Request<?>> queuedRequests = new LinkedList<>();
+    private boolean locked = false;
+    private int redirectDepth = 0;
+
+    // @Inject
+    // @NavigationSelector
+    private By navigationContainerSelector;
+    private HTMLElement navigationContainer;
+
+    private PageNode<Object> currentNode;
+    private Object currentPage;
+    private ElementsBag currentElements;
+    private HistoryToken currentToken;
+
+    private ContentDelegation contentDelegation = new DefaultContentDelegation();
+    private PageNavigationErrorHandler navigationErrorHandler;
+    private HandlerRegistration historyHandlerRegistration;
+
+    @Inject
+    private NavigationGraph navGraph;
+    @Inject
+    private HistoryTokenFactory historyTokenFactory;
+
+    // ------------------------------------------------------ setup & tear down
 
     @PostConstruct
     void init() {
@@ -143,51 +146,44 @@ public class Navigation {
             return;
         }
 
-        final String hash = Window.Location.getHash();
-
+        String hash = Window.Location.getHash();
         navigationErrorHandler = new DefaultNavigationErrorHandler(this);
-
-        historyHandlerRegistration = HistoryWrapper.addValueChangeHandler(new ValueChangeHandler<String>() {
-            @Override
-            public void onValueChange(final ValueChangeEvent<String> event) {
-                HistoryToken token = null;
-                try {
-                    DomGlobal.console.debug("URL value changed to " + event.getValue());
-                    if (needsApplicationContext()) {
-                        final String context = inferAppContext(event.getValue());
-                        DomGlobal.console.info("No application context defined. Inferring application context as "
-                                                       + context
-                                                       + ". Change this value by setting the variable \"erraiApplicationWebContext\" in your GWT host page"
-                                                       + ", or calling Navigation.setAppContext.");
-                        setAppContext(context);
-                    }
-                    token = historyTokenFactory.parseURL(event.getValue());
-                    if (currentPage == null || !token.equals(currentPageToken)) {
-                        final PageNode<IsElement> toPage = navGraph.getPage(token.getPageName());
-                        navigate(new Request<>(toPage, token), false);
-                    }
-                } catch (final Exception e) {
-                    if (token == null) {
-                        navigationErrorHandler.handleInvalidURLError(e, event.getValue());
-                    } else {
-                        navigationErrorHandler.handleInvalidPageNameError(e, token.getPageName());
-                    }
+        historyHandlerRegistration = HistoryWrapper.addValueChangeHandler(event -> {
+            HistoryToken token = null;
+            try {
+                console.debug("URL value changed to " + event.getValue());
+                if (needsApplicationContext()) {
+                    String context = inferAppContext(event.getValue());
+                    console.info("No application context defined. Inferring application context as " +
+                            context + ". Change this value by setting the variable \"erraiApplicationWebContext\" " +
+                            "in your GWT host page, or calling Navigation.setAppContext(String).");
+                    setAppContext(context);
+                }
+                token = historyTokenFactory.parseURL(event.getValue());
+                if (currentNode == null || !token.equals(currentToken)) {
+                    PageNode<Object> toPage = navGraph.getPage(token.getPageName());
+                    navigate(new Request<>(toPage, token), false);
+                }
+            } catch (final Exception e) {
+                if (token == null) {
+                    navigationErrorHandler.handleInvalidURLError(e, event.getValue());
+                } else {
+                    navigationErrorHandler.handleInvalidPageNameError(e, token.getPageName());
                 }
             }
         });
 
         maybeConvertHistoryToken(hash);
-
-        HistoryWrapper.fireCurrentHistoryState();
+        if (navigationContainer() != null) {
+            HistoryWrapper.fireCurrentHistoryState();
+        }
     }
 
-    protected String inferAppContext(String url) {
+    private String inferAppContext(String url) {
         if (!(url.startsWith("/"))) {
             url = "/" + url;
         }
-
-        final int indexOfNextSlash = url.indexOf("/", 1);
-
+        int indexOfNextSlash = url.indexOf("/", 1);
         if (indexOfNextSlash < 0) {
             return "";
         } else {
@@ -195,37 +191,38 @@ public class Navigation {
         }
     }
 
-    /**
-     * Public for testability.
-     */
+    private void maybeConvertHistoryToken(String token) {
+        if (PushStateUtil.isPushStateActivated()) {
+            if (token == null || token.isEmpty()) {
+                return;
+            }
+            if (token.startsWith("#")) {
+                token = token.substring(1);
+            }
+            HistoryWrapper.newItem(Window.Location.getPath() + token, false);
+        }
+    }
+
     @PreDestroy
     public void cleanUp() {
         historyHandlerRegistration.removeHandler();
         setErrorHandler(null);
     }
 
-    /**
-     * Set an error handler that is called in case of a {@link PageNotFoundException} error during page navigation.
-     * @param handler An error handler for navigation. Setting this to null assigns the {@link DefaultNavigationErrorHandler}
-     */
-    public void setErrorHandler(final PageNavigationErrorHandler handler) {
-        if (handler == null) {
-            navigationErrorHandler = new DefaultNavigationErrorHandler(this);
-        } else {
-            navigationErrorHandler = handler;
-        }
-    }
+    // ------------------------------------------------------ public API
 
     /**
      * Looks up the PageNode instance that provides content for the given widget type, sets the state on that page, then
      * makes the widget visible in the content area.
-     * @param toPage The content type of the page node to look up and display. Normally, this is a Widget subclass that has
-     * been annotated with {@code @Page}.
-     * @param state The state information to set on the page node before showing it. Normally the map keys correspond with the
-     * names of fields annotated with {@code @PageState} in the widget class, but this is not required.
+     *
+     * @param toPage The content type of the page node to look up and display. Normally, this is a Widget subclass that
+     *               has been annotated with {@code @Page}.
+     * @param state  The state information to set on the page node before showing it. Normally the map keys correspond
+     *               with the names of fields annotated with {@code @PageState} in the widget class, but this is not
+     *               required.
      */
-    public <C> void goTo(final Class<C> toPage, final Multimap<String, String> state) {
-        PageNode<C> toPageInstance = null;
+    public <P> void goTo(Class<P> toPage, Multimap<String, String> state) {
+        PageNode<P> toPageInstance = null;
 
         try {
             toPageInstance = navGraph.getPage(toPage);
@@ -233,10 +230,11 @@ public class Navigation {
         } catch (final RedirectLoopException e) {
             throw e;
         } catch (final RuntimeException e) {
-            if (toPageInstance == null)
-            // This is an extremely unlikely case, so throwing an exception is preferable to going through the navigation error handler.
-            {
-                throw new PageNotFoundException("There is no page of type " + toPage.getName() + " in the navigation graph.");
+            if (toPageInstance == null) {
+                // This is an extremely unlikely case, so throwing an exception is preferable
+                // to going through the navigation error handler.
+                throw new PageNotFoundException(
+                        "There is no page of type " + toPage.getName() + " in the navigation graph.");
             } else {
                 navigationErrorHandler.handleInvalidPageNameError(e, toPageInstance.name());
             }
@@ -245,10 +243,11 @@ public class Navigation {
 
     /**
      * Same as {@link #goTo(Class, Multimap)} but then with the page name.
+     *
      * @param toPage the name of the page node to lookup and display.
      */
-    public void goTo(final String toPage) {
-        PageNode<?> toPageInstance = null;
+    public void goTo(String toPage) {
+        PageNode<?> toPageInstance;
         try {
             toPageInstance = navGraph.getPage(toPage);
             navigate(toPageInstance);
@@ -260,12 +259,13 @@ public class Navigation {
     }
 
     /**
-     * Looks up the PageNode instance of the page that has the unique role set and makes the widget visible in the content
-     * area.
+     * Looks up the PageNode instance of the page that has the unique role set and makes the widget visible in the
+     * content area.
+     *
      * @param role The unique role of the page that needs to be displayed.
      */
-    public void goToWithRole(final Class<? extends UniquePageRole> role) {
-        PageNode<?> toPageInstance = null;
+    public void goToWithRole(Class<? extends UniquePageRole> role) {
+        PageNode<?> toPageInstance;
         try {
             toPageInstance = navGraph.getPageByRole(role);
             navigate(toPageInstance);
@@ -277,20 +277,27 @@ public class Navigation {
     }
 
     /**
-     * Return all PageNode instances that have specified pageRole.
-     * @param pageRole the role to find PageNodes by
-     * @return All the pageNodes of the pages that have the specific pageRole.
+     * Update the state of your existing page without performing a full navigation. <br/> This will perform a pseudo
+     * navigation updating the history token with the new states.
      */
-    public Collection<PageNode<?>> getPagesByRole(final Class<? extends PageRole> pageRole) {
-        return navGraph.getPagesByRole(pageRole);
+    public void updateState(Multimap<String, String> state) {
+        if (currentNode != null) {
+            currentToken = historyTokenFactory.createHistoryToken(currentNode.name(), state);
+            HistoryWrapper.newItem(currentToken.toString(), false);
+            currentNode.pageUpdate(currentPage, currentToken);
+        } else {
+            console.error("Cannot update the state before a page has loaded.");
+        }
     }
 
-    private <C> void navigate(final PageNode<C> toPageInstance) {
+    // ------------------------------------------------------ internal navigation
+
+    private <C> void navigate(PageNode<C> toPageInstance) {
         navigate(toPageInstance, new Multimap<>());
     }
 
-    private <C> void navigate(final PageNode<C> toPageInstance, final Multimap<String, String> state) {
-        final HistoryToken token = historyTokenFactory.createHistoryToken(toPageInstance.name(), state);
+    private <C> void navigate(PageNode<C> toPageInstance, Multimap<String, String> state) {
+        HistoryToken token = historyTokenFactory.createHistoryToken(toPageInstance.name(), state);
         navigate(new Request<>(toPageInstance, token), true);
     }
 
@@ -298,7 +305,7 @@ public class Navigation {
      * Captures a backup of the current page state in history, sets the state on the given PageNode from the given state
      * token, then makes its widget visible in the content area.
      */
-    private <C> void navigate(final Request<C> request, final boolean fireEvent) {
+    private <P> void navigate(Request<P> request, boolean fireEvent) {
         if (locked) {
             queuedRequests.add(request);
             return;
@@ -306,14 +313,13 @@ public class Navigation {
 
         redirectDepth++;
         if (redirectDepth >= MAXIMUM_REDIRECTS) {
-            throw new RedirectLoopException("Maximum redirect limit of " + MAXIMUM_REDIRECTS + " reached. "
-                                                    + "Do you have a redirect loop?");
+            throw new RedirectLoopException("Maximum redirect limit of " + MAXIMUM_REDIRECTS + " reached. " +
+                    "Do you have a redirect loop?");
         }
-
         maybeShowPage(request, fireEvent);
     }
 
-    private <C> void handleQueuedRequests(final Request<C> request, final boolean fireEvent) {
+    private <P> void handleQueuedRequests(Request<P> request, boolean fireEvent) {
         if (queuedRequests.isEmpty()) {
             // No new navigation requests were recorded in the lifecycle methods.
             // This is the page which has to be displayed and the browser's history
@@ -328,124 +334,124 @@ public class Navigation {
         }
     }
 
-    /**
-     * Attach the content panel to the RootPanel if does not already have a parent.
-     */
-    private void maybeAttachContentPanel() {
-        IsElement<HTMLElement> panel = navigatingContainer.asWidget();
-        if (panel.element().parentNode == null) {
-            DomGlobal.document.body.appendChild(getContentPanel().element());
-        }
-    }
+    // ------------------------------------------------------ hide page lifecycle
 
     /**
      * Hide the page currently displayed and call the associated lifecycle methods.
+     *
      * @param requestPage the next requested page, this can be null if there is none.
      */
-    private void hideCurrentPage(Object requestPage, NavigationControl control) {
-        final IsElement currentContent = navigatingContainer.getWidget();
-
-        // Note: Optimized out in production mode
-        if (currentPage != null && (currentContent == null || currentWidget != currentContent)) {
-            // This could happen if someone was manipulating the DOM behind our backs
-            DomGlobal.console.log("Current content widget vanished or changed. " + "Not delivering pageHiding event to " + currentPage
-                                          + ".");
-        }
-
-        DelegationControl hideControl = new DelegationControl(() -> {
-            if (currentPage != null && currentComponent != null) {
-                currentPage.pageHidden(currentComponent);
-                currentPage.destroy(currentComponent);
+    private <P> void hideCurrentPage(P requestPage, NavigationControl control) {
+        HTMLElement navigationContainer = navigationContainer();
+        if (navigationContainer != null) {
+            if (currentNode != null && currentElements == null) {
+                // This could happen if someone was manipulating the DOM behind our backs
+                console.log("Current content vanished or changed. " +
+                        "Not delivering pageHiding event to " + currentNode + ".");
             }
 
-            control.proceed();
-        });
-
-        if (currentComponent != null) {
-            contentDelegation.hideContent(currentComponent, navigatingContainer, currentWidget, requestPage, hideControl);
-        } else {
-            navigatingContainer.clear();
-            hideControl.proceed();
-        }
-    }
-
-    /**
-     * Call navigation and page related lifecycle methods.
-     * If the {@link Access} is fired successfully, load the new page.
-     */
-    private <C> void maybeShowPage(final Request<C> request, final boolean fireEvent) {
-        request.pageNode.produceContent(component -> {
-            if (component == null) {
-                throw new NullPointerException("Target page " + request.pageNode + " returned a null content widget");
-            }
-            final IsElement widget;
-            if (component instanceof IsElement) {
-                widget = ((IsElement) component);
+            DelegationControl hideControl = new DelegationControl(() -> {
+                if (currentNode != null && currentPage != null) {
+                    currentNode.pageHidden(currentPage);
+                    currentNode.destroy(currentPage);
+                }
+                control.proceed();
+            });
+            if (currentPage != null) {
+                contentDelegation.hideContent(currentPage, navigationContainer, pageElements(currentPage), requestPage,
+                        hideControl);
             } else {
-                throw new RuntimeException("Page must implement IsElement, or be @Templated.");
+                // Cannot call content delegation. The contract requests that currentPage != null!
+                removeChildrenFrom(navigationContainer);
+                hideControl.proceed();
             }
-
-            maybeAttachContentPanel();
-            currentPageToken = request.state;
-            pageHiding(component, widget, request, fireEvent);
-        });
+        }
     }
 
-    private <C, W extends IsElement> void pageHiding(final C component, final W componentWidget, final Request<C> request, final boolean fireEvent) {
-        final NavigationControl control = new NavigationControl(Navigation.this, () -> {
-            NavigationControl showControl = new NavigationControl(Navigation.this, () -> {
+    private <P> void pageHiding(P page, ElementsBag pageElements, Request<P> request, boolean fireEvent) {
+        HTMLElement navigationContainer = navigationContainer();
+        if (navigationContainer != null) {
+
+            Runnable runnable = () -> {
+                NavigationControl showControl = new NavigationControl(Navigation.this, () -> {
+                    try {
+                        Object previousPage = currentPage;
+                        setCurrentNode(request.pageNode);
+                        currentElements = pageElements;
+                        currentPage = page;
+                        contentDelegation.showContent(page, navigationContainer, pageElements, previousPage,
+                                new DelegationControl(() -> request.pageNode.pageShown(page, request.state)));
+                    } finally {
+                        locked = false;
+                    }
+                    handleQueuedRequests(request, fireEvent);
+                }, () -> locked = false);
+
                 try {
-                    Object previousPage = currentComponent;
-                    setCurrentPage(request.pageNode);
-                    currentWidget = componentWidget;
-                    currentComponent = component;
-                    contentDelegation.showContent(component, navigatingContainer, currentWidget,
-                                                  previousPage, new DelegationControl(() -> {
-                                request.pageNode.pageShown(component, request.state);
-                            }));
+                    locked = true;
+                    hideCurrentPage(page, new NavigationControl(Navigation.this,
+                            () -> request.pageNode.pageShowing(page, request.state, showControl)));
                 } finally {
                     locked = false;
                 }
+            };
+            Runnable interrupt = () -> hideCurrentPage(null, new NavigationControl(Navigation.this,
+                    () -> setCurrentNode(null)));
 
-                handleQueuedRequests(request, fireEvent);
-            }, () -> locked = false);
-
-            try {
-                locked = true;
-                hideCurrentPage(component, new NavigationControl(Navigation.this, () -> {
-                    request.pageNode.pageShowing(component, request.state, showControl);
-                }));
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                locked = false;
+            NavigationControl control = new NavigationControl(Navigation.this, runnable, interrupt);
+            if (currentNode != null && currentPage != null && pageElements != null &&
+                    sameElements(navigationContainer, pageElements)) {
+                currentNode.pageHiding(currentPage, control);
+            } else {
+                control.proceed();
             }
-        }, () -> hideCurrentPage(null, new NavigationControl(Navigation.this, () -> {
-            setCurrentPage(null);
-        })));
-
-        if (currentPage != null && currentWidget != null && currentComponent != null && currentWidget == navigatingContainer.getWidget()) {
-            currentPage.pageHiding(currentComponent, control);
-        } else {
-            control.proceed();
         }
     }
 
-    /**
-     * Return the current page that is being displayed.
-     * @return the current page
-     */
-    public PageNode<?> getCurrentPage() {
-        return currentPage;
+    private boolean sameElements(HTMLElement navigationContainer, ElementsBag elements) {
+        int currentElementCount = (int) navigationContainer.childElementCount;
+        int newElementsCount = 0;
+        for (HTMLElement ignored : elements.elements()) {
+            newElementsCount++;
+        }
+        if (currentElementCount != newElementsCount) {
+            return false;
+        }
+        Iterator<HTMLElement> currentIterator = Elements.iterator(navigationContainer);
+        Iterator<HTMLElement> newIterator = elements.elements().iterator();
+        while (currentIterator.hasNext() && newIterator.hasNext()) {
+            HTMLElement currentElement = currentIterator.next();
+            HTMLElement newElement = newIterator.next();
+            if (currentElement != newElement) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    // ------------------------------------------------------ show page lifecycle
+
+    /** Call navigation and page related lifecycle methods. */
+    private <P> void maybeShowPage(Request<P> request, boolean fireEvent) {
+        request.pageNode.produceContent(page -> {
+            if (page == null) {
+                throw new NullPointerException("Target page " + request.pageNode + " is null");
+            }
+            currentToken = request.state;
+            pageHiding(page, pageElements(page), request, fireEvent);
+        });
+    }
+
+    // ------------------------------------------------------ properties
+
     /**
-     * Just sets the currentPage field. This method exists primarily to get around a generics Catch-22.
-     * @param currentPage the new value for currentPage.
+     * Return all PageNode instances that have specified pageRole.
+     *
+     * @param pageRole the role to find PageNodes by
+     * @return All the pageNodes of the pages that have the specific pageRole.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private void setCurrentPage(final PageNode currentPage) {
-        this.currentPage = currentPage;
+    public Collection<PageNode<?>> getPagesByRole(Class<? extends PageRole> pageRole) {
+        return navGraph.getPagesByRole(pageRole);
     }
 
     /**
@@ -453,89 +459,105 @@ public class Navigation {
      * this may return the state of page being navigated to before that page has actually been displayed.
      */
     public Multimap<String, String> getCurrentState() {
-        return (currentPageToken != null) ? currentPageToken.getState() : new Multimap<>();
+        return (currentToken != null) ? currentToken.getState() : new Multimap<>();
     }
 
-    /**
-     * Returns the panel that this Navigation object manages. The contents of this panel will be updated by the navigation
-     * system in response to PageTransition requests, as well as changes to the GWT navigation system.
-     * @return The content panel of this Navigation instance. It is not recommended that client code modifies the contents
-     * of this panel, because this Navigation instance may replace its contents at any time.
-     */
-    public IsElement getContentPanel() {
-        return navigatingContainer.asWidget();
-    }
-
-    /**
-     * Returns the navigation graph that provides PageNode instances to this Navigation instance.
-     */
-    // should this method be public? should we expose a way to set the nav graph?
-    NavigationGraph getNavGraph() {
-        return navGraph;
-    }
-
-    private boolean needsApplicationContext() {
-        return (currentPage == null) && (PushStateUtil.isPushStateActivated()) && (getAppContextFromHostPage() == null);
-    }
-
-    private void maybeConvertHistoryToken(String token) {
-        if (PushStateUtil.isPushStateActivated()) {
-            if (token == null || token.isEmpty()) {
-                return;
-            }
-
-            if (token.startsWith("#")) {
-                token = token.substring(1);
-            }
-
-            HistoryWrapper.newItem(Window.Location.getPath() + token, false);
-        }
-    }
-
-    /**
-     * Update the state of your existing page without performing a full navigation.
-     * <br/>
-     * This will perform a pseudo navigation updating the history token with the new states.
-     */
-    public void updateState(Multimap<String, String> state) {
-        if (currentPage != null) {
-            currentPageToken = historyTokenFactory.createHistoryToken(currentPage.name(), state);
-            HistoryWrapper.newItem(currentPageToken.toString(), false);
-            currentPage.pageUpdate(currentComponent, currentPageToken);
-        } else {
-            DomGlobal.console.error("Cannot update the state before a page has loaded.");
-        }
-    }
-
-    /**
-     * Are we in the navigation process right now.
-     */
+    /** Are we in the navigation process right now. */
     public boolean isNavigating() {
         return locked;
+    }
+
+    /**
+     * Set an error handler that is called in case of a {@link PageNotFoundException} error during page navigation.
+     *
+     * @param handler An error handler for navigation. Setting this to null assigns the {@link
+     *                DefaultNavigationErrorHandler}
+     */
+    public void setErrorHandler(final PageNavigationErrorHandler handler) {
+        if (handler == null) {
+            navigationErrorHandler = new DefaultNavigationErrorHandler(this);
+        } else {
+            navigationErrorHandler = handler;
+        }
     }
 
     public void setContentDelegation(ContentDelegation contentDelegation) {
         this.contentDelegation = contentDelegation;
     }
 
-    /**
-     * Encapsulates a navigation request to another page.
-     */
-    private static class Request<C> {
+    public void setNavigationContainerSelector(By selector) {
+        this.navigationContainerSelector = selector;
+        if (selector != null) {
+            this.navigationContainer = Elements.find(document.body, navigationContainerSelector);
+        }
+    }
 
-        PageNode<C> pageNode;
+    public void setNavigationContainer(HTMLElement navigationContainer) {
+        this.navigationContainer = navigationContainer;
+    }
 
+    /** Returns the navigation graph that provides PageNode instances to this Navigation instance. */
+    // should this method be public? should we expose a way to set the nav graph?
+    NavigationGraph getNavGraph() {
+        return navGraph;
+    }
+
+    /** Just sets the currentNode field. This method exists primarily to get around a generics Catch-22. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void setCurrentNode(PageNode currentNode) {
+        this.currentNode = currentNode;
+    }
+
+    private boolean needsApplicationContext() {
+        return (currentNode == null) &&
+                (PushStateUtil.isPushStateActivated()) &&
+                (getAppContextFromHostPage().isEmpty());
+    }
+
+    private HTMLElement navigationContainer() {
+        if (navigationContainer != null) {
+            return navigationContainer;
+        }
+        if (navigationContainerSelector != null) {
+            navigationContainer = Elements.find(document.body, navigationContainerSelector);
+        }
+        if (navigationContainer == null) {
+            console.warn("Navigation container is null. " +
+                    "Please make sure to set the container using either\n" +
+                    "Navigation.setNavigationContainer(HTMLHTMLElement element) or\n" +
+                    "Navigation.setNavigationContainerSelector(By selector)");
+        }
+        return navigationContainer;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private ElementsBag pageElements(Object page) {
+        ElementsBag elements = new ElementsBag();
+        if (page != null) {
+            if (page instanceof IsElement) {
+                elements.add(((IsElement) page).element());
+            } else if (page instanceof Iterable) {
+                for (Object o : ((Iterable) page)) {
+                    if (o instanceof IsElement) {
+                        elements.add(((IsElement) o).element());
+                    } else if (o instanceof HTMLElement) {
+                        elements.add(((HTMLElement) o));
+                    }
+                }
+            }
+        }
+        return elements;
+    }
+
+    // ------------------------------------------------------ inner classes
+
+    /** Encapsulates a navigation request to another page. */
+    private static class Request<P> {
+
+        PageNode<P> pageNode;
         HistoryToken state;
 
-        /**
-         * Construct a new {@link Request}.
-         * @param pageNode The page node to display. Normally, the implementation of PageNode is generated at compile time based on
-         * a Widget subclass that has been annotated with {@code @Page}. Anything calling this method must ensure
-         * that the given PageNode has been entered into the navigation graph, or later navigation back to
-         * {@code toPage} will fail.
-         * @param state The state information to pass to the page node before showing it.
-         */
-        private Request(final PageNode<C> pageNode, final HistoryToken state) {
+        private Request(PageNode<P> pageNode, HistoryToken state) {
             this.pageNode = pageNode;
             this.state = state;
         }

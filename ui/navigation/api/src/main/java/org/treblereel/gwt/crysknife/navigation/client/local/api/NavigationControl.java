@@ -23,78 +23,72 @@ import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 import org.treblereel.gwt.crysknife.navigation.client.local.PageHiding;
 
 /**
- * Instances of this class are passed to {@link PageHiding} methods. If the parameter is present,
- * the page navigation will not be carried out until {@link NavigationControl#proceed()} is invoked.
- * This is useful for interrupting page navigations and then resuming at a later time (for example,
- * to prompt the user to save their work before transitioning to a new page).
- * 
+ * Instances of this class are passed to {@link PageHiding} methods. If the parameter is present, the page navigation
+ * will not be carried out until {@link NavigationControl#proceed()} is invoked. This is useful for interrupting page
+ * navigations and then resuming at a later time (for example, to prompt the user to save their work before
+ * transitioning to a new page).
  */
 public class NavigationControl {
 
-  private final Navigation navigation;
-  private final Runnable runnable;
-  private Runnable interrupt;
-  
-  private boolean hasRun;
+    private final Navigation navigation;
+    private final Runnable runnable;
+    private Runnable interrupt;
 
-  public NavigationControl(final Navigation navigation, final Runnable runnable) {
-    this.navigation = navigation;
-    this.runnable = runnable;
-  }
+    private boolean hasRun;
 
-  public NavigationControl(final Navigation navigation, final Runnable runnable, Runnable interrupt) {
-    this(navigation, runnable);
-    this.interrupt = interrupt;
-  }
-
-  /**
-   * Causes page navigation to proceed.
-   */
-  public void proceed() {
-    if (!hasRun) {
-      runnable.run();
-      hasRun = true;
+    public NavigationControl(Navigation navigation, Runnable runnable) {
+        this.navigation = navigation;
+        this.runnable = runnable;
     }
-    else {
-      throw new IllegalStateException("proceed() method can only be called once.");
+
+    public NavigationControl(Navigation navigation, Runnable runnable, Runnable interrupt) {
+        this(navigation, runnable);
+        this.interrupt = interrupt;
     }
-  }
 
-  /**
-   * Interrupt the navigation process.
-   */
-  public void interrupt() {
-    if (!hasRun && interrupt != null) {
-      interrupt.run();
-      hasRun = true;
+    /** Causes page navigation to proceed. */
+    public void proceed() {
+        if (!hasRun) {
+            runnable.run();
+            hasRun = true;
+        } else {
+            throw new IllegalStateException("proceed() method can only be called once.");
+        }
     }
-  }
 
-  /**
-   * Redirect to a given page safely.
-   *
-   * @param toPage Page class annotated with {@link Page}.
-   */
-  public <C> void redirect(final Class<C> toPage) {
-    redirect(toPage, ImmutableMultimap.of());
-  }
-
-  /**
-   * Redirect to a given page safely.
-   *
-   * @param toPage page class annotated with {@link Page}.
-   * @param state Pages state map.
-   */
-  public <C> void redirect(final Class<C> toPage, final Multimap<String, String> state) {
-    if (!hasRun) {
-      interrupt();
-      navigation.goTo(toPage, state);
-    } else {
-      throw new IllegalStateException("redirect() method can only be called once.");
+    /** Interrupt the navigation process. */
+    public void interrupt() {
+        if (!hasRun && interrupt != null) {
+            interrupt.run();
+            hasRun = true;
+        }
     }
-  }
 
-  public boolean hasRun() {
-    return hasRun;
-  }
+    /**
+     * Redirect to a given page safely.
+     *
+     * @param toPage Page class annotated with {@link Page}.
+     */
+    public <C> void redirect(Class<C> toPage) {
+        redirect(toPage, ImmutableMultimap.of());
+    }
+
+    /**
+     * Redirect to a given page safely.
+     *
+     * @param toPage page class annotated with {@link Page}.
+     * @param state  Pages state map.
+     */
+    public <C> void redirect(Class<C> toPage, Multimap<String, String> state) {
+        if (!hasRun) {
+            interrupt();
+            navigation.goTo(toPage, state);
+        } else {
+            throw new IllegalStateException("redirect() method can only be called once.");
+        }
+    }
+
+    public boolean hasRun() {
+        return hasRun;
+    }
 }

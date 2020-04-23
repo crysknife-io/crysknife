@@ -16,27 +16,33 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
 
-import org.jboss.elemento.IsElement;
+import elemental2.dom.HTMLElement;
+import org.jboss.elemento.ElementsBag;
 import org.treblereel.gwt.crysknife.navigation.client.local.api.DelegationControl;
+
+import static org.jboss.elemento.Elements.removeChildrenFrom;
+import static org.jboss.elemento.Elements.wrapHtmlElement;
 
 /**
  * Default content delegation procedure.
+ *
  * @author Ben Dol
  */
 public class DefaultContentDelegation implements ContentDelegation {
 
     @Override
-    public void showContent(Object page, NavigatingContainer defaultContainer, IsElement IsElement, Object previousPage,
-                            DelegationControl control) {
-
-        defaultContainer.setWidget(IsElement);
+    public void showContent(Object page, HTMLElement container, ElementsBag elements, Object previousPage,
+            DelegationControl control) {
+        if (container != null && elements != null) {
+            wrapHtmlElement(container).addAll(elements.elements());
+        }
         control.proceed();
     }
 
     @Override
-    public void hideContent(Object page, NavigatingContainer defaultContainer, IsElement widget, Object nextPage,
-                            DelegationControl control) {
-        defaultContainer.clear();
+    public void hideContent(Object page, HTMLElement container, ElementsBag elements, Object nextPage,
+            DelegationControl control) {
+        removeChildrenFrom(container);
         control.proceed();
     }
 }
