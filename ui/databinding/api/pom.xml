@@ -36,46 +36,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event</artifactId>
-      <version>${gwtproject.head.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event-dom</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event-legacy</artifactId>
-      <version>${gwtproject.head.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.core</groupId>
-      <artifactId>gwt-core</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.widgets</groupId>
-      <artifactId>gwt-widgets</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.elemento</groupId>
-      <artifactId>elemento-core</artifactId>
-      <version>${elemento.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>crysknife-annotations</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
