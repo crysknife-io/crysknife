@@ -21,6 +21,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;

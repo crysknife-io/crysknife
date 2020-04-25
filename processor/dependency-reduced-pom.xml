@@ -113,4 +113,7 @@
       </exclusions>
     </dependency>
   </dependencies>
+  <properties>
+    <aspectj.version>1.9.5</aspectj.version>
+  </properties>
 </project>

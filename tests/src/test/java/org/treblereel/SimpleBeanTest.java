@@ -1,17 +1,15 @@
 package org.treblereel;
 
-import com.google.j2cl.junit.apt.J2clTestInput;
-import junit.framework.TestCase;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 9/10/19
  */
-@J2clTestInput(SimpleBeanTest.class)
-public class SimpleBeanTest extends TestCase {
-
-
+public class SimpleBeanTest {
 
     @Test
     public void testAppSimpleBean() {
@@ -19,5 +17,6 @@ public class SimpleBeanTest extends TestCase {
         new AppBootstrap(app).initialize();
 
         assertNotNull(app.getSimpleBean());
+        assertEquals(SimpleBean.class.getSimpleName(), app.getSimpleBean().getName());
     }
 }

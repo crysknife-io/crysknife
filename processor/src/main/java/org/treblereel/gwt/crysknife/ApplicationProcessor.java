@@ -29,6 +29,7 @@ import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.graph.Graph;
+import org.treblereel.gwt.crysknife.generator.info.BeanInfoGenerator;
 import org.treblereel.gwt.crysknife.generator.scanner.ComponentInjectionResolverScanner;
 import org.treblereel.gwt.crysknife.generator.scanner.ComponentScanner;
 import org.treblereel.gwt.crysknife.generator.scanner.ProducersScan;
@@ -73,7 +74,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         fireIOCGeneratorBefore();
         processGraph();
         new FactoryGenerator(iocContext).generate();
-        new BeanInfoGenerator(iocContext, context).generate();
+        new BeanInfoGenerator(iocContext).generate();
         new BeanManagerGenerator(iocContext, context).generate();
         fireIOCGeneratorAfter();
 

@@ -50,7 +50,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
             initClassBuilder(clazz, beanDefinition);
 
-            if (!iocContext.getGenerationContext().isGwt2()) {
+            if (!iocContext.getGenerationContext().isGwt2()
+                    && !iocContext.getGenerationContext().isJre()) {
                 generateInterceptorFieldDeclaration(clazz);
             }
 
@@ -98,10 +99,12 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     public void generateDependantFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
         classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
-        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
-            Expression expr = getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint);
-            classBuilder.getGetMethodDeclaration().getBody().get().addStatement(expr);
-        });
+        if (!iocContext.getGenerationContext().isJre()) {
+            beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
+                Expression expr = getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint);
+                classBuilder.getGetMethodDeclaration().getBody().get().addStatement(expr);
+            });
+        }
     }
 
     private void generateInstanceGetMethodDecorators(ClassBuilder clazz, BeanDefinition beanDefinition) {
@@ -164,12 +167,14 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
             for (FieldPoint argument : definition.getConstructorInjectionPoint().getArguments()) {
                 generateFactoryFieldDeclaration(classBuilder, argument.getType());
-                newInstance.addArgument(iocContext.getBeans().get(argument.getType()).generateBeanCall(iocContext, classBuilder, argument));
+                newInstance.addArgument(iocContext.getBeans()
+                                                .get(argument.getType())
+                                                .generateBeanCall(iocContext, classBuilder, argument));
             }
         }
 
         Expression instanceFieldAssignExpr;
-        if (iocContext.getGenerationContext().isGwt2()) {
+        if (iocContext.getGenerationContext().isGwt2() || iocContext.getGenerationContext().isJre()) {
             instanceFieldAssignExpr = newInstance;
         } else {
             FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");

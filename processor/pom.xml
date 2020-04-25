@@ -34,6 +34,10 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
+  <properties>
+    <aspectj.version>1.9.5</aspectj.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.google.auto</groupId>
@@ -76,13 +80,6 @@
       <artifactId>guava</artifactId>
       <version>${google.guava.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>com.vertispan.j2cl</groupId>
-      <artifactId>frontend-javac</artifactId>
-      <version>0.5-SNAPSHOT</version>
-    </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

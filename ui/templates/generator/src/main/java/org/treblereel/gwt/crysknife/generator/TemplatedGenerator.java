@@ -183,6 +183,7 @@ import org.jsoup.select.Elements;
 import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
 import org.lesscss.LessSource;
+import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Reflect;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
@@ -194,7 +195,6 @@ import org.treblereel.gwt.crysknife.templates.client.TemplateUtil;
 import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
 import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.templates.client.annotation.ForEvent;
-import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
 import org.treblereel.gwt.crysknife.util.Utils;
 
@@ -603,12 +603,12 @@ public class TemplatedGenerator extends IOCGenerator {
                         .addArgument(new StringLiteralExpr(element.getName()));
             }
 
-            MethodCallExpr fieldSetCallExpr;
+            MethodCallExpr fieldSetCallExpr = null;
             if (iocContext.getGenerationContext().isGwt2()) {
                 fieldSetCallExpr = new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
                                                       element.getName())
                         .addArgument("instance");
-            } else {
+            } else if (!iocContext.getGenerationContext().isJre()) {
                 fieldSetCallExpr = new MethodCallExpr(new MethodCallExpr(
                         new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
                                                               .addArgument("instance"), "set")

@@ -47,10 +47,6 @@ public class ClassBuilder {
         return clazz;
     }
 
-    public ClassOrInterfaceDeclaration getClassDeclaration() {
-        return classDeclaration;
-    }
-
     public void setClassName(String className) {
         this.classDeclaration = clazz.addClass(className);
     }
@@ -67,9 +63,16 @@ public class ClassBuilder {
         if (fields.containsKey(name)) {
             return fields.get(name);
         }
-        FieldDeclaration fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
-        fields.put(name, fieldDeclaration);
+        FieldDeclaration fieldDeclaration = null;
+        if (getClassDeclaration() != null) {
+            fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
+            fields.put(name, fieldDeclaration);
+        }
         return fieldDeclaration;
+    }
+
+    public ClassOrInterfaceDeclaration getClassDeclaration() {
+        return classDeclaration;
     }
 
     public FieldDeclaration addField(String type, String name, Modifier.Keyword... modifiers) {
@@ -79,10 +82,6 @@ public class ClassBuilder {
         FieldDeclaration fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
         fields.put(name, fieldDeclaration);
         return fieldDeclaration;
-    }
-
-    private ConstructorDeclaration getConstructorDeclaration() {
-        return constructorDeclaration;
     }
 
     public NodeList<ClassOrInterfaceType> getExtendedTypes() {
@@ -99,8 +98,12 @@ public class ClassBuilder {
         getConstructorDeclaration().getParameters().add(p);
     }
 
+    private ConstructorDeclaration getConstructorDeclaration() {
+        return constructorDeclaration;
+    }
+
     public void addStatementToConstructor(Expression expr) {
-        if (!statementToConstructor.contains(expr)) {
+        if (!statementToConstructor.contains(expr) && getConstructorDeclaration() != null) {
             getConstructorDeclaration().getBody().addStatement(expr);
             statementToConstructor.add(expr);
         }
