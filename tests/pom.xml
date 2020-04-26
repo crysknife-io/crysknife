@@ -3,12 +3,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.treblereel.gwt.crysknife</groupId>
+  <parent>
+    <groupId>org.treblereel.gwt.crysknife</groupId>
+    <artifactId>crysknife-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
   <artifactId>tests</artifactId>
   <version>0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
+  <packaging>jar</packaging>
 
   <properties>
+    <aspectj.version>1.9.5</aspectj.version>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
@@ -30,42 +37,28 @@
       <version>${project.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.google.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>1.0.0-RC1</version>
-    </dependency>
 
     <dependency>
       <groupId>org.gwtproject.core</groupId>
       <artifactId>gwt-core</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
-
     <dependency>
-      <groupId>com.vertispan.j2cl</groupId>
-      <artifactId>jre</artifactId>
-      <version>0.6-SNAPSHOT</version>
-      <scope>test</scope>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjrt</artifactId>
+      <version>1.9.5</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.vertispan.j2cl</groupId>
-      <artifactId>junit-processor</artifactId>
-      <version>0.6-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
+<!--    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.9.5</version>
+    </dependency>-->
 
     <dependency>
-      <groupId>com.vertispan.j2cl</groupId>
-      <artifactId>gwttestcase-emul</artifactId>
-      <version>0.6-SNAPSHOT</version>
-      <scope>source</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>crysknife-annotations</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -82,201 +75,75 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
+<!--
+          <proc>none</proc>
+-->
           <source>1.8</source>
           <target>1.8</target>
+<!--          <skipMain>true</skipMain>
+          <skip>true</skip>-->
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>${maven.properties.plugin}</version>
-        <executions>
-          <execution>
-            <id>demo</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>set-system-properties</goal>
-            </goals>
-            <configuration>
-              <properties>
-                <property>
-                  <name>ClientBundle.cacheLocation</name>
-                  <value>target/webapp/gwt-cache/</value>
-                </property>
-                <property>
-                  <name>ClientBundle.cacheUrl</name>
-                  <value>/gwt-cache/</value>
-                </property>
-              </properties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>custom-resources</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <resources>
-                <resource>
-                  <targetPath>${basedir}/target/webapp</targetPath>
-                  <directory>src/main/webapp</directory>
-                  <filtering>true</filtering>
-                </resource>
-                <resource>
-                  <targetPath>${basedir}/target/webapp/classes</targetPath>
-                  <directory>src/main/resources</directory>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-              <encoding>UTF-8</encoding>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
+        <artifactId>aspectj-maven-plugin</artifactId>
+        <version>1.11</version>
         <configuration>
-          <skipTests>true</skipTests>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>com.vertispan.j2cl</groupId>
-        <artifactId>j2cl-maven-plugin</artifactId>
-        <version>0.12-SNAPSHOT</version>
-        <executions>
-          <execution>
-            <id>build-js</id>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir</defaultWebappDirectory>
-          <compilationLevel>BUNDLE</compilationLevel>
+          <proc>none</proc>
+          <complianceLevel>1.8</complianceLevel>
+          <source>1.8</source>
+          <target>1.8</target>
 <!--
-          <compilationLevel>ADVANCED</compilationLevel>
+          <sources/>
 -->
-          <entrypoint>org.treblereel.App</entrypoint>
-          <excludes></excludes>
-          <externs>
-          </externs>
-          <defines>
-          </defines>
-          <tests>
-            <test>org.treblereel.SimpleBeanTest</test>
-          </tests>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+        <dependency>
+          <groupId>org.aspectj</groupId>
+          <artifactId>aspectjtools</artifactId>
+          <version>${aspectj.version}</version>
+        </dependency>
+        </dependencies>
       </plugin>
-      <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
+
+
+<!--      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>aspectj-maven-plugin</artifactId>
+        <version>1.11</version>
         <configuration>
-          <contextFile>${basedir}/src/main/tomcatconf/context.xml</contextFile>
+         <sources/>
+          <Xlint>ignore</Xlint>
+          <verbose>true</verbose>
+          <complianceLevel>1.8</complianceLevel>
+          <source>1.8</source>
+          <target>1.8</target>
+          <showWeaveInfo>true</showWeaveInfo>
         </configuration>
-      </plugin>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>${aspectj.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>-->
     </plugins>
   </build>
-
-<!--  <pluginRepositories>
-    <pluginRepository>
-      <id>vertispan-releases</id>
-      <name>Vertispan hosted artifacts-releases</name>
-      <url>https://repo.vertispan.com/j2cl</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>sonatype-snapshots-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <repositories>
-    <repository>
-      <id>google-snapshots</id>
-      <name>google-snapshots</name>
-      <url>https://oss.sonatype.org/content/repositories/google-snapshots/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>vertispan-releases</id>
-      <name>Vertispan hosted artifacts-releases</name>
-      <url>https://repo.vertispan.com/j2cl</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>vertispan-snapshots</id>
-      <name>Vertispan Snapshots</name>
-      <url>https://repo.vertispan.com/gwt-snapshot/</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype-snapshots-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/repositories</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-  </repositories>-->
 </project>

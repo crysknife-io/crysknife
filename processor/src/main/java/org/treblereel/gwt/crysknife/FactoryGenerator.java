@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import javax.lang.model.element.TypeElement;
 
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
-import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 

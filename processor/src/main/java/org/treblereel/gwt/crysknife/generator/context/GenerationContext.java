@@ -15,6 +15,7 @@ public class GenerationContext {
     private final RoundEnvironment roundEnvironment;
     private final ProcessingEnvironment processingEnvironment;
     private boolean isGwt2 = false;
+    private boolean isJre = false;
 
     public GenerationContext(RoundEnvironment roundEnvironment,
                              ProcessingEnvironment processingEnvironment) {
@@ -25,6 +26,14 @@ public class GenerationContext {
             Class.forName("com.google.gwt.core.client.GWT");
             isGwt2 = true;
             processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,"GWT2 generation mode.");
+        } catch (ClassNotFoundException e) {
+
+        }
+
+        try {
+            Class.forName("org.aspectj.lang.ProceedingJoinPoint");
+            isJre = true;
+            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,"JRE generation mode.");
         } catch (ClassNotFoundException e) {
 
         }
@@ -48,5 +57,9 @@ public class GenerationContext {
 
     public boolean isGwt2() {
         return isGwt2;
+    }
+
+    public boolean isJre() {
+        return isJre;
     }
 }

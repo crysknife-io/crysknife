@@ -14,7 +14,7 @@
     <gwt.version>1.0-SNAPSHOT</gwt.version>
     <elemental2.version>1.0.0</elemental2.version>
     <elemento.version>1.0.0-rc1</elemento.version>
-    <j2cl.maven.plugin.version>0.12-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.13-SNAPSHOT</j2cl.maven.plugin.version>
     <j2cl-compilation.level>BUNDLE</j2cl-compilation.level>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
   </properties>

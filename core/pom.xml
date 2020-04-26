@@ -37,14 +37,6 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
-  <scm>
-    <url>https://github.com/treblereel/three4g</url>
-    <developerConnection>scm:git:git@github.com:treblereel/three4g.git</developerConnection>
-    <connection>scm:git:git://github.com/treblereel/three4g.git</connection>
-    <tag>HEAD</tag>
-  </scm>
-
-
   <dependencies>
     <dependency>
       <groupId>com.google.jsinterop</groupId>

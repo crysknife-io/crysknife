@@ -57,7 +57,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
         clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
 
-        if(!iocContext.getGenerationContext().isGwt2()) {
+        if (!iocContext.getGenerationContext().isGwt2()) {
             clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
             clazz.getClassCompilationUnit().addImport(Reflect.class);
             clazz.getClassCompilationUnit().addImport(Factory.class);
@@ -76,7 +76,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
         classBuilder.setGetMethodDeclaration(getMethodDeclaration);
 
-        if (!iocContext.getGenerationContext().isGwt2()) {
+        if (!iocContext.getGenerationContext().isGwt2() &&
+                !iocContext.getGenerationContext().isJre()) {
             ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
             interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
             interceptorCreationExpr.addArgument(new NameExpr("instance"));
@@ -92,11 +93,12 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
                                                       .setValue(new MethodCallExpr(
                                                               new NameExpr("interceptor"), "getProxy")));
         }
-
-        beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> classBuilder.getGetMethodDeclaration()
-                .getBody()
-                .get()
-                .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint)));
+        if (!iocContext.getGenerationContext().isJre()) {
+            beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> classBuilder.getGetMethodDeclaration()
+                    .getBody()
+                    .get()
+                    .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint)));
+        }
     }
 
     @Override
