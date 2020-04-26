@@ -16,6 +16,7 @@
 
   <properties>
     <aspectj.version>1.9.5</aspectj.version>
+    <aspectj.maven.plugin.version>1.11</aspectj.maven.plugin.version>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
@@ -36,32 +37,17 @@
       <artifactId>crysknife-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
-    <dependency>
-      <groupId>org.gwtproject.core</groupId>
-      <artifactId>gwt-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjrt</artifactId>
       <version>1.9.5</version>
     </dependency>
-
-<!--    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.9.5</version>
-    </dependency>-->
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
@@ -73,29 +59,21 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>${maven.compiler.version}</version>
         <configuration>
-<!--
-          <proc>none</proc>
--->
           <source>1.8</source>
           <target>1.8</target>
-<!--          <skipMain>true</skipMain>
-          <skip>true</skip>-->
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
-        <version>1.11</version>
+        <version>${aspectj.maven.plugin.version}</version>
         <configuration>
           <proc>none</proc>
           <complianceLevel>1.8</complianceLevel>
           <source>1.8</source>
           <target>1.8</target>
-<!--
-          <sources/>
--->
         </configuration>
         <executions>
           <execution>
@@ -113,37 +91,6 @@
         </dependency>
         </dependencies>
       </plugin>
-
-
-<!--      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>aspectj-maven-plugin</artifactId>
-        <version>1.11</version>
-        <configuration>
-         <sources/>
-          <Xlint>ignore</Xlint>
-          <verbose>true</verbose>
-          <complianceLevel>1.8</complianceLevel>
-          <source>1.8</source>
-          <target>1.8</target>
-          <showWeaveInfo>true</showWeaveInfo>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-              <goal>test-compile</goal>
-            </goals>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjtools</artifactId>
-            <version>${aspectj.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>-->
     </plugins>
   </build>
 </project>
