@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>mutationobserver-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 

@@ -16,10 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.inject.Inject;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -184,9 +186,11 @@ import org.lesscss.LessCompiler;
 import org.lesscss.LessException;
 import org.lesscss.LessSource;
 import org.treblereel.gwt.crysknife.annotation.Generator;
+import org.treblereel.gwt.crysknife.client.Instance;
 import org.treblereel.gwt.crysknife.client.Reflect;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
+import org.treblereel.gwt.crysknife.generator.dataelements.DataElementInfoGenerator;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
@@ -198,6 +202,7 @@ import org.treblereel.gwt.crysknife.templates.client.annotation.ForEvent;
 import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
 import org.treblereel.gwt.crysknife.util.Utils;
 
+import static com.github.javaparser.ast.Modifier.Keyword;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 
@@ -312,9 +317,11 @@ public class TemplatedGenerator extends IOCGenerator {
     private Messager messager;
     private BeanDefinition beanDefinition;
     private ResourceOracle oracle;
+    private DataElementInfoGenerator dataElementInfoGenerator;
 
     public TemplatedGenerator(IOCContext iocContext) {
         super(iocContext);
+        dataElementInfoGenerator = new DataElementInfoGenerator(iocContext);
     }
 
     @Override
@@ -334,6 +341,7 @@ public class TemplatedGenerator extends IOCGenerator {
             beanDefinition = (BeanDefinition) definition;
             validateType(beanDefinition.getType(), beanDefinition.getType().getAnnotation(Templated.class));
             processType(builder, beanDefinition.getType(), beanDefinition.getType().getAnnotation(Templated.class));
+            dataElementInfoGenerator.generate(beanDefinition);
         }
     }
 
@@ -488,7 +496,7 @@ public class TemplatedGenerator extends IOCGenerator {
         ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
         wrapper.setName(beanDefinition.getClassName());
         wrapper.addExtendedType(beanDefinition.getQualifiedName());
-        wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
+        wrapper.setModifier(Keyword.FINAL, true);
         String element = getElementFromTag(templateContext);
 
         wrapper.addFieldWithInitializer(element,
@@ -497,10 +505,10 @@ public class TemplatedGenerator extends IOCGenerator {
                                                 new NameExpr("elemental2.dom.DomGlobal"), "document"),
                                                                                                                      "createElement").addArgument(
                                                 new StringLiteralExpr(templateContext.getRoot().getTag()))),
-                                        com.github.javaparser.ast.Modifier.Keyword.PRIVATE,
-                                        com.github.javaparser.ast.Modifier.Keyword.FINAL);
+                                        Keyword.PRIVATE,
+                                        Keyword.FINAL);
 
-        ConstructorDeclaration constructor = wrapper.addConstructor(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+        ConstructorDeclaration constructor = wrapper.addConstructor(Keyword.PUBLIC);
         if (beanDefinition.getConstructorInjectionPoint() != null) {
             List<String> args = new LinkedList<>();
             for (FieldPoint argument : beanDefinition.getConstructorInjectionPoint().getArguments()) {
@@ -523,7 +531,7 @@ public class TemplatedGenerator extends IOCGenerator {
         String element = getElementFromTag(templateContext);
 
         MethodDeclaration method = wrapper.addMethod("element",
-                                                     com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+                                                     Keyword.PUBLIC);
         method.addAnnotation(Override.class);
         method.setType(element);
         ReturnStmt _return = new ReturnStmt(new CastExpr(new ClassOrInterfaceType().setName(element),
@@ -604,11 +612,8 @@ public class TemplatedGenerator extends IOCGenerator {
             }
 
             MethodCallExpr fieldSetCallExpr = null;
-            if (iocContext.getGenerationContext().isGwt2()) {
-                fieldSetCallExpr = new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
-                                                      element.getName())
-                        .addArgument("instance");
-            } else if (!iocContext.getGenerationContext().isJre()) {
+            if (!iocContext.getGenerationContext().isJre() &&
+                    !iocContext.getGenerationContext().isGwt2()) {
                 fieldSetCallExpr = new MethodCallExpr(new MethodCallExpr(
                         new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
                                                               .addArgument("instance"), "set")
@@ -616,6 +621,12 @@ public class TemplatedGenerator extends IOCGenerator {
                                              .addArgument(new StringLiteralExpr(
                                                      Utils.getJsFieldName(getVariableElement(element.getName()))))
                                              .addArgument("instance"));
+            } else {
+                VariableElement field = getVariableElement(element.getName());
+                String info = beanDefinition.getClassName() + (field.getAnnotation(Inject.class) != null ? "Info" : "DataElementInfo");
+                fieldSetCallExpr = new MethodCallExpr(new NameExpr(info),
+                                                      element.getName())
+                        .addArgument("instance");
             }
 
             ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(fieldSetCallExpr.addArgument(resolveElement)));
@@ -637,19 +648,19 @@ public class TemplatedGenerator extends IOCGenerator {
     }
 
     private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
-        if (iocContext.getGenerationContext().isGwt2()) {
-            return new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
-                                      field.getSimpleName().toString())
-                    .addArgument("instance");
+        if (!iocContext.getGenerationContext().isJre() && !iocContext.getGenerationContext().isGwt2()) {
+            return new MethodCallExpr(
+                    new MethodCallExpr(
+                            new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
+                            .addArgument("instance"), "get")
+                    .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+                                         .addArgument(new StringLiteralExpr(Utils.getJsFieldName(field)))
+                                         .addArgument("instance"));
         }
-
-        return new MethodCallExpr(
-                new MethodCallExpr(
-                        new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
-                        .addArgument("instance"), "get")
-                .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-                                     .addArgument(new StringLiteralExpr(Utils.getJsFieldName(field)))
-                                     .addArgument("instance"));
+        String info = beanDefinition.getClassName() + (field.getAnnotation(Inject.class) != null ? "Info" : "DataElementInfo");
+        return new MethodCallExpr(new NameExpr(info),
+                                  field.getSimpleName().toString())
+                .addArgument("instance");
     }
 
     private Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
@@ -706,6 +717,8 @@ public class TemplatedGenerator extends IOCGenerator {
         builder.getClassCompilationUnit().addImport(TemplateUtil.class);
         builder.getClassCompilationUnit().addImport(Js.class);
         builder.getClassCompilationUnit().addImport(Reflect.class);
+        builder.getClassCompilationUnit().addImport(Instance.class);
+        builder.getClassCompilationUnit().addImport(Supplier.class);
     }
 
     private void setInnerHTML(BlockStmt block, TemplateContext templateContext) {

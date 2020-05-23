@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>templates-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -46,14 +46,19 @@
       <version>${elemento.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.vertispan.jsinterop</groupId>
-      <artifactId>base</artifactId>
-      <version>${vertispan.jsinterop.base.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.gwtproject.dom</groupId>
       <artifactId>gwt-dom</artifactId>
       <version>${gwtproject.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>crysknife-annotations</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <artifactId>crysknife-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.widgets</groupId>

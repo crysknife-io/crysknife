@@ -4,7 +4,7 @@
 
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>crysknife-parent</name>
@@ -58,12 +58,11 @@
         <gwtproject.version>1.0-SNAPSHOT</gwtproject.version>
         <gwtproject.head.version>HEAD-SNAPSHOT</gwtproject.head.version>
 
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javaparser.core.version>3.15.18</javaparser.core.version>
         <junit.version>4.11</junit.version>
-        <elemental2.version>1.0.0-RC1</elemental2.version>
+        <elemental2.version>1.0.0</elemental2.version>
         <auto.common.version>0.10</auto.common.version>
         <auto.service.version>1.0-rc6</auto.service.version>
     </properties>
@@ -95,7 +94,6 @@
 
     <build>
         <pluginManagement>
-
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -106,7 +104,6 @@
                         <target>${maven.compiler.target}</target>
                     </configuration>
                 </plugin>
-
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
@@ -123,19 +120,6 @@
                             </configuration>
                             <goals>
                                 <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
-                    <executions>
-                        <execution>
-                            <id>default-deploy</id>
-                            <phase>deploy</phase>
-                            <goals>
-                                <goal>deploy</goal>
                             </goals>
                         </execution>
                     </executions>
@@ -171,7 +155,13 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+        </plugins>
 
     </build>
 

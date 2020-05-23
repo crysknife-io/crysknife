@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <artifactId>tests</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>

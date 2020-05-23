@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>navigation-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -69,12 +69,12 @@
     <dependency>
       <groupId>org.gwtproject.user.history</groupId>
       <artifactId>gwt-history</artifactId>
-      <version>HEAD-SNAPSHOT</version>
+      <version>1.0.0-RC1</version>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.user.window</groupId>
       <artifactId>gwt-window</artifactId>
-      <version>HEAD-SNAPSHOT</version>
+      <version>1.0.0-RC1</version>
     </dependency>
 
     <dependency>
@@ -93,10 +93,6 @@
           <include>**/*.java</include>
           <include>**/*.xml</include>
         </includes>
-        <excludes>
-          <exclude>**/NavigationGraphImpl.java</exclude>
-          <exclude>**/BeanManagerImpl.java</exclude>
-        </excludes>
       </resource>
       <resource>
         <directory>src/main/resources</directory>
