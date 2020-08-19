@@ -6,7 +6,6 @@ import javax.inject.Inject;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
-import org.gwtproject.core.client.EntryPoint;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.User;
 import org.treblereel.client.named.NamedBeanConstructorInjectionPanel;
@@ -18,7 +17,7 @@ import org.treblereel.gwt.crysknife.navigation.client.local.Navigation;
 
 @Application
 @ComponentScan("org.treblereel.client")
-public class App implements EntryPoint {
+public class App {
 
     @Inject
     private HTMLDivElement toast;
@@ -35,7 +34,6 @@ public class App implements EntryPoint {
     @Inject
     private Navigation navigation;
 
-    @Override
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
     }
