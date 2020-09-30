@@ -72,13 +72,6 @@
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>gwt-resources</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-api</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -237,12 +230,9 @@
           </execution>
         </executions>
         <configuration>
-          <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir</defaultWebappDirectory>
-          <compilationLevel>${j2cl-compilation.level}</compilationLevel>
+          <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</defaultWebappDirectory>
+          <compilationLevel>BUNDLE</compilationLevel>
           <entrypoint>org.treblereel.client.App</entrypoint>
-          <jsinteropAnnotationsJar>com.google.jsinterop:jsinterop-annotations:1.0.2</jsinteropAnnotationsJar>
-          <externs></externs>
-          <defines></defines>
         </configuration>
       </plugin>
       <plugin>
