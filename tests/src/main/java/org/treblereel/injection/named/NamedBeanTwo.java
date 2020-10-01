@@ -4,15 +4,14 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
  */
 @Named("NamedBeanTwo")
 @Singleton
 public class NamedBeanTwo implements NamedBean {
 
-    @Override
-    public String say() {
-        return this.getClass().getCanonicalName();
-    }
+  @Override
+  public String say() {
+    return this.getClass().getCanonicalName();
+  }
 }

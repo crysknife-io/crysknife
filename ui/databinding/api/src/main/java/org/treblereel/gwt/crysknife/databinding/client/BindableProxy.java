@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2011 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client;
@@ -35,16 +33,17 @@ public interface BindableProxy<T> extends HasProperties {
 
   /**
    * Updates all widgets bound to the model instance associated with this proxy (see
-   * {@link BindableProxyAgent#bind(Widget, String, Converter)}). This method is only useful if the model instance has
-   * undergone changes that were not caused by calls to methods on this proxy and were therefore not visible to this
-   * proxy (e.g direct field access by JPA).
+   * {@link BindableProxyAgent#bind(Widget, String, Converter)}). This method is only useful if the
+   * model instance has undergone changes that were not caused by calls to methods on this proxy and
+   * were therefore not visible to this proxy (e.g direct field access by JPA).
    */
   void updateWidgets();
-  
+
   /**
    * Returns a new non-proxied instance with state copied recursively from this target.
    * 
-   * @return A recursively unwrapped (i.e. non-proxied) instance with state copied from the proxy target.
+   * @return A recursively unwrapped (i.e. non-proxied) instance with state copied from the proxy
+   *         target.
    */
   T deepUnwrap();
 }

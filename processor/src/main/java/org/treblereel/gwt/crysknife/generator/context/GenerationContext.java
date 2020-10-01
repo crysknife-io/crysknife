@@ -10,64 +10,65 @@ import org.treblereel.gwt.crysknife.generator.context.oracle.ResourceOracle;
 import org.treblereel.gwt.crysknife.generator.context.oracle.ResourceOracleImpl;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 2/21/19
+ * @author Dmitrii Tikhomirov Created by treblereel 2/21/19
  */
 public class GenerationContext {
 
-    private final RoundEnvironment roundEnvironment;
-    private final ProcessingEnvironment processingEnvironment;
-    private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
-    private boolean isGwt2 = false;
-    private boolean isJre = false;
+  private final RoundEnvironment roundEnvironment;
+  private final ProcessingEnvironment processingEnvironment;
+  private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
+  private boolean isGwt2 = false;
+  private boolean isJre = false;
 
-    public GenerationContext(RoundEnvironment roundEnvironment,
-                             ProcessingEnvironment processingEnvironment) {
-        this.roundEnvironment = roundEnvironment;
-        this.processingEnvironment = processingEnvironment;
+  public GenerationContext(RoundEnvironment roundEnvironment,
+      ProcessingEnvironment processingEnvironment) {
+    this.roundEnvironment = roundEnvironment;
+    this.processingEnvironment = processingEnvironment;
 
-        try {
-            Class.forName("com.google.gwt.core.client.GWT");
-            isGwt2 = true;
-            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING, "GWT2 generation mode.");
-        } catch (ClassNotFoundException e) {
+    try {
+      Class.forName("com.google.gwt.core.client.GWT");
+      isGwt2 = true;
+      processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
+          "GWT2 generation mode.");
+    } catch (ClassNotFoundException e) {
 
-        }
-
-        try {
-            Class.forName("org.aspectj.lang.ProceedingJoinPoint");
-            isJre = true;
-            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING, "JRE generation mode.");
-        } catch (ClassNotFoundException e) {
-
-        }
     }
 
-    public Elements getElements() {
-        return processingEnvironment.getElementUtils();
-    }
+    try {
+      Class.forName("org.aspectj.lang.ProceedingJoinPoint");
+      isJre = true;
+      processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
+          "JRE generation mode.");
+    } catch (ClassNotFoundException e) {
 
-    public Types getTypes() {
-        return processingEnvironment.getTypeUtils();
     }
+  }
 
-    public RoundEnvironment getRoundEnvironment() {
-        return roundEnvironment;
-    }
+  public Elements getElements() {
+    return processingEnvironment.getElementUtils();
+  }
 
-    public ProcessingEnvironment getProcessingEnvironment() {
-        return processingEnvironment;
-    }
+  public Types getTypes() {
+    return processingEnvironment.getTypeUtils();
+  }
 
-    public boolean isGwt2() {
-        return isGwt2;
-    }
+  public RoundEnvironment getRoundEnvironment() {
+    return roundEnvironment;
+  }
 
-    public boolean isJre() {
-        return isJre;
-    }
+  public ProcessingEnvironment getProcessingEnvironment() {
+    return processingEnvironment;
+  }
 
-    public ResourceOracle getResourceOracle() {
-        return resourceOracle;
-    }
+  public boolean isGwt2() {
+    return isGwt2;
+  }
+
+  public boolean isJre() {
+    return isJre;
+  }
+
+  public ResourceOracle getResourceOracle() {
+    return resourceOracle;
+  }
 }

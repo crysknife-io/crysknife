@@ -15,36 +15,37 @@ import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 import org.treblereel.gwt.crysknife.generator.definition.ProducerDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/4/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/4/19
  */
 
 public class ProducerTypeProcessor extends TypeProcessor {
 
-    protected ProducerTypeProcessor(IOCGenerator generator) {
-        super(generator);
+  protected ProducerTypeProcessor(IOCGenerator generator) {
+    super(generator);
+  }
+
+  @Override
+  public void process(IOCContext context, Element element) {
+    if (element.getKind().equals(ElementKind.METHOD)) {
+      ExecutableElement method = MoreElements.asExecutable(element);
+      Element theReturn = MoreTypes.asElement(method.getReturnType());
+
+      ProducerDefinition producerDefinition =
+          ProducerDefinition.of(method, MoreElements.asType(method.getEnclosingElement()));
+      producerDefinition.setGenerator(generator);
+      context.getBeans().put(MoreElements.asType(theReturn), producerDefinition);
+
+      BeanDefinition bean = context
+          .getBeanDefinitionOrCreateAndReturn(MoreElements.asType(method.getEnclosingElement()));
+
+      TypeElement obj = context.getGenerationContext().getElements()
+          .getTypeElement(Object.class.getCanonicalName());
+
+      IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(
+          Singleton.class.getCanonicalName(), obj, WiringElementType.BEAN);
+
+      bean.setGenerator(context.getGenerators().get(meta).stream().findFirst().get());
+      context.getBeans().put(MoreElements.asType(method.getEnclosingElement()), bean);
     }
-
-    @Override
-    public void process(IOCContext context, Element element) {
-        if (element.getKind().equals(ElementKind.METHOD)) {
-            ExecutableElement method = MoreElements.asExecutable(element);
-            Element theReturn = MoreTypes.asElement(method.getReturnType());
-
-            ProducerDefinition producerDefinition = ProducerDefinition.of(method, MoreElements.asType(method.getEnclosingElement()));
-            producerDefinition.setGenerator(generator);
-            context.getBeans().put(MoreElements.asType(theReturn), producerDefinition);
-
-            BeanDefinition bean = context.getBeanDefinitionOrCreateAndReturn(MoreElements.asType(method.getEnclosingElement()));
-
-            TypeElement obj = context.getGenerationContext().getElements().getTypeElement(Object.class.getCanonicalName());
-
-            IOCContext.IOCGeneratorMeta meta = new IOCContext.IOCGeneratorMeta(Singleton.class.getCanonicalName(),
-                                                                               obj,
-                                                                               WiringElementType.BEAN);
-
-            bean.setGenerator(context.getGenerators().get(meta).stream().findFirst().get());
-            context.getBeans().put(MoreElements.asType(method.getEnclosingElement()), bean);
-        }
-    }
+  }
 }

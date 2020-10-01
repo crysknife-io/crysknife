@@ -39,110 +39,110 @@ import org.treblereel.gwt.crysknife.generator.definition.Definition;
 import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/7/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator(priority = 100002)
 public class BindableGenerator extends ScopedBeanGenerator {
 
-    public BindableGenerator(IOCContext iocContext) {
-        super(iocContext);
+  public BindableGenerator(IOCContext iocContext) {
+    super(iocContext);
+  }
+
+  @Override
+  public void register() {
+    // iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); //PARAMETER
+    iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); // PARAMETER
+    TypeElement type = iocContext.getGenerationContext().getElements()
+        .getTypeElement(DataBinder.class.getCanonicalName());
+    BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
+    beanDefinition.setGenerator(this);
+    iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
+  }
+
+  @Override
+  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+    if (definition instanceof BeanDefinition) {
+      clazz.getClassCompilationUnit().addImport(((BeanDefinition) definition).getType().toString());
+
+      clazz.getClassCompilationUnit().addImport(DataBinder.class);
+      clazz.getClassCompilationUnit().addImport(Collections.class);
+      clazz.getClassCompilationUnit().addImport(HashMap.class);
+      clazz.getClassCompilationUnit().addImport(Map.class);
+      clazz.getClassCompilationUnit().addImport(PropertyType.class);
+      clazz.getClassCompilationUnit().addImport(NonExistingPropertyException.class);
+      clazz.getClassCompilationUnit().addImport(BindableProxyAgent.class);
+      clazz.getClassCompilationUnit().addImport(BindableProxy.class);
+      clazz.getClassCompilationUnit().addImport(BindableProxyProvider.class);
+      clazz.getClassCompilationUnit().addImport(BindableProxyFactory.class);
+
+      BeanDefinition beanDefinition = (BeanDefinition) definition;
+      initClassBuilder(clazz, beanDefinition);
+      clazz.getImplementedTypes().clear();
+
+      MethodDeclaration methodDeclaration =
+          clazz.addMethod("loadBindableProxies", Modifier.Keyword.PRIVATE);
+
+      iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName()).forEach(c -> {
+        clazz.getClassCompilationUnit().addImport(c.toString());
+        generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
+      });
+
+      generateFactoryCreateMethod(clazz, beanDefinition);
+      generateFactoryForTypeMethod(clazz, beanDefinition);
+      write(clazz, beanDefinition, iocContext.getGenerationContext());
     }
+  }
 
-    @Override
-    public void register() {
-        //iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); //PARAMETER
-        iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); //PARAMETER
-        TypeElement type = iocContext.getGenerationContext().getElements().getTypeElement(DataBinder.class.getCanonicalName());
-        BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
-        beanDefinition.setGenerator(this);
-        iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
-    }
+  public void generateFactoryCreateMethod(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    MethodDeclaration getMethodDeclaration =
+        classBuilder.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+    getMethodDeclaration.setType("DataBinder_Factory");
+    classBuilder.setGetMethodDeclaration(getMethodDeclaration);
 
-    @Override
-    public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
-        if (definition instanceof BeanDefinition) {
-            clazz.getClassCompilationUnit()
-                    .addImport(((BeanDefinition) definition)
-                                       .getType().toString());
+    BlockStmt body = classBuilder.getGetMethodDeclaration().getBody().get();
+    IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
+        new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
+    ObjectCreationExpr newInstance = new ObjectCreationExpr();
+    newInstance.setType(new ClassOrInterfaceType().setName("DataBinder_Factory"));
 
-            clazz.getClassCompilationUnit().addImport(DataBinder.class);
-            clazz.getClassCompilationUnit().addImport(Collections.class);
-            clazz.getClassCompilationUnit().addImport(HashMap.class);
-            clazz.getClassCompilationUnit().addImport(Map.class);
-            clazz.getClassCompilationUnit().addImport(PropertyType.class);
-            clazz.getClassCompilationUnit().addImport(NonExistingPropertyException.class);
-            clazz.getClassCompilationUnit().addImport(BindableProxyAgent.class);
-            clazz.getClassCompilationUnit().addImport(BindableProxy.class);
-            clazz.getClassCompilationUnit().addImport(BindableProxyProvider.class);
-            clazz.getClassCompilationUnit().addImport(BindableProxyFactory.class);
+    BlockStmt initialization = new BlockStmt();
+    initialization.addAndGetStatement(
+        new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance));
+    initialization
+        .addAndGetStatement(new MethodCallExpr(new NameExpr("instance"), "loadBindableProxies"));
+    ifStmt.setThenStmt(initialization);
+    body.addAndGetStatement(ifStmt);
+    body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
+    classBuilder.addField("DataBinder_Factory", "instance", Modifier.Keyword.PRIVATE,
+        Modifier.Keyword.STATIC);
+  }
 
-            BeanDefinition beanDefinition = (BeanDefinition) definition;
-            initClassBuilder(clazz, beanDefinition);
-            clazz.getImplementedTypes().clear();
+  public void generateFactoryForTypeMethod(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    MethodDeclaration forTypMethodDeclaration =
+        classBuilder.addMethod("forType", Modifier.Keyword.PUBLIC);
+    forTypMethodDeclaration.addParameter("Class", "modelType");
 
-            MethodDeclaration methodDeclaration = clazz.addMethod("loadBindableProxies", Modifier.Keyword.PRIVATE);
+    forTypMethodDeclaration.setType(DataBinder.class);
+    forTypMethodDeclaration.getBody().get().addAndGetStatement(new ReturnStmt(
+        new MethodCallExpr(new NameExpr("DataBinder"), "forType").addArgument("modelType")));
+  }
 
-            iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName())
-                    .forEach(c -> {
-                        clazz.getClassCompilationUnit()
-                                .addImport(c.toString());
-                        generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
-                    });
+  private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type) {
+    new BindableProxyGenerator(
+        iocContext.getGenerationContext().getProcessingEnvironment().getTypeUtils(),
+        methodDeclaration, type).generate();
+  }
 
-            generateFactoryCreateMethod(clazz, beanDefinition);
-            generateFactoryForTypeMethod(clazz, beanDefinition);
-            write(clazz, beanDefinition, iocContext.getGenerationContext());
-        }
-    }
-
-    public void generateFactoryCreateMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodDeclaration getMethodDeclaration = classBuilder
-                .addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-        getMethodDeclaration.setType("DataBinder_Factory");
-        classBuilder.setGetMethodDeclaration(getMethodDeclaration);
-
-        BlockStmt body = classBuilder.getGetMethodDeclaration().getBody().get();
-        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"), new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-        ObjectCreationExpr newInstance = new ObjectCreationExpr();
-        newInstance.setType(new ClassOrInterfaceType()
-                                    .setName("DataBinder_Factory"));
-
-        BlockStmt initialization = new BlockStmt();
-        initialization.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance));
-        initialization.addAndGetStatement(new MethodCallExpr(new NameExpr("instance"), "loadBindableProxies"));
-        ifStmt.setThenStmt(initialization);
-        body.addAndGetStatement(ifStmt);
-        body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
-        classBuilder.addField("DataBinder_Factory", "instance", Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
-    }
-
-    public void generateFactoryForTypeMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodDeclaration forTypMethodDeclaration = classBuilder
-                .addMethod("forType", Modifier.Keyword.PUBLIC);
-        forTypMethodDeclaration.addParameter("Class", "modelType");
-
-        forTypMethodDeclaration.setType(DataBinder.class);
-        forTypMethodDeclaration.getBody().get()
-                .addAndGetStatement(new ReturnStmt(
-                        new MethodCallExpr(
-                                new NameExpr("DataBinder"), "forType")
-                                .addArgument("modelType")));
-    }
-
-    private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type) {
-        new BindableProxyGenerator(iocContext
-                                           .getGenerationContext()
-                                           .getProcessingEnvironment()
-                                           .getTypeUtils(),
-                                   methodDeclaration, type).generate();
-    }
-
-    @Override
-    public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
-        classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
-        MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
-        return new NameExpr("org.treblereel.gwt.crysknife.databinding.client.api.DataBinder_Factory.get().forType(" + MoreTypes.asDeclared(fieldPoint.getField().asType())
-                .getTypeArguments().get(0) + ".class)");
-    }
+  @Override
+  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
+      BeanDefinition beanDefinition) {
+    classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
+    MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
+    return new NameExpr(
+        "org.treblereel.gwt.crysknife.databinding.client.api.DataBinder_Factory.get().forType("
+            + MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
+            + ".class)");
+  }
 }

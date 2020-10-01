@@ -4,20 +4,19 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 5/21/19
+ * @author Dmitrii Tikhomirov Created by treblereel 5/21/19
  */
 @ApplicationScoped
 public class ApplicationScopedConstructorInjection {
 
-    public ApplicationScopedBean bean;
+  public ApplicationScopedBean bean;
 
-    //@Inject
-    public ApplicationScopedBean bean2;
+  // @Inject
+  public ApplicationScopedBean bean2;
 
-    @Inject
-    public ApplicationScopedConstructorInjection(ApplicationScopedBean bean) {
-        this.bean = bean;
-    }
+  @Inject
+  public ApplicationScopedConstructorInjection(ApplicationScopedBean bean) {
+    this.bean = bean;
+  }
 
 }

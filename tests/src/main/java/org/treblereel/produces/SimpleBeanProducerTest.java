@@ -4,34 +4,33 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
 @Singleton
 public class SimpleBeanProducerTest {
 
-    @Inject
-    private SimpleBeanSingleton simpleBeanSingletonOne;
-    @Inject
-    private SimpleBeanSingleton simpleBeanSingletonTwo;
-    @Inject
-    private SimpleBeanDependent simpleBeanDependentOne;
-    @Inject
-    private SimpleBeanDependent simpleBeanDependentTwo;
+  @Inject
+  private SimpleBeanSingleton simpleBeanSingletonOne;
+  @Inject
+  private SimpleBeanSingleton simpleBeanSingletonTwo;
+  @Inject
+  private SimpleBeanDependent simpleBeanDependentOne;
+  @Inject
+  private SimpleBeanDependent simpleBeanDependentTwo;
 
-    public SimpleBeanSingleton getSimpleBeanSingletonOne() {
-        return simpleBeanSingletonOne;
-    }
+  public SimpleBeanSingleton getSimpleBeanSingletonOne() {
+    return simpleBeanSingletonOne;
+  }
 
-    public SimpleBeanSingleton getSimpleBeanSingletonTwo() {
-        return simpleBeanSingletonTwo;
-    }
+  public SimpleBeanSingleton getSimpleBeanSingletonTwo() {
+    return simpleBeanSingletonTwo;
+  }
 
-    public SimpleBeanDependent getSimpleBeanDependentOne() {
-        return simpleBeanDependentOne;
-    }
+  public SimpleBeanDependent getSimpleBeanDependentOne() {
+    return simpleBeanDependentOne;
+  }
 
-    public SimpleBeanDependent getSimpleBeanDependentTwo() {
-        return simpleBeanDependentTwo;
-    }
+  public SimpleBeanDependent getSimpleBeanDependentTwo() {
+    return simpleBeanDependentTwo;
+  }
 }

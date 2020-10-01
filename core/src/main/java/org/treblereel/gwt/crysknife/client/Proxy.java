@@ -4,18 +4,13 @@ import jsinterop.annotations.JsType;
 import jsinterop.base.JsPropertyMap;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 12/13/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/13/19
  */
-@JsType(
-        isNative = true,
-        namespace = "<global>"
-)
+@JsType(isNative = true, namespace = "<global>")
 public class Proxy {
 
+  public Proxy(Object target, JsPropertyMap handler) {
 
-    public Proxy(Object target, JsPropertyMap handler) {
-
-    }
+  }
 
 }

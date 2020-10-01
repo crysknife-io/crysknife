@@ -6,16 +6,15 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
 public abstract class AbstractBeanInfoGenerator {
 
-    protected IOCContext iocContext;
+  protected IOCContext iocContext;
 
-    protected AbstractBeanInfoGenerator(IOCContext iocContext) {
-        this.iocContext = iocContext;
-    }
+  protected AbstractBeanInfoGenerator(IOCContext iocContext) {
+    this.iocContext = iocContext;
+  }
 
-    protected abstract String build(BeanDefinition bean) throws IOException;
+  protected abstract String build(BeanDefinition bean) throws IOException;
 }

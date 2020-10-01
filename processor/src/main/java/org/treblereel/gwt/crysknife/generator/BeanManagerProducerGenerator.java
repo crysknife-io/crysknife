@@ -12,24 +12,26 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/30/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/30/19
  */
 @Generator()
 public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
 
-    public BeanManagerProducerGenerator(IOCContext iocContext) {
-        super(iocContext);
-    }
+  public BeanManagerProducerGenerator(IOCContext iocContext) {
+    super(iocContext);
+  }
 
-    @Override
-    public void register() {
-        iocContext.register(Inject.class, BeanManager.class, WiringElementType.FIELD_TYPE, this);
-    }
+  @Override
+  public void register() {
+    iocContext.register(Inject.class, BeanManager.class, WiringElementType.FIELD_TYPE, this);
+  }
 
-    @Override
-    public void generateInstanceGetMethodReturn(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get");
-        classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new ReturnStmt(methodCallExpr));
-    }
+  @Override
+  public void generateInstanceGetMethodReturn(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    MethodCallExpr methodCallExpr =
+        new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get");
+    classBuilder.getGetMethodDeclaration().getBody().get()
+        .addAndGetStatement(new ReturnStmt(methodCallExpr));
+  }
 }

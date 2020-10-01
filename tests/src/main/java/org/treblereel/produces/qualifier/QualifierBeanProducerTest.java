@@ -4,20 +4,19 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
 @Singleton
 public class QualifierBeanProducerTest {
 
-    @Inject
-    private QualifierBean qualifierBean;
+  @Inject
+  private QualifierBean qualifierBean;
 
-    public QualifierBean getQualifierBean() {
-        return qualifierBean;
-    }
+  public QualifierBean getQualifierBean() {
+    return qualifierBean;
+  }
 
-    public void setQualifierBean(QualifierBean qualifierBean) {
-        this.qualifierBean = qualifierBean;
-    }
+  public void setQualifierBean(QualifierBean qualifierBean) {
+    this.qualifierBean = qualifierBean;
+  }
 }

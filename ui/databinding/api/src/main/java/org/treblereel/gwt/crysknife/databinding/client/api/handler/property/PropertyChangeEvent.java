@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2012 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client.api.handler.property;
@@ -30,7 +28,8 @@ public class PropertyChangeEvent<T> {
   private final T oldValue;
   private final T newValue;
 
-  public PropertyChangeEvent(final Object source, final String propertyName, final T oldValue, final T newValue) {
+  public PropertyChangeEvent(final Object source, final String propertyName, final T oldValue,
+      final T newValue) {
     this.source = source;
     this.propertyName = propertyName;
     this.oldValue = oldValue;
@@ -75,8 +74,8 @@ public class PropertyChangeEvent<T> {
 
   @Override
   public String toString() {
-    return "[property=" + propertyName + ", source=" + source.toString() + ", oldValue=" + oldValue + ", newValue="
-            + newValue + "]";
+    return "[property=" + propertyName + ", source=" + source.toString() + ", oldValue=" + oldValue
+        + ", newValue=" + newValue + "]";
   }
 
   @Override
@@ -84,9 +83,8 @@ public class PropertyChangeEvent<T> {
     if (obj instanceof PropertyChangeEvent) {
       final PropertyChangeEvent<?> other = (PropertyChangeEvent<?>) obj;
       return Objects.equals(other.source, source)
-              && Objects.equals(other.propertyName, propertyName)
-              && Objects.equals(other.oldValue, oldValue)
-              && Objects.equals(other.newValue, newValue);
+          && Objects.equals(other.propertyName, propertyName)
+          && Objects.equals(other.oldValue, oldValue) && Objects.equals(other.newValue, newValue);
     }
 
     return false;

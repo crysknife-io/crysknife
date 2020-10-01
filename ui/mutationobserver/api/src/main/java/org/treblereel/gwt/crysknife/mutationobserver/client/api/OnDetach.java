@@ -7,14 +7,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 12/10/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/10/19
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface OnDetach {
 
-    String value();
+  String value();
 
 }

@@ -11,42 +11,38 @@ import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
 public class BeanInfoJ2CLGeneratorBuilder extends AbstractBeanInfoGenerator {
 
-    private BeanDefinition bean;
-    private CompilationUnit clazz = new CompilationUnit();
-    private ClassOrInterfaceDeclaration classDeclaration;
+  private BeanDefinition bean;
+  private CompilationUnit clazz = new CompilationUnit();
+  private ClassOrInterfaceDeclaration classDeclaration;
 
-    BeanInfoJ2CLGeneratorBuilder(IOCContext iocContext) {
-        super(iocContext);
-    }
+  BeanInfoJ2CLGeneratorBuilder(IOCContext iocContext) {
+    super(iocContext);
+  }
 
-    @Override
-    protected String build(BeanDefinition bean) {
-        this.bean = bean;
-        this.clazz = new CompilationUnit();
-        initClass();
-        addFields();
-        return clazz.toString();
-    }
+  @Override
+  protected String build(BeanDefinition bean) {
+    this.bean = bean;
+    this.clazz = new CompilationUnit();
+    initClass();
+    addFields();
+    return clazz.toString();
+  }
 
-    private void initClass() {
-        clazz.setPackageDeclaration(bean.getPackageName());
-        classDeclaration = clazz.addClass(bean.getClassName() + "Info");
-        clazz.addImport(Reflect.class);
-    }
+  private void initClass() {
+    clazz.setPackageDeclaration(bean.getPackageName());
+    classDeclaration = clazz.addClass(bean.getClassName() + "Info");
+    clazz.addImport(Reflect.class);
+  }
 
-    private void addFields() {
-        for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
-            classDeclaration.addFieldWithInitializer(String.class,
-                                                     fieldPoint.getName(),
-                                                     new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getField())),
-                                                     Modifier.Keyword.PUBLIC,
-                                                     Modifier.Keyword.FINAL,
-                                                     Modifier.Keyword.STATIC);
-        }
+  private void addFields() {
+    for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
+      classDeclaration.addFieldWithInitializer(String.class, fieldPoint.getName(),
+          new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getField())),
+          Modifier.Keyword.PUBLIC, Modifier.Keyword.FINAL, Modifier.Keyword.STATIC);
     }
+  }
 }

@@ -23,76 +23,73 @@ import org.treblereel.gwt.crysknife.generator.point.FieldPoint;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/7/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator(priority = 101)
 public class ResourcesGenerator extends BeanIOCGenerator {
 
-    public ResourcesGenerator(IOCContext iocContext) {
-        super(iocContext);
-    }
+  public ResourcesGenerator(IOCContext iocContext) {
+    super(iocContext);
+  }
 
-    @Override
-    public void register() {
-        iocContext.register(Resource.class, WiringElementType.BEAN, this);
-    }
+  @Override
+  public void register() {
+    iocContext.register(Resource.class, WiringElementType.BEAN, this);
+  }
 
-    @Override
-    public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
+  @Override
+  public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
 
-    }
+  }
 
-    public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName("org.treblereel.gwt.crysknife.client.Instance");
-        type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
+  public void addFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+    String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+    ClassOrInterfaceType type = new ClassOrInterfaceType();
+    type.setName("org.treblereel.gwt.crysknife.client.Instance");
+    type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
 
-        Parameter param = new Parameter();
-        param.setName(varName);
-        param.setType(type);
+    Parameter param = new Parameter();
+    param.setName(varName);
+    param.setType(type);
 
-        classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-    }
+    classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
+  }
 
-    public String getFactoryVariableName() {
-        return "";
-    }
+  public String getFactoryVariableName() {
+    return "";
+  }
 
-    public void addFactoryFieldInitialization(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-        String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
-        String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
+  public void addFactoryFieldInitialization(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
+    String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
 
-        classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
-        classBuilder.getClassCompilationUnit().addImport(Provider.class);
-        classBuilder.getClassCompilationUnit().addImport(beanDefinition.getType().getQualifiedName().toString());
-        classBuilder.getClassCompilationUnit().addImport(qualifiedImplName);
+    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
+    classBuilder.getClassCompilationUnit().addImport(Provider.class);
+    classBuilder.getClassCompilationUnit()
+        .addImport(beanDefinition.getType().getQualifiedName().toString());
+    classBuilder.getClassCompilationUnit().addImport(qualifiedImplName);
 
-        String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-        FieldAccessExpr field = new FieldAccessExpr(new ThisExpr(), varName);
+    String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+    FieldAccessExpr field = new FieldAccessExpr(new ThisExpr(), varName);
 
-        AssignExpr assign = new AssignExpr()
-                .setTarget(field)
-                .setValue(new NameExpr("new InstanceImpl(new Provider<"
-                                               + beanDefinition.getType().getSimpleName()
-                                               + ">() {" +
-                                               "        @Override" +
-                                               "        public " + beanDefinition.getType().getSimpleName() + " get() {" +
-                                               "            return new " + theName + "();" +
-                                               "        }" +
-                                               "    })"));
-        classBuilder.addStatementToConstructor(assign);
-    }
+    AssignExpr assign = new AssignExpr().setTarget(field)
+        .setValue(new NameExpr("new InstanceImpl(new Provider<"
+            + beanDefinition.getType().getSimpleName() + ">() {" + "        @Override"
+            + "        public " + beanDefinition.getType().getSimpleName() + " get() {"
+            + "            return new " + theName + "();" + "        }" + "    })"));
+    classBuilder.addStatementToConstructor(assign);
+  }
 
-    @Override
-    public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint, BeanDefinition beanDefinition) {
-        String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
-        String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
-        classBuilder.getClassCompilationUnit().addImport(beanDefinition.getType().getQualifiedName().toString());
-        classBuilder.getClassCompilationUnit().addImport(qualifiedImplName);
+  @Override
+  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
+      BeanDefinition beanDefinition) {
+    String theName = ResourceGeneratorUtil.generateSimpleSourceName(null, beanDefinition.getType());
+    String qualifiedImplName = MoreElements.getPackage(beanDefinition.getType()) + "." + theName;
+    classBuilder.getClassCompilationUnit()
+        .addImport(beanDefinition.getType().getQualifiedName().toString());
+    classBuilder.getClassCompilationUnit().addImport(qualifiedImplName);
 
-
-        return new NameExpr("new " + theName + "()");
-    }
+    return new NameExpr("new " + theName + "()");
+  }
 }

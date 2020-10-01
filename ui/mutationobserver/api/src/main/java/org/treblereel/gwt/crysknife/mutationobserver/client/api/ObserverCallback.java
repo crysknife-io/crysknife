@@ -4,12 +4,11 @@ import elemental2.dom.MutationRecord;
 import jsinterop.annotations.JsFunction;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 12/9/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/9/19
  */
 @JsFunction
 @FunctionalInterface
 public interface ObserverCallback {
 
-    void onAttachOrDetachCallback(MutationRecord mutationRecord);
+  void onAttachOrDetachCallback(MutationRecord mutationRecord);
 }

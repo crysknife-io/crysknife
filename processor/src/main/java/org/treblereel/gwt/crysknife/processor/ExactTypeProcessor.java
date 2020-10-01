@@ -11,28 +11,26 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/31/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/31/19
  */
 public class ExactTypeProcessor extends TypeProcessor {
 
-    protected ExactTypeProcessor(IOCGenerator generator) {
-        super(generator);
-    }
+  protected ExactTypeProcessor(IOCGenerator generator) {
+    super(generator);
+  }
 
-    @Override
-    public void process(IOCContext context, Element element) {
-        if (element.getKind().isField() || element.getKind().isClass()) {
-            TypeMirror mirror = (element.getKind().isField() ?
-                    MoreElements.asVariable(element).asType() :
-                    element.asType());
-            TypeElement typeElement = MoreTypes.asTypeElement(mirror);
-            BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
-            if (!typeElement.getTypeParameters().isEmpty()) {
-                TypeMirror type = element.asType();
-                beanDefinition.getDeclaredTypes().add(MoreTypes.asDeclared(type));
-            }
-            beanDefinition.setGenerator(generator);
-        }
+  @Override
+  public void process(IOCContext context, Element element) {
+    if (element.getKind().isField() || element.getKind().isClass()) {
+      TypeMirror mirror = (element.getKind().isField() ? MoreElements.asVariable(element).asType()
+          : element.asType());
+      TypeElement typeElement = MoreTypes.asTypeElement(mirror);
+      BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(typeElement);
+      if (!typeElement.getTypeParameters().isEmpty()) {
+        TypeMirror type = element.asType();
+        beanDefinition.getDeclaredTypes().add(MoreTypes.asDeclared(type));
+      }
+      beanDefinition.setGenerator(generator);
     }
+  }
 }

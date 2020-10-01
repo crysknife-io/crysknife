@@ -6,27 +6,26 @@ import java.util.Map;
 import javax.enterprise.event.Event;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/4/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/4/19
  */
 public abstract class AbstractEventFactory {
 
-    protected Map<Class, EventHolder> holder = new HashMap<>();
+  protected Map<Class, EventHolder> holder = new HashMap<>();
 
-    public <T> Event<T> get(Class type) {
-        if (!holder.containsKey(type)) {
-            holder.put(type, new EventHolder(type));
-        }
-
-        return holder.get(type);
+  public <T> Event<T> get(Class type) {
+    if (!holder.containsKey(type)) {
+      holder.put(type, new EventHolder(type));
     }
 
-    class EventHolder extends AbstractEventHandler {
+    return holder.get(type);
+  }
 
-        private Class type;
+  class EventHolder extends AbstractEventHandler {
 
-        EventHolder(Class type) {
-            this.type = type;
-        }
+    private Class type;
+
+    EventHolder(Class type) {
+      this.type = type;
     }
+  }
 }

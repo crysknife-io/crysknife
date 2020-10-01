@@ -5,28 +5,26 @@ import javax.inject.Provider;
 import org.treblereel.gwt.crysknife.client.Instance;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/29/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/29/19
  */
 public class InstanceImpl<T> implements Instance<T> {
 
-    Provider<T> provider;
+  Provider<T> provider;
 
-    public InstanceImpl(Provider<T> provider) {
-        this.provider = provider;
-    }
+  public InstanceImpl(Provider<T> provider) {
+    this.provider = provider;
+  }
 
-    @Override
-    public T get() {
-        return provider.get();
-    }
+  @Override
+  public T get() {
+    return provider.get();
+  }
 
-    @Override
-    public void destroy(T var1) {
-    }
+  @Override
+  public void destroy(T var1) {}
 
-    @Override
-    public void destroyAll() {
+  @Override
+  public void destroyAll() {
 
-    }
+  }
 }

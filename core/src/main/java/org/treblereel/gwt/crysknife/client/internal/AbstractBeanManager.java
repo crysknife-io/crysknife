@@ -11,43 +11,44 @@ import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.Instance;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/29/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/29/19
  */
 public abstract class AbstractBeanManager implements BeanManager {
 
-    final private Map<Class, Map<Class<? extends Annotation>, Provider>> beanStore = new java.util.HashMap<>();
+  final private Map<Class, Map<Class<? extends Annotation>, Provider>> beanStore =
+      new java.util.HashMap<>();
 
-    protected AbstractBeanManager() {
+  protected AbstractBeanManager() {
 
+  }
+
+  @Override
+  public void destroyBean(Object ref) {
+
+  }
+
+  @Override
+  public <T> Instance<T> lookupBean(Class type, Class<? extends Annotation> qualifier) {
+    if (beanStore.get(type) != null && beanStore.get(type).containsKey(qualifier)) {
+      return new InstanceImpl<T>(beanStore.get(type).get(qualifier));
     }
+    throw new Error("Unable to find the bean [" + type.getCanonicalName() + "] with the qualifier ["
+        + qualifier.getCanonicalName() + "]");
+  }
 
-    @Override
-    public void destroyBean(Object ref) {
+  @Override
+  public <T> Instance<T> lookupBean(Class type) {
+    return lookupBean(type, Default.class);
+  }
 
+  protected void register(Class type, Provider provider) {
+    register(type, provider, Default.class);
+  }
+
+  protected void register(Class type, Provider provider, Class<? extends Annotation> annotation) {
+    if (!beanStore.containsKey(type)) {
+      beanStore.put(type, new HashMap<>());
     }
-
-    @Override
-    public <T> Instance<T> lookupBean(Class type, Class<? extends Annotation> qualifier) {
-        if (beanStore.get(type) != null && beanStore.get(type).containsKey(qualifier)) {
-            return new InstanceImpl<T>(beanStore.get(type).get(qualifier));
-        }
-        throw new Error("Unable to find the bean [" + type.getCanonicalName() + "] with the qualifier [" + qualifier.getCanonicalName() + "]");
-    }
-
-    @Override
-    public <T> Instance<T> lookupBean(Class type) {
-        return lookupBean(type, Default.class);
-    }
-
-    protected void register(Class type, Provider provider) {
-        register(type, provider, Default.class);
-    }
-
-    protected void register(Class type, Provider provider, Class<? extends Annotation> annotation) {
-        if (!beanStore.containsKey(type)) {
-            beanStore.put(type, new HashMap<>());
-        }
-        beanStore.get(type).put(annotation, provider);
-    }
+    beanStore.get(type).put(annotation, provider);
+  }
 }

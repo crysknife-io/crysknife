@@ -6,31 +6,27 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/3/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
 public class ConstructorPoint extends Point {
 
-    private final List<FieldPoint> arguments = new LinkedList<>();
+  private final List<FieldPoint> arguments = new LinkedList<>();
 
-    public ConstructorPoint(String name, TypeElement type) {
-        super(type, name);
-    }
+  public ConstructorPoint(String name, TypeElement type) {
+    super(type, name);
+  }
 
-    public void addArgument(FieldPoint arg) {
-        arguments.add(arg);
-    }
+  public void addArgument(FieldPoint arg) {
+    arguments.add(arg);
+  }
 
-    public List<FieldPoint> getArguments() {
-        return arguments;
-    }
+  public List<FieldPoint> getArguments() {
+    return arguments;
+  }
 
-    @Override
-    public String toString() {
-        return "ConstructorPoint{" +
-                "arguments=" + arguments +
-                ", name='" + name + '\'' +
-                ", type=" + type +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "ConstructorPoint{" + "arguments=" + arguments + ", name='" + name + '\'' + ", type="
+        + type + '}';
+  }
 }

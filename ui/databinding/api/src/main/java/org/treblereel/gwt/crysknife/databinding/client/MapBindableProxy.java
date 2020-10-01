@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2016 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client;
@@ -27,8 +25,8 @@ import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
 import org.treblereel.gwt.crysknife.databinding.client.api.StateSync;
 
 /**
- * A custom {@link BindableProxy} allowing data-binding to a {@link Map}. This allows data-binding to be used with a
- * collection of properties that is not known at compile-time.
+ * A custom {@link BindableProxy} allowing data-binding to a {@link Map}. This allows data-binding
+ * to be used with a collection of properties that is not known at compile-time.
  *
  * @author Max Barkley <mbarkley@redhat.com>
  */
@@ -36,15 +34,13 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
 
   private final BindableProxyAgent<Map<String, Object>> agent;
 
-  public MapBindableProxy( final Map<String, PropertyType> propertyTypes ) {
+  public MapBindableProxy(final Map<String, PropertyType> propertyTypes) {
     agent = new BindableProxyAgent<>(this, new HashMap<>());
     agent.propertyTypes.putAll(propertyTypes);
-    agent
-      .propertyTypes
-      .entrySet()
-      .stream()
-      .filter(entry -> entry.getValue() instanceof MapPropertyType)
-      .forEach(entry -> agent.binders.put(entry.getKey(), DataBinder.forMap(((MapPropertyType) entry.getValue()).getPropertyTypes())));
+    agent.propertyTypes.entrySet().stream()
+        .filter(entry -> entry.getValue() instanceof MapPropertyType)
+        .forEach(entry -> agent.binders.put(entry.getKey(),
+            DataBinder.forMap(((MapPropertyType) entry.getValue()).getPropertyTypes())));
   }
 
   @Override
@@ -83,7 +79,8 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
   @Override
   public Map<String, Object> deepUnwrap() {
     final Map<String, Object> clone = new HashMap<>();
-    agent.target.forEach((k,v) -> clone.put(k, (v instanceof BindableProxy ? ((BindableProxy<?>) v).deepUnwrap() : v)));
+    agent.target.forEach((k, v) -> clone.put(k,
+        (v instanceof BindableProxy ? ((BindableProxy<?>) v).deepUnwrap() : v)));
 
     return clone;
   }
@@ -122,24 +119,21 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
 
     if (propertyType.isList() && value instanceof List) {
       value = agent.ensureBoundListIsProxied(key, (List<?>) value);
-    }
-    else if (propertyType.isBindable() && !(value instanceof BindableProxy)) {
+    } else if (propertyType.isBindable() && !(value instanceof BindableProxy)) {
       DataBinder nestedBinder = agent.binders.get(key);
       if (nestedBinder == null) {
         if (propertyType instanceof MapPropertyType) {
           nestedBinder = DataBinder.forMap(((MapPropertyType) propertyType).getPropertyTypes());
-        }
-        else {
+        } else {
           nestedBinder = DataBinder.forModel(value);
         }
         agent.binders.put(key, nestedBinder);
-      }
-      else if (propertyType instanceof MapPropertyType) {
-        final MapBindableProxy mapProxy = new MapBindableProxy(((MapPropertyType) propertyType).getPropertyTypes());
+      } else if (propertyType instanceof MapPropertyType) {
+        final MapBindableProxy mapProxy =
+            new MapBindableProxy(((MapPropertyType) propertyType).getPropertyTypes());
         mapProxy.agent.target = (Map<String, Object>) value;
         nestedBinder.setModel(mapProxy, StateSync.FROM_MODEL, true);
-      }
-      else {
+      } else {
         nestedBinder.setModel(value, StateSync.FROM_MODEL, true);
       }
       value = nestedBinder.getModel();

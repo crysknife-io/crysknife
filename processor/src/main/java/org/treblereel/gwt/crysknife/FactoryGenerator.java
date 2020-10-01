@@ -11,25 +11,22 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 2/20/19
+ * @author Dmitrii Tikhomirov Created by treblereel 2/20/19
  */
 public class FactoryGenerator {
 
-    private final IOCContext iocContext;
+  private final IOCContext iocContext;
 
-    FactoryGenerator(IOCContext iocContext) {
-        this.iocContext = iocContext;
+  FactoryGenerator(IOCContext iocContext) {
+    this.iocContext = iocContext;
+  }
+
+  void generate() {
+    Set<Map.Entry<TypeElement, BeanDefinition>> beans =
+        iocContext.getBeans().entrySet().stream().collect(Collectors.toSet());
+
+    for (Map.Entry<TypeElement, BeanDefinition> entry : beans) {
+      new ClassBuilder(entry.getValue()).build();
     }
-
-    void generate() {
-        Set<Map.Entry<TypeElement, BeanDefinition>> beans = iocContext.getBeans()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toSet());
-
-        for (Map.Entry<TypeElement, BeanDefinition> entry : beans) {
-            new ClassBuilder(entry.getValue()).build();
-        }
-    }
+  }
 }

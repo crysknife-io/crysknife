@@ -2,5 +2,5 @@ package javax.enterprise.event;
 
 public interface Event<T> {
 
-    void fire(T var1);
+  void fire(T var1);
 }

@@ -1,16 +1,14 @@
 /*
  * Copyright 2008 Google Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package org.treblereel.gwt.crysknife.generator.context.oracle;
@@ -28,16 +26,16 @@ import org.treblereel.gwt.crysknife.logger.TreeLogger;
  * by the '/' character and finally ending in a valid filename, for example, <code>
  * com/google/gwt/blah.txt</code>.
  *
- * <p>The identity of the returned sets and maps will change when the underlying module is
- * refreshed.
+ * <p>
+ * The identity of the returned sets and maps will change when the underlying module is refreshed.
  */
 public interface ResourceOracle {
 
-    /** Returns the resource for the given path name or null if there is no such resource. */
-    URL[] findResources(CharSequence packageName, CharSequence[] pathName);
+  /** Returns the resource for the given path name or null if there is no such resource. */
+  URL[] findResources(CharSequence packageName, CharSequence[] pathName);
 
-    URL findResource(CharSequence pkg, CharSequence relativeName);
+  URL findResource(CharSequence pkg, CharSequence relativeName);
 
-    URL findResource(CharSequence fullPath);
+  URL findResource(CharSequence fullPath);
 
 }

@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
@@ -44,22 +42,21 @@ public class URLPatternMatcher {
   /**
    * Adds the allowed URL template as specified in the {@link Page#path()} by the developer.
    *
-   * @param urlTemplate
-   *          The page URL pattern specified in the {@link Page#path()}.
-   * @param pageName
-   *          The name of the page.
+   * @param urlTemplate The page URL pattern specified in the {@link Page#path()}.
+   * @param pageName The name of the page.
    */
   public void add(String urlTemplate, String pageName) {
     final URLPattern urlPattern = generatePattern(urlTemplate);
     pageMap.put(urlPattern, pageName);
   }
 
-
- /**
-  * Generates a {@link URLPattern} from a {@link Page#path()}
-  * @param urlTemplate The {@link Page#path()}
-  * @return A {@link URLPattern} used to match URLs
-  */
+  /**
+   * Generates a {@link URLPattern} from a {@link Page#path()}
+   * 
+   * @param urlTemplate The {@link Page#path()}
+   * 
+   * @return A {@link URLPattern} used to match URLs
+   */
   public static URLPattern generatePattern(String urlTemplate) {
     final RegExp regex = RegExp.compile(URLPattern.paramRegex, "g");
     final List<String> paramList = new ArrayList<>();
@@ -102,9 +99,10 @@ public class URLPatternMatcher {
     paramList.add(mr.getGroup(1));
   }
 
-/**
- * Creates a {@link HistoryToken} by parsing a URL path. This path should never include the application context.
- */
+  /**
+   * Creates a {@link HistoryToken} by parsing a URL path. This path should never include the
+   * application context.
+   */
   public HistoryToken parseURL(String url) {
     final Multimap<String, String> mapBuilder = new Multimap<>();
     String keyValuePairs, pageInfo;
@@ -114,23 +112,22 @@ public class URLPatternMatcher {
     if (indexOfSemicolon > 0) {
       pageInfo = url.substring(0, indexOfSemicolon);
       keyValuePairs = url.substring(indexOfSemicolon + 1);
-    }
-    else {
+    } else {
       pageInfo = url;
       keyValuePairs = null;
     }
 
     final String pageName = parseValues(pageInfo, mapBuilder);
     if (pageName == null)
-      throw new PageNotFoundException("Invalid URL \"" + URLPattern.decodeParsingCharacters(url) + "\" could not be mapped to any page.");
+      throw new PageNotFoundException("Invalid URL \"" + URLPattern.decodeParsingCharacters(url)
+          + "\" could not be mapped to any page.");
 
     if (keyValuePairs != null) {
       parseKeyValuePairs(keyValuePairs, mapBuilder);
     }
 
     final Multimap<String, String> state = new Multimap<>();
-    return new HistoryToken(pageName, ImmutableMultimap.copyOf(state),
-                            getURLPattern(pageName));
+    return new HistoryToken(pageName, ImmutableMultimap.copyOf(state), getURLPattern(pageName));
   }
 
   private String parseValues(String rawURIPath, Multimap<String, String> builder) {
@@ -144,8 +141,8 @@ public class URLPatternMatcher {
 
     final MatchResult mr = pattern.getRegex().exec(rawURIPath);
     for (int keyIndex = 0; keyIndex < pattern.getParamList().size(); keyIndex++) {
-      builder.put(URLPattern.decodeParsingCharacters(pattern.getParamList().get(keyIndex)), URLPattern
-             .decodeParsingCharacters(mr.getGroup(keyIndex + 1)));
+      builder.put(URLPattern.decodeParsingCharacters(pattern.getParamList().get(keyIndex)),
+          URLPattern.decodeParsingCharacters(mr.getGroup(keyIndex + 1)));
     }
     return pageName;
   }
@@ -161,30 +158,33 @@ public class URLPatternMatcher {
     for (int i = 0, n = rawKeyValueString.length(); i < n; i++) {
       final char ch = rawKeyValueString.charAt(i);
       if (ch == '&') {
-        builder.put(URLPattern.decodeParsingCharacters(key.toString()), URLPattern.decodeParsingCharacters(value.toString()));
+        builder.put(URLPattern.decodeParsingCharacters(key.toString()),
+            URLPattern.decodeParsingCharacters(value.toString()));
         key = new StringBuilder();
         value = new StringBuilder();
         sb = key;
-      }
-      else if (ch == '=') {
+      } else if (ch == '=') {
         sb = value;
-      }
-      else {
+      } else {
         sb.append(ch);
       }
     }
     // we've got a key-value pair that still isn't in the map builder
-    builder.put(URLPattern.decodeParsingCharacters(key.toString()), URLPattern.decodeParsingCharacters(value.toString()));
+    builder.put(URLPattern.decodeParsingCharacters(key.toString()),
+        URLPattern.decodeParsingCharacters(value.toString()));
   }
 
   /**
    * Declares the default page to be matched against the empty string pattern.
-   * @param defaultPage Never null. Must match a page that has already been added with {@link #add(String, String)}
+   * 
+   * @param defaultPage Never null. Must match a page that has already been added with
+   *        {@link #add(String, String)}
    */
   public void setAsDefaultPage(String defaultPage) {
     final URLPattern urlPattern = getURLPattern(defaultPage);
     if (urlPattern == null)
-      throw new IllegalArgumentException("Page " + defaultPage + " must be added to URLPatternMatcher before it can be set as Default Page.");
+      throw new IllegalArgumentException("Page " + defaultPage
+          + " must be added to URLPatternMatcher before it can be set as Default Page.");
 
     if (urlPattern.getParamList().size() > 0)
       throw new IllegalArgumentException("Cannot set a default page that has path parameters.");
@@ -194,6 +194,7 @@ public class URLPatternMatcher {
 
   /**
    * @param pageName The name of the page corresponding to the {@link URLPattern}
+   * 
    * @return The {@link URLPattern} for the given page name.
    */
   public URLPattern getURLPattern(String pageName) {

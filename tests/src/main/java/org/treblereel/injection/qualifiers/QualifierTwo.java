@@ -9,8 +9,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/13/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/13/19
  */
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

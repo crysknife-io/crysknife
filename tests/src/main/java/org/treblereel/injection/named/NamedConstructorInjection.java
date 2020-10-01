@@ -5,22 +5,22 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
  */
 @ApplicationScoped
 public class NamedConstructorInjection {
 
-    public NamedBean one;
+  public NamedBean one;
 
-    public NamedBean two;
+  public NamedBean two;
 
-    public NamedBean def;
+  public NamedBean def;
 
-    @Inject
-    public NamedConstructorInjection(@Named("NamedBeanOne") NamedBean one, @Named("NamedBeanTwo") NamedBean two, NamedBean def) {
-        this.one = one;
-        this.two = two;
-        this.def = def;
-    }
+  @Inject
+  public NamedConstructorInjection(@Named("NamedBeanOne") NamedBean one,
+      @Named("NamedBeanTwo") NamedBean two, NamedBean def) {
+    this.one = one;
+    this.two = two;
+    this.def = def;
+  }
 }

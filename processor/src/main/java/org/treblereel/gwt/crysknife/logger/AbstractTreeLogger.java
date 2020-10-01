@@ -1,16 +1,14 @@
 /*
  * Copyright 2007 Google Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package org.treblereel.gwt.crysknife.logger;
@@ -25,10 +23,9 @@ import org.treblereel.gwt.crysknife.exception.UnableToCompleteException;
 public abstract class AbstractTreeLogger extends TreeLogger {
 
   public static final Comparator<String> LOG_LINE_COMPARATOR =
-          (thisLine, thatLine) -> ComparisonChain.start()
-              .compare(thisLine.indexOf(':'), thatLine.indexOf(':'))
-              .compare(thisLine, thatLine)
-              .result();
+      (thisLine, thatLine) -> ComparisonChain.start()
+          .compare(thisLine.indexOf(':'), thatLine.indexOf(':')).compare(thisLine, thatLine)
+          .result();
 
   private static class UncommittedBranchData {
 
@@ -46,14 +43,12 @@ public abstract class AbstractTreeLogger extends TreeLogger {
   }
 
   // This message is package-protected so that the unit test can access it.
-  static final String OUT_OF_MEMORY_MSG =
-      "Out of memory; to increase the "
-          + "amount of memory, use the -Xmx flag at startup (java -Xmx128M ...)";
+  static final String OUT_OF_MEMORY_MSG = "Out of memory; to increase the "
+      + "amount of memory, use the -Xmx flag at startup (java -Xmx128M ...)";
 
   // This message is package-protected so that the unit test can access it.
-  static final String STACK_OVERFLOW_MSG =
-      "Stack overflow; to increase the "
-          + "stack size, use the -Xss flag at startup (java -Xss1M ...)";
+  static final String STACK_OVERFLOW_MSG = "Stack overflow; to increase the "
+      + "stack size, use the -Xss flag at startup (java -Xss1M ...)";
 
   public static String getStackTraceAsString(Throwable e) {
     // Show the exception info for anything other than "UnableToComplete".
@@ -111,8 +106,8 @@ public abstract class AbstractTreeLogger extends TreeLogger {
 
   /** Implements branching behavior that supports lazy logging for low-priority branched loggers. */
   @Override
-  public final synchronized TreeLogger branch(
-      Type type, String msg, Throwable caught, HelpInfo helpInfo) {
+  public final synchronized TreeLogger branch(Type type, String msg, Throwable caught,
+      HelpInfo helpInfo) {
 
     if (msg == null) {
       msg = "(Null branch message)";
@@ -214,7 +209,7 @@ public abstract class AbstractTreeLogger extends TreeLogger {
 
   /**
    * @param type the log type representing the most detailed level of logging that the caller is
-   *     interested in, or <code>null</code> to choose the default level.
+   *        interested in, or <code>null</code> to choose the default level.
    */
   public final synchronized void setMaxDetail(Type type) {
     if (type == null) {
@@ -250,8 +245,8 @@ public abstract class AbstractTreeLogger extends TreeLogger {
 
         // Let the subclass do its thing to commit this branch.
         //
-        parent.doCommitBranch(
-            this, uncommitted.type, uncommitted.message, uncommitted.caught, uncommitted.helpInfo);
+        parent.doCommitBranch(this, uncommitted.type, uncommitted.message, uncommitted.caught,
+            uncommitted.helpInfo);
 
         // Release the uncommitted state.
         //
@@ -267,31 +262,24 @@ public abstract class AbstractTreeLogger extends TreeLogger {
    * Derived classes should override this method to actually commit the specified message associated
    * with this the root of this branch.
    */
-  protected abstract void doCommitBranch(
-      AbstractTreeLogger childBeingCommitted,
-      Type type,
-      String msg,
-      Throwable caught,
-      HelpInfo helpInfo);
+  protected abstract void doCommitBranch(AbstractTreeLogger childBeingCommitted, Type type,
+      String msg, Throwable caught, HelpInfo helpInfo);
 
   /**
-   * Derived classes should override this method to actually write a log message. Note that {@link
-   * #isLoggable(Type)} will have already been called.
+   * Derived classes should override this method to actually write a log message. Note that
+   * {@link #isLoggable(Type)} will have already been called.
    */
-  protected abstract void doLog(
-      int indexOfLogEntryWithinParentLogger,
-      Type type,
-      String msg,
-      Throwable caught,
-      HelpInfo helpInfo);
+  protected abstract void doLog(int indexOfLogEntryWithinParentLogger, Type type, String msg,
+      Throwable caught, HelpInfo helpInfo);
 
   /**
    * Scans <code>t</code> and its causes for {@link OutOfMemoryError} or {@link StackOverflowError}.
    *
    * @param t a possibly null {@link Throwable}
+   * 
    * @return true if {@link OutOfMemoryError} or {@link StackOverflowError} appears anywhere in the
-   *     cause list or if <code>t</code> is an {@link OutOfMemoryError} or {@link
-   *     StackOverflowError}
+   *         cause list or if <code>t</code> is an {@link OutOfMemoryError} or
+   *         {@link StackOverflowError}
    */
   private String causedBySpecialError(Throwable t) {
     while (t != null) {

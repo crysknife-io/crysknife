@@ -12,38 +12,39 @@ import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/3/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
 public abstract class Definition {
 
-    public static final Comparator<IOCGenerator> iocGeneratorComparator = Comparator.comparing(h -> h.getClass().getAnnotation(Generator.class).priority());
+  public static final Comparator<IOCGenerator> iocGeneratorComparator =
+      Comparator.comparing(h -> h.getClass().getAnnotation(Generator.class).priority());
 
-    protected final Map<IOCGenerator, Set<ExecutableDefinition>> executableDefinitions = new HashMap<>();
+  protected final Map<IOCGenerator, Set<ExecutableDefinition>> executableDefinitions =
+      new HashMap<>();
 
-    protected Set<BeanDefinition> dependsOn = new LinkedHashSet<>();
+  protected Set<BeanDefinition> dependsOn = new LinkedHashSet<>();
 
-    protected Optional<IOCGenerator> generator = Optional.empty();
+  protected Optional<IOCGenerator> generator = Optional.empty();
 
-    protected Map<IOCGenerator, Definition> decorators = new HashMap<>();
+  protected Map<IOCGenerator, Definition> decorators = new HashMap<>();
 
-    public void setGenerator(IOCGenerator generator) {
-        this.generator = Optional.of(generator);
+  public void setGenerator(IOCGenerator generator) {
+    this.generator = Optional.of(generator);
+  }
+
+  public void generate(ClassBuilder classBuilder) {
+    if (generator.isPresent()) {
+      generator.get().generateBeanFactory(classBuilder, this);
     }
+  }
 
-    public void generate(ClassBuilder classBuilder) {
-        if (generator.isPresent()) {
-            generator.get().generateBeanFactory(classBuilder, this);
-        }
-    }
+  public void generateDecorators(ClassBuilder builder) {
+    decorators.keySet().stream().sorted(iocGeneratorComparator)
+        .forEach(decorator -> (decorator).generateBeanFactory(builder, this));
+  }
 
-    public void generateDecorators(ClassBuilder builder) {
-        decorators.keySet().stream().sorted(iocGeneratorComparator)
-                .forEach(decorator -> (decorator).generateBeanFactory(builder, this));
-    }
-
-    public <T extends Definition> T addDecorator(IOCGenerator generator, Definition definition) {
-        decorators.put(generator, definition);
-        return (T) this;
-    }
+  public <T extends Definition> T addDecorator(IOCGenerator generator, Definition definition) {
+    decorators.put(generator, definition);
+    return (T) this;
+  }
 }

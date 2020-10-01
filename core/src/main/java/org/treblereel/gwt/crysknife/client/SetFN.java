@@ -3,11 +3,10 @@ package org.treblereel.gwt.crysknife.client;
 import jsinterop.annotations.JsFunction;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 12/18/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/18/19
  */
 @FunctionalInterface
 @JsFunction
 public interface SetFN {
-    boolean onInvoke(Object object, String objectKey, Object value);
+  boolean onInvoke(Object object, String objectKey, Object value);
 }

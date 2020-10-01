@@ -9,28 +9,27 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/2/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
 @Generator(priority = 2)
 public class DependentGenerator extends ScopedBeanGenerator {
 
-    public DependentGenerator(IOCContext iocContext) {
-        super(iocContext);
-    }
+  public DependentGenerator(IOCContext iocContext) {
+    super(iocContext);
+  }
 
-    @Override
-    public void register() {
-        iocContext.register(Dependent.class, WiringElementType.BEAN, this);
-    }
+  @Override
+  public void register() {
+    iocContext.register(Dependent.class, WiringElementType.BEAN, this);
+  }
 
-    @Override
-    public void generateInstanceGetMethodBuilder(ClassBuilder builder, BeanDefinition beanDefinition) {
-        super.generateInstanceGetMethodBuilder(builder, beanDefinition);
-        builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+  @Override
+  public void generateInstanceGetMethodBuilder(ClassBuilder builder,
+      BeanDefinition beanDefinition) {
+    super.generateInstanceGetMethodBuilder(builder, beanDefinition);
+    builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
 
-        builder.getGetMethodDeclaration().getBody()
-                .get()
-                .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
-    }
+    builder.getGetMethodDeclaration().getBody().get()
+        .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
+  }
 }

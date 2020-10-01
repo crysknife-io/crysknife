@@ -7,18 +7,17 @@ import java.util.function.Consumer;
 import javax.enterprise.event.Event;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 4/1/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/1/19
  */
 public abstract class AbstractEventHandler<T> implements Event<T> {
 
-    private Set<Consumer<T>> subscribers = new HashSet<>();
+  private Set<Consumer<T>> subscribers = new HashSet<>();
 
-    public void fire(T t) {
-        subscribers.forEach(subscriber -> subscriber.accept(t));
-    }
+  public void fire(T t) {
+    subscribers.forEach(subscriber -> subscriber.accept(t));
+  }
 
-    public void addSubscriber(Consumer<T> subscriber) {
-        subscribers.add(subscriber);
-    }
+  public void addSubscriber(Consumer<T> subscriber) {
+    subscribers.add(subscriber);
+  }
 }

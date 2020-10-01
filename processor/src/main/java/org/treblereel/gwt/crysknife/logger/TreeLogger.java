@@ -1,16 +1,14 @@
 /*
  * Copyright 2008 Google Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 package org.treblereel.gwt.crysknife.logger;
@@ -100,6 +98,7 @@ public abstract class TreeLogger {
      * Determines whether this log type is of lower priority than some other log type.
      *
      * @param other the other log type
+     * 
      * @return <code>true</code> if this log type is lower priority
      */
     public boolean isLowerPriorityThan(Type other) {
@@ -146,23 +145,22 @@ public abstract class TreeLogger {
    * A valid logger that ignores all messages. Occasionally useful when calling methods that require
    * a logger parameter.
    */
-  public static final TreeLogger NULL =
-          new TreeLogger() {
-            @Override
-            public TreeLogger branch(Type type, String msg, Throwable caught, HelpInfo helpInfo) {
-              return this;
-            }
+  public static final TreeLogger NULL = new TreeLogger() {
+    @Override
+    public TreeLogger branch(Type type, String msg, Throwable caught, HelpInfo helpInfo) {
+      return this;
+    }
 
-            @Override
-            public boolean isLoggable(Type type) {
-              return false;
-            }
+    @Override
+    public boolean isLoggable(Type type) {
+      return false;
+    }
 
-            @Override
-            public void log(Type type, String msg, Throwable caught, HelpInfo helpInfo) {
-              // nothing
-            }
-          };
+    @Override
+    public void log(Type type, String msg, Throwable caught, HelpInfo helpInfo) {
+      // nothing
+    }
+  };
 
   /**
    * Calls {@link #branch(TreeLogger.Type, String, Throwable, TreeLogger.HelpInfo)} with a <code>
@@ -185,30 +183,33 @@ public abstract class TreeLogger {
    * together underneath the current logger. The details of how/if the resulting messages are
    * displayed is implementation-dependent.
    *
-   * <p>The log message supplied when branching serves two purposes. First, the message should be
+   * <p>
+   * The log message supplied when branching serves two purposes. First, the message should be
    * considered a heading for all the child messages below it. Second, the <code>type</code> of the
    * message provides a hint as to the importance of the children below it. As an optimization, an
    * implementation could return a "no-op" logger if messages of the specified type weren't being
    * logged, which the implication being that all nested log messages were no more important than
    * the level of their branch parent.
    *
-   * <p>As an example of how hierarchical logging can be used, a branched logger in a GUI could
-   * write log message as child items of a parent node in a tree control. If logging to streams,
-   * such as a text console, the branched logger could prefix each entry with a unique string and
-   * indent its text so that it could be sorted later to reconstruct a proper hierarchy.
+   * <p>
+   * As an example of how hierarchical logging can be used, a branched logger in a GUI could write
+   * log message as child items of a parent node in a tree control. If logging to streams, such as a
+   * text console, the branched logger could prefix each entry with a unique string and indent its
+   * text so that it could be sorted later to reconstruct a proper hierarchy.
    *
    * @param type
    * @param msg an optional message to log, which can be <code>null</code> if only an exception is
-   *     being logged
+   *        being logged
    * @param caught an optional exception to log, which can be <code>null</code> if only a message is
-   *     being logged
+   *        being logged
    * @param helpInfo extra information that might be used by the logger to provide extended
-   *     information to the user
+   *        information to the user
+   * 
    * @return an instance of {@link TreeLogger} representing the new branch of the log; may be the
-   *     same instance on which this method is called
+   *         same instance on which this method is called
    */
-  public abstract TreeLogger branch(
-          TreeLogger.Type type, String msg, Throwable caught, HelpInfo helpInfo);
+  public abstract TreeLogger branch(TreeLogger.Type type, String msg, Throwable caught,
+      HelpInfo helpInfo);
 
   /**
    * Determines whether or not a log entry of the specified type would actually be logged. Caller
@@ -240,11 +241,11 @@ public abstract class TreeLogger {
    *
    * @param type
    * @param msg an optional message to log, which can be <code>null</code> if only an exception is
-   *     being logged
+   *        being logged
    * @param caught an optional exception to log, which can be <code>null</code> if only a message is
-   *     being logged
+   *        being logged
    * @param helpInfo extra information that might be used by the logger to provide extended
-   *     information to the user
+   *        information to the user
    */
   public abstract void log(TreeLogger.Type type, String msg, Throwable caught, HelpInfo helpInfo);
 }
