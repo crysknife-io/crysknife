@@ -24,8 +24,9 @@ import org.gwtproject.event.logical.shared.ValueChangeHandler;
 import org.gwtproject.event.shared.Event;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.history.client.History;
-import org.gwtproject.user.window.client.Window;
 import org.treblereel.gwt.crysknife.navigation.client.local.HandlerManager;
+
+import static elemental2.dom.DomGlobal.window;
 
 /**
  * Enhances GWT's History implementation to add HTML5 pushState support.
@@ -55,7 +56,7 @@ public class HistoryImplPushState implements HasValueChangeHandlers<String> {
 
     public boolean init() {
         // initialize HistoryImpl with the current path
-        updateHistoryToken(Window.Location.getPath() + Window.Location.getQueryString());
+        updateHistoryToken(window.location.pathname + window.location.search);
         // initialize the empty state with the current history token
         nativeUpdate(token, true);
         // initialize the popState handler

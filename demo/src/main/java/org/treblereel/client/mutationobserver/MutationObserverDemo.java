@@ -10,7 +10,7 @@ import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MutationRecord;
 import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.user.client.ui.Button;
+//import org.gwtproject.user.client.ui.Button;
 import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
 import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
@@ -34,7 +34,7 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
 
     @DataField
     @Inject
-    protected Button checkBtn;
+    protected HTMLButtonElement checkBtn;
 
     @DataField
     @Inject

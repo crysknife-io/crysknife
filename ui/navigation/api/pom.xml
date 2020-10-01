@@ -6,7 +6,6 @@
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>navigation-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>navigation-api</artifactId>
@@ -17,7 +16,7 @@
     <developer>
       <id>treblereel</id>
       <name>Dmitrii Tikhomirov</name>
-      <email>chani@me.com</email>
+      <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
 
@@ -36,20 +35,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.gwtproject.regexp</groupId>
-      <artifactId>gwt-regexp</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>${elemental2.version}</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.safehtml</groupId>
-      <artifactId>gwt-safehtml</artifactId>
-      <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -64,17 +52,22 @@
     <dependency>
       <groupId>org.jboss.elemento</groupId>
       <artifactId>elemento-core</artifactId>
-      <version>${elemento.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.regexp</groupId>
+      <artifactId>gwt-regexp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.safehtml</groupId>
+      <artifactId>gwt-safehtml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-logical-event</artifactId>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.user.history</groupId>
       <artifactId>gwt-history</artifactId>
-      <version>HEAD-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.user.window</groupId>
-      <artifactId>gwt-window</artifactId>
-      <version>HEAD-SNAPSHOT</version>
     </dependency>
 
     <dependency>

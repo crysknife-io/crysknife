@@ -12,7 +12,6 @@ import elemental2.dom.HTMLSelectElement;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.jboss.elemento.IsElement;
 import org.treblereel.client.inject.DependentBean;
-import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
 import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
@@ -24,7 +23,7 @@ import org.treblereel.gwt.crysknife.navigation.client.local.Page;
  */
 @Singleton
 @Page(path = "dependent")
-@Templated(value = "dependentbeans.html")
+@Templated(value = "dependentbeans.html", stylesheet = "DependentBeans.gss")
 public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @DataField
@@ -43,9 +42,6 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @Inject
     private DependentBean beanOne2Instance;
-
-    @Inject
-    private TextResource textResource;
 
     @Inject
     public DependentBeans(HTMLSelectElement nativeSelect,

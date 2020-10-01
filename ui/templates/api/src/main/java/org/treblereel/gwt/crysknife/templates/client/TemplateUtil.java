@@ -13,8 +13,6 @@
  */
 package org.treblereel.gwt.crysknife.templates.client;
 
-import java.util.Collection;
-
 import elemental2.core.JsArray;
 import elemental2.dom.Attr;
 import elemental2.dom.DomGlobal;
@@ -27,8 +25,6 @@ import elemental2.dom.TreeWalker;
 import jsinterop.base.Js;
 import org.gwtproject.safehtml.shared.SafeHtml;
 import org.gwtproject.safehtml.shared.SafeHtmlUtils;
-import org.gwtproject.user.client.ui.RootPanel;
-import org.gwtproject.user.client.ui.Widget;
 import org.jboss.elemento.IsElement;
 
 /**
@@ -146,18 +142,6 @@ public final class TemplateUtil {
             if (currentValue != null && currentValue.contains(expression)) {
                 attribute.nodeValue = currentValue.replace(expression, value);
             }
-        }
-    }
-
-    public static void initTemplated(final org.gwtproject.dom.client.Element wrapped, final Collection<Widget> dataFields) {
-        // All template fragments are contained in a single element, during initialization.
-        wrapped.removeFromParent();
-        final TemplateWidget widget = new TemplateWidget(wrapped, dataFields);
-        widget.onAttach();
-        try {
-            RootPanel.detachOnWindowClose(widget);
-        } catch (Exception e) {
-
         }
     }
 

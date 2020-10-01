@@ -15,7 +15,7 @@
         <developer>
             <id>treblereel</id>
             <name>Dmitrii Tikhomirov</name>
-            <email>chani@me.com</email>
+            <email>chani.liet@gmail.com</email>
         </developer>
     </developers>
 
@@ -46,26 +46,28 @@
         <maven.source.version>3.0.1</maven.source.version>
         <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
         <apache.commons.commons-lang3.version>3.9</apache.commons.commons-lang3.version>
+        <apache.commons.commons-lang3.version>3.9</apache.commons.commons-lang3.version>
+        <apache.commons.io.version>2.8.0</apache.commons.io.version>
 
-        <elemento.version>1.0.0-rc1</elemento.version>
+        <elemento.version>1.0.1</elemento.version>
         <jsoup.version>1.11.3</jsoup.version>
         <lesscss.version>1.7.0.1.1</lesscss.version>
         <vertispan.jsinterop.base.version>1.0.0-SNAPSHOT</vertispan.jsinterop.base.version>
-        <google.jsinterop.annotations.version>1.0.2</google.jsinterop.annotations.version>
+        <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
 
         <gwtproject.version>1.0-SNAPSHOT</gwtproject.version>
+        <gwtproject.rc.version>1.0.0-RC1</gwtproject.rc.version>
         <gwtproject.head.version>HEAD-SNAPSHOT</gwtproject.head.version>
-
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <javaparser.core.version>3.15.18</javaparser.core.version>
         <junit.version>4.11</junit.version>
-        <elemental2.version>1.0.0-RC1</elemental2.version>
-        <auto.common.version>0.10</auto.common.version>
-        <auto.service.version>1.0-rc6</auto.service.version>
+        <elemental2.version>1.1.0</elemental2.version>
+        <auto.common.version>0.11</auto.common.version>
+        <auto.service.version>1.0-rc7</auto.service.version>
     </properties>
 
     <modules>
@@ -85,6 +87,81 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>com.google.jsinterop</groupId>
+                <artifactId>jsinterop-annotations</artifactId>
+                <version>${google.jsinterop.annotations.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vertispan.jsinterop</groupId>
+                <artifactId>base</artifactId>
+                <version>${vertispan.jsinterop.base.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.elemental2</groupId>
+                <artifactId>elemental2-dom</artifactId>
+                <version>${elemental2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.safehtml</groupId>
+                <artifactId>gwt-safehtml</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.regexp</groupId>
+                <artifactId>gwt-regexp</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.event</groupId>
+                <artifactId>gwt-event</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.event</groupId>
+                <artifactId>gwt-event-dom</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.event</groupId>
+                <artifactId>gwt-logical-event</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.event</groupId>
+                <artifactId>gwt-event-legacy</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.user.history</groupId>
+                <artifactId>gwt-history</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.dom</groupId>
+                <artifactId>gwt-dom</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.user.window</groupId>
+                <artifactId>gwt-window</artifactId>
+                <version>${gwtproject.head.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.gwtproject.widgets</groupId>
+                <artifactId>gwt-widgets</artifactId>
+                <version>${gwtproject.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.elemento</groupId>
+                <artifactId>elemento-core</artifactId>
+                <version>${elemento.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${apache.commons.io.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.11</version>
@@ -95,7 +172,6 @@
 
     <build>
         <pluginManagement>
-
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

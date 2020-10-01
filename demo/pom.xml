@@ -11,45 +11,15 @@
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
-    <gwt.version>1.0-SNAPSHOT</gwt.version>
-    <elemental2.version>1.0.0</elemental2.version>
-    <elemento.version>1.0.0-rc1</elemento.version>
-    <j2cl.maven.plugin.version>0.13-SNAPSHOT</j2cl.maven.plugin.version>
-    <j2cl-compilation.level>BUNDLE</j2cl-compilation.level>
+    <elemental2.version>1.1.0</elemental2.version>
+    <elemento.version>1.0.1</elemento.version>
+    <j2cl.maven.plugin.version>0.16-SNAPSHOT</j2cl.maven.plugin.version>
+    <maven.jetty.plugin.version>9.4.31.v20200723</maven.jetty.plugin.version>
+    <maven.tomcat.plugin.version>2.2</maven.tomcat.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>com.google.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>${elemental2.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.jboss.elemento</groupId>
-      <artifactId>elemento-core</artifactId>
-      <version>${elemento.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event</artifactId>
-      <version>HEAD-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event-dom</artifactId>
-      <version>${gwt.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gwtproject.widgets</groupId>
-      <artifactId>gwt-widgets</artifactId>
-      <version>${gwt.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
@@ -72,13 +42,6 @@
 
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>gwt-resources</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-api</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -87,18 +50,7 @@
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>templates-generator</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>databinding-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>databinding-generator</artifactId>
-      <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -111,6 +63,7 @@
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>mutationobserver-generator</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -123,18 +76,7 @@
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>navigation-generator</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.vertispan.jsinterop</groupId>
-      <artifactId>base</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.gwtproject.core</groupId>
-      <artifactId>gwt-core</artifactId>
-      <version>${gwt.version}</version>
+      <scope>provided</scope>
     </dependency>
    </dependencies>
 
@@ -145,31 +87,6 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>${maven.properties.plugin}</version>
-        <executions>
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>set-system-properties</goal>
-            </goals>
-            <configuration>
-              <properties>
-                <property>
-                  <name>CssResource.conversionMode</name>
-                  <value>strict</value>
-                </property>
-                <property>
-                  <name>ClientBundle.cacheUrl</name>
-                  <value>/gwt-cache/</value>
-                </property>
-              </properties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
@@ -237,33 +154,20 @@
           </execution>
         </executions>
         <configuration>
-          <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir</defaultWebappDirectory>
-          <compilationLevel>${j2cl-compilation.level}</compilationLevel>
-          <entrypoint>org.treblereel.client.App</entrypoint>
-          <jsinteropAnnotationsJar>com.google.jsinterop:jsinterop-annotations:1.0.2</jsinteropAnnotationsJar>
-          <externs></externs>
-          <defines></defines>
+          <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</defaultWebappDirectory>
+          <compilationLevel>ADVANCED</compilationLevel>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
+        <version>${maven.tomcat.plugin.version}</version>
         <configuration>
           <contextFile>${basedir}/src/main/tomcatconf/context.xml</contextFile>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>prod</id>
-      <properties>
-        <j2cl-compilation.level>ADVANCED</j2cl-compilation.level>
-      </properties>
-    </profile>
-  </profiles>
 
   <pluginRepositories>
     <pluginRepository>

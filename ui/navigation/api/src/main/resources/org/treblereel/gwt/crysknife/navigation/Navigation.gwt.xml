@@ -3,7 +3,6 @@
     <inherits name="org.jboss.elemento.Core"/>
     <inherits name="org.gwtproject.regexp.RegExp"/>
     <inherits name="org.gwtproject.user.history.History"/>
-    <inherits name="org.gwtproject.user.window.Window"/>
     <inherits name="org.gwtproject.safehtml.SafeHtml"/>
     <inherits name="org.treblereel.gwt.crysknife.Crysknife"/>
 </module>

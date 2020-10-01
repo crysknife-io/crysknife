@@ -6,7 +6,6 @@
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>ui-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>mutationobserver-parent</artifactId>
@@ -17,7 +16,7 @@
     <developer>
       <id>treblereel</id>
       <name>Dmitrii Tikhomirov</name>
-      <email>chani@me.com</email>
+      <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
 

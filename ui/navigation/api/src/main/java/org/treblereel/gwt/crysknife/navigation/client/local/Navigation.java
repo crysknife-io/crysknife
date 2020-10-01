@@ -30,7 +30,6 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
 import org.gwtproject.event.shared.HandlerRegistration;
-import org.gwtproject.user.window.client.Window;
 import org.jboss.elemento.By;
 import org.jboss.elemento.Elements;
 import org.jboss.elemento.ElementsBag;
@@ -146,7 +145,7 @@ public class Navigation {
             return;
         }
 
-        String hash = Window.Location.getHash();
+        String hash = DomGlobal.window.location.hash;
         navigationErrorHandler = new DefaultNavigationErrorHandler(this);
         historyHandlerRegistration = HistoryWrapper.addValueChangeHandler(event -> {
             HistoryToken token = null;
@@ -199,7 +198,7 @@ public class Navigation {
             if (token.startsWith("#")) {
                 token = token.substring(1);
             }
-            HistoryWrapper.newItem(Window.Location.getPath() + token, false);
+            HistoryWrapper.newItem(DomGlobal.window.location.pathname + token, false);
         }
     }
 

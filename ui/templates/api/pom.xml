@@ -6,7 +6,6 @@
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>templates-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>templates-api</artifactId>
@@ -17,7 +16,7 @@
     <developer>
       <id>treblereel</id>
       <name>Dmitrii Tikhomirov</name>
-      <email>chani@me.com</email>
+      <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
 
@@ -38,38 +37,22 @@
     <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>${elemental2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.elemento</groupId>
       <artifactId>elemento-core</artifactId>
-      <version>${elemento.version}</version>
     </dependency>
     <dependency>
       <groupId>com.vertispan.jsinterop</groupId>
       <artifactId>base</artifactId>
-      <version>${vertispan.jsinterop.base.version}</version>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.dom</groupId>
       <artifactId>gwt-dom</artifactId>
-      <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.widgets</groupId>
-      <artifactId>gwt-widgets</artifactId>
-      <version>${gwtproject.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.safehtml</groupId>
-      <artifactId>gwt-safehtml</artifactId>
-      <version>${gwtproject.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event-dom</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>

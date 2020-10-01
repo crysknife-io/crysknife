@@ -21,7 +21,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -108,7 +107,8 @@ public class BeanDefinition extends Definition {
                 TypeElement named = context.getQualifiers().get(element).get(fieldPoint.getNamed()).element;
                 return context.getBean(named).generateBeanCall(context, builder, fieldPoint);
             }
-            throw new GenerationException("Unable to find generator for " + getQualifiedName());
+            throw new GenerationException("Unable to find generator for " + fieldPoint.getField()
+                                                  + " at " + fieldPoint.getEnclosingElement());
         }
     }
 
