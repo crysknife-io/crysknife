@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <artifactId>ui-parent</artifactId>
+    <artifactId>templates-parent</artifactId>
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <version>0.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>gwt-resources</artifactId>
-  <description>support of gwt-resources injection</description>
+  <artifactId>templates-generator</artifactId>
+  <description>templates generator</description>
   <developers>
     <developer>
       <id>treblereel</id>
@@ -27,24 +27,7 @@
     <url>https://github.com/treblereel</url>
   </organization>
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
     <plugins>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
@@ -69,6 +52,7 @@
                   <artifact>*:*:*:*</artifact>
                   <excludes>
                     <exclude>**/*.java</exclude>
+                    <exclude>**/*.js</exclude>
                   </excludes>
                 </filter>
               </filters>
@@ -80,9 +64,15 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
-      <artifactId>crysknife-annotations</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <groupId>com.google.auto</groupId>
+      <artifactId>auto-common</artifactId>
+      <version>0.11</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.javaparser</groupId>
+      <artifactId>javaparser-core</artifactId>
+      <version>3.15.18</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

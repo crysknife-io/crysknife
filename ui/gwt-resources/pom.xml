@@ -60,12 +60,6 @@
       <artifactId>crysknife-processor</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.gwtproject.core</groupId>
-      <artifactId>gwt-core</artifactId>
-      <version>${gwtproject.version}</version>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -78,7 +72,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>

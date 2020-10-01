@@ -12,7 +12,7 @@
     <developer>
       <id>treblereel</id>
       <name>Dmitrii Tikhomirov</name>
-      <email>chani@me.com</email>
+      <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
   <licenses>
@@ -35,7 +35,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -113,7 +112,4 @@
       </exclusions>
     </dependency>
   </dependencies>
-  <properties>
-    <aspectj.version>1.9.5</aspectj.version>
-  </properties>
 </project>

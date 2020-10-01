@@ -37,13 +37,14 @@
     <dependency>
       <groupId>com.google.auto</groupId>
       <artifactId>auto-common</artifactId>
-      <version>${auto.common.version}</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>${elemental2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.elemento</groupId>
+      <artifactId>elemento-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -52,19 +53,9 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.jboss.elemento</groupId>
-      <artifactId>elemento-core</artifactId>
-      <version>${elemento.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>navigation-api</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.auto</groupId>
-      <artifactId>auto-common</artifactId>
-      <version>${auto.common.version}</version>
     </dependency>
   </dependencies>
 
