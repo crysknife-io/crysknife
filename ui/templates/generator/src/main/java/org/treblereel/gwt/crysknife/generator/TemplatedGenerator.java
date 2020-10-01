@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +35,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -117,6 +117,7 @@ import elemental2.dom.HTMLTrackElement;
 import elemental2.dom.HTMLUListElement;
 import elemental2.dom.HTMLVideoElement;
 import jsinterop.base.Js;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.gwtproject.event.dom.client.BlurEvent;
 import org.gwtproject.event.dom.client.CanPlayThroughEvent;
@@ -156,15 +157,6 @@ import org.gwtproject.event.dom.client.TouchCancelEvent;
 import org.gwtproject.event.dom.client.TouchEndEvent;
 import org.gwtproject.event.dom.client.TouchMoveEvent;
 import org.gwtproject.event.dom.client.TouchStartEvent;
-import org.gwtproject.resources.client.ClientBundle;
-import org.gwtproject.resources.client.CssResource;
-import org.gwtproject.resources.client.Resource;
-import org.gwtproject.resources.context.AptContext;
-import org.gwtproject.resources.ext.ResourceOracle;
-import org.gwtproject.resources.rg.resource.impl.ResourceOracleImpl;
-import org.gwtproject.user.client.ui.IsWidget;
-import org.gwtproject.user.client.ui.UIObject;
-import org.gwtproject.user.client.ui.Widget;
 import org.jboss.elemento.IsElement;
 import org.jboss.gwt.elemento.processor.AbortProcessingException;
 import org.jboss.gwt.elemento.processor.ExpressionParser;
@@ -185,6 +177,7 @@ import org.lesscss.LessException;
 import org.lesscss.LessSource;
 import org.treblereel.gwt.crysknife.annotation.Generator;
 import org.treblereel.gwt.crysknife.client.Reflect;
+import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.api.ClassBuilder;
 import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
@@ -311,7 +304,6 @@ public class TemplatedGenerator extends IOCGenerator {
     private ProcessingEnvironment processingEnvironment;
     private Messager messager;
     private BeanDefinition beanDefinition;
-    private ResourceOracle oracle;
 
     public TemplatedGenerator(IOCContext iocContext) {
         super(iocContext);
@@ -323,9 +315,6 @@ public class TemplatedGenerator extends IOCGenerator {
         this.messager = processingEnvironment.getMessager();
 
         iocContext.register(Templated.class, WiringElementType.CLASS_DECORATOR, this);
-
-        oracle = new ResourceOracleImpl(new AptContext(iocContext.getGenerationContext().getProcessingEnvironment(),
-                                                       iocContext.getGenerationContext().getRoundEnvironment()));
     }
 
     @Override
@@ -375,7 +364,9 @@ public class TemplatedGenerator extends IOCGenerator {
             List<String> postfixes = Arrays.asList(".css", ".gss", ".less");
             String path = type.getQualifiedName().toString().replaceAll("\\.", "/");
             for (String postfix : postfixes) {
-                URL file = oracle.findResource(path, postfix);
+                URL file = iocContext.getGenerationContext()
+                        .getResourceOracle()
+                        .findResource(path, postfix);
                 try {
                     if (file != null && new File(file.toURI()).exists()) {
                         return new StyleSheet(type.getSimpleName() + "" + postfix, new File(file.toURI()));
@@ -385,8 +376,15 @@ public class TemplatedGenerator extends IOCGenerator {
             }
         } else {
             try {
-                return new StyleSheet(templated.stylesheet(), new File(oracle.findResource(templated.stylesheet()).toURI()));
+                return new StyleSheet(templated.stylesheet(), new File(iocContext.getGenerationContext()
+                                                                               .getResourceOracle()
+                                                                               .findResource(MoreElements.getPackage(type)
+                                                                                                     .getQualifiedName()
+                                                                                                     .toString(),
+                                                                                             templated.stylesheet())
+                                                                               .toURI()));
             } catch (URISyntaxException e) {
+                throw new GenerationException(e);
             }
         }
         System.out.println(String.format("Unable to find stylesheet for %s", type.getQualifiedName()));
@@ -424,10 +422,11 @@ public class TemplatedGenerator extends IOCGenerator {
         generateWrapper(builder, templateContext);
         setStylesheet(builder, templateContext);
         processDataFields(builder, templateContext);
-        maybeInitWidgets(builder, templateContext);
+        //maybeInitWidgets(builder, templateContext);
         processEventHandlers(builder, templateContext);
     }
 
+/*
     private void maybeInitWidgets(ClassBuilder builder, TemplateContext templateContext) {
         List<DataElementInfo> widgets = templateContext.getDataElements()
                 .stream()
@@ -436,7 +435,6 @@ public class TemplatedGenerator extends IOCGenerator {
         if (!widgets.isEmpty()) {
             builder.getClassCompilationUnit().addImport(List.class);
             builder.getClassCompilationUnit().addImport(ArrayList.class);
-            builder.getClassCompilationUnit().addImport(Widget.class);
 
             ExpressionStmt expressionStmt = new ExpressionStmt();
             VariableDeclarationExpr variableDeclarationExpr = new VariableDeclarationExpr();
@@ -483,6 +481,7 @@ public class TemplatedGenerator extends IOCGenerator {
                     .get().addAndGetStatement(doInit);
         }
     }
+*/
 
     private void generateWrapper(ClassBuilder builder, TemplateContext templateContext) {
         ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
@@ -537,7 +536,7 @@ public class TemplatedGenerator extends IOCGenerator {
             builder.getClassCompilationUnit().addImport(StyleInjector.class);
 
             if (!templateContext.getStylesheet().isLess()) {
-                builder.getClassCompilationUnit().addImport(CssResource.class);
+/*                builder.getClassCompilationUnit().addImport(CssResource.class);
                 builder.getClassCompilationUnit().addImport(CssResource.NotStrict.class);
                 builder.getClassCompilationUnit().addImport(Resource.class);
                 builder.getClassCompilationUnit().addImport(ClientBundle.Source.class);
@@ -550,19 +549,26 @@ public class TemplatedGenerator extends IOCGenerator {
                 new JavaParser().parseBodyDeclaration("@Source(\"" + templateContext.getStylesheet().getStyle() + "\") @NotStrict CssResource getStyle();").ifSuccessful(inner::addMember);
                 builder.getClassDeclaration().addMember(inner);
 
-                String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";
+                String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";*/
+
+                String css;
+                try {
+                    css = FileUtils.readFileToString(templateContext.getStylesheet().getFile(), StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    throw new GenerationException("Unable to process Css/Gss :" + templateContext.getStylesheet());
+                }
 
                 //TODO Temporary workaround, till gwt-dom StyleInjector ll be fixed
                 builder.getGetMethodDeclaration()
                         .getBody()
-                        .get().addStatement(new MethodCallExpr(new MethodCallExpr(new ClassOrInterfaceType()
-                                                                                          .setName("StyleInjector")
-                                                                                          .getNameAsExpression(), "fromString").addArgument(new MethodCallExpr(
-                        new MethodCallExpr(
-                                new ObjectCreationExpr()
-                                        .setType(theName),
-                                "getStyle"),
-                        "getText")), "inject"));
+                        .get()
+                        .addStatement(
+                                new MethodCallExpr(
+                                        new MethodCallExpr(
+                                                new ClassOrInterfaceType()
+                                                        .setName("StyleInjector")
+                                                        .getNameAsExpression(), "fromString")
+                                                .addArgument(new StringLiteralExpr(escape(css))), "inject"));
             } else {
                 try {
                     final LessSource source = new LessSource(templateContext.getStylesheet().getFile());
@@ -570,13 +576,16 @@ public class TemplatedGenerator extends IOCGenerator {
                     final String compiledCss = compiler.compile(source);
                     builder.getGetMethodDeclaration()
                             .getBody()
-                            .get().addStatement(new MethodCallExpr(
-                            new MethodCallExpr(
-                                    new ClassOrInterfaceType()
-                                            .setName("StyleInjector")
-                                            .getNameAsExpression(), "fromString").addArgument(new StringLiteralExpr(org.gwtproject.resources.rg.Generator.escape(compiledCss))), "inject"));
+                            .get()
+                            .addStatement(
+                                    new MethodCallExpr(
+                                            new MethodCallExpr(
+                                                    new ClassOrInterfaceType()
+                                                            .setName("StyleInjector")
+                                                            .getNameAsExpression(), "fromString")
+                                                    .addArgument(new StringLiteralExpr(escape(compiledCss))), "inject"));
                 } catch (LessException | IOException e) {
-                    throw new Error("Unable to process Less " + templateContext.getStylesheet());
+                    throw new GenerationException("Unable to process Less " + templateContext.getStylesheet());
                 }
             }
         }
@@ -660,7 +669,7 @@ public class TemplatedGenerator extends IOCGenerator {
                                     new ClassOrInterfaceType()
                                             .setName(IsElement.class.getCanonicalName()), instance)),
                     "element");
-        } else if (element.getKind()
+        }/* else if (element.getKind()
                 .equals(DataElementInfo.Kind.IsWidget)) {
 
             return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
@@ -669,7 +678,7 @@ public class TemplatedGenerator extends IOCGenerator {
                             new EnclosedExpr(
                                     new CastExpr(
                                             new ClassOrInterfaceType().setName(UIObject.class.getCanonicalName()), instance)), "getElement"));
-        }
+        }*/
 
         return new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()), instance));
     }
@@ -925,8 +934,8 @@ public class TemplatedGenerator extends IOCGenerator {
             return DataElementInfo.Kind.HTMLElement;
         } else if (isAssignable(dataElementType, IsElement.class)) {
             return DataElementInfo.Kind.IsElement;
-        } else if (isAssignable(dataElementType, IsWidget.class)) {
-            return DataElementInfo.Kind.IsWidget;
+        //} else if (isAssignable(dataElementType, IsWidget.class)) {
+        //    return DataElementInfo.Kind.IsWidget;
         } else {
             return DataElementInfo.Kind.Custom;
         }
@@ -970,11 +979,11 @@ public class TemplatedGenerator extends IOCGenerator {
         String fqTemplate = org.jboss.gwt.elemento.processor.TypeSimplifier.packageNameOf(type).replace('.', '/') + "/" + templateSelector.template;
 
         try {
-            URL url = oracle.findResource(fqTemplate);
+            URL url = iocContext.getGenerationContext().getResourceOracle().findResource(fqTemplate);
             if (url == null) {
                 abortWithError(type, "Cannot find template \"%s\". Please make sure the template exists.", fqTemplate);
             }
-            Document document = Jsoup.parse(IOUtils.toString(oracle.findResource(fqTemplate), Charset.defaultCharset()));
+            Document document = Jsoup.parse(IOUtils.toString(iocContext.getGenerationContext().getResourceOracle().findResource(fqTemplate), Charset.defaultCharset()));
             if (templateSelector.hasSelector()) {
                 String query = "[data-field=" + templateSelector.selector + "]";
                 Elements selector = document.select(query);
@@ -1104,5 +1113,55 @@ public class TemplatedGenerator extends IOCGenerator {
             return result.get().getKey();
         }
         return "elemental2.dom.HTMLElement";
+    }
+
+    private String escape(String unescaped) {
+        int extra = 0;
+        for (int in = 0, n = unescaped.length(); in < n; ++in) {
+            switch (unescaped.charAt(in)) {
+                case '\0':
+                case '\n':
+                case '\r':
+                case '\"':
+                case '\\':
+                    ++extra;
+                    break;
+            }
+        }
+
+        if (extra == 0) {
+            return unescaped;
+        }
+
+        char[] oldChars = unescaped.toCharArray();
+        char[] newChars = new char[oldChars.length + extra];
+        for (int in = 0, out = 0, n = oldChars.length; in < n; ++in, ++out) {
+            char c = oldChars[in];
+            switch (c) {
+                case '\0':
+                    newChars[out++] = '\\';
+                    c = '0';
+                    break;
+                case '\n':
+                    newChars[out++] = '\\';
+                    c = 'n';
+                    break;
+                case '\r':
+                    newChars[out++] = '\\';
+                    c = 'r';
+                    break;
+                case '\"':
+                    newChars[out++] = '\\';
+                    c = '"';
+                    break;
+                case '\\':
+                    newChars[out++] = '\\';
+                    c = '\\';
+                    break;
+            }
+            newChars[out] = c;
+        }
+
+        return String.valueOf(newChars);
     }
 }

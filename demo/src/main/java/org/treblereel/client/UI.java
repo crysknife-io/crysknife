@@ -41,9 +41,6 @@ public class UI implements IsElement<HTMLDivElement> {
     protected SingletonBeans singletonBeans;
     @Inject
     @DataField
-    protected DependentBeans dependentBeans;
-    @Inject
-    @DataField
     protected TransitiveInjection transitiveInjection;
     @Inject
     @DataField

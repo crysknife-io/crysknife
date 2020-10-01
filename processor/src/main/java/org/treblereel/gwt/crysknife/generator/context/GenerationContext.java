@@ -6,6 +6,9 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
+import org.treblereel.gwt.crysknife.generator.context.oracle.ResourceOracle;
+import org.treblereel.gwt.crysknife.generator.context.oracle.ResourceOracleImpl;
+
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/21/19
@@ -14,6 +17,7 @@ public class GenerationContext {
 
     private final RoundEnvironment roundEnvironment;
     private final ProcessingEnvironment processingEnvironment;
+    private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
     private boolean isGwt2 = false;
     private boolean isJre = false;
 
@@ -25,7 +29,7 @@ public class GenerationContext {
         try {
             Class.forName("com.google.gwt.core.client.GWT");
             isGwt2 = true;
-            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,"GWT2 generation mode.");
+            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING, "GWT2 generation mode.");
         } catch (ClassNotFoundException e) {
 
         }
@@ -33,7 +37,7 @@ public class GenerationContext {
         try {
             Class.forName("org.aspectj.lang.ProceedingJoinPoint");
             isJre = true;
-            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,"JRE generation mode.");
+            processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING, "JRE generation mode.");
         } catch (ClassNotFoundException e) {
 
         }
@@ -61,5 +65,9 @@ public class GenerationContext {
 
     public boolean isJre() {
         return isJre;
+    }
+
+    public ResourceOracle getResourceOracle() {
+        return resourceOracle;
     }
 }

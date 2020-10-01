@@ -6,7 +6,6 @@
     <groupId>org.treblereel.gwt.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>crysknife-core</artifactId>
@@ -20,7 +19,7 @@
     <developer>
       <id>treblereel</id>
       <name>Dmitrii Tikhomirov</name>
-      <email>chani@me.com</email>
+      <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
 
@@ -41,12 +40,10 @@
     <dependency>
       <groupId>com.google.jsinterop</groupId>
       <artifactId>jsinterop-annotations</artifactId>
-      <version>${google.jsinterop.annotations.version}</version>
     </dependency>
     <dependency>
       <groupId>com.vertispan.jsinterop</groupId>
       <artifactId>base</artifactId>
-      <version>${vertispan.jsinterop.base.version}</version>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -56,7 +53,6 @@
     <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
-      <version>${elemental2.version}</version>
     </dependency>
   </dependencies>
 

@@ -9,14 +9,14 @@ import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.user.client.ui.TextBox;
+//import org.gwtproject.user.client.ui.TextBox;
 import org.jboss.elemento.IsElement;
 import org.treblereel.gwt.crysknife.templates.client.annotation.DataField;
 import org.treblereel.gwt.crysknife.templates.client.annotation.EventHandler;
 import org.treblereel.gwt.crysknife.templates.client.annotation.Templated;
-import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
+/*import org.treblereel.gwt.crysknife.databinding.client.api.DataBinder;
 import org.treblereel.gwt.crysknife.databinding.client.api.StateSync;
-import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;
+import org.treblereel.gwt.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;*/
 import org.treblereel.gwt.crysknife.navigation.client.local.Page;
 
 /**
@@ -30,14 +30,14 @@ public class Databinding implements IsElement<HTMLDivElement> {
 
     @DataField HTMLDivElement root;
 
+/*    @Inject
+    protected DataBinder<Customer> dataBinder;*/
+/*    @DataField
     @Inject
-    protected DataBinder<Customer> dataBinder;
-    @DataField
-    @Inject
-    protected TextBox nameBox;
-    @DataField
-    @Inject
-    protected MyTextBox cityBox;
+    protected TextBox nameBox;*/
+    //@DataField
+    //@Inject
+    //protected MyTextBox cityBox;
     @Inject
     @DataField
     protected HTMLInputElement streetBox;
@@ -64,7 +64,7 @@ public class Databinding implements IsElement<HTMLDivElement> {
     @PostConstruct
     public void init() {
 
-        customer = dataBinder
+/*        customer = dataBinder
                 .bind(nameBox, "name")
                 .bind(cityBox, "address.city")
                 .bind(streetBox, "address.street.name")
@@ -74,7 +74,7 @@ public class Databinding implements IsElement<HTMLDivElement> {
         dataBinder.addPropertyChangeHandler((PropertyChangeHandler<Customer>) event -> {
             DomGlobal.console.log("new value " + event.toString());
             onPropertyChange(event.toString());
-        });
+        });*/
 
     }
 
@@ -87,12 +87,12 @@ public class Databinding implements IsElement<HTMLDivElement> {
         resultBox.value = state;
     }
 
-    @EventHandler("cityBox")
+    //@EventHandler("cityBox")
     void onCityClick(final ClickEvent e) {
         DomGlobal.console.log("cityBox click");
     }
 
-    @EventHandler("modelBtn")
+/*    @EventHandler("modelBtn")
     void getModel(final ClickEvent e) {
         onPropertyChange(dataBinder.getModel().toString());
     }
@@ -110,5 +110,5 @@ public class Databinding implements IsElement<HTMLDivElement> {
     @EventHandler("resumeBtn")
     void onResume(final ClickEvent e) {
         dataBinder.resume(StateSync.FROM_UI);
-    }
+    }*/
 }

@@ -9,7 +9,6 @@ import elemental2.dom.HTMLDivElement;
 import org.treblereel.client.events.Address;
 import org.treblereel.client.events.User;
 import org.treblereel.client.named.NamedBeanConstructorInjectionPanel;
-import org.treblereel.client.resources.TextResource;
 import org.treblereel.gwt.crysknife.client.Application;
 import org.treblereel.gwt.crysknife.client.ComponentScan;
 import org.treblereel.gwt.crysknife.navigation.client.local.DefaultPage;
@@ -21,9 +20,6 @@ public class App {
 
     @Inject
     private HTMLDivElement toast;
-
-    @Inject
-    private TextResource textResource;
 
     @Inject
     private NamedBeanConstructorInjectionPanel namedBeanConstructorInjectionPanel;

@@ -1,12 +1,12 @@
 package org.treblereel.client.databinding;
 
-import org.treblereel.gwt.crysknife.databinding.client.api.Bindable;
+//import org.treblereel.gwt.crysknife.databinding.client.api.Bindable;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 11/25/19
  */
-@Bindable
+//@Bindable
 public class Address {
 
     private String city;

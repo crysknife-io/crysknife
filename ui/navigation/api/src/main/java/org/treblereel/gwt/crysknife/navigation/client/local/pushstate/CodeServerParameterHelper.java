@@ -14,7 +14,9 @@
 
 package org.treblereel.gwt.crysknife.navigation.client.local.pushstate;
 
-import org.gwtproject.user.window.client.Window;
+import java.util.Arrays;
+
+import elemental2.dom.DomGlobal;
 
 /**
  * Utility class with methods to extract and add the <code>gwt.codesvr</code> to the URL.
@@ -41,7 +43,7 @@ public final class CodeServerParameterHelper {
         /*
          * This gets compiled out in production mode!
          */
-        String gwtCodesvr = Window.Location.getParameter("gwt.codesvr");
+        String gwtCodesvr = getQueryParam("gwt.codesvr");
         if (gwtCodesvr != null) {
             if (token.contains("?")) {
                 result += "&";
@@ -53,6 +55,16 @@ public final class CodeServerParameterHelper {
 
         return result;
     }
+
+    private static String getQueryParam(String param) {
+        String found = null;
+        for (String item : DomGlobal.window.location.search.substring(1).split("&")) {
+            if (param == item.split("=")[0]) {
+                found = item.split("=")[1];
+            }
+        }
+        return found;
+    };
 
     /**
      * Removes the <code>gwt.codesvr</code> parameter from the given string.
