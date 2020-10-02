@@ -59,6 +59,8 @@
     <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
     <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
     <maven.formatter.plugin.version>2.13.0</maven.formatter.plugin.version>
+    <maven.license.plugin.version>3.0</maven.license.plugin.version>
+
 
     <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
     <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
@@ -277,6 +279,49 @@
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>${maven.license.plugin.version}</version>
+        <configuration>
+          <header>LICENSE.header</header>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <skipExistingHeaders>true</skipExistingHeaders>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+          </mapping>
+          <excludes>
+            <exclude>**/README.md</exclude>
+            <exclude>**/LICENSE</exclude>
+            <exclude>**/LICENSE.header</exclude>
+            <exclude>**/AUTHORS</exclude>
+            <exclude>**/src/test/resources/**</exclude>
+            <exclude>**/src/main/resources/**</exclude>
+            <exclude>**/war</exclude>
+            <exclude>**/pom.xml</exclude>
+            <exclude>**/.flattened-pom.xml</exclude>
+            <exclude>**/gwt-unitcache</exclude>
+            <exclude>**/webapp/**</exclude>
+            <exclude>**/tomcatconf/**</exclude>
+            <exclude>.github/FUNDING.yml</exclude>
+            <exclude>eclipse-java-google-style.xml</exclude>
+            <exclude>docs/**</exclude>
+            <exclude>**/*.less</exclude>
+            <exclude>**/.factorypath</exclude>
+          </excludes>
+          <properties>
+            <year>${project.inceptionYear}</year>
+            <name>${project.organization.name}</name>
+          </properties>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>net.revelc.code.formatter</groupId>
         <artifactId>formatter-maven-plugin</artifactId>

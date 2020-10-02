@@ -530,7 +530,9 @@ public class Navigation {
       console.warn(
           "Navigation container is null. " + "Please make sure to set the container using either\n"
               + "Navigation.setNavigationContainer(HTMLHTMLElement element) or\n"
-              + "Navigation.setNavigationContainerSelector(By selector)");
+              + "Navigation.setNavigationContainerSelector(By selector)"
+              + " Ignore this message if container is lazy-initializable.");
+
     }
     return navigationContainer;
   }
