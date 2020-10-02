@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2013 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client;
@@ -46,15 +44,17 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
   private List<M> list;
 
   /*
-   * Must be identity set so that ListWidget is not added as a handler twice when using declarative binding.
+   * Must be identity set so that ListWidget is not added as a handler twice when using declarative
+   * binding.
    */
-  private final Collection<BindableListChangeHandler<M>> handlers = Collections.newSetFromMap(new IdentityHashMap<>());
+  private final Collection<BindableListChangeHandler<M>> handlers =
+      Collections.newSetFromMap(new IdentityHashMap<>());
 
   private final Map<BindableProxyAgent<?>, PropertyChangeHandler<?>> elementChangeHandlers =
-          new HashMap<>();
+      new HashMap<>();
 
   private final Map<PropertyChangeHandler<?>, PropertyChangeUnsubscribeHandle> unsubscribeHandlesByHandler =
-          new HashMap<>();
+      new HashMap<>();
 
   private final BindableProxyAgent<List<M>> agent;
 
@@ -291,8 +291,7 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
   }
 
   /**
-   * @param handler
-   *          If this handler has already been added, it will not be added again.
+   * @param handler If this handler has already been added, it will not be added again.
    */
   public HandlerRegistration addChangeHandler(final BindableListChangeHandler<M> handler) {
     Assert.notNull(handler);
@@ -314,9 +313,11 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
           public void onPropertyChange(PropertyChangeEvent<Object> event) {
             final int index = list.indexOf(event.getSource());
             final List<M> source = new ArrayList<M>(list);
-            if (index == -1)  return;
+            if (index == -1)
+              return;
 
-            // yikes! we do this to alter the source list (otherwise the change event won't get fired).
+            // yikes! we do this to alter the source list (otherwise the change event won't get
+            // fired).
             source.add(null);
 
             for (BindableListChangeHandler<M> handler : handlers) {
@@ -336,7 +337,7 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
       return;
     }
 
-    final BindableProxyAgent<?> agent= ((BindableProxy<?>) element).getBindableProxyAgent();
+    final BindableProxyAgent<?> agent = ((BindableProxy<?>) element).getBindableProxyAgent();
     removeElementChangeHandler(agent);
   }
 
@@ -347,7 +348,8 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
     if (handler != null) {
       PropertyChangeUnsubscribeHandle unsubHandle = unsubscribeHandlesByHandler.remove(handler);
       if (unsubHandle == null) {
-        throw new RuntimeException("No " + PropertyChangeUnsubscribeHandle.class.getSimpleName() + " was found for the removed handler.");
+        throw new RuntimeException("No " + PropertyChangeUnsubscribeHandle.class.getSimpleName()
+            + " was found for the removed handler.");
       }
 
       unsubHandle.unsubscribe();
@@ -355,7 +357,8 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
   }
 
   private void removeElementChangeHandlers() {
-    List<BindableProxyAgent<?>> agents = new ArrayList<BindableProxyAgent<?>>(elementChangeHandlers.keySet());
+    List<BindableProxyAgent<?>> agents =
+        new ArrayList<BindableProxyAgent<?>>(elementChangeHandlers.keySet());
     for (BindableProxyAgent<?> agent : agents) {
       removeElementChangeHandler(agent);
     }
@@ -368,7 +371,7 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
 
   @Override
   public boolean equals(Object obj) {
-   return list.equals(obj);
+    return list.equals(obj);
   }
 
   @Override
@@ -461,8 +464,7 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
   public Object get(String propertyName) {
     if ("this".equals(propertyName)) {
       return list;
-    }
-    else {
+    } else {
       throw new NonExistingPropertyException("List", propertyName);
     }
   }
@@ -474,8 +476,7 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
         throw new IllegalArgumentException("Cannot nest BindableListWrapper.");
       }
       list = (List<M>) value;
-    }
-    else {
+    } else {
       throw new NonExistingPropertyException("List", propertyName);
     }
   }

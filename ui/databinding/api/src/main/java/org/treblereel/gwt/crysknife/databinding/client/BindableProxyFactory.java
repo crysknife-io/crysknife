@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2011 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client;
@@ -32,10 +30,13 @@ import org.treblereel.gwt.crysknife.databinding.client.api.Bindable;
  * @author Max Barkley <mbarkley@redhat.com>
  */
 public class BindableProxyFactory {
-  private static Map<Class<?>, BindableProxyProvider> bindableProxyProviders = new HashMap<Class<?>, BindableProxyProvider>();
+  private static Map<Class<?>, BindableProxyProvider> bindableProxyProviders =
+      new HashMap<Class<?>, BindableProxyProvider>();
   private static Map<String, Class<?>> bindableTypes = new HashMap<String, Class<?>>();
-  private static Map<Class<?>, BindableProxyProvider> builtinProxyProviders = new HashMap<Class<?>, BindableProxyProvider>();
-  private static Map<Object, BindableProxy<?>> proxies = new IdentityHashMap<Object, BindableProxy<?>>();
+  private static Map<Class<?>, BindableProxyProvider> builtinProxyProviders =
+      new HashMap<Class<?>, BindableProxyProvider>();
+  private static Map<Object, BindableProxy<?>> proxies =
+      new IdentityHashMap<Object, BindableProxy<?>>();
 
   static {
     builtinProxyProviders.put(List.class, new BindableProxyProvider() {
@@ -57,26 +58,27 @@ public class BindableProxyFactory {
    * Returns a new proxy for the provided model instance. Changes to the proxy's state will result
    * in updates on the widget given the corresponding property was bound.
    *
-   * @param <T>
-   *          the bindable type
-   * @param model
-   *          The model instance to proxy, must not be null.
+   * @param <T> the bindable type
+   * @param model The model instance to proxy, must not be null.
+   * 
    * @return proxy that can be used in place of the model instance.
    */
   @SuppressWarnings("unchecked")
   public static <T> T getBindableProxy(T model) {
     Assert.notNull(model);
-    
+
     if (model instanceof BindableProxy)
       return model;
 
     BindableProxy<?> proxy = proxies.get(model);
     if (proxy == null) {
-      final Class<? extends Object> modelClass = (model instanceof List ? List.class : model.getClass());
+      final Class<? extends Object> modelClass =
+          (model instanceof List ? List.class : model.getClass());
       final BindableProxyProvider proxyProvider = getBindableProxyProvider(modelClass);
       proxy = proxyProvider.getBindableProxy(model);
       if (proxy == null) {
-        throw new RuntimeException("No proxy instance provided for bindable type: " + modelClass.getName());
+        throw new RuntimeException(
+            "No proxy instance provided for bindable type: " + modelClass.getName());
       }
       proxies.put(model, proxy);
     }
@@ -87,8 +89,8 @@ public class BindableProxyFactory {
    * Returns a proxy for a newly created model instance of the provided type. Changes to the proxy's
    * state will result in updates on the component given the corresponding property was bound.
    *
-   * @param bindableType
-   *          the bindable type
+   * @param bindableType the bindable type
+   * 
    * @return proxy that can be used in place of the model instance.
    */
   @SuppressWarnings("unchecked")
@@ -97,7 +99,8 @@ public class BindableProxyFactory {
 
     final BindableProxy<?> proxy = proxyProvider.getBindableProxy();
     if (proxy == null) {
-      throw new RuntimeException("No proxy instance provided for bindable type: " + bindableType.getName());
+      throw new RuntimeException(
+          "No proxy instance provided for bindable type: " + bindableType.getName());
     }
 
     return (T) proxy;
@@ -107,8 +110,8 @@ public class BindableProxyFactory {
    * Returns a proxy for a newly created model instance of the provided type. Changes to the proxy's
    * state will result in updates on the widget given the corresponding property was bound.
    *
-   * @param bindableType
-   *          The fully qualified name of the bindable type
+   * @param bindableType The fully qualified name of the bindable type
+   * 
    * @return proxy that can be used in place of the model instance.
    */
   public static BindableProxy<?> getBindableProxy(String bindableType) {
@@ -126,7 +129,8 @@ public class BindableProxyFactory {
       proxyProvider = builtinProxyProviders.get(bindableType);
     }
     if (proxyProvider == null) {
-      throw new RuntimeException("No proxy provider found for bindable type: " + bindableType.getName());
+      throw new RuntimeException(
+          "No proxy provider found for bindable type: " + bindableType.getName());
     }
 
     return proxyProvider;
@@ -136,10 +140,8 @@ public class BindableProxyFactory {
    * Registers a generated bindable proxy. This method is called by the generated
    * BindableProxyLoader.
    *
-   * @param proxyType
-   *          The bindable type, must not be null.
-   * @param proxyProvider
-   *          The proxy provider for the generated bindable proxy, must not be null.
+   * @param proxyType The bindable type, must not be null.
+   * @param proxyProvider The proxy provider for the generated bindable proxy, must not be null.
    */
   public static void addBindableProxy(Class<?> proxyType, BindableProxyProvider proxyProvider) {
     Assert.notNull(proxyType);
@@ -153,10 +155,8 @@ public class BindableProxyFactory {
    * Remove the cached proxy for the provided model instance. A future lookup will cause the
    * creation of a new proxy instance.
    *
-   * @param <T>
-   *          the bindable type
-   * @param model
-   *          the model instance
+   * @param <T> the bindable type
+   * @param model the model instance
    */
   public static <T> void removeCachedProxyForModel(T model) {
     proxies.remove(model);
@@ -166,8 +166,8 @@ public class BindableProxyFactory {
    * Checks if the type of the provided model is bindable. That's the case when a proxy provider has
    * been generated for that type (the type has been annotated or configured to be bindable).
    *
-   * @param model
-   *          the object to be checked, may be null.
+   * @param model the object to be checked, may be null.
+   * 
    * @return true if the object is bindable, otherwise false.
    */
   @SuppressWarnings("unchecked")
@@ -175,7 +175,7 @@ public class BindableProxyFactory {
     if (model == null) {
       return false;
     }
-    
+
     if (model instanceof BindableProxy) {
       model = (T) ((BindableProxy<T>) model);
     }

@@ -1,3 +1,17 @@
+/*
+ * Copyright © 2020 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.treblereel.gwt.crysknife.generator;
 
 import java.util.Set;
@@ -23,52 +37,52 @@ import org.treblereel.gwt.crysknife.navigation.client.shared.NavigationEvent;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/1/20
+ * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
  */
 @Generator
 public class NavigationGenerator extends SingletonGenerator {
 
-    public NavigationGenerator(IOCContext iocContext) {
-        super(iocContext);
-    }
+  public NavigationGenerator(IOCContext iocContext) {
+    super(iocContext);
+  }
 
-    @Override
-    public void register() {
-        iocContext.register(Inject.class, NavigationGraph.class, WiringElementType.BEAN, this);
-    }
+  @Override
+  public void register() {
+    iocContext.register(Inject.class, NavigationGraph.class, WiringElementType.BEAN, this);
+  }
 
-    @Override
-    public void before() {
+  @Override
+  public void before() {
 
-        Set<TypeElement> pages = iocContext.getGenerationContext()
-                .getRoundEnvironment()
-                .getElementsAnnotatedWith(Page.class).stream()
-                .filter(elm -> elm.getKind().equals(ElementKind.CLASS))
-                .map(elm -> MoreElements.asType(elm)).collect(Collectors.toSet());
+    Set<TypeElement> pages =
+        iocContext.getGenerationContext().getRoundEnvironment().getElementsAnnotatedWith(Page.class)
+            .stream().filter(elm -> elm.getKind().equals(ElementKind.CLASS))
+            .map(elm -> MoreElements.asType(elm)).collect(Collectors.toSet());
 
+    TypeElement type = iocContext.getGenerationContext().getElements()
+        .getTypeElement(Navigation.class.getCanonicalName());
+    BeanDefinition navigation = iocContext.getBeanDefinitionOrCreateAndReturn(type);
 
-        TypeElement type = iocContext.getGenerationContext()
-                .getElements().getTypeElement(Navigation.class.getCanonicalName());
-        BeanDefinition navigation = iocContext.getBeanDefinitionOrCreateAndReturn(type);
+    pages.forEach(elm -> {
+      BeanDefinition page = iocContext.getBeanDefinitionOrCreateAndReturn(elm);
+      navigation.getDependsOn().add(page);
+    });
 
+    new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
+        iocContext.getGenerationContext());
+  }
 
-        pages.forEach(elm -> {
-            BeanDefinition page = iocContext.getBeanDefinitionOrCreateAndReturn(elm);
-            navigation.getDependsOn().add(page);
-        });
-
-        new NavigationGraphGenerator(pages)
-                .generate(new PrintWriterTreeLogger(), iocContext.getGenerationContext());    }
-
-    @Override
-    protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
-        ObjectCreationExpr newInstance = new ObjectCreationExpr();
-        return newInstance.setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
-                .addArgument(new MethodCallExpr(new MethodCallExpr(new NameExpr(Utils.toVariableName(BeanManager.class.getCanonicalName())), "get"), "get"))
-                .addArgument(new MethodCallExpr(
-                        new MethodCallExpr(
-                                new NameExpr("Event_Factory"), "get"),
-                        "get").addArgument(NavigationEvent.class.getCanonicalName() + ".class"));
-    }
+  @Override
+  protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
+    ObjectCreationExpr newInstance = new ObjectCreationExpr();
+    return newInstance
+        .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
+        .addArgument(new MethodCallExpr(
+            new MethodCallExpr(
+                new NameExpr(Utils.toVariableName(BeanManager.class.getCanonicalName())), "get"),
+            "get"))
+        .addArgument(
+            new MethodCallExpr(new MethodCallExpr(new NameExpr("Event_Factory"), "get"), "get")
+                .addArgument(NavigationEvent.class.getCanonicalName() + ".class"));
+  }
 }

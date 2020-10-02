@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
@@ -37,7 +35,8 @@ public class DefaultNavigationErrorHandler implements PageNavigationErrorHandler
     if (pageName.equals("")) {
       throw new Error("Failed to initialize Default Page", exception);
     } else {
-      DomGlobal.console.warn("Got invalid page name \"" + pageName + "\". Redirecting to default page.", exception);
+      DomGlobal.console.warn(
+          "Got invalid page name \"" + pageName + "\". Redirecting to default page.", exception);
       navigation.goTo("");
     }
   }
@@ -47,7 +46,8 @@ public class DefaultNavigationErrorHandler implements PageNavigationErrorHandler
     if (pageRole.equals(DefaultPage.class)) {
       throw new Error("Failed to initialize Default Page", exception);
     } else {
-      DomGlobal.console.warn("Got invalid page role \"" + pageRole + "\". Redirecting to default page.", exception);
+      DomGlobal.console.warn(
+          "Got invalid page role \"" + pageRole + "\". Redirecting to default page.", exception);
       navigation.goTo("");
     }
   }
@@ -57,7 +57,8 @@ public class DefaultNavigationErrorHandler implements PageNavigationErrorHandler
     if (urlPath.equals("")) {
       throw new Error("Failed to initialize Default Page", exception);
     } else {
-      DomGlobal.console.warn("Got invalid URL \"" + urlPath + "\". Redirecting to default page.", exception);
+      DomGlobal.console.warn("Got invalid URL \"" + urlPath + "\". Redirecting to default page.",
+          exception);
       navigation.goTo("");
     }
   }

@@ -35,25 +35,23 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.google.auto</groupId>
+      <artifactId>auto-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.auto</groupId>
-      <artifactId>auto-common</artifactId>
-      <version>${auto.common.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>databinding-api</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>${apache.commons.commons-lang3.version}</version>
     </dependency>
   </dependencies>
 
@@ -62,7 +60,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>

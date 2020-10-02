@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.navigation.client.local;
@@ -21,10 +19,11 @@ import org.treblereel.gwt.crysknife.client.internal.collections.ImmutableMultima
 import org.treblereel.gwt.crysknife.client.internal.collections.Multimap;
 
 /**
- * Represents the "history token" part of the location: the Errai UI Navigation page name plus the names and values of
- * its state parameters.
+ * Represents the "history token" part of the location: the Errai UI Navigation page name plus the
+ * names and values of its state parameters.
  * <p>
- * A history token consists of a mandatory page name followed by optional key=value pairs. For example:
+ * A history token consists of a mandatory page name followed by optional key=value pairs. For
+ * example:
  *
  * <pre>
  *     MyPage;key1=value1&key2=value2&multiKey=value1&multiKey=value2
@@ -47,7 +46,8 @@ public class HistoryToken {
   }
 
   /**
-   * Returns the URL path for this HistoryToken, that can be parsed by {@link HistoryTokenFactory#parseURL(String)}
+   * Returns the URL path for this HistoryToken, that can be parsed by
+   * {@link HistoryTokenFactory#parseURL(String)}
    * <p>
    * This URL path includes the application context.
    */
@@ -58,8 +58,7 @@ public class HistoryToken {
 
     if (!context.isEmpty() && !url.startsWith("/")) {
       return context + "/" + url;
-    }
-    else {
+    } else {
       return context + url;
     }
   }
@@ -99,14 +98,12 @@ public class HistoryToken {
     if (pageName == null) {
       if (other.pageName != null)
         return false;
-    }
-    else if (!pageName.equals(other.pageName))
+    } else if (!pageName.equals(other.pageName))
       return false;
     if (state == null) {
       if (other.state != null)
         return false;
-    }
-    else if (!state.equals(other.state))
+    } else if (!state.equals(other.state))
       return false;
     return true;
   }

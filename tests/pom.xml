@@ -39,7 +39,7 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjrt</artifactId>
-      <version>1.9.5</version>
+      <version>${aspectj.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -58,10 +58,10 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven.compiler.version}</version>
+        <version>${maven.compiler.plugin.version}</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
         </configuration>
       </plugin>
       <plugin>
@@ -70,9 +70,9 @@
         <version>${aspectj.maven.plugin.version}</version>
         <configuration>
           <proc>none</proc>
-          <complianceLevel>1.8</complianceLevel>
-          <source>1.8</source>
-          <target>1.8</target>
+          <complianceLevel>${maven.compiler.source}</complianceLevel>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
         </configuration>
         <executions>
           <execution>

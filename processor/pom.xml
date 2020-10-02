@@ -33,20 +33,18 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
-  <properties>
-    <aspectj.version>1.9.5</aspectj.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>com.google.auto</groupId>
       <artifactId>auto-common</artifactId>
-      <version>${auto.common.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service</artifactId>
-      <version>${auto.service.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.javaparser</groupId>
+      <artifactId>javaparser-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.treblereel.gwt.crysknife</groupId>
@@ -60,29 +58,20 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.javaparser</groupId>
-      <artifactId>javaparser-core</artifactId>
-      <version>${javaparser.core.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>${apache.commons.commons-text.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.classgraph</groupId>
       <artifactId>classgraph</artifactId>
-      <version>${classgraph.classgraph.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>${google.guava.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -97,7 +86,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -109,6 +97,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>

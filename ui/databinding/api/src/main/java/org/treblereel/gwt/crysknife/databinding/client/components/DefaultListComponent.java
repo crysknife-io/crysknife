@@ -1,17 +1,15 @@
 /**
  * Copyright (C) 2016 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client.components;
@@ -34,9 +32,9 @@ import org.gwtproject.user.client.TakesValue;
 import org.treblereel.gwt.crysknife.client.internal.Assert;
 
 /**
- * The default implementation of a {@link ListComponent}. Accepts as argument functions for creating and destorying UI
- * components, as well as accessing the DOM elements of a UI component, allowing it to be used with or independently of
- * the Errai IoC container.
+ * The default implementation of a {@link ListComponent}. Accepts as argument functions for creating
+ * and destorying UI components, as well as accessing the DOM elements of a UI component, allowing
+ * it to be used with or independently of the Errai IoC container.
  *
  * @author Max Barkley <mbarkley@redhat.com>
  */
@@ -51,12 +49,15 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
   private final Function<C, HTMLElement> elementAccessor;
   private final List<C> components = new ArrayList<>();
   private List<M> value;
-  private Consumer<C> selector = c -> {};
-  private Consumer<C> deselector = c -> {};
+  private Consumer<C> selector = c -> {
+  };
+  private Consumer<C> deselector = c -> {
+  };
 
   private final Set<C> selected = Collections.newSetFromMap(new IdentityHashMap<>());
 
-  public DefaultListComponent(final Element root, final Supplier<C> supplier, final Consumer<C> destroyer, final Function<C, HTMLElement> elementAccessor) {
+  public DefaultListComponent(final Element root, final Supplier<C> supplier,
+      final Consumer<C> destroyer, final Function<C, HTMLElement> elementAccessor) {
     this.root = root;
     this.supplier = supplier;
     this.destroyer = destroyer;
@@ -88,7 +89,7 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
     this.value = value;
 
     if (changed) {
-      for (int i = components.size()-1; i > -1; i--) {
+      for (int i = components.size() - 1; i > -1; i--) {
         removeComponent(i);
       }
       for (int i = 0; i < this.value.size(); i++) {
@@ -120,7 +121,8 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
   }
 
   @Override
-  public void onItemsAddedAt(final List<M> source, final int index, final Collection<? extends M> items) {
+  public void onItemsAddedAt(final List<M> source, final int index,
+      final Collection<? extends M> items) {
     int i = index;
     for (final M model : items) {
       addComponent(i++, model);
@@ -134,7 +136,7 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
 
   @Override
   public void onItemsRemovedAt(final List<M> source, final List<Integer> indexes) {
-    Collections.sort(indexes, (n,m) -> m - n);
+    Collections.sort(indexes, (n, m) -> m - n);
     for (final int index : indexes) {
       removeComponent(index);
     }
@@ -142,7 +144,7 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
 
   @Override
   public void onItemsCleared(final List<M> source) {
-    for (int i = components.size()-1; i >= 0; i--) {
+    for (int i = components.size() - 1; i >= 0; i--) {
       removeComponent(i);
     }
   }
@@ -178,9 +180,9 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
     final C component = createComponent(item);
     final HTMLElement element = Assert.notNull(elementAccessor.apply(component));
     if (index < components.size()) {
-      root.insertBefore(Js.uncheckedCast(element), Js.uncheckedCast(Assert.notNull(elementAccessor.apply(components.get(index)))));
-    }
-    else {
+      root.insertBefore(Js.uncheckedCast(element),
+          Js.uncheckedCast(Assert.notNull(elementAccessor.apply(components.get(index)))));
+    } else {
       root.appendChild(Js.uncheckedCast(element));
     }
     components.add(index, component);

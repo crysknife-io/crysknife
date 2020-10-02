@@ -1,3 +1,17 @@
+/*
+ * Copyright © 2020 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.treblereel.gwt.crysknife;
 
 import java.io.IOException;
@@ -40,140 +54,143 @@ import org.treblereel.gwt.crysknife.generator.context.IOCContext;
 import org.treblereel.gwt.crysknife.util.Utils;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/28/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
  */
 public class BeanManagerGenerator {
 
-    private final IOCContext iocContext;
+  private final IOCContext iocContext;
 
-    private final GenerationContext generationContext;
+  private final GenerationContext generationContext;
 
-    BeanManagerGenerator(IOCContext iocContext,
-                         GenerationContext generationContext) {
-        this.iocContext = iocContext;
-        this.generationContext = generationContext;
+  BeanManagerGenerator(IOCContext iocContext, GenerationContext generationContext) {
+    this.iocContext = iocContext;
+    this.generationContext = generationContext;
+  }
+
+  void generate() {
+    try {
+      build();
+    } catch (IOException e) {
+      throw new GenerationException(e);
+    }
+  }
+
+  private void build() throws IOException {
+    JavaFileObject builderFile = generationContext.getProcessingEnvironment().getFiler()
+        .createSourceFile(BeanManager.class.getCanonicalName() + "Impl");
+    try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+      out.append(new BeanManagerGeneratorBuilder().build().toString());
+    }
+  }
+
+  public class BeanManagerGeneratorBuilder {
+
+    private CompilationUnit clazz = new CompilationUnit();
+
+    private ClassOrInterfaceDeclaration classDeclaration;
+
+    private MethodDeclaration getMethodDeclaration;
+
+    public CompilationUnit build() {
+      initClass();
+      addFields();
+      initInitMethod();
+      addGetInstanceMethod();
+      return clazz;
     }
 
-    void generate() {
-        try {
-            build();
-        } catch (IOException e) {
-            throw new GenerationException(e);
-        }
+    private void initClass() {
+      clazz.setPackageDeclaration(BeanManager.class.getPackage().getName());
+      classDeclaration = clazz.addClass(BeanManager.class.getSimpleName() + "Impl");
+      clazz.addImport(Provider.class);
+      clazz.addImport(Map.class);
+      clazz.addImport(HashMap.class);
+      clazz.addImport(Annotation.class);
+      clazz.addImport(Instance.class);
+      clazz.addImport(AbstractBeanManager.class);
+
+      ClassOrInterfaceType factory = new ClassOrInterfaceType();
+      factory.setName("AbstractBeanManager");
+
+      classDeclaration.getExtendedTypes().add(factory);
     }
 
-    private void build() throws IOException {
-        JavaFileObject builderFile = generationContext.getProcessingEnvironment().getFiler()
-                .createSourceFile(BeanManager.class.getCanonicalName() + "Impl");
-        try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-            out.append(new BeanManagerGeneratorBuilder().build().toString());
-        }
+    private void addFields() {
+      addBeanInstance();
     }
 
-    public class BeanManagerGeneratorBuilder {
+    private void initInitMethod() {
+      MethodDeclaration init = classDeclaration.addMethod("init", Modifier.Keyword.PRIVATE);
 
-        private CompilationUnit clazz = new CompilationUnit();
+      TypeElement beanManager =
+          generationContext.getElements().getTypeElement(BeanManager.class.getCanonicalName());
+      generateInitEntry(init, beanManager);
 
-        private ClassOrInterfaceDeclaration classDeclaration;
+      iocContext.getOrderedBeans().stream()
+          .filter(field -> (field.getAnnotation(Application.class) == null))
+          .filter(field -> field.getKind().equals(ElementKind.CLASS)).collect(Collectors.toSet())
+          .forEach(field -> generateInitEntry(init, field));
 
-        private MethodDeclaration getMethodDeclaration;
-
-        public CompilationUnit build() {
-            initClass();
-            addFields();
-            initInitMethod();
-            addGetInstanceMethod();
-            return clazz;
-        }
-
-        private void initClass() {
-            clazz.setPackageDeclaration(BeanManager.class.getPackage().getName());
-            classDeclaration = clazz.addClass(BeanManager.class.getSimpleName() + "Impl");
-            clazz.addImport(Provider.class);
-            clazz.addImport(Map.class);
-            clazz.addImport(HashMap.class);
-            clazz.addImport(Annotation.class);
-            clazz.addImport(Instance.class);
-            clazz.addImport(AbstractBeanManager.class);
-
-            ClassOrInterfaceType factory = new ClassOrInterfaceType();
-            factory.setName("AbstractBeanManager");
-
-            classDeclaration.getExtendedTypes().add(factory);
-        }
-
-        private void addFields() {
-            addBeanInstance();
-        }
-
-        private void initInitMethod() {
-            MethodDeclaration init = classDeclaration.addMethod("init", Modifier.Keyword.PRIVATE);
-
-            TypeElement beanManager = generationContext
-                    .getElements()
-                    .getTypeElement(BeanManager.class.getCanonicalName());
-            generateInitEntry(init, beanManager);
-
-            iocContext.getOrderedBeans().stream()
-                    .filter(field -> (field.getAnnotation(Application.class) == null))
-                    .filter(field -> field.getKind().equals(ElementKind.CLASS))
-                    .collect(Collectors.toSet())
-                    .forEach(field -> generateInitEntry(init, field));
-
-            iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation, definition) -> {
-                if (definition.getType().getAnnotation(Named.class) == null) {
-                    generateInitEntry(init, type, definition.getType(), annotation);
-                }
-            }));
-        }
-
-        private void addGetInstanceMethod() {
-            getMethodDeclaration = classDeclaration.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-            getMethodDeclaration.setType(BeanManager.class.getSimpleName());
-            addGetBody();
-        }
-
-        private void addBeanInstance() {
-            ClassOrInterfaceType type = new ClassOrInterfaceType();
-            type.setName(BeanManager.class.getSimpleName() + "Impl");
-            classDeclaration.addField(type, "instance", Modifier.Keyword.STATIC, Modifier.Keyword.PRIVATE);
-        }
-
-        private void generateInitEntry(MethodDeclaration init, TypeElement field) {
-            generateInitEntry(init, field, field, null);
-        }
-
-        private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory, String annotation) {
-            if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
-                MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
-                        .addArgument(new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
-                        .addArgument(new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(factory)), "create"));
-                if (annotation != null) {
-                    call.addArgument(annotation + ".class");
-                }
-                init.getBody().ifPresent(body -> body.addAndGetStatement(call));
+      iocContext.getQualifiers()
+          .forEach((type, beans) -> beans.forEach((annotation, definition) -> {
+            if (definition.getType().getAnnotation(Named.class) == null) {
+              generateInitEntry(init, type, definition.getType(), annotation);
             }
-        }
-
-        private void addGetBody() {
-            NameExpr instance = new NameExpr("instance");
-            IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(instance, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-            BlockStmt blockStmt = new BlockStmt();
-            blockStmt.addAndGetStatement(generateInstanceInitializer());
-            blockStmt.addAndGetStatement(new MethodCallExpr(instance, "init"));
-            ifStmt.setThenStmt(blockStmt);
-            getMethodDeclaration.getBody().ifPresent(body -> body.addAndGetStatement(ifStmt));
-
-            getMethodDeclaration.getBody().ifPresent(body -> body.getStatements()
-                    .add(new ReturnStmt(instance)));
-        }
-
-        protected Expression generateInstanceInitializer() {
-            ObjectCreationExpr newInstance = new ObjectCreationExpr();
-            newInstance.setType(new ClassOrInterfaceType()
-                                        .setName(BeanManager.class.getSimpleName() + "Impl"));
-            return new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance);
-        }
+          }));
     }
+
+    private void addGetInstanceMethod() {
+      getMethodDeclaration =
+          classDeclaration.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+      getMethodDeclaration.setType(BeanManager.class.getSimpleName());
+      addGetBody();
+    }
+
+    private void addBeanInstance() {
+      ClassOrInterfaceType type = new ClassOrInterfaceType();
+      type.setName(BeanManager.class.getSimpleName() + "Impl");
+      classDeclaration.addField(type, "instance", Modifier.Keyword.STATIC,
+          Modifier.Keyword.PRIVATE);
+    }
+
+    private void generateInitEntry(MethodDeclaration init, TypeElement field) {
+      generateInitEntry(init, field, field, null);
+    }
+
+    private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory,
+        String annotation) {
+      if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
+        MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
+            .addArgument(
+                new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
+            .addArgument(
+                new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(factory)), "create"));
+        if (annotation != null) {
+          call.addArgument(annotation + ".class");
+        }
+        init.getBody().ifPresent(body -> body.addAndGetStatement(call));
+      }
+    }
+
+    private void addGetBody() {
+      NameExpr instance = new NameExpr("instance");
+      IfStmt ifStmt = new IfStmt().setCondition(
+          new BinaryExpr(instance, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
+      BlockStmt blockStmt = new BlockStmt();
+      blockStmt.addAndGetStatement(generateInstanceInitializer());
+      blockStmt.addAndGetStatement(new MethodCallExpr(instance, "init"));
+      ifStmt.setThenStmt(blockStmt);
+      getMethodDeclaration.getBody().ifPresent(body -> body.addAndGetStatement(ifStmt));
+
+      getMethodDeclaration.getBody()
+          .ifPresent(body -> body.getStatements().add(new ReturnStmt(instance)));
+    }
+
+    protected Expression generateInstanceInitializer() {
+      ObjectCreationExpr newInstance = new ObjectCreationExpr();
+      newInstance
+          .setType(new ClassOrInterfaceType().setName(BeanManager.class.getSimpleName() + "Impl"));
+      return new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance);
+    }
+  }
 }

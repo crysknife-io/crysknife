@@ -1,3 +1,17 @@
+/*
+ * Copyright © 2020 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.treblereel.gwt.crysknife.generator.api;
 
 import java.util.HashMap;
@@ -18,114 +32,117 @@ import com.github.javaparser.ast.type.Type;
 import org.treblereel.gwt.crysknife.generator.definition.BeanDefinition;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/3/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
 public class ClassBuilder {
 
-    public final BeanDefinition beanDefinition;
-    Set<Expression> statementToConstructor = new HashSet<>();
-    private CompilationUnit clazz = new CompilationUnit();
-    private ClassOrInterfaceDeclaration classDeclaration;
-    private MethodDeclaration getGetMethodDeclaration;
-    private ConstructorDeclaration constructorDeclaration;
-    private HashMap<String, FieldDeclaration> fields = new HashMap<>();
+  public final BeanDefinition beanDefinition;
+  Set<Expression> statementToConstructor = new HashSet<>();
+  private CompilationUnit clazz = new CompilationUnit();
+  private ClassOrInterfaceDeclaration classDeclaration;
+  private MethodDeclaration getGetMethodDeclaration;
+  private ConstructorDeclaration constructorDeclaration;
+  private HashMap<String, FieldDeclaration> fields = new HashMap<>();
 
-    public ClassBuilder(BeanDefinition beanDefinition) {
-        this.beanDefinition = beanDefinition;
-    }
+  public ClassBuilder(BeanDefinition beanDefinition) {
+    this.beanDefinition = beanDefinition;
+  }
 
-    public void build() {
-        beanDefinition.generate(this);
-    }
+  public void build() {
+    beanDefinition.generate(this);
+  }
 
-    public String toSourceCode() {
-        return clazz.toString();
-    }
+  public String toSourceCode() {
+    return clazz.toString();
+  }
 
-    public CompilationUnit getClassCompilationUnit() {
-        return clazz;
-    }
+  public CompilationUnit getClassCompilationUnit() {
+    return clazz;
+  }
 
-    public void setClassName(String className) {
-        this.classDeclaration = clazz.addClass(className);
-    }
+  public void setClassName(String className) {
+    this.classDeclaration = clazz.addClass(className);
+  }
 
-    public MethodDeclaration getGetMethodDeclaration() {
-        return getGetMethodDeclaration;
-    }
+  public MethodDeclaration getGetMethodDeclaration() {
+    return getGetMethodDeclaration;
+  }
 
-    public void setGetMethodDeclaration(MethodDeclaration getMethodDeclaration) {
-        this.getGetMethodDeclaration = getMethodDeclaration;
-    }
+  public void setGetMethodDeclaration(MethodDeclaration getMethodDeclaration) {
+    this.getGetMethodDeclaration = getMethodDeclaration;
+  }
 
-    public FieldDeclaration addField(Type type, String name, Modifier.Keyword... modifiers) {
-        if (fields.containsKey(name)) {
-            return fields.get(name);
-        }
-        FieldDeclaration fieldDeclaration = null;
-        if (getClassDeclaration() != null) {
-            fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
-            fields.put(name, fieldDeclaration);
-        }
-        return fieldDeclaration;
+  public FieldDeclaration addField(Type type, String name, Modifier.Keyword... modifiers) {
+    if (fields.containsKey(name)) {
+      return fields.get(name);
     }
+    FieldDeclaration fieldDeclaration = null;
+    if (getClassDeclaration() != null) {
+      fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
+      fields.put(name, fieldDeclaration);
+    }
+    return fieldDeclaration;
+  }
 
-    public ClassOrInterfaceDeclaration getClassDeclaration() {
-        return classDeclaration;
-    }
+  public ClassOrInterfaceDeclaration getClassDeclaration() {
+    return classDeclaration;
+  }
 
-    public FieldDeclaration addField(String type, String name, Modifier.Keyword... modifiers) {
-        if (fields.containsKey(name)) {
-            return fields.get(name);
-        }
-        FieldDeclaration fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
-        fields.put(name, fieldDeclaration);
-        return fieldDeclaration;
+  public FieldDeclaration addField(String type, String name, Modifier.Keyword... modifiers) {
+    if (fields.containsKey(name)) {
+      return fields.get(name);
     }
+    FieldDeclaration fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
+    fields.put(name, fieldDeclaration);
+    return fieldDeclaration;
+  }
 
-    public NodeList<ClassOrInterfaceType> getExtendedTypes() {
-        return getClassDeclaration().getExtendedTypes();
-    }
+  public NodeList<ClassOrInterfaceType> getExtendedTypes() {
+    return getClassDeclaration().getExtendedTypes();
+  }
 
-    public void addConstructorDeclaration(Modifier.Keyword... modifiers) {
-        if (constructorDeclaration == null) {
-            this.constructorDeclaration = classDeclaration.addConstructor(modifiers);
-        }
+  public void addConstructorDeclaration(Modifier.Keyword... modifiers) {
+    if (constructorDeclaration == null) {
+      this.constructorDeclaration = classDeclaration.addConstructor(modifiers);
     }
+  }
 
-    public void addParametersToConstructor(Parameter p) {
-        getConstructorDeclaration().getParameters().add(p);
-    }
+  public void addParametersToConstructor(Parameter p) {
+    getConstructorDeclaration().getParameters().add(p);
+  }
 
-    private ConstructorDeclaration getConstructorDeclaration() {
-        return constructorDeclaration;
-    }
+  private ConstructorDeclaration getConstructorDeclaration() {
+    return constructorDeclaration;
+  }
 
-    public void addStatementToConstructor(Expression expr) {
-        if (!statementToConstructor.contains(expr) && getConstructorDeclaration() != null) {
-            getConstructorDeclaration().getBody().addStatement(expr);
-            statementToConstructor.add(expr);
-        }
+  public void addStatementToConstructor(Expression expr) {
+    if (!statementToConstructor.contains(expr) && getConstructorDeclaration() != null) {
+      getConstructorDeclaration().getBody().addStatement(expr);
+      statementToConstructor.add(expr);
     }
+  }
 
-    public MethodDeclaration addMethod(String methodName, Modifier.Keyword... modifiers) {
-        return getClassDeclaration().addMethod(methodName, modifiers);
-    }
+  public MethodDeclaration addMethod(String methodName, Modifier.Keyword... modifiers) {
+    return getClassDeclaration().addMethod(methodName, modifiers);
+  }
 
-    public NodeList<ClassOrInterfaceType> getImplementedTypes() {
-        return getClassDeclaration().getImplementedTypes();
-    }
+  public NodeList<ClassOrInterfaceType> getImplementedTypes() {
+    return getClassDeclaration().getImplementedTypes();
+  }
 
-    public FieldDeclaration addFieldWithInitializer(Type type, String name, Expression initializer, Modifier.Keyword... modifiers) {
-        FieldDeclaration fieldDeclaration = getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
-        fields.put(name, fieldDeclaration);
-        return fieldDeclaration;
-    }
+  public FieldDeclaration addFieldWithInitializer(Type type, String name, Expression initializer,
+      Modifier.Keyword... modifiers) {
+    FieldDeclaration fieldDeclaration =
+        getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
+    fields.put(name, fieldDeclaration);
+    return fieldDeclaration;
+  }
 
-    public FieldDeclaration addFieldWithInitializer(String type, String name, Expression initializer, Modifier.Keyword... modifiers) {
-        FieldDeclaration fieldDeclaration = getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
-        fields.put(name, fieldDeclaration);
-        return fieldDeclaration;
-    }
+  public FieldDeclaration addFieldWithInitializer(String type, String name, Expression initializer,
+      Modifier.Keyword... modifiers) {
+    FieldDeclaration fieldDeclaration =
+        getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
+    fields.put(name, fieldDeclaration);
+    return fieldDeclaration;
+  }
 }

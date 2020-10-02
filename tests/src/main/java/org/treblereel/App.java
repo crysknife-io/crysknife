@@ -1,3 +1,17 @@
+/*
+ * Copyright © 2020 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.treblereel;
 
 import javax.annotation.PostConstruct;
@@ -16,82 +30,81 @@ import org.treblereel.produces.SimpleBeanProducerTest;
 import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 3/21/20
+ * @author Dmitrii Tikhomirov Created by treblereel 3/21/20
  */
 @Application
 public class App {
 
-    public String testPostConstruct;
-    @Inject
-    public QualifierFieldInjection qualifierFieldInjection;
-    @Inject
-    public QualifierConstructorInjection qualifierConstructorInjection;
-    @Inject
-    public SimpleDependentTest simpleDependentTest;
-    @Inject
-    public SimpleSingletonTest simpleSingletonTest;
-    @Inject
-    private SimpleBeanApplicationScoped simpleBeanApplicationScoped;
-    @Inject
-    private SimpleBeanSingleton simpleBeanSingleton;
-    @Inject
-    private SimpleBeanDependent simpleBeanDependent;
-    @Inject
-    private NamedTestBean namedTestBean;
+  public String testPostConstruct;
+  @Inject
+  public QualifierFieldInjection qualifierFieldInjection;
+  @Inject
+  public QualifierConstructorInjection qualifierConstructorInjection;
+  @Inject
+  public SimpleDependentTest simpleDependentTest;
+  @Inject
+  public SimpleSingletonTest simpleSingletonTest;
+  @Inject
+  private SimpleBeanApplicationScoped simpleBeanApplicationScoped;
+  @Inject
+  private SimpleBeanSingleton simpleBeanSingleton;
+  @Inject
+  private SimpleBeanDependent simpleBeanDependent;
+  @Inject
+  private NamedTestBean namedTestBean;
 
-    @Inject
-    private SimpleBeanProducerTest simpleBeanProducerTest;
+  @Inject
+  private SimpleBeanProducerTest simpleBeanProducerTest;
 
-    @Inject
-    private QualifierBeanProducerTest qualifierBeanProducerTest;
+  @Inject
+  private QualifierBeanProducerTest qualifierBeanProducerTest;
 
-    public void onModuleLoad() {
-        new AppBootstrap(this).initialize();
-    }
+  public void onModuleLoad() {
+    new AppBootstrap(this).initialize();
+  }
 
-    @PostConstruct
-    public void init() {
-        this.testPostConstruct = "PostConstruct";
-    }
+  @PostConstruct
+  public void init() {
+    this.testPostConstruct = "PostConstruct";
+  }
 
-    public String getTestPostConstruct() {
-        return testPostConstruct;
-    }
+  public String getTestPostConstruct() {
+    return testPostConstruct;
+  }
 
-    public SimpleBeanApplicationScoped getSimpleBeanApplicationScoped() {
-        return simpleBeanApplicationScoped;
-    }
+  public SimpleBeanApplicationScoped getSimpleBeanApplicationScoped() {
+    return simpleBeanApplicationScoped;
+  }
 
-    public QualifierConstructorInjection getQualifierConstructorInjection() {
-        return qualifierConstructorInjection;
-    }
+  public QualifierConstructorInjection getQualifierConstructorInjection() {
+    return qualifierConstructorInjection;
+  }
 
-    public SimpleBeanSingleton getSimpleBeanSingleton() {
-        return simpleBeanSingleton;
-    }
+  public SimpleBeanSingleton getSimpleBeanSingleton() {
+    return simpleBeanSingleton;
+  }
 
-    public SimpleBeanDependent getSimpleBeanDependent() {
-        return simpleBeanDependent;
-    }
+  public SimpleBeanDependent getSimpleBeanDependent() {
+    return simpleBeanDependent;
+  }
 
-    public QualifierFieldInjection getQualifierFieldInjection() {
-        return qualifierFieldInjection;
-    }
+  public QualifierFieldInjection getQualifierFieldInjection() {
+    return qualifierFieldInjection;
+  }
 
-    public NamedTestBean getNamedTestBean() {
-        return namedTestBean;
-    }
+  public NamedTestBean getNamedTestBean() {
+    return namedTestBean;
+  }
 
-    public SimpleBeanProducerTest getSimpleBeanProducerTest() {
-        return simpleBeanProducerTest;
-    }
+  public SimpleBeanProducerTest getSimpleBeanProducerTest() {
+    return simpleBeanProducerTest;
+  }
 
-    public void setSimpleBeanProducerTest(SimpleBeanProducerTest simpleBeanProducerTest) {
-        this.simpleBeanProducerTest = simpleBeanProducerTest;
-    }
+  public void setSimpleBeanProducerTest(SimpleBeanProducerTest simpleBeanProducerTest) {
+    this.simpleBeanProducerTest = simpleBeanProducerTest;
+  }
 
-    public QualifierBeanProducerTest getQualifierBeanProducerTest() {
-        return qualifierBeanProducerTest;
-    }
+  public QualifierBeanProducerTest getQualifierBeanProducerTest() {
+    return qualifierBeanProducerTest;
+  }
 }

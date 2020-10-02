@@ -1,17 +1,15 @@
 /*
  * Copyright (C) 2011 Red Hat, Inc. and/or its affiliates.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.treblereel.gwt.crysknife.databinding.client.api;
@@ -57,8 +55,7 @@ public class Convert {
     public String convert(final D value) {
       if (value == null) {
         return "";
-      }
-      else {
+      } else {
         return value.toString();
       }
     }
@@ -84,8 +81,7 @@ public class Convert {
     public Integer convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return Integer.parseInt(value);
       }
     }
@@ -100,8 +96,7 @@ public class Convert {
     public Long convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return Long.parseLong(value);
       }
     }
@@ -116,8 +111,7 @@ public class Convert {
     public Float convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return Float.parseFloat(value);
       }
     }
@@ -132,14 +126,14 @@ public class Convert {
     public Double convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return Double.parseDouble(value);
       }
     }
   }
 
-  private static class StringToBigIntegerConverter extends AbstractOneWayConverter<String, BigInteger> {
+  private static class StringToBigIntegerConverter
+      extends AbstractOneWayConverter<String, BigInteger> {
     public StringToBigIntegerConverter() {
       super(String.class, BigInteger.class);
     }
@@ -148,14 +142,14 @@ public class Convert {
     public BigInteger convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return new BigInteger(value);
       }
     }
   }
 
-  private static class StringToBigDecimalConverter extends AbstractOneWayConverter<String, BigDecimal> {
+  private static class StringToBigDecimalConverter
+      extends AbstractOneWayConverter<String, BigDecimal> {
     public StringToBigDecimalConverter() {
       super(String.class, BigDecimal.class);
     }
@@ -164,8 +158,7 @@ public class Convert {
     public BigDecimal convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return new BigDecimal(value);
       }
     }
@@ -180,20 +173,25 @@ public class Convert {
     public Boolean convert(final String value) {
       if (isEmpty(value)) {
         return null;
-      }
-      else {
+      } else {
         return Boolean.parseBoolean(value);
       }
     }
   }
 
-  private static final OneWayConverter<String, Integer> STRING_TO_INT = new StringToIntegerConverter();
+  private static final OneWayConverter<String, Integer> STRING_TO_INT =
+      new StringToIntegerConverter();
   private static final OneWayConverter<String, Long> STRING_TO_LONG = new StringToLongConverter();
-  private static final OneWayConverter<String, Float> STRING_TO_FLOAT = new StringToFloatConverter();
-  private static final OneWayConverter<String, Double> STRING_TO_DOUBLE = new StringToDoubleConverter();
-  private static final OneWayConverter<String, BigInteger> STRING_TO_BIG_INTEGER = new StringToBigIntegerConverter();
-  private static final OneWayConverter<String, BigDecimal> STRING_TO_BIG_DECIMAL = new StringToBigDecimalConverter();
-  private static final OneWayConverter<String, Boolean> STRING_TO_BOOLEAN = new StringToBooleanConverter();
+  private static final OneWayConverter<String, Float> STRING_TO_FLOAT =
+      new StringToFloatConverter();
+  private static final OneWayConverter<String, Double> STRING_TO_DOUBLE =
+      new StringToDoubleConverter();
+  private static final OneWayConverter<String, BigInteger> STRING_TO_BIG_INTEGER =
+      new StringToBigIntegerConverter();
+  private static final OneWayConverter<String, BigDecimal> STRING_TO_BIG_DECIMAL =
+      new StringToBigDecimalConverter();
+  private static final OneWayConverter<String, Boolean> STRING_TO_BOOLEAN =
+      new StringToBooleanConverter();
 
   private static final Map<Class<?>, Class<?>> boxedTypesByPrimitive = new HashMap<>();
 
@@ -215,13 +213,17 @@ public class Convert {
   /**
    * Lookup a default converter.
    *
-   * @return A {@link Converter} between the given types, or else {@code null} if no such default converter exists.
+   * @return A {@link Converter} between the given types, or else {@code null} if no such default
+   *         converter exists.
    */
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static <M, W> Converter<M, W> getConverter(final Class<M> modelValueType, final Class<W> componentValueType) {
-    Converter converter = defaultConverters.get(new ConverterRegistrationKey(modelValueType, componentValueType));
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  public static <M, W> Converter<M, W> getConverter(final Class<M> modelValueType,
+      final Class<W> componentValueType) {
+    Converter converter =
+        defaultConverters.get(new ConverterRegistrationKey(modelValueType, componentValueType));
     if (converter == null) {
-      converter = maybeCreateBuiltinConverter(maybeBoxPrimitive(modelValueType), maybeBoxPrimitive(componentValueType));
+      converter = maybeCreateBuiltinConverter(maybeBoxPrimitive(modelValueType),
+          maybeBoxPrimitive(componentValueType));
     }
 
     return converter;
@@ -231,7 +233,8 @@ public class Convert {
     return value == null || value.equals("");
   }
 
-  private static <M, C> Converter<M, C> maybeCreateBuiltinConverter(final Class<M> modelValueType, final Class<C> widgetValueType) {
+  private static <M, C> Converter<M, C> maybeCreateBuiltinConverter(final Class<M> modelValueType,
+      final Class<C> widgetValueType) {
     Assert.notNull(modelValueType);
     Assert.notNull(widgetValueType);
 
@@ -240,43 +243,34 @@ public class Convert {
 
     if (modelToWidget == null || widgetToModel == null) {
       return null;
-    }
-    else {
+    } else {
       return TwoWayConverter.createConverter(modelToWidget, widgetToModel);
     }
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  private static <D, T> OneWayConverter<D, T> getOneWayConverter(final Class<D> domainType, final Class<T> targetType) {
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private static <D, T> OneWayConverter<D, T> getOneWayConverter(final Class<D> domainType,
+      final Class<T> targetType) {
     if (domainType.equals(targetType)) {
       return new IdentityConverter(domainType);
-    }
-    else if (targetType.equals(String.class)) {
+    } else if (targetType.equals(String.class)) {
       return new AnyToStringConverter(domainType);
-    }
-    else if (domainType.equals(String.class)) {
+    } else if (domainType.equals(String.class)) {
       if (targetType.equals(Integer.class)) {
         return (OneWayConverter<D, T>) STRING_TO_INT;
-      }
-      else if (targetType.equals(Long.class)) {
+      } else if (targetType.equals(Long.class)) {
         return (OneWayConverter<D, T>) STRING_TO_LONG;
-      }
-      else if (targetType.equals(Float.class)) {
+      } else if (targetType.equals(Float.class)) {
         return (OneWayConverter<D, T>) STRING_TO_FLOAT;
-      }
-      else if (targetType.equals(Double.class)) {
+      } else if (targetType.equals(Double.class)) {
         return (OneWayConverter<D, T>) STRING_TO_DOUBLE;
-      }
-      else if (targetType.equals(BigInteger.class)) {
+      } else if (targetType.equals(BigInteger.class)) {
         return (OneWayConverter<D, T>) STRING_TO_BIG_INTEGER;
-      }
-      else if (targetType.equals(BigDecimal.class)) {
+      } else if (targetType.equals(BigDecimal.class)) {
         return (OneWayConverter<D, T>) STRING_TO_BIG_DECIMAL;
-      }
-      else if (targetType.equals(Boolean.class)) {
+      } else if (targetType.equals(Boolean.class)) {
         return (OneWayConverter<D, T>) STRING_TO_BOOLEAN;
-      }
-      else {
+      } else {
         return null;
       }
     }
@@ -286,9 +280,9 @@ public class Convert {
 
   private static Class<?> maybeBoxPrimitive(final Class<?> type) {
     if (type.isPrimitive()) {
-      return Assert.notNull("Unrecognized primitive " + type.getName(), boxedTypesByPrimitive.get(type));
-    }
-    else {
+      return Assert.notNull("Unrecognized primitive " + type.getName(),
+          boxedTypesByPrimitive.get(type));
+    } else {
       return type;
     }
   }
@@ -303,23 +297,20 @@ public class Convert {
   }
 
   /**
-   * Registers a {@link Converter} as a default for the provided model and widget types. The default converter will be
-   * used in case no custom converter is provided when binding a model to a widget.
+   * Registers a {@link Converter} as a default for the provided model and widget types. The default
+   * converter will be used in case no custom converter is provided when binding a model to a
+   * widget.
    *
-   * @param <M>
-   *          The type of the model value (field type of the model)
-   * @param <W>
-   *          The type of the widget value (e.g. String for a {@link TextBox} (=HasValue&lt;String&gt;) or Boolean for a
-   *          {@link Checkbox} (=HasValue&lt;Boolean&gt;)))
-   * @param modelValueType
-   *          The model type the provided converter converts to, must not be null.
-   * @param widgetValueType
-   *          The widget type the provided converter converts to, must not be null.
-   * @param converter
-   *          The converter to register as a default for the provided model and widget types.
+   * @param <M> The type of the model value (field type of the model)
+   * @param <W> The type of the widget value (e.g. String for a {@link TextBox}
+   *        (=HasValue&lt;String&gt;) or Boolean for a {@link Checkbox} (=HasValue&lt;Boolean&gt;)))
+   * @param modelValueType The model type the provided converter converts to, must not be null.
+   * @param widgetValueType The widget type the provided converter converts to, must not be null.
+   * @param converter The converter to register as a default for the provided model and widget
+   *        types.
    */
-  public static <M, W> void registerDefaultConverter(final Class<M> modelValueType, final Class<W> widgetValueType,
-      final Converter<M, W> converter) {
+  public static <M, W> void registerDefaultConverter(final Class<M> modelValueType,
+      final Class<W> widgetValueType, final Converter<M, W> converter) {
     Assert.notNull(modelValueType);
     Assert.notNull(widgetValueType);
     defaultConverters.put(new ConverterRegistrationKey(modelValueType, widgetValueType), converter);
@@ -333,40 +324,32 @@ public class Convert {
   }
 
   @SuppressWarnings("rawtypes")
-  public static Class inferWidgetValueType(final Widget widget, final Class<?> defaultWidgetValueType) {
+  public static Class inferWidgetValueType(final Widget widget,
+      final Class<?> defaultWidgetValueType) {
     Class widgetValueType = null;
 
     if (widget instanceof TakesValue) {
       Object value = ((TakesValue) widget).getValue();
       if (value != null) {
         widgetValueType = value.getClass();
-      }
-      else if (widget instanceof TextBoxBase) {
+      } else if (widget instanceof TextBoxBase) {
         widgetValueType = String.class;
-      }
-      else if (widget instanceof DateBox || widget instanceof DatePicker) {
+      } else if (widget instanceof DateBox || widget instanceof DatePicker) {
         widgetValueType = Date.class;
-      }
-      else if (widget instanceof CheckBox || widget instanceof ToggleButton) {
+      } else if (widget instanceof CheckBox || widget instanceof ToggleButton) {
         widgetValueType = Boolean.class;
-      }
-      else if (widget instanceof LongBox) {
+      } else if (widget instanceof LongBox) {
         widgetValueType = Long.class;
-      }
-      else if (widget instanceof DoubleBox) {
+      } else if (widget instanceof DoubleBox) {
         widgetValueType = Double.class;
-      }
-      else if (widget instanceof IntegerBox) {
+      } else if (widget instanceof IntegerBox) {
         widgetValueType = Integer.class;
-      }
-      else {
+      } else {
         widgetValueType = defaultWidgetValueType;
       }
-    }
-    else if (widget instanceof HasText) {
-        widgetValueType = String.class;
-    }
-    else {
+    } else if (widget instanceof HasText) {
+      widgetValueType = String.class;
+    } else {
       widgetValueType = String.class;
     }
 

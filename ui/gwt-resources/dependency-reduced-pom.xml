@@ -12,7 +12,7 @@
     <developer>
       <id>treblereel</id>
       <name>Dmitrii Tikhomirov</name>
-      <email>chani@me.com</email>
+      <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
   <licenses>
@@ -35,7 +35,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -84,12 +83,6 @@
       <groupId>org.treblereel.gwt.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gwtproject.core</groupId>
-      <artifactId>gwt-core</artifactId>
-      <version>1.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
