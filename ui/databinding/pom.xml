@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.treblereel.gwt.crysknife</groupId>
+    <groupId>io.crysknife</groupId>
     <artifactId>ui-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>

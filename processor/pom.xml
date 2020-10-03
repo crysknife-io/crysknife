@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.treblereel.gwt.crysknife</groupId>
+    <groupId>io.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
@@ -47,13 +47,13 @@
       <artifactId>javaparser-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -131,11 +131,11 @@
               <relocations>
                 <relocation>
                   <pattern>com.google.common</pattern>
-                  <shadedPattern>org.treblereel.crysknife.com.google.common</shadedPattern>
+                  <shadedPattern>io.crysknife.com.google.common</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>com.google.auto</pattern>
-                  <shadedPattern>org.treblereel.crysknife.com.google.auto</shadedPattern>
+                  <shadedPattern>io.crysknife.com.google.auto</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
