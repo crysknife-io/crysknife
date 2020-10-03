@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.treblereel.gwt.crysknife.demo</groupId>
+  <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>war</packaging>
@@ -21,59 +21,59 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>elemental2-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>templates-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>templates-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>mutationobserver-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>mutationobserver-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>navigation-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.crysknife</groupId>
+      <groupId>io.crysknife</groupId>
       <artifactId>navigation-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>

@@ -17,7 +17,7 @@ package org.treblereel;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.treblereel.gwt.crysknife.client.Application;
+import io.crysknife.annotation.Application;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
