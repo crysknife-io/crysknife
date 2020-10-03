@@ -44,7 +44,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import org.treblereel.gwt.crysknife.client.Application;
+import org.treblereel.gwt.crysknife.annotation.Application;
 import org.treblereel.gwt.crysknife.client.BeanManager;
 import org.treblereel.gwt.crysknife.client.Instance;
 import org.treblereel.gwt.crysknife.client.internal.AbstractBeanManager;

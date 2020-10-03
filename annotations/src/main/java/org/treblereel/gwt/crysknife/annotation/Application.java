@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.treblereel.gwt.crysknife.client;
+package org.treblereel.gwt.crysknife.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -21,5 +21,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface EntryPoint {
+public @interface Application {
 }

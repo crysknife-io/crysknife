@@ -35,9 +35,9 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
+import org.treblereel.gwt.crysknife.annotation.Application;
 import org.treblereel.gwt.crysknife.annotation.Generator;
-import org.treblereel.gwt.crysknife.client.Application;
-import org.treblereel.gwt.crysknife.client.ComponentScan;
+import org.treblereel.gwt.crysknife.annotation.ComponentScan;
 import org.treblereel.gwt.crysknife.exception.GenerationException;
 import org.treblereel.gwt.crysknife.generator.IOCGenerator;
 import org.treblereel.gwt.crysknife.generator.context.GenerationContext;
@@ -52,7 +52,7 @@ import org.treblereel.gwt.crysknife.generator.scanner.QualifiersScan;
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes({"org.treblereel.gwt.crysknife.client.Application", "javax.inject.Inject",
-    "javax.inject.Singleton", "org.treblereel.gwt.crysknife.client.ComponentScan"})
+    "javax.inject.Singleton", "org.treblereel.gwt.crysknife.annotation.ComponentScan"})
 public class ApplicationProcessor extends AbstractProcessor {
 
   private IOCContext iocContext;
