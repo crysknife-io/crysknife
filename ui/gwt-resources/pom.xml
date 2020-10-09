@@ -99,7 +99,7 @@
                     <include>com/google/common/base</include>
                   </includes>
                   <excludes>
-                    <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
+                    <exclude>io/crysknife/client/**</exclude>
                   </excludes>
                 </filter>
                 <filter>
