@@ -58,8 +58,8 @@
               <filters>
                 <filter>
                   <excludes>
-                    <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
-                    <exclude>org/treblereel/gwt/crysknife/logger/**</exclude>
+                    <exclude>io/crysknife/client/**</exclude>
+                    <exclude>io/crysknife/logger/**</exclude>
                   </excludes>
                 </filter>
                 <filter>

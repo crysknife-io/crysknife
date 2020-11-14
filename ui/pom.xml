@@ -22,7 +22,9 @@
 
   <modules>
     <module>elemental2</module>
+<!--
     <module>gwt-resources</module>
+-->
     <module>templates</module>
     <module>databinding</module>
     <module>mutationobserver</module>

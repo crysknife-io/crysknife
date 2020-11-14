@@ -33,10 +33,9 @@
   </organization>
 
   <scm>
-    <url>https://github.com/treblereel/crysknife</url>
-    <developerConnection>scm:git:git@github.com:treblereel/crysknife.git</developerConnection>
-    <connection>scm:git:git://github.com/treblereel/crysknife.git</connection>
-    <tag>HEAD</tag>
+    <url>https://github.com/crysknife-io/crysknife</url>
+    <developerConnection>scm:git:git@github.com:crysknife-io/crysknife.git</developerConnection>
+    <connection>scm:git:git://github.com/crysknife-io/crysknife.git</connection>
   </scm>
 
   <properties>
@@ -75,10 +74,7 @@
     <google.guava.version>28.1-jre</google.guava.version>
     <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
 
-    <gwtproject.version>1.0-SNAPSHOT</gwtproject.version>
-    <gwtproject.rc.version>1.0.0-RC1</gwtproject.rc.version>
-    <gwtproject.head.version>HEAD-SNAPSHOT</gwtproject.head.version>
-
+    <gwtproject.version>1.0.0-RC1</gwtproject.version>
     <javaparser.core.version>3.15.18</javaparser.core.version>
     <elemental2.version>1.1.0</elemental2.version>
     <auto.common.version>0.11</auto.common.version>
@@ -120,52 +116,52 @@
       <dependency>
         <groupId>org.gwtproject.safehtml</groupId>
         <artifactId>gwt-safehtml</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.regexp</groupId>
         <artifactId>gwt-regexp</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-event</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-event-dom</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-logical-event</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-event-legacy</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.user.history</groupId>
         <artifactId>gwt-history</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.dom</groupId>
         <artifactId>gwt-dom</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.user.window</groupId>
         <artifactId>gwt-window</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>1.0.0-RC2</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.widgets</groupId>
         <artifactId>gwt-widgets</artifactId>
-        <version>${gwtproject.version}</version>
+        <version>1.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.elemento</groupId>
