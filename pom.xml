@@ -69,7 +69,6 @@
     <jsoup.version>1.11.3</jsoup.version>
     <javax.inject.version>1</javax.inject.version>
     <lesscss.version>1.7.0.1.1</lesscss.version>
-    <vertispan.jsinterop.base.version>1.0.0-SNAPSHOT</vertispan.jsinterop.base.version>
     <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
     <google.guava.version>28.1-jre</google.guava.version>
     <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
@@ -102,11 +101,6 @@
         <groupId>com.google.jsinterop</groupId>
         <artifactId>jsinterop-annotations</artifactId>
         <version>${google.jsinterop.annotations.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.vertispan.jsinterop</groupId>
-        <artifactId>base</artifactId>
-        <version>${vertispan.jsinterop.base.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.elemental2</groupId>
