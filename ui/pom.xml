@@ -26,7 +26,9 @@
     <module>gwt-resources</module>
 -->
     <module>templates</module>
+<!--
     <module>databinding</module>
+-->
     <module>mutationobserver</module>
     <module>navigation</module>
   </modules>
