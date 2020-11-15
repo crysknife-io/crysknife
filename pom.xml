@@ -4,7 +4,7 @@
 
   <groupId>io.crysknife</groupId>
   <artifactId>crysknife-parent</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <packaging>pom</packaging>
 
   <name>crysknife-parent</name>
@@ -36,6 +36,7 @@
     <url>https://github.com/crysknife-io/crysknife</url>
     <developerConnection>scm:git:git@github.com:crysknife-io/crysknife.git</developerConnection>
     <connection>scm:git:git://github.com/crysknife-io/crysknife.git</connection>
+    <tag>crysknife-parent-0.1</tag>
   </scm>
 
   <properties>
@@ -330,7 +331,7 @@
         <configuration>
           <skip>false</skip>
           <rules>
-            <reactorModuleConvergence/>
+            <reactorModuleConvergence />
             <requireJavaVersion>
               <version>(1.8.0,)</version>
             </requireJavaVersion>
