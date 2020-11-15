@@ -37,6 +37,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface Named {
 
-  /** The name. */
+  /** The name.
+   * @return String value
+   */
   String value() default "";
 }

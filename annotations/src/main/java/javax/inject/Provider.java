@@ -32,7 +32,7 @@ package javax.inject;
  *
  * <pre>
  *   class Car {
- *     &#064;Inject Car(Provider&lt;Seat> seatProvider) {
+ *     &#064;Inject Car(Provider&lt;Seat&gt; seatProvider) {
  *       Seat driver = seatProvider.get();
  *       Seat passenger = seatProvider.get();
  *       ...
@@ -50,6 +50,7 @@ public interface Provider<T> {
    *         wrap the exception and throw it to the caller of {@code get()}. Callers should not try
    *         to handle such exceptions as the behavior may vary across injector implementations and
    *         even different configurations of the same injector.
+   * @return generic T type
    */
   T get();
 }
