@@ -33,11 +33,13 @@ import static java.lang.annotation.ElementType.FIELD;
  * Injectable constructors are annotated with {@code @Inject} and accept zero or more dependencies
  * as arguments. {@code @Inject} can apply to at most one constructor per class.
  *
- * <pre>  @Inject
+ * <pre>
+ *   &#64;Inject
  *       <i>ConstructorModifiers<sub>opt</sub></i>
  *       <i>SimpleTypeName</i>(<i>FormalParameterList<sub>opt</sub></i>)
  *       <i>Throws<sub>opt</sub></i>
- *       <i>ConstructorBody</i></pre>
+ *       <i>ConstructorBody</i>
+ * </pre>
  *
  * {@code @Inject} is optional for public, no-argument constructors when no other constructors are
  * present. This enables injectors to invoke default constructors.
@@ -48,7 +50,8 @@ import static java.lang.annotation.ElementType.FIELD;
  *       public
  *       <i>SimpleTypeName</i>()
  *       <i>Throws<sub>opt</sub></i>
- *       <i>ConstructorBody</i></pre>
+ *       <i>ConstructorBody</i>
+ * </pre>
  *
  * Injectable fields:
  * <ul>
@@ -57,10 +60,12 @@ import static java.lang.annotation.ElementType.FIELD;
  * <li>may have any otherwise valid name.</li>
  * </ul>
  *
- * <pre>@Inject
+ * <pre>
+ * &#64;Inject
  *       <i>FieldModifiers<sub>opt</sub></i>
  *       <i>Type</i>
- *       <i>VariableDeclarators</i>;</pre>
+ *       <i>VariableDeclarators</i>;
+ * </pre>
  *
  * Injectable methods:
  * <ul>
@@ -72,12 +77,14 @@ import static java.lang.annotation.ElementType.FIELD;
  * <li>accept zero or more dependencies as arguments.</li>
  * </ul>
  *
- * <pre>@Inject
+ * <pre>
+ * &#64;Inject
  *       <i>MethodModifiers<sub>opt</sub></i>
  *       <i>ResultType</i>
  *       <i>Identifier</i>(<i>FormalParameterList<sub>opt</sub></i>)
  *       <i>Throws<sub>opt</sub></i>
- *       <i>MethodBody</i></pre>
+ *       <i>MethodBody</i>
+ * </pre>
  *
  * The injector ignores the result of an injected method, but non-{@code void} return types are
  * allowed to support use of the method in other contexts (builder-style method chaining, for
@@ -109,8 +116,8 @@ import static java.lang.annotation.ElementType.FIELD;
  * members.
  * <h3>Qualifiers</h3>
  *
- * A {@code Qualifier qualifier} may annotate an injectable field or parameter and, combined
- * with the type, identify the implementation to inject. Qualifiers are optional, and when used with
+ * A {@code Qualifier qualifier} may annotate an injectable field or parameter and, combined with
+ * the type, identify the implementation to inject. Qualifiers are optional, and when used with
  * {@code @Inject} in injector-independent classes, no more than one qualifier should annotate a
  * single field or parameter. The qualifiers are bold in the following example:
  *
