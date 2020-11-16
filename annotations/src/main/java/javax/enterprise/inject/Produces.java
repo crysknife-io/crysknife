@@ -107,8 +107,6 @@ import java.lang.annotation.Target;
  * Interceptors and decorators may not declare producer methods or fields.
  * </p>
  *
- * @see javax.enterprise.inject.Disposes &#064;Disposes
- *
  * @author Gavin King
  * @author Pete Muir
  */

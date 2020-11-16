@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 /**
  * <p>
  * Identifies the event parameter of an observer method. May be applied to a parameter of a method
- * of a bean class or {@linkplain javax.enterprise.inject.spi.Extension extension}.
+ * of a bean class or {@code javax.enterprise.inject.spi.Extension extension}.
  * </p>
  *
  * <pre>

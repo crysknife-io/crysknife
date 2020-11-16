@@ -5,7 +5,7 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.2-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <properties>
@@ -70,6 +70,12 @@
       <groupId>io.crysknife</groupId>
       <artifactId>navigation-api</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gwtproject.user.window</groupId>
+      <artifactId>gwt-window</artifactId>
+      <version>1.0.0-RC2</version>
     </dependency>
 
     <dependency>
@@ -232,6 +238,16 @@
         <updatePolicy>daily</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
+    </repository>
+    <repository>
+      <id>vertispan-snapshots1</id>
+      <name>Vertispan Snapshots1</name>
+      <url>https://oss.sonatype.org/content/repositories/orggwtproject-1043/</url>
+    </repository>
+    <repository>
+      <id>sonatype</id>
+      <name>sonatype</name>
+      <url>https://oss.sonatype.org/content/repositories/releases/</url>
     </repository>
   </repositories>
 </project>

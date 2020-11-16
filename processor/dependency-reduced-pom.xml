@@ -58,8 +58,8 @@
               <filters>
                 <filter>
                   <excludes>
-                    <exclude>org/treblereel/gwt/crysknife/client/**</exclude>
-                    <exclude>org/treblereel/gwt/crysknife/logger/**</exclude>
+                    <exclude>io/crysknife/client/**</exclude>
+                    <exclude>io/crysknife/logger/**</exclude>
                   </excludes>
                 </filter>
                 <filter>
@@ -102,7 +102,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.13.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

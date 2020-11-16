@@ -4,7 +4,7 @@
 
   <groupId>io.crysknife</groupId>
   <artifactId>crysknife-parent</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>crysknife-parent</name>
@@ -33,9 +33,9 @@
   </organization>
 
   <scm>
-    <url>https://github.com/treblereel/crysknife</url>
-    <developerConnection>scm:git:git@github.com:treblereel/crysknife.git</developerConnection>
-    <connection>scm:git:git://github.com/treblereel/crysknife.git</connection>
+    <url>https://github.com/crysknife-io/crysknife</url>
+    <developerConnection>scm:git:git@github.com:crysknife-io/crysknife.git</developerConnection>
+    <connection>scm:git:git://github.com/crysknife-io/crysknife.git</connection>
     <tag>HEAD</tag>
   </scm>
 
@@ -70,15 +70,11 @@
     <jsoup.version>1.11.3</jsoup.version>
     <javax.inject.version>1</javax.inject.version>
     <lesscss.version>1.7.0.1.1</lesscss.version>
-    <vertispan.jsinterop.base.version>1.0.0-SNAPSHOT</vertispan.jsinterop.base.version>
     <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
     <google.guava.version>28.1-jre</google.guava.version>
     <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
 
-    <gwtproject.version>1.0-SNAPSHOT</gwtproject.version>
-    <gwtproject.rc.version>1.0.0-RC1</gwtproject.rc.version>
-    <gwtproject.head.version>HEAD-SNAPSHOT</gwtproject.head.version>
-
+    <gwtproject.version>1.0.0-RC1</gwtproject.version>
     <javaparser.core.version>3.15.18</javaparser.core.version>
     <elemental2.version>1.1.0</elemental2.version>
     <auto.common.version>0.11</auto.common.version>
@@ -108,11 +104,6 @@
         <version>${google.jsinterop.annotations.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.vertispan.jsinterop</groupId>
-        <artifactId>base</artifactId>
-        <version>${vertispan.jsinterop.base.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.google.elemental2</groupId>
         <artifactId>elemental2-dom</artifactId>
         <version>${elemental2.version}</version>
@@ -120,52 +111,47 @@
       <dependency>
         <groupId>org.gwtproject.safehtml</groupId>
         <artifactId>gwt-safehtml</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.regexp</groupId>
         <artifactId>gwt-regexp</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-event</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-event-dom</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-logical-event</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.event</groupId>
         <artifactId>gwt-event-legacy</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.user.history</groupId>
         <artifactId>gwt-history</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.dom</groupId>
         <artifactId>gwt-dom</artifactId>
-        <version>${gwtproject.head.version}</version>
+        <version>${gwtproject.version}</version>
       </dependency>
       <dependency>
         <groupId>org.gwtproject.user.window</groupId>
         <artifactId>gwt-window</artifactId>
-        <version>${gwtproject.head.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.gwtproject.widgets</groupId>
-        <artifactId>gwt-widgets</artifactId>
-        <version>${gwtproject.version}</version>
+        <version>1.0.0-RC2</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.elemento</groupId>
@@ -345,7 +331,7 @@
         <configuration>
           <skip>false</skip>
           <rules>
-            <reactorModuleConvergence/>
+            <reactorModuleConvergence />
             <requireJavaVersion>
               <version>(1.8.0,)</version>
             </requireJavaVersion>
@@ -390,6 +376,14 @@
             <version>${maven.scm.provider.gitexe.plugin.version}</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <failOnError>false</failOnError>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.sonatype.plugins</groupId>

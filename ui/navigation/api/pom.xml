@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>navigation-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>navigation-api</artifactId>
@@ -68,6 +68,10 @@
     <dependency>
       <groupId>org.gwtproject.user.history</groupId>
       <artifactId>gwt-history</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.gwtproject.user.window</groupId>
+      <artifactId>gwt-window</artifactId>
     </dependency>
 
     <dependency>

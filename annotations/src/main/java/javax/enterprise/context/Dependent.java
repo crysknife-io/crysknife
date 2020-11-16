@@ -52,12 +52,12 @@ import javax.inject.Scope;
  *
  * <p>
  * Every invocation of the
- * {@link javax.enterprise.context.spi.Context#get(Contextual, CreationalContext)} operation of the
+ * {@code javax.enterprise.context.spi.Context#get(Contextual, CreationalContext)} operation of the
  * context object for the <tt>@Dependent</tt> scope returns a new instance of the given bean.
  * </p>
  *
  * <p>
- * Every invocation of the {@link javax.enterprise.context.spi.Context#get(Contextual)} operation of
+ * Every invocation of the {@code javax.enterprise.context.spi.Context#get(Contextual)} operation of
  * the context object for the <tt>@Dependent</tt> scope returns a null value.
  * </p>
  *

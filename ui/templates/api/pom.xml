@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>templates-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>templates-api</artifactId>
@@ -41,10 +41,6 @@
     <dependency>
       <groupId>org.jboss.elemento</groupId>
       <artifactId>elemento-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.vertispan.jsinterop</groupId>
-      <artifactId>base</artifactId>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.dom</groupId>
