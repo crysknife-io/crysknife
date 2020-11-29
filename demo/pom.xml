@@ -5,14 +5,13 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.2</version>
   <packaging>war</packaging>
 
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <elemental2.version>1.1.0</elemental2.version>
-    <elemento.version>1.0.1</elemento.version>
     <j2cl.maven.plugin.version>0.16-SNAPSHOT</j2cl.maven.plugin.version>
     <maven.jetty.plugin.version>9.4.31.v20200723</maven.jetty.plugin.version>
     <maven.tomcat.plugin.version>2.2</maven.tomcat.plugin.version>
@@ -208,6 +207,7 @@
       </releases>
       <snapshots>
         <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
       </snapshots>
     </repository>
 
@@ -238,11 +238,6 @@
         <updatePolicy>daily</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
-    </repository>
-    <repository>
-      <id>vertispan-snapshots1</id>
-      <name>Vertispan Snapshots1</name>
-      <url>https://oss.sonatype.org/content/repositories/orggwtproject-1043/</url>
     </repository>
     <repository>
       <id>sonatype</id>
