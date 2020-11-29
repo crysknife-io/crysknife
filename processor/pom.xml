@@ -130,10 +130,6 @@
               </filters>
               <relocations>
                 <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>io.crysknife.com.google.common</shadedPattern>
-                </relocation>
-                <relocation>
                   <pattern>com.google.auto</pattern>
                   <shadedPattern>io.crysknife.com.google.auto</shadedPattern>
                 </relocation>
