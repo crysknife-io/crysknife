@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>crysknife-processor</artifactId>
@@ -129,10 +129,6 @@
                 </filter>
               </filters>
               <relocations>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>io.crysknife.com.google.common</shadedPattern>
-                </relocation>
                 <relocation>
                   <pattern>com.google.auto</pattern>
                   <shadedPattern>io.crysknife.com.google.auto</shadedPattern>

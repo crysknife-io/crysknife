@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>navigation-parent</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>navigation-generator</artifactId>

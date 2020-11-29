@@ -5,11 +5,11 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>tests</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -18,6 +18,7 @@
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
+    <maven.deploy.skip>true</maven.deploy.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 

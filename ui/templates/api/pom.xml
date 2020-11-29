@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>templates-parent</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>templates-api</artifactId>
@@ -41,6 +41,12 @@
     <dependency>
       <groupId>org.jboss.elemento</groupId>
       <artifactId>elemento-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.dom</groupId>

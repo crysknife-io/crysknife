@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>templates-parent</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>templates-generator</artifactId>
@@ -41,7 +41,6 @@
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.elemental2</groupId>
@@ -91,15 +90,6 @@
             <configuration>
               <minimizeJar>true</minimizeJar>
               <filters>
-                <filter>
-                  <artifact>com.google.guava:guava</artifact>
-                  <includes>
-                    <include>com/google/common/base</include>
-                  </includes>
-                  <excludes>
-                    <exclude>io/crysknife/client/**</exclude>
-                  </excludes>
-                </filter>
                 <filter>
                   <artifact>*:*:*:*</artifact>
                   <excludes>
