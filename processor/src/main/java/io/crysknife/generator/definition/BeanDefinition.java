@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Qualifier;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -39,6 +40,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.IOCGenerator;
@@ -184,10 +186,17 @@ public class BeanDefinition extends Definition {
           .ifPresent(elm -> getDependsOn().add(context.getBeanDefinitionOrCreateAndReturn(elm)));
       bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
     } else if (context.getQualifiers().containsKey(field.getType())) {
+      // TODO what if type has several qualifiers ???
       for (AnnotationMirror mirror : context.getGenerationContext().getElements()
           .getAllAnnotationMirrors(type)) {
-        bean =
-            context.getQualifiers().get(field.getType()).get(mirror.getAnnotationType().toString());
+        DeclaredType annotationType = mirror.getAnnotationType();
+        Qualifier qualifier = annotationType.asElement().getAnnotation(Qualifier.class);
+        // exclude all annotations, except Qualifiers
+        if (qualifier != null) {
+          bean = context.getQualifiers().get(field.getType())
+              .get(mirror.getAnnotationType().toString());
+          break;
+        }
       }
     } else {
       bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());

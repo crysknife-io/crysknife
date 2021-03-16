@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.Lazy;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
@@ -30,9 +31,12 @@ public class FieldPoint extends Point {
 
   private VariableElement field;
 
+  private boolean isLazy;
+
   private FieldPoint(String name, TypeElement injection, VariableElement field) {
     super(injection, name);
     this.field = field;
+    this.isLazy = field.getAnnotation(Lazy.class) != null;
   }
 
   public static FieldPoint of(VariableElement injection) {
@@ -79,11 +83,19 @@ public class FieldPoint extends Point {
 
   @Override
   public String toString() {
-    return "FieldPoint{" + "injection=" + type + " name=" + name + (isNamed() ? getNamed() : "")
-        + '}';
+    return "FieldPoint{" + "field=" + field + ", name='" + name + '\'' + ", type=" + type
+        + ", isLazy=" + isLazy + '}';
   }
 
   public boolean isNamed() {
     return field.getAnnotation(Named.class) != null;
+  }
+
+  public boolean isLazy() {
+    return isLazy;
+  }
+
+  public void setLazy(boolean lazy) {
+    isLazy = lazy;
   }
 }

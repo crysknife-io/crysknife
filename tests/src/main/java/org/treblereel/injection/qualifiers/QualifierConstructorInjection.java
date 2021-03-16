@@ -17,6 +17,8 @@ package org.treblereel.injection.qualifiers;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.crysknife.annotation.Lazy;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/14/19
  */
@@ -28,10 +30,11 @@ public class QualifierConstructorInjection {
   public QualifierBean qualifierBeanTwo;
 
   @Inject
+  @Lazy
   public QualifierBean qualifier;
 
   @Inject
-  public QualifierConstructorInjection(@QualifierTwo QualifierBean qualifierBeanTwo,
+  public QualifierConstructorInjection(@QualifierTwo @Lazy QualifierBean qualifierBeanTwo,
       @QualifierOne QualifierBean qualifierBeanOne) {
     this.qualifierBeanOne = qualifierBeanOne;
     this.qualifierBeanTwo = qualifierBeanTwo;
