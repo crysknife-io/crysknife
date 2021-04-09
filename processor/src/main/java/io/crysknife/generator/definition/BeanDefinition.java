@@ -80,12 +80,10 @@ public class BeanDefinition extends Definition {
   }
 
   public void addExecutableDefinition(IOCGenerator generator, ExecutableDefinition definition) {
-    if (executableDefinitions.containsKey(generator)) {
-      executableDefinitions.get(generator).add(definition);
-    } else {
-      executableDefinitions.put(generator, new HashSet());
-      executableDefinitions.get(generator).add(definition);
+    if (!executableDefinitions.containsKey(generator)) {
+      executableDefinitions.put(generator, new HashSet<>());
     }
+    executableDefinitions.get(generator).add(definition);
   }
 
   public void setGenerator(IOCGenerator iocGenerator) {
