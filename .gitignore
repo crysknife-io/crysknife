@@ -6,3 +6,4 @@
 .factorypath
 *.iml
 target
+.vscode/

@@ -910,11 +910,13 @@ public class TemplatedGenerator extends IOCGenerator {
       org.jsoup.nodes.Element root) {
     // make sure to use the same logic for finding matching elements as in TemplateUtils!
     Elements elements = root.getElementsByAttributeValue("data-field", selector);
-    if (elements.isEmpty()) {
+    long matchCount = elements.stream()
+        .filter(elem -> elem.attributes().getIgnoreCase("data-element").equals(selector)).count();
+    if (elements.isEmpty() && matchCount == 0) {
       abortWithError(element,
           "Cannot find a matching element in %s using \"[data-field=%s]\" as selector",
           templateSelector, selector);
-    } else if (elements.size() > 1) {
+    } else if (matchCount > 1) {
       warning(element,
           "Found %d matching elements in %s using \"[data-field=%s]\" as selector. Only the first will be used.",
           elements.size(), templateSelector, selector);

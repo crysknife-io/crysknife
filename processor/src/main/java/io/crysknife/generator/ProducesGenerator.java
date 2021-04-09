@@ -137,6 +137,7 @@ public class ProducesGenerator extends ScopedBeanGenerator {
   @Override
   public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
       BeanDefinition beanDefinition) {
+    generateFactoryFieldDeclaration(clazz, fieldPoint);
     generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
     TypeElement point = fieldPoint.isNamed()
         ? iocContext.getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed()).getType()
