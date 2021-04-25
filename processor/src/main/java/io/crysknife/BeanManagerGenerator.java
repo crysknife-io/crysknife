@@ -29,6 +29,8 @@ import javax.tools.JavaFileObject;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -39,6 +41,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -80,6 +83,39 @@ public class BeanManagerGenerator {
         .createSourceFile(BeanManager.class.getCanonicalName() + "Impl");
     try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
       out.append(new BeanManagerGeneratorBuilder().build().toString());
+    }
+  }
+
+  private void maybeAddQualifiers(MethodCallExpr call, TypeElement field, String annotationName) {
+    if (annotationName != null) {
+      boolean isNamed = field.getAnnotation(Named.class) != null;
+      annotationName = isNamed ? Named.class.getCanonicalName() : annotationName;
+      ObjectCreationExpr annotation = new ObjectCreationExpr();
+      annotation.setType(new ClassOrInterfaceType()
+          .setName(isNamed ? Named.class.getCanonicalName() : annotationName));
+      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
+
+      MethodDeclaration annotationType = new MethodDeclaration();
+      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
+      annotationType.setName("annotationType");
+      annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
+      annotationType.getBody().get()
+          .addAndGetStatement(new ReturnStmt(new NameExpr(annotationName + ".class")));
+      anonymousClassBody.add(annotationType);
+
+      if (isNamed) {
+        MethodDeclaration value = new MethodDeclaration();
+        value.setModifiers(Modifier.Keyword.PUBLIC);
+        value.setName("value");
+        value.setType(new ClassOrInterfaceType().setName("String"));
+        value.getBody().get().addAndGetStatement(
+            new ReturnStmt(new StringLiteralExpr(field.getAnnotation(Named.class).value())));
+        anonymousClassBody.add(value);
+      }
+
+      annotation.setAnonymousClassBody(anonymousClassBody);
+
+      call.addArgument(annotation);
     }
   }
 
@@ -131,12 +167,8 @@ public class BeanManagerGenerator {
           .filter(field -> field.getKind().equals(ElementKind.CLASS)).collect(Collectors.toSet())
           .forEach(field -> generateInitEntry(init, field));
 
-      iocContext.getQualifiers()
-          .forEach((type, beans) -> beans.forEach((annotation, definition) -> {
-            if (definition.getType().getAnnotation(Named.class) == null) {
-              generateInitEntry(init, type, definition.getType(), annotation);
-            }
-          }));
+      iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation,
+          definition) -> generateInitEntry(init, type, definition.getType(), annotation)));
     }
 
     private void addGetInstanceMethod() {
@@ -165,9 +197,7 @@ public class BeanManagerGenerator {
                 new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
             .addArgument(
                 new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(factory)), "create"));
-        if (annotation != null) {
-          call.addArgument(annotation + ".class");
-        }
+        maybeAddQualifiers(call, factory, annotation);
         init.getBody().ifPresent(body -> body.addAndGetStatement(call));
       }
     }

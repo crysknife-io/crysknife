@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,21 +11,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.crysknife.client;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
+package org.treblereel.injection.managedinstance;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
-public interface BeanManager {
+public interface ComponentIface {
 
-  void destroyBean(Object ref);
 
-  <T> Instance<T> lookupBean(final Class type, Annotation... qualifiers);
+  String getComponentName();
 
-  <T> Instance<T> lookupBean(final Class type);
-
-  <T> Set<Instance<T>> lookupBeans(final Class type, Annotation... qualifiers);
 }
