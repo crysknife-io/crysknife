@@ -14,7 +14,6 @@
 
   <modules>
     <module>jre-tests</module>
-    <module>j2cl-tests</module>
   </modules>
 
   

@@ -4,7 +4,7 @@
 
   <parent>
     <groupId>io.crysknife</groupId>
-    <artifactId>crysknife-parent</artifactId>
+    <artifactId>tests</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 

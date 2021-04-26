@@ -18,9 +18,11 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import io.crysknife.annotation.Application;
+import io.crysknife.client.BeanManager;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
+import org.treblereel.injection.managedinstance.ManagedInstanceBean;
 import org.treblereel.injection.named.NamedTestBean;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierFieldInjection;
@@ -58,6 +60,12 @@ public class App {
 
   @Inject
   private QualifierBeanProducerTest qualifierBeanProducerTest;
+
+  @Inject
+  private ManagedInstanceBean managedInstanceBean;
+
+  @Inject
+  protected BeanManager beanManager;
 
   public void onModuleLoad() {
     new AppBootstrap(this).initialize();
@@ -107,4 +115,9 @@ public class App {
   public QualifierBeanProducerTest getQualifierBeanProducerTest() {
     return qualifierBeanProducerTest;
   }
+
+  public ManagedInstanceBean getManagedInstanceBean() {
+    return managedInstanceBean;
+  }
+
 }

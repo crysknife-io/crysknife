@@ -17,6 +17,7 @@ package org.treblereel;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import elemental2.dom.DomGlobal;
 import io.crysknife.annotation.Application;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
@@ -60,11 +61,16 @@ public class App {
   private QualifierBeanProducerTest qualifierBeanProducerTest;
 
   public void onModuleLoad() {
+    DomGlobal.console.log("onModuleLoad");
     new AppBootstrap(this).initialize();
+    DomGlobal.console.log("onModuleLoad done");
+
   }
 
   @PostConstruct
   public void init() {
+    DomGlobal.console.log("PostConstruct");
+
     this.testPostConstruct = "PostConstruct";
   }
 
