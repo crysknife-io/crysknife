@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,26 +12,19 @@
  * the License.
  */
 
-package org.treblereel.injection.named;
+package org.treblereel.managedinstance;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
-@Singleton
-public class NamedFieldInjection {
+@ApplicationScoped
+@ComponentQualifierOne
+public class ComponentOne implements ComponentIface {
 
-  @Inject
-  @Named("NamedBeanOne")
-  public NamedBean one;
-
-  @Inject
-  @Named("NamedBeanTwo")
-  public NamedBean two;
-
-  @Inject
-  public NamedBean def;
+  @Override
+  public String getComponentName() {
+    return getClass().getSimpleName();
+  }
 }

@@ -27,6 +27,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.util.Utils;
 
@@ -48,6 +49,11 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
    */
   public abstract Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
       BeanDefinition beanDefinition);
+
+  @Override
+  public void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition) {
+
+  }
 
   public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
     try {

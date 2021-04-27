@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,29 +12,20 @@
  * the License.
  */
 
-package org.treblereel.injection.named;
+package org.treblereel.managedinstance;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import javax.enterprise.inject.Default;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
+@Default
 @ApplicationScoped
-public class NamedConstructorInjection {
+public class ComponentDefault implements ComponentIface {
 
-  public NamedBean one;
-
-  public NamedBean two;
-
-  public NamedBean def;
-
-  @Inject
-  public NamedConstructorInjection(@Named("NamedBeanOne") NamedBean one,
-      @Named("NamedBeanTwo") NamedBean two, NamedBean def) {
-    this.one = one;
-    this.two = two;
-    this.def = def;
+  @Override
+  public String getComponentName() {
+    return getClass().getSimpleName();
   }
 }

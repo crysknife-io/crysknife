@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,20 +12,23 @@
  * the License.
  */
 
-package org.treblereel.injection.named;
+package org.treblereel.managedinstance;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.inject.Qualifier;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
-@Named("NamedBeanOne")
-@Singleton
-public class NamedBeanOne implements NamedBean {
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Qualifier
+public @interface ComponentQualifierOne {
 
-  @Override
-  public String say() {
-    return this.getClass().getCanonicalName();
-  }
 }
