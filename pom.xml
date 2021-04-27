@@ -272,6 +272,7 @@
             <java>SLASHSTAR_STYLE</java>
           </mapping>
           <excludes>
+            <exclude>.github/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/LICENSE</exclude>
             <exclude>**/LICENSE.header</exclude>

@@ -14,16 +14,14 @@
 
 package org.treblereel;
 
-import elemental2.core.Global;
-import elemental2.dom.DomGlobal;
-import org.junit.Before;
-import org.junit.Test;
-import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
-import org.treblereel.injection.qualifiers.QualifierBeanOne;
-import org.treblereel.injection.qualifiers.QualifierBeanTwo;
-import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import com.google.j2cl.junit.apt.J2clTestInput;
+import org.junit.Before;
+import org.junit.Test;
+import org.treblereel.managedinstance.ComponentIface;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -34,33 +32,31 @@ import static org.junit.Assert.assertTrue;
  */
 @J2clTestInput(SimpleBeanTest.class)
 public class SimpleBeanTest {
+    private final App app = new App();
 
-  @Before
-  public void init() {
-    DomGlobal.console.log("BEFORE");
+    @Before
+    public void init() {
+        new org.treblereel.AppBootstrap(app).initialize();
+    }
 
-  }
+    @Test
+    public void testAppSimpleBean() {
+        assertTrue(app.initialized);
+        assertNotNull(app.getComponentIfaces());
+    }
 
-  @Test
-  public void testAppSimpleBean() {
-    App app = new App();
-    app.onModuleLoad();
-    //new AppBootstrap(app).initialize();
+    @Test
+    public void testManagedInstance() {
+        assertTrue(app.initialized);
+        assertNotNull(app.getComponentIfaces().get().getComponentName());
 
-    assertTrue(true);
-    DomGlobal.console.log("testAppSimpleBean 1 " + Global.JSON.stringify(app.getSimpleBeanApplicationScoped()));
-    DomGlobal.console.log("testAppSimpleBean 2 " + Global.JSON.stringify(app));
+        List<ComponentIface> actualList = new ArrayList<>();
+        Iterator<ComponentIface> iter =  app.getComponentIfaces().iterator();
+        while (iter.hasNext()) {
+            actualList.add(iter.next());
+        }
 
-    assertNotNull(app.getSimpleBeanApplicationScoped());
-/*    assertEquals(SimpleBeanApplicationScoped.class.getSimpleName(),
-        app.getSimpleBeanApplicationScoped().getName());
-
-    assertNotNull(app.getQualifierConstructorInjection());
-    assertEquals(QualifierConstructorInjection.class.getSimpleName(),
-        app.getQualifierConstructorInjection().getClass().getSimpleName());
-    assertEquals(QualifierBeanOne.class,
-        app.getQualifierConstructorInjection().qualifierBeanOne.getClass());
-    assertEquals(QualifierBeanTwo.class,
-        app.getQualifierConstructorInjection().qualifierBeanTwo.getClass());*/
-  }
+        assertEquals(3, actualList.size());
+        assertEquals("ComponentDefault", app.getComponentIfaces().get().getComponentName());
+    }
 }

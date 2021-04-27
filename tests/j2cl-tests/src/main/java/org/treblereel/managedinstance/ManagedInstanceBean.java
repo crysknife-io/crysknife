@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,38 +12,34 @@
  * the License.
  */
 
-package org.treblereel.injection.dependent;
-
-import java.util.Random;
+package org.treblereel.managedinstance;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.ManagedInstance;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
-@Dependent
-public class SimpleBeanDependent {
+@ApplicationScoped
+public class ManagedInstanceBean {
 
-  private String postConstruct;
+  @Inject
+  private BeanManager beanManager;
 
-  private int random;
-
-  public String getName() {
-    return this.getClass().getSimpleName();
-  }
+  @Inject
+  private ManagedInstance<ComponentIface> managedInstanceBean;
 
   @PostConstruct
-  public void init() {
-    postConstruct = "done";
-    random = new Random().nextInt();
+  void init() {
+
   }
 
-  public String getPostConstruct() {
-    return postConstruct;
+  public ManagedInstance<ComponentIface> getManagedInstanceBean() {
+    return managedInstanceBean;
   }
 
-  public int getRandom() {
-    return random;
-  }
 }

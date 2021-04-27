@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,12 +12,19 @@
  * the License.
  */
 
-package org.treblereel.injection.qualifiers;
+package org.treblereel.managedinstance;
+
+import javax.enterprise.context.ApplicationScoped;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 4/13/19
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
-public interface QualifierBean {
+@ApplicationScoped
+@ComponentQualifierTwo
+public class ComponentTwo implements ComponentIface {
 
-  String say();
+  @Override
+  public String getComponentName() {
+    return getClass().getSimpleName();
+  }
 }
