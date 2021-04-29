@@ -14,7 +14,7 @@
 
   <properties>
     <aspectj.version>1.9.5</aspectj.version>
-    <aspectj.maven.plugin.version>1.11</aspectj.maven.plugin.version>
+    <aspectj.maven.plugin.version>1.12.6</aspectj.maven.plugin.version>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
@@ -67,7 +67,7 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
+        <groupId>com.nickwongdev</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
         <version>${aspectj.maven.plugin.version}</version>
         <configuration>
