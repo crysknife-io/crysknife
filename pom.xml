@@ -261,11 +261,28 @@
 
     <plugins>
       <plugin>
+        <groupId>org.commonjava.maven.plugins</groupId>
+        <artifactId>directory-maven-plugin</artifactId>
+        <version>0.1</version>
+        <executions>
+          <execution>
+            <id>directories</id>
+            <goals>
+              <goal>highest-basedir</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <property>rootDir</property>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <version>${maven.license.plugin.version}</version>
         <configuration>
-          <header>LICENSE.header</header>
+          <header>${rootDir}/LICENSE.header</header>
           <encoding>${project.build.sourceEncoding}</encoding>
           <skipExistingHeaders>true</skipExistingHeaders>
           <mapping>
@@ -314,7 +331,7 @@
               <goal>format</goal>
             </goals>
             <configuration>
-              <configFile>${user.dir}/eclipse-java-google-style.xml</configFile>
+              <configFile>${rootDir}/eclipse-java-google-style.xml</configFile>
               <encoding>UTF-8</encoding>
             </configuration>
           </execution>
