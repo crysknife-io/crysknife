@@ -42,12 +42,10 @@
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.elemento</groupId>
@@ -63,7 +61,7 @@
     </dependency>
     <dependency>
       <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-logical-event</artifactId>
+      <artifactId>gwt-event-logical</artifactId>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.user.history</groupId>
