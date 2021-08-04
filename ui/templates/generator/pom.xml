@@ -69,17 +69,16 @@
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>templates-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>

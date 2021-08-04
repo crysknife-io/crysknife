@@ -43,22 +43,18 @@
     <dependency>
       <groupId>org.gwtproject.resources</groupId>
       <artifactId>gwt-resources-api</artifactId>
-      <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.resources</groupId>
       <artifactId>gwt-resources-core</artifactId>
-      <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.resources</groupId>
       <artifactId>gwt-resources-processor</artifactId>
-      <version>${gwtproject.version}</version>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
