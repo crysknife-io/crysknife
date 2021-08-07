@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>databinding-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>databinding-api</artifactId>
@@ -57,19 +57,16 @@
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>templates-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
