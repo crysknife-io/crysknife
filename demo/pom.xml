@@ -12,7 +12,7 @@
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <elemental2.version>1.1.0</elemental2.version>
-    <j2cl.maven.plugin.version>0.16-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.17-SNAPSHOT</j2cl.maven.plugin.version>
     <maven.jetty.plugin.version>9.4.31.v20200723</maven.jetty.plugin.version>
     <maven.tomcat.plugin.version>2.2</maven.tomcat.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>org.gwtproject.user.window</groupId>
       <artifactId>gwt-window</artifactId>
-      <version>1.0.0-RC2</version>
+      <version>HEAD-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -198,6 +198,20 @@
   </pluginRepositories>
 
   <repositories>
+
+    <repository>
+      <id>treblereel-snapshots</id>
+      <name>treblereel hosted artifacts-snapshots</name>
+      <url>https://repo.treblereel.org/snapshots</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </snapshots>
+    </repository>
+
     <repository>
       <id>vertispan-releases</id>
       <name>Vertispan hosted artifacts-releases</name>
@@ -211,7 +225,7 @@
       </snapshots>
     </repository>
 
-    <repository>
+<!--    <repository>
       <id>vertispan-snapshots</id>
       <name>Vertispan Snapshots</name>
       <url>https://repo.vertispan.com/gwt-snapshot/</url>
@@ -220,7 +234,7 @@
         <updatePolicy>daily</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
-    </repository>
+    </repository>-->
     <repository>
       <id>sonatype-snapshots-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>

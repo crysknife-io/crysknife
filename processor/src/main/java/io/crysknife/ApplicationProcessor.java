@@ -51,8 +51,7 @@ import io.crysknife.generator.scanner.QualifiersScan;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes({"io.crysknife.client.Application", "javax.inject.Inject",
-    "javax.inject.Singleton", "io.crysknife.annotation.ComponentScan"})
+@SupportedAnnotationTypes({"io.crysknife.annotation.Application"})
 public class ApplicationProcessor extends AbstractProcessor {
 
   private IOCContext iocContext;

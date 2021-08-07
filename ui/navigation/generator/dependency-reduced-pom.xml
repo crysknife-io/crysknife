@@ -43,6 +43,15 @@
             </goals>
             <configuration>
               <minimizeJar>true</minimizeJar>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>**/*.java</exclude>
+                    <exclude>jsinterop/base/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>
