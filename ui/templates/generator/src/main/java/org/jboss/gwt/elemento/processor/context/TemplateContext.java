@@ -14,6 +14,7 @@
 
 package org.jboss.gwt.elemento.processor.context;
 
+import javax.lang.model.type.TypeMirror;
 import java.util.List;
 
 public class TemplateContext {
@@ -22,7 +23,7 @@ public class TemplateContext {
   private final String base;
   private final String subclass;
   private final String isElementTypeParameter;
-  private final String inject;
+  private final TypeMirror dataElementType;
 
   private RootElementInfo root;
   private StyleSheet stylesheet;
@@ -32,12 +33,12 @@ public class TemplateContext {
   private List<EventHandlerInfo> events;
 
   public TemplateContext(String pkg, String base, String subclass, String isElementTypeParameter,
-      String inject) {
+      TypeMirror dataElementType) {
     this.pkg = pkg;
     this.base = base;
     this.subclass = subclass;
     this.isElementTypeParameter = isElementTypeParameter;
-    this.inject = inject;
+    this.dataElementType = dataElementType;
   }
 
   @Override
@@ -51,10 +52,6 @@ public class TemplateContext {
 
   public String getPackage() {
     return pkg;
-  }
-
-  public String getInject() {
-    return inject;
   }
 
   public RootElementInfo getRoot() {
@@ -111,5 +108,9 @@ public class TemplateContext {
 
   public void setEvents(List<EventHandlerInfo> events) {
     this.events = events;
+  }
+
+  public TypeMirror getDataElementType() {
+    return dataElementType;
   }
 }

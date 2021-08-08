@@ -83,6 +83,11 @@ public final class TemplateUtil {
     replaceElement(context, identifier, newElement.element());
   }
 
+  public static void replaceIsElement(HTMLElement context, String identifier,
+      io.crysknife.client.IsElement newElement) {
+    replaceElement(context, identifier, newElement.getElement());
+  }
+
   public static <E> E resolveCustomElement(HTMLElement context, String identifier) {
     Element element = DATA_ELEMENT.select(context, identifier);
     E customElement = Js.cast(element);
