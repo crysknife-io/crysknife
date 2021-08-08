@@ -21,7 +21,7 @@ public class DataElementInfo {
 
   public enum Kind {
     // Name them after the related type for nicer error messages
-    HTMLElement, IsElement, IsWidget, Custom
+    HTMLElement, CrysknifeIsElement, ElementoIsElement, IsWidget, Custom
   }
 
   private final String type;
