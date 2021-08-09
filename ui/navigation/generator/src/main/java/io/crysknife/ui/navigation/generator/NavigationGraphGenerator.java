@@ -159,9 +159,10 @@ public class NavigationGraphGenerator {
   }
 
   private void generatePage(TypeElement page, ConstructorDeclaration ctor) {
-    if (!isAssignable(page.asType(), IsElement.class)) {
-      throw new GenerationException(
-          "Class " + page + " is annotated with @Page, so it must implement IsElement");
+    if (!(isAssignable(page.asType(), IsElement.class)
+        || isAssignable(page.asType(), io.crysknife.client.IsElement.class))) {
+      throw new GenerationException("Class " + page
+          + " is annotated with @Page, so it must implement org.jboss.elemento.IsElement or io.crysknife.client.IsElement");
     }
     compilationUnit.addImport(page.getQualifiedName().toString());
     Page annotation = page.getAnnotation(Page.class);
