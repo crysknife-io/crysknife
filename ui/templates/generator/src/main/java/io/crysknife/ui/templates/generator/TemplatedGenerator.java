@@ -341,13 +341,16 @@ public class TemplatedGenerator extends IOCGenerator {
     List<Attribute> attributes = root.attributes().asList().stream()
         .filter(attribute -> !attribute.getKey().equals("data-field")).collect(Collectors.toList());
 
+    java.util.Optional<Attribute> dataField = root.attributes().asList().stream()
+        .filter(attribute -> attribute.getKey().equals("data-field")).findFirst();
+
     ExpressionParser expressionParser = new ExpressionParser();
     String html = root.children().isEmpty() ? null : JAVA_STRING_ESCAPER.escape(root.html());
     Map<String, String> expressions = expressionParser.parse(html);
     expressions.putAll(expressionParser.parse(root.outerHtml()));
 
-    return new RootElementInfo(root.tagName(), subclass.toLowerCase() + "_root_element", attributes,
-        html, expressions);
+    return new RootElementInfo(root.tagName(), dataField, subclass.toLowerCase() + "_root_element",
+        attributes, html, expressions);
   }
 
   private TemplateSelector getTemplateSelector(TypeElement type, Templated templated) {
@@ -424,6 +427,8 @@ public class TemplatedGenerator extends IOCGenerator {
     addImports(builder);
     generateWrapper(builder, templateContext);
     setStylesheet(builder, templateContext);
+
+    addInitTemplateCallMethod(builder);
     processDataFields(builder, templateContext);
     // maybeInitWidgets(builder, templateContext);
     processEventHandlers(builder, templateContext);
@@ -478,14 +483,7 @@ public class TemplatedGenerator extends IOCGenerator {
     wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
     String element = getElementFromTag(templateContext);
 
-    wrapper.addFieldWithInitializer(element, "root",
-        new CastExpr(new ClassOrInterfaceType().setName(element),
-            new MethodCallExpr(
-                new FieldAccessExpr(new NameExpr("elemental2.dom.DomGlobal"), "document"),
-                "createElement")
-                    .addArgument(new StringLiteralExpr(templateContext.getRoot().getTag()))),
-        com.github.javaparser.ast.Modifier.Keyword.PRIVATE,
-        com.github.javaparser.ast.Modifier.Keyword.FINAL);
+    wrapper.addField(element, "root", com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
 
     ConstructorDeclaration constructor =
         wrapper.addConstructor(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
@@ -500,13 +498,12 @@ public class TemplatedGenerator extends IOCGenerator {
       args.stream().forEach(joiner::add);
       constructor.getBody().addStatement("super(" + joiner.toString() + ");");
     }
-    setAttributes(constructor.getBody(), templateContext);
-    setInnerHTML(constructor.getBody(), templateContext);
 
     DataElementInfo.Kind dataElementInfo =
         getDataElementInfoKind(beanDefinition.getType().asType());
 
     addElementMethod(wrapper, templateContext, dataElementInfo);
+    addInitMethod(wrapper, templateContext, dataElementInfo);
 
     builder.getClassDeclaration().addMember(wrapper);
   }
@@ -524,6 +521,39 @@ public class TemplatedGenerator extends IOCGenerator {
         new FieldAccessExpr(new ThisExpr(), "root")));
 
     method.getBody().get().addStatement(_return);
+  }
+
+  private void addInitMethod(ClassOrInterfaceDeclaration wrapper, TemplateContext templateContext,
+      DataElementInfo.Kind kind) {
+    String element = getElementFromTag(templateContext);
+
+    MethodDeclaration method = wrapper.addMethod("_setAndInitTemplate",
+        com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
+
+    MethodCallExpr methodCallExpr = getDataFieldFieldAccessCallExpr(templateContext);
+    method.getBody().get()
+        .addStatement(new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "root"))
+            .setValue(new CastExpr(new ClassOrInterfaceType().setName(element), methodCallExpr)));
+
+    setAttributes(method.getBody().get(), templateContext);
+    setInnerHTML(method.getBody().get(), templateContext);
+
+
+  }
+
+  private MethodCallExpr getDataFieldFieldAccessCallExpr(TemplateContext templateContext) {
+    if (templateContext.getRoot().getDataField().isPresent()) {
+      String dataField = templateContext.getRoot().getDataField().get().getValue();
+      java.util.Optional<DataElementInfo> dataElementInfo = templateContext.getDataElements()
+          .stream().filter(e -> e.getSelector().equals(dataField)).findFirst();
+      if (dataElementInfo.isPresent()) {
+        MethodCallExpr expr = getFieldAccessCallExpr(dataElementInfo.get().getName());
+        return expr;
+      }
+    }
+    return new MethodCallExpr(
+        new FieldAccessExpr(new NameExpr("elemental2.dom.DomGlobal"), "document"), "createElement")
+            .addArgument(new StringLiteralExpr(templateContext.getRoot().getTag()));
   }
 
   private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
@@ -581,7 +611,13 @@ public class TemplatedGenerator extends IOCGenerator {
     }
   }
 
+  private void addInitTemplateCallMethod(ClassBuilder builder) {
+    builder.getGetMethodDeclaration().getBody().get()
+        .addAndGetStatement(new MethodCallExpr(new NameExpr("instance"), "_setAndInitTemplate"));
+  }
+
   private void processDataFields(ClassBuilder builder, TemplateContext templateContext) {
+
     templateContext.getDataElements().forEach(element -> {
       MethodCallExpr resolveElement;
       MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(element.getName());
@@ -639,10 +675,6 @@ public class TemplatedGenerator extends IOCGenerator {
         .toString();
   }
 
-  private String getMethodName(DataElementInfo element) {
-    return getMethodName(element.getKind());
-  }
-
   private String getMethodName(DataElementInfo.Kind kind) {
     if (kind.equals(DataElementInfo.Kind.ElementoIsElement)
         || kind.equals(DataElementInfo.Kind.HTMLElement)) {
@@ -651,6 +683,10 @@ public class TemplatedGenerator extends IOCGenerator {
       return "getElement";
     }
     throw new GenerationException("Unable to find type of " + kind);
+  }
+
+  private String getMethodName(DataElementInfo element) {
+    return getMethodName(element.getKind());
   }
 
   private MethodCallExpr getFieldAccessCallExpr(String fieldName) {
