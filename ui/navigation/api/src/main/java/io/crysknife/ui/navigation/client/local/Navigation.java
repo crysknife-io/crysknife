@@ -543,10 +543,14 @@ public class Navigation {
     if (page != null) {
       if (page instanceof IsElement) {
         elements.add(((IsElement) page).element());
+      } else if (page instanceof io.crysknife.client.IsElement) {
+        elements.add(((io.crysknife.client.IsElement) page).getElement());
       } else if (page instanceof Iterable) {
         for (Object o : ((Iterable) page)) {
           if (o instanceof IsElement) {
             elements.add(((IsElement) o).element());
+          } else if (page instanceof io.crysknife.client.IsElement) {
+            elements.add(((io.crysknife.client.IsElement) o).getElement());
           } else if (o instanceof HTMLElement) {
             elements.add(((HTMLElement) o));
           }
