@@ -23,5 +23,7 @@ import elemental2.dom.HTMLElement;
 public interface IsElement<E extends HTMLElement> {
 
   /** @return the element of the custom component */
-  E getElement();
+  default E getElement() {
+    throw new Error("Method must be implemented manually or by crysknife-ui template engine");
+  }
 }
