@@ -1004,9 +1004,17 @@ public class TemplatedGenerator extends IOCGenerator {
       return DataElementInfo.Kind.ElementoIsElement;
       // } else if (isAssignable(dataElementType, IsWidget.class)) {
       // return DataElementInfo.Kind.IsWidget;
+    } else if (maybeGwtDom(dataElementType)) {
+      return DataElementInfo.Kind.GWT_DOM;
     } else {
       return DataElementInfo.Kind.Custom;
     }
+  }
+
+  private boolean maybeGwtDom(TypeMirror dataElementType) {
+    TypeElement element = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.dom.client.Element");
+    return isAssignable(dataElementType, element.asType());
   }
 
   private String getSelector(Element element) {
