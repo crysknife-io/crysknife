@@ -68,6 +68,11 @@
                 <artifactId>elemental2-generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.crysknife</groupId>
+                <artifactId>gwt-dom-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>io.crysknife</groupId>
