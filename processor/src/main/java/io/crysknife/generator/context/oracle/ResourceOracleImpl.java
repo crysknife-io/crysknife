@@ -18,6 +18,11 @@ import com.google.auto.common.MoreElements;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.GenerationContext;
 
+import javax.annotation.processing.FilerException;
+import javax.lang.model.element.ExecutableElement;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager.Location;
+import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,13 +30,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.annotation.processing.FilerException;
-import javax.lang.model.element.ExecutableElement;
-import javax.tools.FileObject;
-import javax.tools.JavaFileManager.Location;
-import javax.tools.StandardLocation;
 
-/** @author Dmitrii Tikhomirov <chani.liet@gmail.com> Created by treblereel on 10/8/18. */
+/**
+ * @author Dmitrii Tikhomirov <chani.liet@gmail.com> Created by treblereel on 10/8/18.
+ */
 public class ResourceOracleImpl implements ResourceOracle {
   private final GenerationContext aptContext;
 
@@ -51,7 +53,7 @@ public class ResourceOracleImpl implements ResourceOracle {
   }
 
   @Override
-  public URL[] findResources(CharSequence packageName, CharSequence[] pathName) {
+  public URL[] findResources(String packageName, String[] pathName) {
     List<URL> result = new ArrayList<>();
     for (int i = 0; i < pathName.length; i++) {
       URL resource = findResource(packageName, pathName[i]);
@@ -78,11 +80,16 @@ public class ResourceOracleImpl implements ResourceOracle {
    * org/gwtproject/uibinder/example/view/SimpleFormView.ui.xml</code>
    *
    * @return FileObject or null if file is not found.
-   * 
    * @see #findResource(CharSequence, CharSequence)
    */
   @Override
-  public URL findResource(CharSequence path) {
+  public URL findResource(String path) {
+    // maybe we can find file on the first attempt
+    URL url = getClass().getResource("/" + path);
+    if (url != null) {
+      return url;
+    }
+
     String packageName = "";
     String relativeName = path.toString();
 
@@ -110,7 +117,7 @@ public class ResourceOracleImpl implements ResourceOracle {
    * @return FileObject or null if file is not found.
    */
   @Override
-  public URL findResource(CharSequence pkg, CharSequence relativeName) {
+  public URL findResource(String pkg, String relativeName) {
     return findResource(Arrays.asList(StandardLocation.SOURCE_PATH, StandardLocation.SOURCE_OUTPUT,
         StandardLocation.CLASS_PATH, StandardLocation.CLASS_OUTPUT,
         StandardLocation.ANNOTATION_PROCESSOR_PATH), pkg, relativeName);
@@ -152,7 +159,7 @@ public class ResourceOracleImpl implements ResourceOracle {
         // ignored
       }
     }
-    // unable to locate, return null.
+
     return null;
   }
 }
