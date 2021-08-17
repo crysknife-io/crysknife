@@ -53,10 +53,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.dom</groupId>
-      <artifactId>gwt-dom</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.gwtproject.event</groupId>
       <artifactId>gwt-event-dom</artifactId>
     </dependency>
