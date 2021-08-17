@@ -17,6 +17,7 @@ package io.crysknife.ui.templates.generator;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -26,9 +27,12 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -312,9 +316,14 @@ public class TemplatedGenerator extends IOCGenerator {
   private ProcessingEnvironment processingEnvironment;
   private Messager messager;
   private BeanDefinition beanDefinition;
+  private TypeElement isWidget;
 
   public TemplatedGenerator(IOCContext iocContext) {
     super(iocContext);
+
+    isWidget = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.user.client.ui.IsWidget");
+
   }
 
   @Override
@@ -323,6 +332,10 @@ public class TemplatedGenerator extends IOCGenerator {
     this.messager = processingEnvironment.getMessager();
 
     iocContext.register(Templated.class, WiringElementType.CLASS_DECORATOR, this);
+
+    if (isWidget != null) {
+      new TemplateWidgetGenerator(iocContext).build(false).generate();
+    }
   }
 
   @Override
@@ -429,52 +442,75 @@ public class TemplatedGenerator extends IOCGenerator {
     setStylesheet(builder, templateContext);
 
     addInitTemplateCallMethod(builder);
+    maybeInitWidgets(builder, templateContext);
+
     processDataFields(builder, templateContext);
     // maybeInitWidgets(builder, templateContext);
     processEventHandlers(builder, templateContext);
   }
 
-  /*
-   * private void maybeInitWidgets(ClassBuilder builder, TemplateContext templateContext) {
-   * List<DataElementInfo> widgets = templateContext.getDataElements() .stream() .filter(elm ->
-   * elm.getKind().equals(DataElementInfo.Kind.IsWidget)) .collect(Collectors.toList()); if
-   * (!widgets.isEmpty()) { builder.getClassCompilationUnit().addImport(List.class);
-   * builder.getClassCompilationUnit().addImport(ArrayList.class);
-   *
-   * ExpressionStmt expressionStmt = new ExpressionStmt(); VariableDeclarationExpr
-   * variableDeclarationExpr = new VariableDeclarationExpr();
-   *
-   * VariableDeclarator variableDeclarator = new VariableDeclarator();
-   * variableDeclarator.setName("widgets");
-   *
-   * ClassOrInterfaceType list = new ClassOrInterfaceType().setName(List.class.getSimpleName());
-   * ClassOrInterfaceType arrayList = new
-   * ClassOrInterfaceType().setName(ArrayList.class.getSimpleName()); list.setTypeArguments(new
-   * ClassOrInterfaceType().setName(Widget.class.getSimpleName()));
-   *
-   * variableDeclarator.setType(list); variableDeclarator.setInitializer(new
-   * ObjectCreationExpr().setType(arrayList));
-   * variableDeclarationExpr.getVariables().add(variableDeclarator);
-   *
-   * expressionStmt.setExpression(variableDeclarationExpr);
-   *
-   * builder.getGetMethodDeclaration() .getBody() .get() .addAndGetStatement(expressionStmt);
-   *
-   * widgets.forEach(widget -> { FieldAccessExpr instance = new FieldAccessExpr( new
-   * FieldAccessExpr( new ThisExpr(), "instance"), widget.getName());
-   *
-   * MethodCallExpr methodCallExpr = new MethodCallExpr(new NameExpr("widgets"), "add")
-   * .addArgument(instance);
-   *
-   * builder.getGetMethodDeclaration() .getBody() .get().addAndGetStatement(methodCallExpr); });
-   *
-   * MethodCallExpr doInit = new MethodCallExpr(new ClassOrInterfaceType()
-   * .setName("TemplateUtil").getNameAsExpression(), "initTemplated")
-   * .addArgument(Js.class.getCanonicalName() + ".uncheckedCast(this.instance.element())")
-   * .addArgument("widgets");
-   *
-   * builder.getGetMethodDeclaration() .getBody() .get().addAndGetStatement(doInit); } }
-   */
+
+  private void maybeInitWidgets(ClassBuilder builder, TemplateContext templateContext) {
+    List<DataElementInfo> widgets = templateContext.getDataElements().stream()
+        .filter(elm -> elm.getKind().equals(DataElementInfo.Kind.IsWidget))
+        .collect(Collectors.toList());
+    if (!widgets.isEmpty()) {
+      builder.getClassCompilationUnit().addImport(List.class);
+      builder.getClassCompilationUnit().addImport(ArrayList.class);
+
+      ExpressionStmt expressionStmt = new ExpressionStmt();
+      VariableDeclarationExpr variableDeclarationExpr = new VariableDeclarationExpr();
+
+      VariableDeclarator variableDeclarator = new VariableDeclarator();
+      variableDeclarator.setName("widgets");
+
+      ClassOrInterfaceType list = new ClassOrInterfaceType().setName(List.class.getSimpleName());
+      ClassOrInterfaceType arrayList =
+          new ClassOrInterfaceType().setName(ArrayList.class.getSimpleName());
+      list.setTypeArguments(
+          new ClassOrInterfaceType().setName("org.gwtproject.user.client.ui.Widget"));
+
+      variableDeclarator.setType(list);
+      variableDeclarator.setInitializer(new ObjectCreationExpr().setType(arrayList));
+      variableDeclarationExpr.getVariables().add(variableDeclarator);
+
+      expressionStmt.setExpression(variableDeclarationExpr);
+
+      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(expressionStmt);
+
+      widgets.forEach(widget -> {
+        Expression instance =
+            new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
+                .addArgument(getFieldAccessCallExpr(widget.getName()));
+
+        MethodCallExpr methodCallExpr =
+            new MethodCallExpr(new NameExpr("widgets"), "add").addArgument(instance);
+        builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(methodCallExpr);
+      });
+
+      DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
+      Expression instance = getInstanceMethodName(kind);
+
+      MethodCallExpr doInit;
+
+      if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+        doInit = new MethodCallExpr(new ClassOrInterfaceType()
+            .setName("org.gwtproject.user.client.ui.TemplateWidget").getNameAsExpression(),
+            "initTemplated").addArgument(new NameExpr("instance"))
+                .addArgument(new FieldAccessExpr(new NameExpr("instance"), "root"))
+                .addArgument("widgets");
+      } else {
+        doInit = new MethodCallExpr(new ClassOrInterfaceType()
+            .setName("org.gwtproject.user.client.ui.TemplateWidget").getNameAsExpression(),
+            "initTemplated")
+                .addArgument(Js.class.getCanonicalName() + ".uncheckedCast(" + instance + ")")
+                .addArgument("widgets");
+      }
+
+      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(doInit);
+    }
+  }
+
 
   private void generateWrapper(ClassBuilder builder, TemplateContext templateContext) {
     ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
@@ -496,7 +532,7 @@ public class TemplatedGenerator extends IOCGenerator {
       }
       StringJoiner joiner = new StringJoiner(",");
       args.stream().forEach(joiner::add);
-      constructor.getBody().addStatement("super(" + joiner.toString() + ");");
+      constructor.getBody().addStatement("super(" + joiner + ");");
     }
 
     DataElementInfo.Kind dataElementInfo =
@@ -512,15 +548,37 @@ public class TemplatedGenerator extends IOCGenerator {
       TemplateContext templateContext, DataElementInfo.Kind kind) {
 
     String element = getElementFromTag(templateContext);
-
+    Expression root;
     MethodDeclaration method =
         wrapper.addMethod(getMethodName(kind), com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-    method.addAnnotation(Override.class);
-    method.setType(element);
-    ReturnStmt _return = new ReturnStmt(new CastExpr(new ClassOrInterfaceType().setName(element),
-        new FieldAccessExpr(new ThisExpr(), "root")));
+    if (!kind.equals(DataElementInfo.Kind.IsWidget)) {
+      method.addAnnotation(Override.class);
+      method.setType(element);
+      root = new FieldAccessExpr(new ThisExpr(), "root");
+    } else {
+      method.setType(HTMLElement.class.getCanonicalName());
+      root = uncheckedCastCall(asWidgetGetElementCall(new ThisExpr()),
+          HTMLElement.class.getCanonicalName());
+
+    }
+
+    ReturnStmt _return =
+        new ReturnStmt(new CastExpr(new ClassOrInterfaceType().setName(element), root));
 
     method.getBody().get().addStatement(_return);
+  }
+
+  private Expression asWidgetCall(Expression target) {
+    return new MethodCallExpr(target, "asWidget");
+  }
+
+  private Expression asWidgetGetElementCall(Expression target) {
+    return new MethodCallExpr(asWidgetCall(target), "getElement");
+  }
+
+  private Expression uncheckedCastCall(Expression target, String clazz) {
+    return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
+        "<" + clazz + ">uncheckedCast").addArgument(target);
   }
 
   private void addInitMethod(ClassOrInterfaceDeclaration wrapper, TemplateContext templateContext,
@@ -531,9 +589,10 @@ public class TemplatedGenerator extends IOCGenerator {
         com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
 
     MethodCallExpr methodCallExpr = getDataFieldFieldAccessCallExpr(templateContext);
-    method.getBody().get()
-        .addStatement(new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "root"))
-            .setValue(new CastExpr(new ClassOrInterfaceType().setName(element), methodCallExpr)));
+
+    Expression root = new FieldAccessExpr(new ThisExpr(), "root");
+    method.getBody().get().addStatement(new AssignExpr().setTarget(root)
+        .setValue(new CastExpr(new ClassOrInterfaceType().setName(element), methodCallExpr)));
 
     setAttributes(method.getBody().get(), templateContext);
     setInnerHTML(method.getBody().get(), templateContext);
@@ -616,7 +675,18 @@ public class TemplatedGenerator extends IOCGenerator {
         .addAndGetStatement(new MethodCallExpr(new NameExpr("instance"), "_setAndInitTemplate"));
   }
 
+  private Expression getInstanceCallExpression(TemplateContext templateContext) {
+    DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
+    Expression instance = getInstanceMethodName(kind);
+
+    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+      instance = uncheckedCastCall(instance, HTMLElement.class.getCanonicalName());
+    }
+    return instance;
+  }
+
   private void processDataFields(ClassBuilder builder, TemplateContext templateContext) {
+    Expression instance = getInstanceCallExpression(templateContext);
 
     templateContext.getDataElements().forEach(element -> {
       MethodCallExpr resolveElement;
@@ -624,8 +694,7 @@ public class TemplatedGenerator extends IOCGenerator {
 
       IfStmt ifStmt = new IfStmt().setCondition(
           new BinaryExpr(fieldAccessCallExpr, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-      DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
-      String instance = getInstanceMethodName(kind);
+
 
       if (element.needsCast()) {
         resolveElement = new MethodCallExpr(
@@ -666,13 +735,13 @@ public class TemplatedGenerator extends IOCGenerator {
     });
   }
 
-  private String getInstanceMethodName(DataElementInfo element) {
-    return getInstanceMethodName(element.getKind());
-  }
-
-  private String getInstanceMethodName(DataElementInfo.Kind kind) {
-    return new StringBuffer().append("this.instance.").append(getMethodName(kind)).append("()")
-        .toString();
+  private Expression getInstanceMethodName(DataElementInfo.Kind kind) {
+    MethodCallExpr expr =
+        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), "instance"), getMethodName(kind));
+    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+      uncheckedCastCall(expr, isWidget.toString());
+    }
+    return expr;
   }
 
   private String getMethodName(DataElementInfo.Kind kind) {
@@ -681,6 +750,8 @@ public class TemplatedGenerator extends IOCGenerator {
       return "element";
     } else if (kind.equals(DataElementInfo.Kind.CrysknifeIsElement)) {
       return "getElement";
+    } else if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+      return "getIsWidgetElement";
     }
     throw new GenerationException("Unable to find type of " + kind);
   }
@@ -720,18 +791,16 @@ public class TemplatedGenerator extends IOCGenerator {
           new EnclosedExpr(new CastExpr(new ClassOrInterfaceType()
               .setName(io.crysknife.client.IsElement.class.getCanonicalName()), instance)),
           "getElement");
+    } else if (element.getKind().equals(DataElementInfo.Kind.IsWidget)) {
+      return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
+          "<" + HTMLElement.class.getCanonicalName() + ">uncheckedCast")
+              .addArgument(
+                  new MethodCallExpr(
+                      new EnclosedExpr(new CastExpr(new ClassOrInterfaceType()
+                          .setName("org.gwtproject.user.client.ui.UIObject"), instance)),
+                      "getElement"));
     }
 
-
-    /*
-     * else if (element.getKind() .equals(DataElementInfo.Kind.IsWidget)) {
-     *
-     * return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "<" +
-     * HTMLElement.class.getCanonicalName() + ">uncheckedCast") .addArgument(new MethodCallExpr( new
-     * EnclosedExpr( new CastExpr( new
-     * ClassOrInterfaceType().setName(UIObject.class.getCanonicalName()), instance)),
-     * "getElement")); }
-     */
 
     return new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()), instance));
@@ -1002,13 +1071,20 @@ public class TemplatedGenerator extends IOCGenerator {
       return DataElementInfo.Kind.CrysknifeIsElement;
     } else if (isAssignable(dataElementType, IsElement.class)) {
       return DataElementInfo.Kind.ElementoIsElement;
-      // } else if (isAssignable(dataElementType, IsWidget.class)) {
-      // return DataElementInfo.Kind.IsWidget;
+    } else if (maybeGwtWidget(dataElementType)) {
+      return DataElementInfo.Kind.IsWidget;
     } else if (maybeGwtDom(dataElementType)) {
       return DataElementInfo.Kind.GWT_DOM;
     } else {
       return DataElementInfo.Kind.Custom;
     }
+  }
+
+  private boolean maybeGwtWidget(TypeMirror dataElementType) {
+    if (isWidget == null) {
+      return false;
+    }
+    return isAssignable(dataElementType, isWidget.asType());
   }
 
   private boolean maybeGwtDom(TypeMirror dataElementType) {
@@ -1126,11 +1202,11 @@ public class TemplatedGenerator extends IOCGenerator {
           Templated.class.getSimpleName());
     }
     if (!(isAssignable(type, IsElement.class)
-        || isAssignable(type, io.crysknife.client.IsElement.class))) {
-      abortWithError(type, "%s must implement %s", type.getSimpleName(),
-          (IsElement.class.getSimpleName() + " or "
-              + io.crysknife.client.IsElement.class.getSimpleName()));
-
+        || isAssignable(type, io.crysknife.client.IsElement.class)
+        || maybeGwtWidget(type.asType()))) {
+      abortWithError(type, "%s must implement %s", type.getQualifiedName(),
+          (IsElement.class.getCanonicalName() + " or "
+              + io.crysknife.client.IsElement.class.getCanonicalName() + " or " + isWidget));
     }
   }
 
