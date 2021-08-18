@@ -39,8 +39,6 @@
 
   <modules>
     <module>api</module>
-<!--
     <module>generator</module>
--->
   </modules>
 </project>

@@ -5,7 +5,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>databinding-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>databinding-generator</artifactId>
@@ -46,7 +46,6 @@
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
@@ -59,14 +58,25 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
+        <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <id>attach-sources</id>
             <phase>package</phase>
             <goals>
-              <goal>jar</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <minimizeJar>true</minimizeJar>
+              <filters>
+                <filter>
+                  <artifact>*:*:*:*</artifact>
+                  <excludes>
+                    <exclude>**/*.java</exclude>
+                    <exclude>**/*.js</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </execution>
         </executions>
       </plugin>
