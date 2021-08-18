@@ -28,6 +28,9 @@ import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
+import org.treblereel.postconstruct.Child;
+import org.treblereel.postconstruct.ChildTwo;
+import org.treblereel.postconstruct.PostConstructs;
 import org.treblereel.produces.SimpleBeanProducerTest;
 import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
 
@@ -66,6 +69,9 @@ public class App {
 
   @Inject
   protected BeanManager beanManager;
+
+  @Inject
+  protected PostConstructs postConstructs;
 
   public void onModuleLoad() {
     new AppBootstrap(this).initialize();

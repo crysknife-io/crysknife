@@ -43,4 +43,18 @@ public class PostConstructTest extends AbstractTest {
     assertEquals("done", app.getSimpleBeanDependent().getPostConstruct());
   }
 
+  @Test
+  public void testChildPostConstructCalled() {
+    assertEquals(1, app.postConstructs.child.calls.size());
+    assertEquals("Parent", app.postConstructs.child.calls.get(0));
+    assertEquals(2, app.postConstructs.childTwo.calls.size());
+    assertEquals("Parent", app.postConstructs.childTwo.calls.get(0));
+    assertEquals("ChildTwo", app.postConstructs.childTwo.calls.get(1));
+    assertEquals(2, app.postConstructs.childThree.calls.size());
+    assertEquals(3, app.postConstructs.childFour.calls.size());
+    assertEquals("Parent", app.postConstructs.childTwo.calls.get(0));
+    assertEquals("ChildTwo", app.postConstructs.childTwo.calls.get(1));
+    assertEquals("ChildFour", app.postConstructs.childFour.calls.get(2));
+  }
+
 }

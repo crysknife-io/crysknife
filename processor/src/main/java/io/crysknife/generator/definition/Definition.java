@@ -17,6 +17,7 @@ package io.crysknife.generator.definition;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,7 +34,7 @@ public abstract class Definition {
   public static final Comparator<IOCGenerator> iocGeneratorComparator =
       Comparator.comparing(h -> h.getClass().getAnnotation(Generator.class).priority());
 
-  protected final Map<IOCGenerator, Set<ExecutableDefinition>> executableDefinitions =
+  protected final Map<IOCGenerator, LinkedList<ExecutableDefinition>> executableDefinitions =
       new HashMap<>();
 
   protected Set<BeanDefinition> dependsOn = new LinkedHashSet<>();

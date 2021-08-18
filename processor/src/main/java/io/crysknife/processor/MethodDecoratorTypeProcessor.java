@@ -17,6 +17,7 @@ package io.crysknife.processor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
@@ -39,6 +40,13 @@ public class MethodDecoratorTypeProcessor extends TypeProcessor {
     if (element.getKind().equals(ElementKind.METHOD)) {
       ExecutableElement method = MoreElements.asExecutable(element);
       TypeElement enclosingElement = MoreElements.asType(method.getEnclosingElement());
+
+      //TODO this must be fixed
+      if (enclosingElement.getKind().isClass()
+          && enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
+        return;
+      }
+
       BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(enclosingElement);
       beanDefinition.addExecutableDefinition(generator,
           ExecutableDefinition.of(method, enclosingElement));
