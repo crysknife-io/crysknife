@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.enterprise.event.Event;
-import javax.inject.Inject;
 
 import org.jboss.elemento.IsElement;
 import io.crysknife.client.BeanManager;
@@ -48,10 +47,8 @@ import io.crysknife.ui.navigation.client.shared.NavigationEvent;
  */
 public abstract class NavigationGraph {
 
-  @Inject
   protected BeanManager beanManager;
 
-  @Inject
   protected Event<NavigationEvent> event;
 
   /**

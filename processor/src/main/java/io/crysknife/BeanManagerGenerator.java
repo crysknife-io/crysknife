@@ -164,7 +164,7 @@ public class BeanManagerGenerator {
 
       iocContext.getOrderedBeans().stream()
           .filter(field -> (field.getAnnotation(Application.class) == null))
-          .filter(field -> field.getKind().equals(ElementKind.CLASS)).collect(Collectors.toSet())
+          .filter(field -> field.getKind().isClass()).collect(Collectors.toSet())
           .forEach(field -> generateInitEntry(init, field));
 
       iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation,

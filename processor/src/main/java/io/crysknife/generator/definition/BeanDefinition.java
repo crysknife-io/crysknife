@@ -15,6 +15,7 @@
 package io.crysknife.generator.definition;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,9 +82,9 @@ public class BeanDefinition extends Definition {
 
   public void addExecutableDefinition(IOCGenerator generator, ExecutableDefinition definition) {
     if (!executableDefinitions.containsKey(generator)) {
-      executableDefinitions.put(generator, new HashSet<>());
+      executableDefinitions.put(generator, new LinkedList<>());
     }
-    executableDefinitions.get(generator).add(definition);
+    executableDefinitions.get(generator).add(0, definition);
   }
 
   public void setGenerator(IOCGenerator iocGenerator) {
@@ -252,7 +253,7 @@ public class BeanDefinition extends Definition {
     return packageName;
   }
 
-  public Map<IOCGenerator, Set<ExecutableDefinition>> getExecutableDefinitions() {
+  public Map<IOCGenerator, LinkedList<ExecutableDefinition>> getExecutableDefinitions() {
     return executableDefinitions;
   }
 

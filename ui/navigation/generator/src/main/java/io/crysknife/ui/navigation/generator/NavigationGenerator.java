@@ -80,11 +80,9 @@ public class NavigationGenerator extends SingletonGenerator {
     return newInstance
         .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
         .addArgument(new MethodCallExpr(
-            new MethodCallExpr(
-                new NameExpr(Utils.toVariableName(BeanManager.class.getCanonicalName())), "get"),
-            "get"))
-        .addArgument(
-            new MethodCallExpr(new MethodCallExpr(new NameExpr("Event_Factory"), "get"), "get")
+            new NameExpr(BeanManager.class.getPackage().getName() + ".BeanManagerImpl"), "get"))
+        .addArgument(new MethodCallExpr(
+            new MethodCallExpr(new NameExpr("javax.enterprise.event.Event_Factory"), "get"), "get")
                 .addArgument(NavigationEvent.class.getCanonicalName() + ".class"));
   }
 }
