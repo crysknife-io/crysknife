@@ -14,10 +14,6 @@
 
 package io.crysknife.generator;
 
-import java.io.IOException;
-
-import javax.inject.Provider;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -30,6 +26,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.BeanManager;
 import io.crysknife.client.Instance;
 import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
@@ -42,6 +39,9 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.util.Utils;
+
+import javax.inject.Provider;
+import java.io.IOException;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/5/19
@@ -75,11 +75,17 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
       clazz.getClassCompilationUnit().addImport(Reflect.class);
       clazz.getClassCompilationUnit().addImport(Factory.class);
       clazz.getClassCompilationUnit().addImport(Provider.class);
+      clazz.getClassCompilationUnit().addImport(BeanManager.class);
     }
 
     clazz.setClassName(beanDefinition.getType().getSimpleName().toString() + BOOTSTRAP_EXTENSION);
 
     clazz.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+
+    // clazz.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager")
+    clazz.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager",
+        new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get"),
+        Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
   }
 
   @Override

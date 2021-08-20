@@ -57,8 +57,12 @@ public class QualifiersScan {
           if (!iocContext.getQualifiers().containsKey(iface.getType())) {
             iocContext.getQualifiers().put(iface.getType(), new HashMap<>());
           }
-          iocContext.getQualifiers().get(iface.getType()).put(
-              named.getAnnotation(Named.class).value(),
+
+          String namedValue = (named.getAnnotation(Named.class).value().length() == 0)
+              ? named.getQualifiedName().toString()
+              : named.getAnnotation(Named.class).value();
+
+          iocContext.getQualifiers().get(iface.getType()).put(namedValue,
               iocContext.getBeanDefinitionOrCreateAndReturn(named));
         }));
   }

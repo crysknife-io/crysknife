@@ -220,7 +220,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
 
 
-
     if (!iocContext.getGenerationContext().isJre()) {
       beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> {
         Expression expr = getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint);
@@ -296,11 +295,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
   public void addFactoryFieldInitialization(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-    ClassOrInterfaceType beanManager = new ClassOrInterfaceType().setName(getFactoryVariableName());
-    MethodCallExpr callForBeanManagerImpl =
-        new MethodCallExpr(beanManager.getNameAsExpression(), "get");
 
-    MethodCallExpr callForProducer = new MethodCallExpr(callForBeanManagerImpl, "lookupBean")
+    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
         .addArgument(new FieldAccessExpr(new NameExpr(beanDefinition.getQualifiedName()), "class"));
     FieldAccessExpr field = new FieldAccessExpr(new ThisExpr(), varName);
 

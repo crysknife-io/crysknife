@@ -149,10 +149,10 @@ public class BeanManagerTest extends AbstractTest {
     assertEquals("org.treblereel.injection.named.NamedBeanDefault", componentDefault.say());
     assertEquals("org.treblereel.injection.named.NamedBeanOne", componentOne.say());
     assertEquals("org.treblereel.injection.named.NamedBeanTwo", componentTwo.say());
-    assertEquals(3, super.app.beanManager.lookupBeans(NamedBean.class).size());
+    assertEquals(5, super.app.beanManager.lookupBeans(NamedBean.class).size());
 
 
-    assertEquals(3, super.app.beanManager.lookupBeans(NamedBean.class).size());
+    assertEquals(5, super.app.beanManager.lookupBeans(NamedBean.class).size());
 
     assertEquals(1, super.app.beanManager.lookupBeans(NamedBean.class, _default).size());
     NamedBean _defInstance =

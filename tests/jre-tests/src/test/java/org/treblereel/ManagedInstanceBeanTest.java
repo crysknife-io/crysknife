@@ -22,7 +22,6 @@ import java.util.stream.StreamSupport;
 import javax.inject.Named;
 
 import io.crysknife.client.ManagedInstance;
-import org.junit.Assert;
 import org.junit.Test;
 import org.treblereel.injection.managedinstance.ComponentIface;
 import org.treblereel.injection.managedinstance.ComponentQualifierOne;

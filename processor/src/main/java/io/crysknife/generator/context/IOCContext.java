@@ -126,11 +126,11 @@ public class IOCContext {
 
   public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
     BeanDefinition beanDefinition;
-    if (getBeans().containsKey(typeElement)) {
+    if (beans.containsKey(typeElement)) {
       return getBeans().get(typeElement);
     } else {
       beanDefinition = BeanDefinition.of(typeElement, this);
-      getBeans().put(typeElement, beanDefinition);
+      beans.put(typeElement, beanDefinition);
       beanDefinition.processInjections(this);
     }
     return beanDefinition;
