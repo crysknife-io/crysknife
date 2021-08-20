@@ -14,12 +14,19 @@
 
 package org.treblereel;
 
+import io.crysknife.client.Instance;
 import org.junit.Test;
+import org.treblereel.injection.named.NamedBean;
 import org.treblereel.injection.named.NamedBeanDefault;
 import org.treblereel.injection.named.NamedBeanOne;
 import org.treblereel.injection.named.NamedBeanTwo;
+import org.treblereel.injection.qualifiers.QualifierBean;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -44,5 +51,17 @@ public class NamedTest extends AbstractTest {
         app.getNamedTestBean().namedFieldInjection.one.getClass().getSimpleName());
     assertEquals(NamedBeanTwo.class.getSimpleName(),
         app.getNamedTestBean().namedFieldInjection.two.getClass().getSimpleName());
+  }
+
+  @Test
+  public void testBeanManager() {
+    assertEquals(3, app.beanManager.lookupBeans(NamedBean.class).size());
+    List<String> beans = new ArrayList<>();
+    for (Instance lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
+      beans.add(((NamedBean) lookupBean.get()).say());
+    }
+    assertTrue(beans.contains(NamedBeanDefault.class.getCanonicalName()));
+    assertTrue(beans.contains(NamedBeanOne.class.getCanonicalName()));
+    assertTrue(beans.contains(NamedBeanTwo.class.getCanonicalName()));
   }
 }

@@ -44,7 +44,9 @@ import io.crysknife.ui.navigation.client.local.Page;
 @Templated(value = "mutationobserverdemo.html#mutationobserverdemo")
 public class MutationObserverDemo implements IsElement<HTMLDivElement> {
 
-    @DataField HTMLDivElement mutationobserverdemo;
+    @DataField
+    @Inject
+    private HTMLDivElement mutationobserverdemo;
 
     @DataField
     @Inject

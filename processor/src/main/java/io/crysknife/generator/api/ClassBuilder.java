@@ -101,10 +101,11 @@ public class ClassBuilder {
     return getClassDeclaration().getExtendedTypes();
   }
 
-  public void addConstructorDeclaration(Modifier.Keyword... modifiers) {
+  public ConstructorDeclaration addConstructorDeclaration(Modifier.Keyword... modifiers) {
     if (constructorDeclaration == null) {
       this.constructorDeclaration = classDeclaration.addConstructor(modifiers);
     }
+    return constructorDeclaration;
   }
 
   public void addParametersToConstructor(Parameter p) {

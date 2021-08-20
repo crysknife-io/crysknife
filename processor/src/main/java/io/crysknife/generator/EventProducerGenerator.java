@@ -109,7 +109,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
     classBuilder.addStatementToConstructor(assign);
   }
 
-  @Override
+  // @Override
   public void generateFactoryCreateMethod(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     MethodDeclaration getMethodDeclaration =

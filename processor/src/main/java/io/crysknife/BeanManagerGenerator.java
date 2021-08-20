@@ -192,11 +192,16 @@ public class BeanManagerGenerator {
     private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory,
         String annotation) {
       if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
+        ObjectCreationExpr factoryCreationExpr = new ObjectCreationExpr();
+        factoryCreationExpr
+            .setType(new ClassOrInterfaceType().setName(Utils.getQualifiedFactoryName(factory)));
+        factoryCreationExpr.addArgument(new ThisExpr());
+
+
         MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
             .addArgument(
                 new FieldAccessExpr(new NameExpr(field.getQualifiedName().toString()), "class"))
-            .addArgument(
-                new MethodCallExpr(new NameExpr(Utils.getQualifiedFactoryName(factory)), "create"));
+            .addArgument(factoryCreationExpr);
         maybeAddQualifiers(call, factory, annotation);
         init.getBody().ifPresent(body -> body.addAndGetStatement(call));
       }

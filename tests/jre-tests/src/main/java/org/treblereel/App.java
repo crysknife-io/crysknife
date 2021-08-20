@@ -26,6 +26,7 @@ import org.treblereel.injection.managedinstance.ManagedInstanceBean;
 import org.treblereel.injection.named.NamedTestBean;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierFieldInjection;
+import org.treblereel.injection.qualifiers.controls.NodeBuilderControl;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
 import org.treblereel.postconstruct.Child;
@@ -68,10 +69,13 @@ public class App {
   private ManagedInstanceBean managedInstanceBean;
 
   @Inject
-  protected BeanManager beanManager;
+  public BeanManager beanManager;
 
   @Inject
   protected PostConstructs postConstructs;
+
+  // @Inject
+  public NodeBuilderControl nodeBuilderControl;
 
   public void onModuleLoad() {
     new AppBootstrap(this).initialize();
