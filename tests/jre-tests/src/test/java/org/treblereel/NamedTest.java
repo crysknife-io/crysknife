@@ -25,6 +25,11 @@ import org.treblereel.injection.qualifiers.QualifierBean;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Named;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -55,7 +60,7 @@ public class NamedTest extends AbstractTest {
 
   @Test
   public void testBeanManager() {
-    assertEquals(3, app.beanManager.lookupBeans(NamedBean.class).size());
+    assertEquals(5, app.beanManager.lookupBeans(NamedBean.class).size());
     List<String> beans = new ArrayList<>();
     for (Instance lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
       beans.add(((NamedBean) lookupBean.get()).say());
@@ -63,5 +68,35 @@ public class NamedTest extends AbstractTest {
     assertTrue(beans.contains(NamedBeanDefault.class.getCanonicalName()));
     assertTrue(beans.contains(NamedBeanOne.class.getCanonicalName()));
     assertTrue(beans.contains(NamedBeanTwo.class.getCanonicalName()));
+
+    Named namedBeanOne = new Named() {
+
+      public Class<? extends Annotation> annotationType() {
+        return javax.inject.Named.class;
+      }
+
+      public String value() {
+        return "NamedBeanOne";
+      }
+    };
+
+    Named namedBeanTwo = new Named() {
+
+      public Class<? extends Annotation> annotationType() {
+        return javax.inject.Named.class;
+      }
+
+      public String value() {
+        return "NamedBeanTwo";
+      }
+    };
+
+    assertEquals(NamedBeanDefault.class,
+        app.beanManager.lookupBean(NamedBean.class).get().getClass());
+    assertEquals(NamedBeanOne.class,
+        app.beanManager.lookupBean(NamedBean.class, namedBeanOne).get().getClass());
+    assertEquals(NamedBeanTwo.class,
+        app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).get().getClass());
+
   }
 }

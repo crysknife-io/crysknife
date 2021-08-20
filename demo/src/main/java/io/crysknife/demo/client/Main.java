@@ -20,6 +20,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
 import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
@@ -43,7 +44,7 @@ public class Main implements IsElement<HTMLDivElement> {
     @Inject
     @DataField
     @Named("span")
-    private HTMLDivElement span;
+    private HTMLElement span;
 
     @PostConstruct
     public void init() {

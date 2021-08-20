@@ -160,7 +160,7 @@
         </executions>
         <configuration>
           <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</defaultWebappDirectory>
-          <compilationLevel>ADVANCED</compilationLevel>
+          <compilationLevel>BUNDLE</compilationLevel>
         </configuration>
       </plugin>
       <plugin>
