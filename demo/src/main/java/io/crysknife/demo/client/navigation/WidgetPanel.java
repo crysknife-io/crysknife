@@ -21,7 +21,6 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import org.gwtproject.event.dom.client.ClickEvent;
-import org.jboss.elemento.IsElement;
 import io.crysknife.demo.client.about.About;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
@@ -41,13 +40,10 @@ import io.crysknife.ui.navigation.client.local.TransitionTo;
 @Page(path = "navigation")
 @Singleton
 @Templated("navigation.html")
-public class WidgetPanel implements IsElement<HTMLDivElement> {
+public class WidgetPanel implements io.crysknife.client.IsElement<HTMLDivElement> {
 
     @Inject
     private Navigation navigation;
-
-    @DataField
-    private HTMLDivElement root;
 
     @Inject
     private TransitionTo<About> toAboutPage;
@@ -55,11 +51,6 @@ public class WidgetPanel implements IsElement<HTMLDivElement> {
     @Inject
     @DataField
     private HTMLButtonElement button;
-
-    @Override
-    public HTMLDivElement element() {
-        return root;
-    }
 
     @EventHandler("button")
     public void onClick(final ClickEvent e) {

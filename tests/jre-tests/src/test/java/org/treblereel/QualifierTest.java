@@ -14,14 +14,20 @@
 
 package org.treblereel;
 
+import io.crysknife.client.Instance;
 import org.junit.Test;
+import org.treblereel.injection.qualifiers.QualifierBean;
 import org.treblereel.injection.qualifiers.QualifierBeanDefault;
 import org.treblereel.injection.qualifiers.QualifierBeanOne;
 import org.treblereel.injection.qualifiers.QualifierBeanTwo;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -47,5 +53,17 @@ public class QualifierTest extends AbstractTest {
         app.getQualifierConstructorInjection().qualifierBeanOne.getClass());
     assertEquals(QualifierBeanTwo.class,
         app.getQualifierConstructorInjection().qualifierBeanTwo.getClass());
+  }
+
+  @Test
+  public void testBeanManager() {
+    assertEquals(3, app.beanManager.lookupBeans(QualifierBean.class).size());
+    List<String> beans = new ArrayList<>();
+    for (Instance lookupBean : app.beanManager.lookupBeans(QualifierBean.class)) {
+      beans.add(((QualifierBean) lookupBean.get()).say());
+    }
+    assertTrue(beans.contains("org.treblereel.injection.qualifiers.QualifierBeanDefault"));
+    assertTrue(beans.contains("org.treblereel.injection.qualifiers.QualifierBeanOne"));
+    assertTrue(beans.contains("org.treblereel.injection.qualifiers.QualifierBeanTwo"));
   }
 }

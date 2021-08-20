@@ -133,12 +133,6 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   }
 
-  @Override
-  public void generateFactoryCreateMethod(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-
-  }
-
   protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     String varName = Utils.toVariableName(beanDefinition.getQualifiedName());

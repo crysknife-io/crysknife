@@ -41,7 +41,7 @@ public class MethodDecoratorTypeProcessor extends TypeProcessor {
       ExecutableElement method = MoreElements.asExecutable(element);
       TypeElement enclosingElement = MoreElements.asType(method.getEnclosingElement());
 
-      //TODO this must be fixed
+      // TODO this must be fixed
       if (enclosingElement.getKind().isClass()
           && enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
         return;

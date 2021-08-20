@@ -23,6 +23,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -41,6 +42,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.BeanManager;
 import io.crysknife.client.Instance;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
@@ -77,6 +79,18 @@ public class ProducesGenerator extends ScopedBeanGenerator {
           .addImport(producesDefinition.getInstance().getQualifiedName().toString());
       builder.getClassCompilationUnit()
           .addImport(producesDefinition.getMethod().getReturnType().toString());
+
+
+      builder.addField(BeanManager.class.getSimpleName(), "beanManager", Modifier.Keyword.PRIVATE,
+          Modifier.Keyword.FINAL);
+
+      ConstructorDeclaration constructorDeclaration =
+          builder.addConstructorDeclaration(Modifier.Keyword.PUBLIC);
+      constructorDeclaration.addAndGetParameter(BeanManager.class, "beanManager");
+
+      constructorDeclaration.getBody().addAndGetStatement(
+          new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "beanManager"))
+              .setValue(new NameExpr("beanManager")));
 
       TypeElement instance = producesDefinition.getInstance();
 

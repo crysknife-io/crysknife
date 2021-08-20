@@ -23,9 +23,13 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import org.apache.commons.lang3.StringUtils;
 import io.crysknife.ui.databinding.client.api.Bindable;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/21/19
@@ -47,6 +51,12 @@ public class BindableProxyGenerator {
     String clazzName = type.getQualifiedName().toString().replaceAll("\\.", "_") + "Proxy";
 
     StringBuffer sb = new StringBuffer();
+
+    Set<VariableElement> fields =
+        type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField())
+            .filter(e -> !e.getModifiers().contains(Modifier.FINAL))
+            .filter(e -> !e.getModifiers().contains(Modifier.STATIC))
+            .map(e -> MoreElements.asVariable(e)).collect(Collectors.toSet());
 
     sb.append(String.format("class %s extends %s implements BindableProxy { ", clazzName,
         type.getSimpleName()));
@@ -102,7 +112,7 @@ public class BindableProxyGenerator {
     sb.append(newLine);
     sb.append("}");
 
-    deepUnwrap(sb);
+    deepUnwrap(fields, sb);
     equals(clazzName, sb);
 
     sb.append("public int hashCode() {");
@@ -127,9 +137,9 @@ public class BindableProxyGenerator {
     sb.append(newLine);
     sb.append("}");
 
-    getterAndSetter(sb);
-    get(sb);
-    set(sb);
+    getterAndSetter(fields, sb);
+    get(fields, sb);
+    set(fields, sb);
     getBeanProperties(sb);
 
     sb.append("}");
@@ -175,16 +185,15 @@ public class BindableProxyGenerator {
     sb.append(newLine);
   }
 
-  private void set(StringBuffer sb) {
+  private void set(Set<VariableElement> fields, StringBuffer sb) {
     sb.append("public void set(String property, Object value) {");
     sb.append(newLine);
     sb.append("  switch (property) {");
     sb.append(newLine);
 
-    type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField()).forEach(f -> {
-      VariableElement elm = (VariableElement) f;
-      sb.append(String.format("case \"%s\": target.%s((%s) value);", f.getSimpleName().toString(),
-          getSetter(elm), getFieldType(f.asType())));
+    fields.forEach(elm -> {
+      sb.append(String.format("case \"%s\": target.%s((%s) value);", elm.getSimpleName().toString(),
+          getSetter(elm), getFieldType(elm.asType())));
       sb.append(newLine);
       sb.append("break;");
       sb.append(newLine);
@@ -212,16 +221,15 @@ public class BindableProxyGenerator {
     return mirror.toString();
   }
 
-  private void get(StringBuffer sb) {
+  private void get(Set<VariableElement> fields, StringBuffer sb) {
     sb.append("public Object get(String property) {");
     sb.append(newLine);
     sb.append("  switch (property) {");
     sb.append(newLine);
 
-    type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField()).forEach(f -> {
-      VariableElement elm = (VariableElement) f;
-      sb.append(
-          String.format("case \"%s\": return %s();", f.getSimpleName().toString(), getGetter(elm)));
+    fields.forEach(elm -> {
+      sb.append(String.format("case \"%s\": return %s();", elm.getSimpleName().toString(),
+          getGetter(elm)));
       sb.append(newLine);
     });
 
@@ -236,21 +244,20 @@ public class BindableProxyGenerator {
     sb.append(newLine);
   }
 
-  private void getterAndSetter(StringBuffer sb) {
-    type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField()).forEach(f -> {
-      VariableElement elm = (VariableElement) f;
-      sb.append(String.format("public %s %s() {", f.asType(), getGetter(elm)));
+  private void getterAndSetter(Set<VariableElement> fields, StringBuffer sb) {
+    fields.forEach(elm -> {
+      sb.append(String.format("public %s %s() {", elm.asType(), getGetter(elm)));
       sb.append(newLine);
       sb.append(String.format("  return target.%s();", getGetter(elm)));
       sb.append(newLine);
       sb.append("}");
       sb.append(newLine);
 
-      sb.append(String.format("public void %s(%s %s) {", getGetter(elm), f.asType(),
-          f.getSimpleName().toString()));
+      sb.append(String.format("public void %s(%s %s) {", getGetter(elm), elm.asType(),
+          elm.getSimpleName().toString()));
       sb.append(newLine);
-      sb.append(String.format("  changeAndFire(\"%s\", %s);", f.getSimpleName().toString(),
-          f.getSimpleName().toString()));
+      sb.append(String.format("  changeAndFire(\"%s\", %s);", elm.getSimpleName().toString(),
+          elm.getSimpleName().toString()));
       sb.append(newLine);
       sb.append("}");
       sb.append(newLine);
@@ -271,7 +278,7 @@ public class BindableProxyGenerator {
     sb.append("}");
   }
 
-  private void deepUnwrap(StringBuffer sb) {
+  private void deepUnwrap(Set<VariableElement> fields, StringBuffer sb) {
     sb.append(String.format("public %s deepUnwrap() {", type.getSimpleName()));
     sb.append(newLine);
     sb.append(
@@ -280,9 +287,7 @@ public class BindableProxyGenerator {
     sb.append(String.format("  final %s t = unwrap();", type.getSimpleName()));
     sb.append(newLine);
 
-    type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField()).forEach(f -> {
-
-      VariableElement elm = (VariableElement) f;
+    fields.forEach(elm -> {
       if (!isBindableType(elm)) {
         sb.append("  ");
         sb.append(String.format("clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
@@ -292,14 +297,14 @@ public class BindableProxyGenerator {
             type.getSimpleName()));
         sb.append(newLine);
         sb.append(String.format("  clone.%s((%s) ((BindableProxy) %s()).deepUnwrap());",
-            getSetter(elm), f.asType(), getGetter(elm)));
+            getSetter(elm), elm.asType(), getGetter(elm)));
         sb.append(newLine);
         sb.append(String.format("} else if (BindableProxyFactory.isBindableType(t.%s())) {",
             getGetter(elm)));
         sb.append(newLine);
         sb.append(String.format(
             "  clone.%s((%s) ((BindableProxy) BindableProxyFactory.getBindableProxy(t.%s())).deepUnwrap());",
-            getSetter(elm), f.asType(), getGetter(elm)));
+            getSetter(elm), elm.asType(), getGetter(elm)));
         sb.append(newLine);
         sb.append("} else {");
         sb.append(newLine);
