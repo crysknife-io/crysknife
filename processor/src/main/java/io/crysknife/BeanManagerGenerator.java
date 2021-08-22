@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.TypeElement;
@@ -48,7 +49,6 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.Instance;
 import io.crysknife.client.internal.AbstractBeanManager;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.GenerationContext;

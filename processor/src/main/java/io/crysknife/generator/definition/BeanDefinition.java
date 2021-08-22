@@ -203,7 +203,6 @@ public class BeanDefinition extends Definition {
 
     if (bean != null) {
       dependsOn.add(bean);
-      field.setType(bean.getType());
     }
     return field;
   }

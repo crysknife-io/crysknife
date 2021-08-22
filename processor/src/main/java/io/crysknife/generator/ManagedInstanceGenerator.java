@@ -46,10 +46,6 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
     TypeMirror param =
         MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0);
 
-    // new InstanceImpl<ManagedInstance<ComponentIface>>(new
-    // io.crysknife.client.internal.ManagedInstanceImpl(org.treblereel.injection.managedinstance.ComponentIface.class,
-    // io.crysknife.client.BeanManagerImpl.get()));;
-
     StringBuffer sb = new StringBuffer();
     sb.append("new ").append("io.crysknife.client.internal.ManagedInstanceImpl");
     sb.append("(").append(param.toString()).append(".class").append(", ");

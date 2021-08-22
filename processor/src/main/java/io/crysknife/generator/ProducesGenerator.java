@@ -17,6 +17,7 @@ package io.crysknife.generator;
 import java.util.function.Supplier;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 import javax.lang.model.element.ExecutableElement;
@@ -43,7 +44,6 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.Instance;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
@@ -101,8 +101,7 @@ public class ProducesGenerator extends ScopedBeanGenerator {
 
       ClassOrInterfaceType type = new ClassOrInterfaceType();
       type.setName(Instance.class.getSimpleName());
-      type.setTypeArguments(
-          new ClassOrInterfaceType().setName(definition.getType().getQualifiedName().toString()));
+      type.setTypeArguments(new ClassOrInterfaceType().setName(instance.toString()));
       supplier.setTypeArguments(type);
 
       builder.addFieldWithInitializer(supplier, "producer", call, Modifier.Keyword.PRIVATE,
@@ -151,8 +150,10 @@ public class ProducesGenerator extends ScopedBeanGenerator {
   @Override
   public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
       BeanDefinition beanDefinition) {
-    generateFactoryFieldDeclaration(clazz, fieldPoint);
-    generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
+
+    // generateFactoryFieldDeclaration(clazz, fieldPoint);
+    // generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
+
     TypeElement point = fieldPoint.isNamed()
         ? iocContext.getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed()).getType()
         : fieldPoint.getType();

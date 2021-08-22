@@ -17,6 +17,7 @@ package io.crysknife.generator.info;
 import java.lang.reflect.Field;
 import java.util.function.Supplier;
 
+import javax.enterprise.inject.Instance;
 import javax.lang.model.element.TypeElement;
 
 import com.github.javaparser.ast.Modifier;
@@ -43,11 +44,11 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import io.crysknife.client.Instance;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.util.GenerationUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -56,9 +57,11 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
   private BeanDefinition bean;
   private ClassBuilder classBuilder;
+  private GenerationUtils generationUtils;
 
   BeanInfoJREGeneratorBuilder(IOCContext iocContext) {
     super(iocContext);
+    this.generationUtils = new GenerationUtils(iocContext);
   }
 
   @Override
@@ -181,18 +184,12 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     MethodCallExpr callForBeanManagerImpl =
         new MethodCallExpr(beanManager.getNameAsExpression(), "get");
 
-    TypeElement typeElement;
-
-    if (fieldPoint.isNamed()) {
-      typeElement =
-          iocContext.getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed()).getType();
-    } else {
-      typeElement = fieldPoint.getType();
-    }
-
     MethodCallExpr callForProducer =
-        new MethodCallExpr(callForBeanManagerImpl, "lookupBean").addArgument(
-            new FieldAccessExpr(new NameExpr(typeElement.getQualifiedName().toString()), "class"));
+        new MethodCallExpr(callForBeanManagerImpl, "lookupBean").addArgument(new FieldAccessExpr(
+            new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
+
+    generationUtils.maybeAddQualifiers(iocContext, callForProducer, fieldPoint);
+
 
     LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
     lambda.setBody(new ExpressionStmt(callForProducer));

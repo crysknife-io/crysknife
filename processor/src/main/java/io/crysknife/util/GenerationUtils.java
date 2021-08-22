@@ -24,46 +24,110 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.point.FieldPoint;
 
 import javax.inject.Named;
-import javax.lang.model.element.TypeElement;
+import javax.inject.Qualifier;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/19/21
  */
 public class GenerationUtils {
 
-  public static void maybeAddQualifiers(MethodCallExpr call, TypeElement field,
-      String annotationName) {
+  private final IOCContext context;
+  private final TypeMirror qualifier;
+
+  public GenerationUtils(IOCContext context) {
+    this.context = context;
+    qualifier = context.getGenerationContext().getElements()
+        .getTypeElement(Qualifier.class.getCanonicalName()).asType();
+
+  }
+
+
+  public void maybeAddQualifiers(IOCContext context, MethodCallExpr call, FieldPoint field) {
+
+    String annotationName = null;
+
+    if (field.isNamed()) {
+      annotationName = Named.class.getCanonicalName();
+    } else if (isQualifier(field) != null) {
+      annotationName = isQualifier(field);
+    }
+
     if (annotationName != null) {
-      boolean isNamed = field.getAnnotation(Named.class) != null;
-      annotationName = isNamed ? Named.class.getCanonicalName() : annotationName;
       ObjectCreationExpr annotation = new ObjectCreationExpr();
-      annotation.setType(new ClassOrInterfaceType()
-          .setName(isNamed ? Named.class.getCanonicalName() : annotationName));
+      annotation.setType(new ClassOrInterfaceType().setName(annotationName));
       NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
 
       MethodDeclaration annotationType = new MethodDeclaration();
       annotationType.setModifiers(Modifier.Keyword.PUBLIC);
       annotationType.setName("annotationType");
-      annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
+      annotationType.setType(
+          new ClassOrInterfaceType().setName("Class<? extends java.lang.annotation.Annotation>"));
       annotationType.getBody().get()
           .addAndGetStatement(new ReturnStmt(new NameExpr(annotationName + ".class")));
       anonymousClassBody.add(annotationType);
 
-      if (isNamed) {
+      if (field.isNamed()) {
         MethodDeclaration value = new MethodDeclaration();
         value.setModifiers(Modifier.Keyword.PUBLIC);
         value.setName("value");
         value.setType(new ClassOrInterfaceType().setName("String"));
-        value.getBody().get().addAndGetStatement(
-            new ReturnStmt(new StringLiteralExpr(field.getAnnotation(Named.class).value())));
+        value.getBody().get()
+            .addAndGetStatement(new ReturnStmt(new StringLiteralExpr(field.getNamed())));
         anonymousClassBody.add(value);
       }
 
       annotation.setAnonymousClassBody(anonymousClassBody);
 
       call.addArgument(annotation);
+
+
     }
   }
+
+
+  public String isQualifier(FieldPoint field) {
+    for (AnnotationMirror ann : field.getField().getAnnotationMirrors()) {
+      for (AnnotationMirror e : context.getGenerationContext().getProcessingEnvironment()
+          .getElementUtils()
+          .getAllAnnotationMirrors(MoreTypes.asElement(ann.getAnnotationType()))) {
+        boolean same =
+            context.getGenerationContext().getTypes().isSameType(e.getAnnotationType(), qualifier);
+        if (same) {
+          return ann.getAnnotationType().toString();
+        }
+      }
+    }
+    return null;
+  }
+
+  /*
+   * if (annotationName != null) { boolean isNamed = field.getAnnotation(Named.class) != null;
+   * annotationName = isNamed ? Named.class.getCanonicalName() : annotationName; ObjectCreationExpr
+   * annotation = new ObjectCreationExpr(); annotation.setType(new ClassOrInterfaceType()
+   * .setName(isNamed ? Named.class.getCanonicalName() : annotationName));
+   * NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
+   *
+   * MethodDeclaration annotationType = new MethodDeclaration();
+   * annotationType.setModifiers(Modifier.Keyword.PUBLIC); annotationType.setName("annotationType");
+   * annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
+   * annotationType.getBody().get() .addAndGetStatement(new ReturnStmt(new NameExpr(annotationName +
+   * ".class"))); anonymousClassBody.add(annotationType);
+   *
+   * if (isNamed) { MethodDeclaration value = new MethodDeclaration();
+   * value.setModifiers(Modifier.Keyword.PUBLIC); value.setName("value"); value.setType(new
+   * ClassOrInterfaceType().setName("String")); value.getBody().get().addAndGetStatement( new
+   * ReturnStmt(new StringLiteralExpr(field.getAnnotation(Named.class).value())));
+   * anonymousClassBody.add(value); }
+   *
+   * annotation.setAnonymousClassBody(anonymousClassBody);
+   *
+   * call.addArgument(annotation); }
+   */
 }

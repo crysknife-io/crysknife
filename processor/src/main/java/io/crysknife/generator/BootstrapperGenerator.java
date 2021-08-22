@@ -27,7 +27,6 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.Instance;
 import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.Factory;
@@ -40,8 +39,10 @@ import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.util.Utils;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Provider;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/5/19
@@ -73,7 +74,9 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     if (!iocContext.getGenerationContext().isGwt2()) {
       clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
       clazz.getClassCompilationUnit().addImport(Reflect.class);
+      clazz.getClassCompilationUnit().addImport(Instance.class);
       clazz.getClassCompilationUnit().addImport(Factory.class);
+      clazz.getClassCompilationUnit().addImport(Supplier.class);
       clazz.getClassCompilationUnit().addImport(Provider.class);
       clazz.getClassCompilationUnit().addImport(BeanManager.class);
     }
