@@ -15,8 +15,11 @@
 package org.treblereel;
 
 import org.junit.Test;
+import org.treblereel.injection.inheritance.BeanChild;
+import org.treblereel.injection.inheritance.Target;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -55,6 +58,19 @@ public class InheritanceTest extends AbstractTest {
     assertEquals("Parent", app.postConstructs.childTwo.calls.get(0));
     assertEquals("ChildTwo", app.postConstructs.childTwo.calls.get(1));
     assertEquals("ChildFour", app.postConstructs.childFour.calls.get(2));
+  }
+
+  @Test
+  public void testParentFieldInjected() {
+
+    assertNotNull(app.inheritanceBean);
+    assertNotNull(app.inheritanceBean.getBean());
+    assertNotNull(app.inheritanceBean.getBean().getTarget());
+    assertNotNull(app.inheritanceBean.getBean().getTarget().hello());
+
+    assertEquals(Target.class, app.inheritanceBean.getBean().getTarget().getClass());
+    assertEquals(Target.class.getCanonicalName(),
+        app.inheritanceBean.getBean().getTarget().hello());
   }
 
 }

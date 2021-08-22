@@ -22,6 +22,7 @@ import io.crysknife.client.BeanManager;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
+import org.treblereel.injection.inheritance.InheritanceBean;
 import org.treblereel.injection.managedinstance.ManagedInstanceBean;
 import org.treblereel.injection.named.NamedTestBean;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
@@ -73,6 +74,9 @@ public class App {
 
   @Inject
   protected PostConstructs postConstructs;
+
+  @Inject
+  public InheritanceBean inheritanceBean;
 
   // @Inject
   public NodeBuilderControl nodeBuilderControl;
