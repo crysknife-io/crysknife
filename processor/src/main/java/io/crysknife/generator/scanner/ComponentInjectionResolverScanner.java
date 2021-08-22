@@ -111,7 +111,6 @@ public class ComponentInjectionResolverScanner {
 
     if (beanDefinition != null) {
       definition.getDependsOn().add(beanDefinition);
-      field.setType(beanDefinition.getType());
     }
     if (!iocContext.getBeans().containsKey(field.getType())) {
       dependentBeans.add(field.getType());

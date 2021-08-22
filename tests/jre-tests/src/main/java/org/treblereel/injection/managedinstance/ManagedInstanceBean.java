@@ -14,15 +14,11 @@
 
 package org.treblereel.injection.managedinstance;
 
-import java.lang.annotation.Annotation;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -33,12 +29,8 @@ public class ManagedInstanceBean {
   @Inject
   private BeanManager beanManager;
 
+  @Inject
   private ManagedInstance<ComponentIface> managedInstanceBean;
-
-  @PostConstruct
-  void init() {
-    managedInstanceBean = new ManagedInstanceImpl<>(ComponentIface.class, beanManager);
-  }
 
   public ManagedInstance<ComponentIface> getManagedInstanceBean() {
     return managedInstanceBean;

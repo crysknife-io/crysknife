@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
-public class PostConstructTest extends AbstractTest {
+public class InheritanceTest extends AbstractTest {
 
   @Test
   public void testPostConstructAppBootstrap() {

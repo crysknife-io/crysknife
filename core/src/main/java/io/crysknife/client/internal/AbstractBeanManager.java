@@ -25,11 +25,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
 import javax.inject.Named;
 import javax.inject.Provider;
 
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.Instance;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/29/19

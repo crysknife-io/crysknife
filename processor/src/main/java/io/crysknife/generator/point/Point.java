@@ -34,10 +34,6 @@ public abstract class Point {
     return type;
   }
 
-  public void setType(TypeElement type) {
-    this.type = type;
-  }
-
   public String getName() {
     return name;
   }

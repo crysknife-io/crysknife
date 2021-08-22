@@ -14,6 +14,8 @@
 
 package org.treblereel.postconstruct;
 
+import io.crysknife.client.BeanManager;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -22,6 +24,9 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class PostConstructs {
+
+  @Inject
+  public BeanManager beanManager;
 
   @Inject
   public Child child;

@@ -96,7 +96,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         + ".class)");
   }
 
-  @Override
+  // @Override
   public void addFactoryFieldInitialization(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");

@@ -13,8 +13,8 @@
  */
 package io.crysknife.client;
 
+import javax.enterprise.inject.Instance;
 import java.lang.annotation.Annotation;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
@@ -27,5 +27,5 @@ public interface BeanManager {
 
   <T> Instance<T> lookupBean(final Class type);
 
-  <T> Set<Instance<T>> lookupBeans(final Class type, Annotation... qualifiers);
+  <T> Iterable<Instance<T>> lookupBeans(final Class type, Annotation... qualifiers);
 }
