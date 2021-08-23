@@ -56,8 +56,7 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
     clazz.getClassCompilationUnit().addImport(TransitionTo.class);
 
     return new ObjectCreationExpr().setType(TransitionTo.class)

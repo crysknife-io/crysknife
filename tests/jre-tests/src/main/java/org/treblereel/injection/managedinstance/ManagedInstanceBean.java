@@ -16,8 +16,11 @@ package org.treblereel.injection.managedinstance;
 
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
+import org.treblereel.injection.dependent.SimpleBeanDependent;
+import org.treblereel.produces.qualifier.QualifierBean;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 /**
@@ -32,8 +35,28 @@ public class ManagedInstanceBean {
   @Inject
   private ManagedInstance<ComponentIface> managedInstanceBean;
 
+  @Inject
+  private Instance<ComponentIface> InstanceBean;
+
+  @Inject
+  private Instance<SimpleBeanDependent> bean;
+
+  @Inject
+  private Instance<QualifierBean> bean2;
+
   public ManagedInstance<ComponentIface> getManagedInstanceBean() {
     return managedInstanceBean;
   }
 
+  public Instance<ComponentIface> getInstanceBean() {
+    return InstanceBean;
+  }
+
+  public Instance<SimpleBeanDependent> getBean() {
+    return bean;
+  }
+
+  public Instance<QualifierBean> getBean2() {
+    return bean2;
+  }
 }

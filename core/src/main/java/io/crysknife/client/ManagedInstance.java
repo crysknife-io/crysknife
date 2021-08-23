@@ -17,6 +17,7 @@ package io.crysknife.client;
 import java.lang.annotation.Annotation;
 
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Instance;
 import javax.inject.Provider;
 
 /**
@@ -36,7 +37,7 @@ import javax.inject.Provider;
  * 
  * @author Max Barkley <mbarkley@redhat.com>
  */
-public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
+public interface ManagedInstance<T> extends Provider<T>, Iterable<T>, Instance<T> {
 
   /**
    * <p>

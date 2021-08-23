@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.Produces;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.TypeElement;
@@ -47,6 +48,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.internal.AbstractBeanManager;
@@ -171,6 +173,13 @@ public class BeanManagerGenerator {
 
       iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation,
           definition) -> generateInitEntry(init, type, definition.getType(), annotation)));
+
+      iocContext.getMethodsByAnnotation(Produces.class.getCanonicalName()).forEach(p -> {
+        System.out.println("Produces " + p + " " + p.getReturnType());
+        TypeElement type = MoreTypes.asTypeElement(p.getReturnType());
+        generateInitEntry(init, type);
+      });
+
     }
 
     private void addGetInstanceMethod() {

@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class BeanManagerTest extends AbstractTest {
 
-  // @Test
+  @Test
   public void testQualiers() {
     ManagedInstance<ComponentIface> managedInstanceBean =
         app.getManagedInstanceBean().getManagedInstanceBean();

@@ -18,6 +18,8 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -48,6 +50,14 @@ public class GenerationUtils {
 
   }
 
+  public Expression beanManagerLookupBeanCall(FieldPoint fieldPoint) {
+    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(
+            new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
+
+    maybeAddQualifiers(context, callForProducer, fieldPoint);
+    return callForProducer;
+  }
 
   public void maybeAddQualifiers(IOCContext context, MethodCallExpr call, FieldPoint field) {
 

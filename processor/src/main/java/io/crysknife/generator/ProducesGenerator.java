@@ -70,6 +70,8 @@ public class ProducesGenerator extends ScopedBeanGenerator {
 
   @Override
   public void generateDependantFieldDeclaration(ClassBuilder builder, BeanDefinition definition) {
+    System.out.println("generateDependantFieldDeclaration " + definition);
+
     if (definition instanceof ProducerDefinition) {
       ProducerDefinition producesDefinition = (ProducerDefinition) definition;
 
@@ -145,20 +147,6 @@ public class ProducesGenerator extends ScopedBeanGenerator {
             new ReturnStmt(getMethodCallExpr((ProducerDefinition) definition))));
       }
     }
-  }
-
-  @Override
-  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
-
-    // generateFactoryFieldDeclaration(clazz, fieldPoint);
-    // generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
-
-    TypeElement point = fieldPoint.isNamed()
-        ? iocContext.getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed()).getType()
-        : fieldPoint.getType();
-    return new MethodCallExpr(new MethodCallExpr(new NameExpr(Utils.toVariableName(point)), "get"),
-        "get");
   }
 
   private boolean isSingleton(ExecutableElement method) {

@@ -443,12 +443,11 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
     classBuilder.getClassCompilationUnit().addImport(Provider.class);
     classBuilder.getClassCompilationUnit()
-        .addImport(beanDefinition.getType().getQualifiedName().toString());
+        .addImport(fieldPoint.getType().getQualifiedName().toString());
 
     Class clazz;
     try {

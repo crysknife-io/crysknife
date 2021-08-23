@@ -150,8 +150,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
     MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
     return new NameExpr("io.crysknife.databinding.client.api.DataBinder_Factory.get().forType("

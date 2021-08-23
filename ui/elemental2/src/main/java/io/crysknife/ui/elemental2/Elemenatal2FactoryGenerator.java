@@ -157,19 +157,18 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
     classBuilder.getClassCompilationUnit().addImport(Provider.class);
     classBuilder.getClassCompilationUnit()
-        .addImport(beanDefinition.getType().getQualifiedName().toString());
+        .addImport(fieldPoint.getType().getQualifiedName().toString());
 
     return new CastExpr(
-        new ClassOrInterfaceType().setName(beanDefinition.getType().getSimpleName().toString()),
+        new ClassOrInterfaceType().setName(fieldPoint.getType().getSimpleName().toString()),
         new MethodCallExpr(
             new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
-            "createElement").addArgument(getTagFromType(fieldPoint, beanDefinition)));
+            "createElement").addArgument(getTagFromType(fieldPoint)));
   }
 
   @Override
@@ -177,27 +176,27 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
 
   }
 
-  private StringLiteralExpr getTagFromType(FieldPoint fieldPoint, BeanDefinition beanDefinition) {
+  private StringLiteralExpr getTagFromType(FieldPoint fieldPoint) {
     if (fieldPoint.isNamed()) {
       return new StringLiteralExpr(fieldPoint.getNamed());
     }
 
     Class clazz;
     try {
-      clazz = Class.forName(beanDefinition.getType().getQualifiedName().toString());
+      clazz = Class.forName(fieldPoint.getType().getQualifiedName().toString());
     } catch (ClassNotFoundException e) {
-      throw new Error("Unable to process " + beanDefinition.getType().getQualifiedName().toString()
+      throw new Error("Unable to process " + fieldPoint.getType().getQualifiedName().toString()
           + " " + e.getMessage());
     }
 
     if (!HTML_ELEMENTS.containsKey(clazz)) {
       throw new GenerationException(
-          "Unable to process " + beanDefinition.getType().getQualifiedName().toString());
+          "Unable to process " + fieldPoint.getType().getQualifiedName().toString());
     }
 
     if (HTML_ELEMENTS.get(clazz).stream().findFirst().get().equals("named")) {
       throw new GenerationException(
-          "Unable to process " + beanDefinition.getType().getQualifiedName().toString() + ", "
+          "Unable to process " + fieldPoint.getType().getQualifiedName().toString() + ", "
               + fieldPoint.getName() + " must be annotated with @Named(\"tag_name\")");
     }
 

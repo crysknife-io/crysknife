@@ -28,7 +28,7 @@ public class QualifierBeanProducer {
     return new QualifierBean() {
       @Override
       public String say() {
-        return this.getClass().getSimpleName();
+        return "REDHAT";
       }
     };
   }

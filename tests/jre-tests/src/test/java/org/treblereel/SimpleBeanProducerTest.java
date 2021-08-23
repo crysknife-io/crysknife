@@ -18,6 +18,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -32,8 +33,9 @@ public class SimpleBeanProducerTest extends AbstractTest {
         app.getSimpleBeanProducerTest().getSimpleBeanSingletonTwo());
   }
 
-  // @Test
+  @Test
   public void testQualifierBeanProducerTest() {
-    assertEquals("ZZZ", app.getQualifierBeanProducerTest().getQualifierBean().say());
+    assertNotNull(app.getQualifierBeanProducerTest().getQualifierBean());
+    assertEquals("REDHAT", app.getQualifierBeanProducerTest().getQualifierBean().say());
   }
 }

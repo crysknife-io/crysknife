@@ -43,17 +43,10 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
   /**
    * @param clazz
    * @param fieldPoint
-   * @param beanDefinition
-   * 
+   *
    * @return Expression, how to call instance of this bean ?
    */
-  public abstract Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition);
-
-  @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition) {
-
-  }
+  public abstract Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint);
 
   public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
     try {
