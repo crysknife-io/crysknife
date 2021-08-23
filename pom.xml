@@ -181,7 +181,7 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <header>LICENSE.header</header>
+                    <header>${user.dir}/LICENSE.header</header>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <skipExistingHeaders>true</skipExistingHeaders>
                     <mapping>

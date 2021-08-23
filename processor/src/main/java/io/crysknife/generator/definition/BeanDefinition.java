@@ -107,7 +107,7 @@ public class BeanDefinition extends Definition {
       FieldPoint fieldPoint) {
     if (generator.isPresent()) {
       IOCGenerator iocGenerator = generator.get();
-      return ((BeanIOCGenerator) iocGenerator).generateBeanCall(builder, fieldPoint, this);
+      return ((BeanIOCGenerator) iocGenerator).generateBeanCall(builder, fieldPoint);
     } else {
       if (maybeProcessableAsCommonBean(fieldPoint.getType())) {
         // we ll use direct object construction, lets ignore factory creation
@@ -143,29 +143,34 @@ public class BeanDefinition extends Definition {
   }
 
   public void processInjections(IOCContext context) {
-    Elements elements = context.getGenerationContext().getElements();
-    elements.getAllMembers(element).forEach(mem -> {
-      if (mem.getAnnotation(Inject.class) != null && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
-          || mem.getKind().equals(ElementKind.FIELD))) {
-        if (mem.getModifiers().contains(Modifier.STATIC)) {
-          throw new GenerationException(
-              String.format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
-        }
-        if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
-          ExecutableElement elms = MoreElements.asExecutable(mem);
-          constructorInjectionPoint =
-              new ConstructorPoint(element.getQualifiedName().toString(), element);
+    System.out.println("BEAN " + getType());
 
-          for (int i = 0; i < elms.getParameters().size(); i++) {
-            FieldPoint field = parseField(elms.getParameters().get(i), context);
-            constructorInjectionPoint.addArgument(field);
+    Elements elements = context.getGenerationContext().getElements();
+    elements.getAllMembers(element).stream().filter(elm -> elm.getAnnotation(Inject.class) != null)
+        .forEach(mem -> {
+          System.out.println("      " + mem);
+          if (mem.getAnnotation(Inject.class) != null
+              && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
+                  || mem.getKind().equals(ElementKind.FIELD))) {
+            if (mem.getModifiers().contains(Modifier.STATIC)) {
+              throw new GenerationException(String
+                  .format("Field [%s] in [%s] must not be STATIC \n", mem, getQualifiedName()));
+            }
+            if (mem.getKind().equals(ElementKind.CONSTRUCTOR)) {
+              ExecutableElement elms = MoreElements.asExecutable(mem);
+              constructorInjectionPoint =
+                  new ConstructorPoint(element.getQualifiedName().toString(), element);
+
+              for (int i = 0; i < elms.getParameters().size(); i++) {
+                FieldPoint field = parseField(elms.getParameters().get(i), context);
+                constructorInjectionPoint.addArgument(field);
+              }
+            } else if (mem.getKind().equals(ElementKind.FIELD)) {
+              FieldPoint fiend = parseField(mem, context);
+              fieldInjectionPoints.add(fiend);
+            }
           }
-        } else if (mem.getKind().equals(ElementKind.FIELD)) {
-          FieldPoint fiend = parseField(mem, context);
-          fieldInjectionPoints.add(fiend);
-        }
-      }
-    });
+        });
   }
 
   public String getQualifiedName() {

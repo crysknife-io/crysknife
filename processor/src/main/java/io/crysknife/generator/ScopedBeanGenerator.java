@@ -128,35 +128,15 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
   }
 
-  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
-      TypeElement typeElement) {
-    String varName = Utils.toVariableName(typeElement);
-    ClassOrInterfaceType supplier =
-        new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
-
-    ClassOrInterfaceType type = new ClassOrInterfaceType();
-    type.setName(Instance.class.getSimpleName());
-    type.setTypeArguments(
-        new ClassOrInterfaceType().setName(typeElement.getQualifiedName().toString()));
-    supplier.setTypeArguments(type);
-    classBuilder.addField(supplier, varName, Modifier.Keyword.PRIVATE);
-  }
-
   @Override
-  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
 
+    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(
+            new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
 
-    // generateFactoryFieldDeclaration(clazz, fieldPoint);
-
-
-    // generateFactoryConstructorDepsBuilder(clazz, beanDefinition);
-
-    TypeElement point = fieldPoint.isNamed()
-        ? iocContext.getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed()).getType()
-        : fieldPoint.getType();
-    return new MethodCallExpr(new MethodCallExpr(new NameExpr(Utils.toVariableName(point)), "get"),
-        "get");
+    generationUtils.maybeAddQualifiers(iocContext, callForProducer, fieldPoint);
+    return callForProducer;
   }
 
   @Override
@@ -256,14 +236,12 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     // TODO refactoring
     if (beanDefinition.getConstructorInjectionPoint() != null) {
       for (FieldPoint argument : beanDefinition.getConstructorInjectionPoint().getArguments()) {
-        addFactoryFieldInitialization(classBuilder, argument, "constructor");
-
-
+        addFactoryFieldInitialization(classBuilder, argument, "constructor", beanDefinition);
       }
     }
 
     beanDefinition.getFieldInjectionPoints().forEach(f -> {
-      addFactoryFieldInitialization(classBuilder, f, "field");
+      addFactoryFieldInitialization(classBuilder, f, "field", beanDefinition);
     });
 
 
@@ -307,19 +285,15 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
   }
 
   public void addFactoryFieldInitialization(ClassBuilder classBuilder, FieldPoint fieldPoint,
-      String kind) {
+      String kind, BeanDefinition beanDefinition) {
     String varName = "_" + kind + "_" + fieldPoint.getName();
 
-    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(
-            new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
-
-    generationUtils.maybeAddQualifiers(iocContext, callForProducer, fieldPoint);
+    Expression beanCall = beanDefinition.generateBeanCall(iocContext, classBuilder, fieldPoint);
 
     FieldAccessExpr field = new FieldAccessExpr(new ThisExpr(), varName);
 
     LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(callForProducer));
+    lambda.setBody(new ExpressionStmt(beanCall));
 
     AssignExpr assign = new AssignExpr().setTarget(field).setValue(lambda);
 
@@ -337,13 +311,4 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
         .addStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "instance")));
   }
 
-  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    // generateFactoryFieldDeclaration(classBuilder, beanDefinition.getType());
-  }
-
-  public void generateFactoryConstructorDepsBuilder(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    // addFactoryFieldInitialization(classBuilder, beanDefinition);
-  }
 }

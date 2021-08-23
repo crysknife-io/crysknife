@@ -19,6 +19,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
@@ -112,10 +113,15 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
           .add(new MemberValuePair().setName("value").setValue(getAnnotationValue(fieldPoint)));
       methodDeclaration.addAnnotation(annotationExpr);
 
-      MethodCallExpr beanManager = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-          .addArgument(new FieldAccessExpr(
-              new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
-      generationUtils.maybeAddQualifiers(iocContext, beanManager, fieldPoint);
+      Expression beanManager = null;
+
+      if (iocContext.getBlacklist().contains(fieldPoint.getType().getQualifiedName().toString())) {
+        beanManager = iocContext.getBean(fieldPoint.getType()).generateBeanCall(iocContext,
+            classBuilder, fieldPoint);
+      } else {
+        beanManager =
+            new MethodCallExpr(generationUtils.beanManagerLookupBeanCall(fieldPoint), "get");
+      }
 
       ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
           .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
@@ -138,7 +144,6 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
       blockStmt.addAndGetStatement(new MethodCallExpr("onInvoke").addArgument("joinPoint")
           .addArgument("field").addArgument(beanManager));
-
 
       CatchClause catchClause1 = new CatchClause().setParameter(new Parameter()
           .setType(new ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
@@ -175,7 +180,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
         classBuilder.addMethod("onInvoke", Modifier.Keyword.PRIVATE);
     methodDeclaration.addParameter("JoinPoint", "joinPoint");
     methodDeclaration.addParameter("Field", "field");
-    methodDeclaration.addParameter("Instance", "instance");
+    methodDeclaration.addParameter("Object", "instance");
 
     methodDeclaration.addThrownException(NoSuchFieldException.class);
     methodDeclaration.addThrownException(IllegalAccessException.class);
@@ -193,7 +198,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
       thenStmt.addAndGetStatement(new MethodCallExpr(new NameExpr("field"), "set")
           .addArgument(new MethodCallExpr(new NameExpr("joinPoint"), "getTarget"))
-          .addArgument(new MethodCallExpr(new NameExpr("instance"), "get")));
+          .addArgument(new NameExpr("instance")));
       body.addAndGetStatement(ifStmtLocal);
     });
   }

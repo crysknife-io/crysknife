@@ -14,6 +14,7 @@
 
 package io.crysknife.generator;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.lang.model.type.TypeMirror;
 
@@ -40,8 +41,7 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
 
     TypeMirror param =
         MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0);
@@ -58,6 +58,13 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
   @Override
   public void register() {
     iocContext.register(Inject.class, ManagedInstance.class, WiringElementType.FIELD_TYPE, this);
+    iocContext.register(Inject.class, Instance.class, WiringElementType.FIELD_TYPE, this);
     iocContext.getBlacklist().add(ManagedInstance.class.getCanonicalName());
+    iocContext.getBlacklist().add(Instance.class.getCanonicalName());
+  }
+
+  @Override
+  public void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition) {
+    // do nothing
   }
 }
