@@ -18,21 +18,23 @@ import java.util.function.Supplier;
 
 import jsinterop.base.Js;
 
+import javax.enterprise.inject.Instance;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 1/1/20
  */
 public final class OnFieldAccessed implements BiFunction<Object, String, Object> {
 
-  private final Supplier supplier;
+  private final Supplier<Instance> supplier;
 
-  public OnFieldAccessed(Supplier supplier) {
+  public OnFieldAccessed(Supplier<Instance> supplier) {
     this.supplier = supplier;
   }
 
   @Override
   public Object apply(Object o, String propertyKey) {
     if (Js.asPropertyMap(o).get(propertyKey) == null) {
-      Js.asPropertyMap(o).set(propertyKey, supplier.get());
+      Js.asPropertyMap(o).set(propertyKey, supplier.get().get());
     }
     return Js.asPropertyMap(o).get(propertyKey);
   }

@@ -254,11 +254,13 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
   protected Expression getFieldAccessorExpression(ClassBuilder classBuilder,
       BeanDefinition beanDefinition, FieldPoint fieldPoint) {
-    if (iocContext.getGenerationContext().isGwt2()) {
+    String varName = "_field_" + fieldPoint.getName();
 
-      return new MethodCallExpr(beanDefinition.getClassName() + "Info." + fieldPoint.getName())
-          .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
-          .addArgument(new NameExpr("______CALL___________"));
+    if (iocContext.getGenerationContext().isGwt2()) {
+      return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
+          + "Info." + fieldPoint.getName())
+              .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
+              .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"));
     }
 
     FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
@@ -270,13 +272,18 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(new NameExpr("______CALL___________")));
+    lambda.setBody(new ExpressionStmt(
+        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
+
+
     // lambda.setBody(new ExpressionStmt(iocContext.getBeans().get(fieldPoint.getType())
     // .generateBeanCall(iocContext, classBuilder, fieldPoint)));
 
     ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
     onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
     onFieldAccessedCreationExpr.addArgument(lambda);
+
+
 
     return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
         .addArgument(onFieldAccessedCreationExpr);
@@ -286,7 +293,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
       String kind, BeanDefinition beanDefinition) {
     String varName = "_" + kind + "_" + fieldPoint.getName();
 
-    Expression beanCall = beanDefinition.generateBeanCall(iocContext, classBuilder, fieldPoint);
+    Expression beanCall =
+        iocContext.getBean(fieldPoint).generateBeanCall(iocContext, classBuilder, fieldPoint);
 
     FieldAccessExpr field = new FieldAccessExpr(new ThisExpr(), varName);
 

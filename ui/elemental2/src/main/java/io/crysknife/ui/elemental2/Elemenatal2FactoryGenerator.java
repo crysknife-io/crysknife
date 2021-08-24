@@ -17,9 +17,12 @@ package io.crysknife.ui.elemental2;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -78,7 +81,6 @@ import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
 
@@ -157,6 +159,11 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
+  public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
+
+  }
+
+  @Override
   public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
@@ -164,16 +171,15 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     classBuilder.getClassCompilationUnit()
         .addImport(fieldPoint.getType().getQualifiedName().toString());
 
-    return new CastExpr(
-        new ClassOrInterfaceType().setName(fieldPoint.getType().getSimpleName().toString()),
-        new MethodCallExpr(
-            new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
-            "createElement").addArgument(getTagFromType(fieldPoint)));
-  }
+    // new InstanceImpl<>(() -> (HTMLDivElement) DomGlobal.document.createElement("div"));
 
-  @Override
-  public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(new MethodCallExpr(
+        new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
+        "createElement").addArgument(getTagFromType(fieldPoint))));
 
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
   }
 
   private StringLiteralExpr getTagFromType(FieldPoint fieldPoint) {
