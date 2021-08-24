@@ -70,8 +70,6 @@ public class ProducesGenerator extends ScopedBeanGenerator {
 
   @Override
   public void generateDependantFieldDeclaration(ClassBuilder builder, BeanDefinition definition) {
-    System.out.println("generateDependantFieldDeclaration " + definition);
-
     if (definition instanceof ProducerDefinition) {
       ProducerDefinition producesDefinition = (ProducerDefinition) definition;
 

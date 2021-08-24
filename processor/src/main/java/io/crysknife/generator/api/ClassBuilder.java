@@ -38,7 +38,7 @@ import io.crysknife.generator.definition.BeanDefinition;
 public class ClassBuilder {
 
   public final BeanDefinition beanDefinition;
-  Set<Expression> statementToConstructor = new HashSet<>();
+  private Set<Expression> statementToConstructor = new HashSet<>();
   private CompilationUnit clazz = new CompilationUnit();
   private ClassOrInterfaceDeclaration classDeclaration;
   private MethodDeclaration getGetMethodDeclaration;
