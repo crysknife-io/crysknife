@@ -49,7 +49,14 @@ public class Utils {
   }
 
   public static String getFactoryClassName(TypeElement bean) {
-    return bean.getSimpleName().toString() + "_Factory";
+    return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
+        : (bean.getEnclosingElement().getSimpleName() + "_")) + bean.getSimpleName().toString()
+        + "_Factory";
+  }
+
+  public static String getSimpleClassName(TypeElement bean) {
+    return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
+        : (bean.getEnclosingElement().getSimpleName() + ".")) + bean.getSimpleName().toString();
   }
 
   public static String getJsFieldName(VariableElement field) {
