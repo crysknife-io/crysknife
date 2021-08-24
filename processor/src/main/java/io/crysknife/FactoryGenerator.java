@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 import io.crysknife.generator.api.ClassBuilder;

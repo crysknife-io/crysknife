@@ -78,7 +78,7 @@ public class App {
   @Inject
   public InheritanceBean inheritanceBean;
 
-  // @Inject
+  @Inject
   public NodeBuilderControl nodeBuilderControl;
 
   public void onModuleLoad() {

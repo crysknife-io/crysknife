@@ -14,6 +14,7 @@
 
 package io.crysknife.generator.scanner;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -106,6 +107,11 @@ public class ComponentInjectionResolverScanner {
           .filter(elm -> elm.getKind().equals(ElementKind.CLASS)).findFirst();
       if (result.isPresent()) {
         beanDefinition = iocContext.getBeans().get(result.get());
+        if (!iocContext.getQualifiers().containsKey(field.getType())) {
+          iocContext.getQualifiers().put(field.getType(), new HashMap<>());
+        }
+        iocContext.getQualifiers().get(field.getType()).put(Default.class.getCanonicalName(),
+            beanDefinition);
       }
     }
 

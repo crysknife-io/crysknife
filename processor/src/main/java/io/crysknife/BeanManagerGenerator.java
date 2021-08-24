@@ -19,12 +19,15 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 
@@ -55,7 +58,10 @@ import io.crysknife.client.internal.AbstractBeanManager;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.util.Utils;
+
+import static javax.lang.model.element.Modifier.*;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
@@ -168,18 +174,34 @@ public class BeanManagerGenerator {
 
       iocContext.getOrderedBeans().stream()
           .filter(field -> (field.getAnnotation(Application.class) == null))
-          .filter(field -> field.getKind().isClass()).collect(Collectors.toSet())
+          .filter(field -> (field.getKind().equals(ElementKind.CLASS))).collect(Collectors.toSet())
           .forEach(field -> generateInitEntry(init, field));
 
       iocContext.getQualifiers().forEach((type, beans) -> beans.forEach((annotation,
           definition) -> generateInitEntry(init, type, definition.getType(), annotation)));
 
       iocContext.getMethodsByAnnotation(Produces.class.getCanonicalName()).forEach(p -> {
-        System.out.println("Produces " + p + " " + p.getReturnType());
         TypeElement type = MoreTypes.asTypeElement(p.getReturnType());
         generateInitEntry(init, type);
       });
 
+      iocContext.getOrderedBeans().stream()
+          .filter(field -> (field.getAnnotation(Application.class) == null))
+          .filter(field -> field.getModifiers().contains(ABSTRACT)
+              && !iocContext.getBlacklist().contains(field.getQualifiedName().toString()))
+          .collect(Collectors.toSet()).forEach(field -> generateDefaultInitEntry(init, field));
+    }
+
+    private void generateDefaultInitEntry(MethodDeclaration init, TypeElement field) {
+      Set<TypeElement> subs = iocContext.getSubClassesOf(field).stream()
+          .filter(ff -> !ff.getModifiers().contains(ABSTRACT)
+              && !iocContext.getBlacklist().contains(ff.getQualifiedName().toString()))
+          .collect(Collectors.toSet());
+
+      if (subs.size() == 1) {
+        TypeElement candidate = subs.iterator().next();
+        generateInitEntry(init, field, candidate, Default.class.getCanonicalName());
+      }
     }
 
     private void addGetInstanceMethod() {
@@ -202,12 +224,13 @@ public class BeanManagerGenerator {
 
     private void generateInitEntry(MethodDeclaration init, TypeElement field, TypeElement factory,
         String annotation) {
+
+
       if (!iocContext.getBlacklist().contains(field.getQualifiedName().toString())) {
         ObjectCreationExpr factoryCreationExpr = new ObjectCreationExpr();
         factoryCreationExpr
             .setType(new ClassOrInterfaceType().setName(Utils.getQualifiedFactoryName(factory)));
         factoryCreationExpr.addArgument(new ThisExpr());
-
 
         MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
             .addArgument(

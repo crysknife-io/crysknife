@@ -14,6 +14,7 @@
 
 package io.crysknife.generator.context;
 
+import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,7 +29,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
@@ -239,7 +242,7 @@ public class IOCContext {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
         if (type != null) {
           type.getEnclosedElements().stream().filter(elm -> (elm instanceof VariableElement))
-              .filter(elm -> ((VariableElement) elm).getAnnotationMirrors().stream()
+              .filter(elm -> elm.getAnnotationMirrors().stream()
                   .map(a -> a.getAnnotationType().toString()).filter(a -> a.equals(annotation))
                   .count() > 0)
               .map(method -> ((VariableElement) method)).forEach(results::add);
@@ -248,6 +251,13 @@ public class IOCContext {
     }
     fieldsByAnnotation.put(annotation, results);
     return results;
+  }
+
+  public Set<TypeElement> getSubClassesOf(TypeElement type) {
+    Types types = generationContext.getTypes();
+    TypeMirror erased = types.erasure(type.asType());
+    return beans.keySet().stream().filter(t -> types.isSubtype(types.erasure(t.asType()), erased)
+        && !types.isSameType(types.erasure(t.asType()), erased)).collect(Collectors.toSet());
   }
 
   public static class IOCGeneratorMeta {

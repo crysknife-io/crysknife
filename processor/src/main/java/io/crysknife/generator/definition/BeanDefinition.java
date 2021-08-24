@@ -14,16 +14,20 @@
 
 package io.crysknife.generator.definition;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreElements;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.BeanIOCGenerator;
+import io.crysknife.generator.IOCGenerator;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.point.ConstructorPoint;
+import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.util.Utils;
 
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Qualifier;
@@ -36,20 +40,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
-
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.BeanIOCGenerator;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.ConstructorPoint;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.util.Utils;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/20/19
@@ -64,6 +62,7 @@ public class BeanDefinition extends Definition {
   protected String qualifiedName;
   protected TypeElement element;
   protected Set<DeclaredType> types = new HashSet<>();
+  private BeanDefinition defaultImplementation;
 
   protected BeanDefinition(TypeElement element) {
     this.element = element;
@@ -103,6 +102,18 @@ public class BeanDefinition extends Definition {
     }));
   }
 
+  @Override
+  public String toString() {
+    return "BeanDefinition {" + " generator = [ "
+        + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]"
+        + " ] , element= [" + element + " ] , dependsOn= [ "
+        + dependsOn.stream().map(m -> Utils.getQualifiedName(m.element))
+            .collect(Collectors.joining(", "))
+        + " ] , executables= [ " + executableDefinitions.values().stream().map(Object::toString)
+            .collect(Collectors.joining(", "))
+        + " ]}";
+  }
+
   public Expression generateBeanCall(IOCContext context, ClassBuilder builder,
       FieldPoint fieldPoint) {
     if (generator.isPresent()) {
@@ -119,12 +130,16 @@ public class BeanDefinition extends Definition {
                 fieldPoint.getType().getQualifiedName().toString()));
         return new ObjectCreationExpr().setType(
             new ClassOrInterfaceType().setName(fieldPoint.getType().getQualifiedName().toString()));
-      } else if (fieldPoint.isNamed()) {
-        TypeElement named = context.getQualifiers().get(element).get(fieldPoint.getNamed()).element;
-        return context.getBean(named).generateBeanCall(context, builder, fieldPoint);
       }
-      throw new GenerationException("Unable to find generator for " + fieldPoint.getField() + " at "
-          + fieldPoint.getEnclosingElement());
+
+      BeanDefinition candidate = maybeHasOnlyOneImplementation(context, fieldPoint);
+      if (candidate != null) {
+        defaultImplementation = candidate;
+        return candidate.generateBeanCall(context, builder, fieldPoint);
+      }
+
+      throw new GenerationException("Unable to find generator for " + fieldPoint.getType() + " at "
+          + fieldPoint.getEnclosingElement() + "." + fieldPoint.getField());
     }
   }
 
@@ -143,12 +158,9 @@ public class BeanDefinition extends Definition {
   }
 
   public void processInjections(IOCContext context) {
-    System.out.println("BEAN " + getType());
-
     Elements elements = context.getGenerationContext().getElements();
     elements.getAllMembers(element).stream().filter(elm -> elm.getAnnotation(Inject.class) != null)
         .forEach(mem -> {
-          System.out.println("      " + mem);
           if (mem.getAnnotation(Inject.class) != null
               && (mem.getKind().equals(ElementKind.CONSTRUCTOR)
                   || mem.getKind().equals(ElementKind.FIELD))) {
@@ -202,14 +214,37 @@ public class BeanDefinition extends Definition {
           break;
         }
       }
-    } else {
-      bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
     }
 
     if (bean != null) {
       dependsOn.add(bean);
+    } else {
+      bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
+
+
+      BeanDefinition candidate = maybeHasOnlyOneImplementation(context, field);
+      if (candidate != null) {
+        bean.defaultImplementation = candidate;
+      }
+      dependsOn.add(bean);
     }
     return field;
+  }
+
+  private BeanDefinition maybeHasOnlyOneImplementation(IOCContext context, FieldPoint field) {
+    if (!field.getType().getKind().isInterface()) {
+      return null;
+    }
+    BeanDefinition bean = null;
+    Set<TypeElement> subs = context.getSubClassesOf(field.getType());
+    if (subs.size() == 1) {
+      TypeElement candidate = subs.iterator().next();
+      if (candidate.getKind().isClass()) {
+        bean = context.getBeanDefinitionOrCreateAndReturn(candidate);
+        defaultImplementation = bean;
+      }
+    }
+    return bean;
   }
 
   public Set<BeanDefinition> getDependsOn() {
@@ -235,18 +270,6 @@ public class BeanDefinition extends Definition {
     }
     BeanDefinition that = (BeanDefinition) o;
     return Objects.equals(Utils.getQualifiedName(element), Utils.getQualifiedName(that.element));
-  }
-
-  @Override
-  public String toString() {
-    return "BeanDefinition {" + " generator = [ "
-        + (generator.isPresent() ? generator.get().getClass().getCanonicalName() : "") + " ]"
-        + " ] , element= [" + element + " ] , dependsOn= [ "
-        + dependsOn.stream().map(m -> Utils.getQualifiedName(m.element))
-            .collect(Collectors.joining(", "))
-        + " ] , executables= [ " + executableDefinitions.values().stream().map(Object::toString)
-            .collect(Collectors.joining(", "))
-        + " ]}";
   }
 
   public String getClassName() {
@@ -279,6 +302,10 @@ public class BeanDefinition extends Definition {
 
   public void setConstructorInjectionPoint(ConstructorPoint constructorInjectionPoint) {
     this.constructorInjectionPoint = constructorInjectionPoint;
+  }
+
+  public BeanDefinition getDefaultImplementation() {
+    return defaultImplementation;
   }
 
   private static class BeanDefinitionBuilder {
