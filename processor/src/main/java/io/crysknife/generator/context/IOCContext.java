@@ -14,7 +14,28 @@
 
 package io.crysknife.generator.context;
 
-import java.lang.annotation.ElementType;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.IOCGenerator;
+import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.util.GenerationUtils;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
+
+import javax.enterprise.inject.Default;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,25 +45,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.definition.BeanDefinition;
+import static javax.lang.model.element.Modifier.ABSTRACT;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
@@ -96,35 +99,8 @@ public class IOCContext {
     }
   }
 
-  public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
-    return generators;
-  }
-
-  public Map<TypeElement, BeanDefinition> getBeans() {
-    return beans;
-  }
-
-  public BeanDefinition getBean(TypeElement bean) {
-    if (beans.containsKey(bean)) {
-      return beans.get(bean);
-    }
-    throw new GenerationException(bean.toString());
-  }
-
   public GenerationContext getGenerationContext() {
     return generationContext;
-  }
-
-  public Map<TypeElement, Map<String, BeanDefinition>> getQualifiers() {
-    return qualifiers;
-  }
-
-  public List<TypeElement> getOrderedBeans() {
-    return orderedBeans;
-  }
-
-  public List<String> getBlacklist() {
-    return blacklist;
   }
 
   public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
@@ -137,6 +113,56 @@ public class IOCContext {
       beanDefinition.processInjections(this);
     }
     return beanDefinition;
+  }
+
+  public Map<TypeElement, BeanDefinition> getBeans() {
+    return beans;
+  }
+
+  public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
+    return generators;
+  }
+
+  public BeanDefinition getBean(FieldPoint fieldPoint) {
+    if (fieldPoint.getType().getModifiers().contains(ABSTRACT)) {
+
+      if (fieldPoint.isNamed()) {
+        return getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed());
+      }
+      if (getQualifiers().containsKey(fieldPoint.getType())) {
+        GenerationUtils generationUtils = new GenerationUtils(this);
+        String isQualifier = generationUtils.isQualifier(fieldPoint);
+        if (isQualifier != null) {
+          return getQualifiers().get(fieldPoint.getType()).get(isQualifier);
+        }
+        BeanDefinition defaultBeanDefinition =
+            getQualifiers().get(fieldPoint.getType()).get(Default.class.getCanonicalName());
+        if (defaultBeanDefinition != null) {
+          return defaultBeanDefinition;
+        }
+      }
+
+    }
+    return getBean(fieldPoint.getType());
+  }
+
+  public BeanDefinition getBean(TypeElement bean) {
+    if (beans.containsKey(bean)) {
+      return beans.get(bean);
+    }
+    throw new GenerationException(bean.toString());
+  }
+
+  public Map<TypeElement, Map<String, BeanDefinition>> getQualifiers() {
+    return qualifiers;
+  }
+
+  public List<TypeElement> getOrderedBeans() {
+    return orderedBeans;
+  }
+
+  public List<String> getBlacklist() {
+    return blacklist;
   }
 
   // TODO j2cl-m-p workaround
@@ -274,9 +300,8 @@ public class IOCContext {
     }
 
     @Override
-    public String toString() {
-      return "IOCGeneratorMeta{" + "annotation='" + annotation + '\'' + ", exactType=" + exactType
-          + ", wiringElementType=" + wiringElementType + '}';
+    public int hashCode() {
+      return Objects.hash(annotation, exactType, wiringElementType);
     }
 
     @Override
@@ -294,8 +319,9 @@ public class IOCContext {
     }
 
     @Override
-    public int hashCode() {
-      return Objects.hash(annotation, exactType, wiringElementType);
+    public String toString() {
+      return "IOCGeneratorMeta{" + "annotation='" + annotation + '\'' + ", exactType=" + exactType
+          + ", wiringElementType=" + wiringElementType + '}';
     }
   }
 }

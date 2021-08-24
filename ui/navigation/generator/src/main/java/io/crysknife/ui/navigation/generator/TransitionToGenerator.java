@@ -16,12 +16,17 @@ package io.crysknife.ui.navigation.generator;
 
 import javax.inject.Inject;
 
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
@@ -58,14 +63,20 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   @Override
   public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
     clazz.getClassCompilationUnit().addImport(TransitionTo.class);
+    clazz.getClassCompilationUnit().addImport(Navigation.class);
+    clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
 
-    return new ObjectCreationExpr().setType(TransitionTo.class)
-        .addArgument(MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
-            .toString() + ".class")
-        .addArgument(
-            new MethodCallExpr(
-                new MethodCallExpr(new MethodCallExpr(new NameExpr("BeanManagerImpl"), "get"),
-                    "lookupBean").addArgument(Navigation.class.getCanonicalName() + ".class"),
-                "get"));
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda
+        .setBody(new ExpressionStmt(new ObjectCreationExpr().setType(TransitionTo.class)
+            .addArgument(MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments()
+                .get(0).toString() + ".class")
+            .addArgument(
+                new CastExpr(new ClassOrInterfaceType().setName(Navigation.class.getSimpleName()),
+                    new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                        .addArgument(Navigation.class.getSimpleName() + ".class"), "get")))));
+
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
   }
 }

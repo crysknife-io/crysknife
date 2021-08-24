@@ -17,6 +17,7 @@ package io.crysknife.generator.point;
 import java.util.Objects;
 
 import javax.inject.Named;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -54,10 +55,6 @@ public class FieldPoint extends Point {
     } else {
       return MoreElements.asType(field.getEnclosingElement().getEnclosingElement());
     }
-  }
-
-  public boolean isQualified() {
-    throw new UnsupportedOperationException();
   }
 
   public String getNamed() {

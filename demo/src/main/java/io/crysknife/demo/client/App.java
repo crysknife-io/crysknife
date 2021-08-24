@@ -16,10 +16,13 @@ package io.crysknife.demo.client;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
+import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.demo.client.events.Address;
 import io.crysknife.demo.client.events.User;
 import io.crysknife.demo.client.named.NamedBeanConstructorInjectionPanel;
@@ -27,6 +30,8 @@ import io.crysknife.annotation.Application;
 import io.crysknife.annotation.ComponentScan;
 import io.crysknife.ui.navigation.client.local.DefaultPage;
 import io.crysknife.ui.navigation.client.local.Navigation;
+
+import java.util.function.Supplier;
 
 @Application
 @ComponentScan("io.crysknife.demo.client")

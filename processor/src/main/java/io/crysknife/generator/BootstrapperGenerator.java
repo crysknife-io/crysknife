@@ -18,11 +18,15 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
@@ -37,6 +41,7 @@ import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
+import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Instance;
@@ -89,6 +94,33 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     clazz.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager",
         new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get"),
         Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
+
+    beanDefinition.getFieldInjectionPoints().forEach(f -> {
+      generateFactoryFieldDeclaration(clazz, f);
+    });
+
+  }
+
+  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, FieldPoint fieldPoint) {
+
+    String varName = "_field_" + fieldPoint.getName();
+    ClassOrInterfaceType supplier =
+        new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
+
+    ClassOrInterfaceType type = new ClassOrInterfaceType();
+    type.setName(Instance.class.getSimpleName());
+    type.setTypeArguments(
+        new ClassOrInterfaceType().setName(fieldPoint.getType().getQualifiedName().toString()));
+    supplier.setTypeArguments(type);
+    Expression call = iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(iocContext,
+        classBuilder, fieldPoint);
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(call));
+
+    classBuilder.addFieldWithInitializer(supplier, varName, lambda, Modifier.Keyword.PRIVATE);
+
   }
 
   @Override
