@@ -36,6 +36,9 @@ public class QualifierFieldInjection {
   @Default
   public QualifierBean qualifierBeanDefault;
 
+  @Inject
+  public DefaultImpls impls;
+
   public QualifierBean getQualifierBeanOne() {
     return qualifierBeanOne;
   }

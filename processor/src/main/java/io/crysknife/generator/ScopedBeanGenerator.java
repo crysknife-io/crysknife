@@ -108,7 +108,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
   protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
-    return newInstance.setType(definition.getClassName());
+    return newInstance.setType(Utils.getSimpleClassName(definition.getType()));
   }
 
   protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, FieldPoint fieldPoint,
@@ -162,8 +162,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
       generateInstanceGetMethodReturn(clazz, beanDefinition);
 
-      // generateFactoryCreateMethod(clazz, beanDefinition);
-
       write(clazz, beanDefinition, iocContext.getGenerationContext());
     }
   }
@@ -200,7 +198,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     clazz.setClassName(beanDefinition.getClassFactoryName());
 
     ClassOrInterfaceType factory = new ClassOrInterfaceType();
-    factory.setName("Factory<" + beanDefinition.getClassName() + ">");
+    factory.setName("Factory<" + Utils.getSimpleClassName(beanDefinition.getType()) + ">");
     clazz.getImplementedTypes().add(factory);
   }
 
@@ -214,7 +212,7 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     MethodDeclaration getMethodDeclaration = classBuilder.addMethod("get", Modifier.Keyword.PUBLIC);
 
     getMethodDeclaration.addAnnotation(Override.class);
-    getMethodDeclaration.setType(classBuilder.beanDefinition.getClassName());
+    getMethodDeclaration.setType(Utils.getSimpleClassName(classBuilder.beanDefinition.getType()));
     classBuilder.setGetMethodDeclaration(getMethodDeclaration);
   }
 
