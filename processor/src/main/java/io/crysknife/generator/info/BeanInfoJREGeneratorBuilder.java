@@ -113,15 +113,9 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
           .add(new MemberValuePair().setName("value").setValue(getAnnotationValue(fieldPoint)));
       methodDeclaration.addAnnotation(annotationExpr);
 
-      Expression beanManager = null;
-
-      if (iocContext.getBlacklist().contains(fieldPoint.getType().getQualifiedName().toString())) {
-        beanManager = iocContext.getBean(fieldPoint.getType()).generateBeanCall(iocContext,
-            classBuilder, fieldPoint);
-      } else {
-        beanManager =
-            new MethodCallExpr(generationUtils.beanManagerLookupBeanCall(fieldPoint), "get");
-      }
+      Expression beanCall = new MethodCallExpr(
+          iocContext.getBean(fieldPoint).generateBeanCall(iocContext, classBuilder, fieldPoint),
+          "get");
 
       ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
           .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
@@ -143,7 +137,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
 
       blockStmt.addAndGetStatement(new MethodCallExpr("onInvoke").addArgument("joinPoint")
-          .addArgument("field").addArgument(beanManager));
+          .addArgument("field").addArgument(beanCall));
 
       CatchClause catchClause1 = new CatchClause().setParameter(new Parameter()
           .setType(new ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
