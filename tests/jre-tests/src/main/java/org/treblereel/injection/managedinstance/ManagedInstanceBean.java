@@ -44,6 +44,28 @@ public class ManagedInstanceBean {
   @Inject
   private Instance<QualifierBean> bean2;
 
+  @Inject
+  public Instance<SimpleBean> simpleBean1;
+
+  @Inject
+  public ManagedInstance<SimpleBean> simpleBean2;
+
+  public Instance<SimpleBean> constructor_simpleBean1;
+
+  public ManagedInstance<SimpleBean> constructor_simpleBean2;
+
+  public ManagedInstanceBean() {
+
+  }
+
+  @Inject
+  public ManagedInstanceBean(Instance<SimpleBean> simpleBean1,
+      ManagedInstance<SimpleBean> simpleBean2) {
+    this.constructor_simpleBean1 = simpleBean1;
+    this.constructor_simpleBean2 = simpleBean2;
+  }
+
+
   public ManagedInstance<ComponentIface> getManagedInstanceBean() {
     return managedInstanceBean;
   }

@@ -12,17 +12,10 @@
  * the License.
  */
 
-package org.treblereel.injection.managedinstance;
-
-import javax.enterprise.context.ApplicationScoped;
+package org.treblereel.injection.qualifiers.typed;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/25/21
  */
-@ApplicationScoped
-public class SimpleBean {
-
-  public String say() {
-    return this.getClass().getCanonicalName();
-  }
+public interface SessionCommandManager<H extends CanvasHandler> {
 }

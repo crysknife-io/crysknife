@@ -12,17 +12,22 @@
  * the License.
  */
 
-package org.treblereel.injection.managedinstance;
+package org.treblereel.injection.qualifiers.typed;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/25/21
  */
-@ApplicationScoped
-public class SimpleBean {
+@Dependent
+public class MorphNodeToolboxAction {
 
-  public String say() {
-    return this.getClass().getCanonicalName();
+  public final SessionCommandManager<AbstractCanvasHandler> sessionCommandManager;
+
+  @Inject
+  public MorphNodeToolboxAction(
+      final SessionCommandManager<AbstractCanvasHandler> sessionCommandManager) {
+    this.sessionCommandManager = sessionCommandManager;
   }
 }

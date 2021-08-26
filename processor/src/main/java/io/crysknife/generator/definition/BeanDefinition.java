@@ -197,6 +197,8 @@ public class BeanDefinition extends Definition {
 
     if (field.isNamed()) {
       context.getTypeElementsByAnnotation(Named.class.getCanonicalName()).stream()
+          .filter(element -> element.getKind().isClass())
+          .filter(named -> named.getAnnotation(Named.class) != null)
           .filter(named -> named.getAnnotation(Named.class).value().equals(field.getNamed()))
           .findAny()
           .ifPresent(elm -> getDependsOn().add(context.getBeanDefinitionOrCreateAndReturn(elm)));
@@ -216,18 +218,14 @@ public class BeanDefinition extends Definition {
       }
     }
 
-    if (bean != null) {
-      dependsOn.add(bean);
-    } else {
+    if (bean == null) {
       bean = context.getBeanDefinitionOrCreateAndReturn(field.getType());
-
-
       BeanDefinition candidate = maybeHasOnlyOneImplementation(context, field);
       if (candidate != null) {
         bean.defaultImplementation = candidate;
       }
-      dependsOn.add(bean);
     }
+    dependsOn.add(bean);
     return field;
   }
 
@@ -235,6 +233,11 @@ public class BeanDefinition extends Definition {
     if (!field.getType().getKind().isInterface()) {
       return null;
     }
+
+    if (context.getBlacklist().contains(field.getType().getQualifiedName().toString())) {
+      return null;
+    }
+
     BeanDefinition bean = null;
     Set<TypeElement> subs = context.getSubClassesOf(field.getType());
     if (subs.size() == 1) {
@@ -306,6 +309,10 @@ public class BeanDefinition extends Definition {
 
   public BeanDefinition getDefaultImplementation() {
     return defaultImplementation;
+  }
+
+  public void setDefaultImplementation(BeanDefinition defaultImplementation) {
+    this.defaultImplementation = defaultImplementation;
   }
 
   private static class BeanDefinitionBuilder {
