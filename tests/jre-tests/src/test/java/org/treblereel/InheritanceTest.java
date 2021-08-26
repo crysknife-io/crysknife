@@ -66,11 +66,16 @@ public class InheritanceTest extends AbstractTest {
     assertNotNull(app.inheritanceBean);
     assertNotNull(app.inheritanceBean.getBean());
     assertNotNull(app.inheritanceBean.getBean().getTarget());
-    assertNotNull(app.inheritanceBean.getBean().getTarget().hello());
+    assertNotNull(app.inheritanceBean.getBean().getParentTarget());
+    assertNotNull(app.inheritanceBean.getBean().getParentTarget());
+    assertNotNull(app.inheritanceBean.getBean().getParentTarget().hello());
 
     assertEquals(Target.class, app.inheritanceBean.getBean().getTarget().getClass());
+    assertEquals(Target.class, app.inheritanceBean.getBean().getParentTarget().getClass());
     assertEquals(Target.class.getCanonicalName(),
         app.inheritanceBean.getBean().getTarget().hello());
+    assertEquals(Target.class.getCanonicalName(),
+        app.inheritanceBean.getBean().getParentTarget().hello());
   }
 
 }

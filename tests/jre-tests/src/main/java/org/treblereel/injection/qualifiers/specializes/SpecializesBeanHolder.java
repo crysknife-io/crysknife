@@ -12,20 +12,17 @@
  * the License.
  */
 
-package org.treblereel.injection.inheritance;
+package org.treblereel.injection.qualifiers.specializes;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 8/21/21
+ * @author Dmitrii Tikhomirov Created by treblereel 8/26/21
  */
-public class Parent {
+@Singleton
+public class SpecializesBeanHolder {
 
   @Inject
-  public Target target;
-
-  public Target getParentTarget() {
-    return target;
-  }
-
+  public Bean bean;
 }

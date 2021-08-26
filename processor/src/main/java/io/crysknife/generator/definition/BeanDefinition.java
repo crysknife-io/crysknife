@@ -28,6 +28,7 @@ import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Specializes;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Qualifier;
@@ -245,6 +246,12 @@ public class BeanDefinition extends Definition {
       if (candidate.getKind().isClass()) {
         bean = context.getBeanDefinitionOrCreateAndReturn(candidate);
         defaultImplementation = bean;
+      }
+    } else {
+      Set<TypeElement> result = subs.stream()
+          .filter(e -> e.getAnnotation(Specializes.class) != null).collect(Collectors.toSet());
+      if (result.size() == 1) {
+        bean = context.getBeanDefinitionOrCreateAndReturn(result.iterator().next());
       }
     }
     return bean;

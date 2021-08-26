@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.Specializes;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.ElementKind;
@@ -201,6 +202,13 @@ public class BeanManagerGenerator {
       if (subs.size() == 1) {
         TypeElement candidate = subs.iterator().next();
         generateInitEntry(init, field, candidate, Default.class.getCanonicalName());
+      } else {
+        Set<TypeElement> result = subs.stream()
+            .filter(e -> e.getAnnotation(Specializes.class) != null).collect(Collectors.toSet());
+        if (result.size() == 1) {
+          generateInitEntry(init, field, result.iterator().next(),
+              Default.class.getCanonicalName());
+        }
       }
     }
 

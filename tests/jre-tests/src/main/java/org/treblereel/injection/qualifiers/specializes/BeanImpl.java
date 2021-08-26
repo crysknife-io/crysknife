@@ -12,20 +12,23 @@
  * the License.
  */
 
-package org.treblereel.injection.inheritance;
+package org.treblereel.injection.qualifiers.specializes;
 
+import org.treblereel.injection.managedinstance.SimpleBean;
+
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 8/21/21
+ * @author Dmitrii Tikhomirov Created by treblereel 8/26/21
  */
-public class Parent {
+@Dependent
+public class BeanImpl implements Bean {
 
   @Inject
-  public Target target;
+  protected SimpleBean simpleBean;
 
-  public Target getParentTarget() {
-    return target;
+  public SimpleBean getSimpleBean() {
+    return simpleBean;
   }
-
 }
