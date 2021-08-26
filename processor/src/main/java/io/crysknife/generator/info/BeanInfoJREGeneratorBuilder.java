@@ -17,11 +17,10 @@ package io.crysknife.generator.info;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
@@ -34,21 +33,25 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
+import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.util.GenerationUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 
 import javax.enterprise.inject.Instance;
 import java.lang.reflect.Field;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -72,6 +75,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     initClass();
     addFields();
     addOnInvoke();
+    addGetField();
     return classBuilder.toSourceCode();
   }
 
@@ -86,6 +90,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     classBuilder.getClassCompilationUnit().addImport("io.crysknife.client.BeanManagerImpl");
     classBuilder.getClassCompilationUnit().addImport(Field.class);
     classBuilder.getClassCompilationUnit().addImport(Supplier.class);
+    classBuilder.getClassCompilationUnit().addImport(FieldUtils.class);
     classBuilder.getClassCompilationUnit().addImport(Instance.class);
     classBuilder.getClassCompilationUnit().addImport(BeanManager.class);
 
@@ -131,10 +136,10 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
       blockStmt.addAndGetStatement(new AssignExpr()
           .setTarget(new VariableDeclarationExpr(
               new ClassOrInterfaceType().setName(Field.class.getSimpleName()), "field"))
-          .setValue(new MethodCallExpr(new MethodCallExpr(
-              new MethodCallExpr(new NameExpr("joinPoint"), "getTarget"), "getClass"),
-              isLocal ? "getDeclaredField" : "getField").addArgument(new NameExpr("fieldName"))));
-
+          .setValue(new MethodCallExpr("getField")
+              .addArgument(new MethodCallExpr(
+                  new MethodCallExpr(new NameExpr("joinPoint"), "getTarget"), "getClass"))
+              .addArgument(new NameExpr("fieldName"))));
 
       blockStmt.addAndGetStatement(new MethodCallExpr("onInvoke").addArgument("joinPoint")
           .addArgument("field").addArgument(beanCall));
@@ -195,6 +200,71 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
           .addArgument(new NameExpr("instance")));
       body.addAndGetStatement(ifStmtLocal);
     });
+  }
+
+  private void addGetField() {
+
+    MethodDeclaration methodDeclaration =
+        classBuilder.addMethod("getField", Modifier.Keyword.PRIVATE);
+    methodDeclaration.addParameter("Class", "clazz");
+    methodDeclaration.addParameter("String", "name");
+    methodDeclaration.setType(Field.class);
+
+    methodDeclaration.getBody().ifPresent(body -> {
+
+
+      ClassOrInterfaceType consumerClassDecloration =
+          new ClassOrInterfaceType().setName(Field.class.getCanonicalName());
+      VariableDeclarationExpr variableDeclarationExpr =
+          new VariableDeclarationExpr(consumerClassDecloration, "field");
+
+
+      ForEachStmt forStmt = new ForEachStmt();
+      forStmt.setVariable(variableDeclarationExpr);
+      forStmt.setIterable(
+          new MethodCallExpr(new NameExpr("FieldUtils"), "getAllFields").addArgument("clazz"));
+
+      IfStmt ifStmt = new IfStmt().setCondition(
+          new MethodCallExpr(new MethodCallExpr(new NameExpr("field"), "getName"), "equals")
+              .addArgument("name"));
+      ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new ReturnStmt(new NameExpr("field"))));
+
+      BlockStmt blockStmt = new BlockStmt();
+      blockStmt.addAndGetStatement(ifStmt);
+
+      forStmt.setBody(blockStmt);
+
+      body.addAndGetStatement(forStmt);
+
+      /*
+       * TryStmt ts = new TryStmt(); BlockStmt blockStmt = new BlockStmt();
+       * ts.setTryBlock(blockStmt);
+       * 
+       * blockStmt.addAndGetStatement(new ReturnStmt( new MethodCallExpr(new NameExpr("clazz"),
+       * "getField").addArgument("name")));
+       * 
+       * CatchClause catchClause1 = new CatchClause().setParameter(new Parameter() .setType(new
+       * ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
+       * ts.getCatchClauses().add(catchClause1); body.addAndGetStatement(ts);
+       * 
+       * TryStmt ts1 = new TryStmt(); BlockStmt blockStmt1 = new BlockStmt();
+       * ts1.setTryBlock(blockStmt1);
+       * 
+       * blockStmt1.addAndGetStatement(new ReturnStmt( new MethodCallExpr(new NameExpr("clazz"),
+       * "getDeclaredField").addArgument("name")));
+       * 
+       * CatchClause catchClause2 = new CatchClause().setParameter(new Parameter() .setType(new
+       * ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
+       * ts1.getCatchClauses().add(catchClause2); body.addAndGetStatement(ts1);
+       */
+
+      ThrowStmt throwStmt = new ThrowStmt(
+          new ObjectCreationExpr().setType(new ClassOrInterfaceType().setName("Error"))
+              .addArgument("\"Error: no field named '\" + name + \"' at  \" + clazz + \" at \""));
+      body.addAndGetStatement(throwStmt);
+
+    });
+
   }
 
 }
