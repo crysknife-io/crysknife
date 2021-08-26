@@ -12,20 +12,12 @@
  * the License.
  */
 
-package org.treblereel.injection.inheritance;
-
-import javax.inject.Inject;
+package org.treblereel.injection.qualifiers.specializes;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 8/21/21
+ * @author Dmitrii Tikhomirov Created by treblereel 8/26/21
  */
-public class Parent {
+public interface Bean {
 
-  @Inject
-  public Target target;
-
-  public Target getParentTarget() {
-    return target;
-  }
 
 }

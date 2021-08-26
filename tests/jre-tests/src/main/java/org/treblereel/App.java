@@ -28,6 +28,7 @@ import org.treblereel.injection.named.NamedTestBean;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.injection.qualifiers.controls.NodeBuilderControl;
+import org.treblereel.injection.qualifiers.specializes.SpecializesBeanHolder;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
 import org.treblereel.postconstruct.Child;
@@ -80,6 +81,9 @@ public class App {
 
   @Inject
   public NodeBuilderControl nodeBuilderControl;
+
+  @Inject
+  public SpecializesBeanHolder specializesBeanHolder;
 
   public void onModuleLoad() {
     new AppBootstrap(this).initialize();
