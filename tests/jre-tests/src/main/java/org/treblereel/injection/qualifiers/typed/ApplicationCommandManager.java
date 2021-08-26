@@ -12,17 +12,32 @@
  * the License.
  */
 
-package org.treblereel.injection.managedinstance;
+package org.treblereel.injection.qualifiers.typed;
+
+import io.crysknife.client.ManagedInstance;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Typed;
+import javax.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/25/21
  */
 @ApplicationScoped
-public class SimpleBean {
+@Typed(SessionCommandManager.class)
+public class ApplicationCommandManager implements SessionCommandManager<AbstractCanvasHandler> {
 
-  public String say() {
-    return this.getClass().getCanonicalName();
+  @Inject
+  public ManagedInstance<RegistryAwareCommandManager> commandManagerInstances;
+
+  public ApplicationCommandManager() {
+
   }
+
+  @Inject
+  public ApplicationCommandManager(
+      final ManagedInstance<RegistryAwareCommandManager> commandManagerInstances) {
+    this.commandManagerInstances = commandManagerInstances;
+  }
+
 }

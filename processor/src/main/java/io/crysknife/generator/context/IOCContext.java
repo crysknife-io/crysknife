@@ -36,7 +36,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -255,7 +257,6 @@ public class IOCContext {
     if (fieldsByAnnotation.containsKey(annotation)) {
       return fieldsByAnnotation.get(annotation);
     }
-
     Elements elements = getGenerationContext().getElements();
     Set<VariableElement> results = getGenerationContext().getRoundEnvironment()
         .getElementsAnnotatedWith(elements.getTypeElement(annotation)).stream()

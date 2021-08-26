@@ -14,7 +14,6 @@
 
 package io.crysknife.ui.elemental2;
 
-import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
@@ -23,7 +22,6 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import elemental2.dom.DomGlobal;

@@ -14,6 +14,8 @@
 
 package org.treblereel.injection.qualifiers;
 
+import org.treblereel.injection.qualifiers.typed.MorphNodeToolboxAction;
+
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +40,9 @@ public class QualifierFieldInjection {
 
   @Inject
   public DefaultImpls impls;
+
+  @Inject
+  public MorphNodeToolboxAction morphNodeToolboxAction;
 
   public QualifierBean getQualifierBeanOne() {
     return qualifierBeanOne;

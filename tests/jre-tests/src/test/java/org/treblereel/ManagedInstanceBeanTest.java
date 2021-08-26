@@ -28,6 +28,7 @@ import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.managedinstance.ComponentIface;
 import org.treblereel.injection.managedinstance.ComponentQualifierOne;
 import org.treblereel.injection.managedinstance.ComponentQualifierTwo;
+import org.treblereel.injection.managedinstance.SimpleBean;
 import org.treblereel.produces.qualifier.QualifierBean;
 
 import static org.junit.Assert.assertEquals;
@@ -190,5 +191,23 @@ public class ManagedInstanceBeanTest extends AbstractTest {
   public void testInstanceProducerBean() {
     Instance<QualifierBean> managedInstanceBean = app.getManagedInstanceBean().getBean2();
     assertEquals("REDHAT", managedInstanceBean.get().say());
+  }
+
+  @Test
+  public void testSimpleBean1() {
+    assertEquals(SimpleBean.class.getCanonicalName(),
+        app.getManagedInstanceBean().simpleBean1.get().say());
+
+    assertEquals(SimpleBean.class.getCanonicalName(),
+        app.getManagedInstanceBean().constructor_simpleBean1.get().say());
+  }
+
+  @Test
+  public void testSimpleBean2() {
+    assertEquals(SimpleBean.class.getCanonicalName(),
+        app.getManagedInstanceBean().simpleBean2.get().say());
+
+    assertEquals(SimpleBean.class.getCanonicalName(),
+        app.getManagedInstanceBean().constructor_simpleBean2.get().say());
   }
 }

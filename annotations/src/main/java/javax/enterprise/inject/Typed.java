@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright (C) 2009 The JSR-330 Expert Group
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,17 +12,18 @@
  * the License.
  */
 
-package org.treblereel.injection.managedinstance;
+package javax.enterprise.inject;
 
-import javax.enterprise.context.ApplicationScoped;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 8/25/21
- */
-@ApplicationScoped
-public class SimpleBean {
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Typed {
+  Class<?>[] value() default {};
 
-  public String say() {
-    return this.getClass().getCanonicalName();
-  }
 }

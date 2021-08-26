@@ -79,8 +79,6 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
             new MethodCallExpr(
                 new FieldAccessExpr(new ThisExpr(), "_constructor_" + argument.getName()), "get"),
             "get"));
-        // newInstance.addArgument(iocContext.getBeans().get(argument.getType())
-        // .generateBeanCall(iocContext, classBuilder, argument));
       }
     }
 
@@ -275,15 +273,9 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     lambda.setBody(new ExpressionStmt(
         new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
 
-
-    // lambda.setBody(new ExpressionStmt(iocContext.getBeans().get(fieldPoint.getType())
-    // .generateBeanCall(iocContext, classBuilder, fieldPoint)));
-
     ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
     onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
     onFieldAccessedCreationExpr.addArgument(lambda);
-
-
 
     return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
         .addArgument(onFieldAccessedCreationExpr);
