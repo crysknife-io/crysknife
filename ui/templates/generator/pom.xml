@@ -59,8 +59,8 @@
       <artifactId>jsoup</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.lesscss</groupId>
-      <artifactId>lesscss</artifactId>
+      <groupId>de.inetsoftware</groupId>
+      <artifactId>jlessc</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

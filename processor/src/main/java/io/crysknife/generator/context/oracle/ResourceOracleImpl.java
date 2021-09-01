@@ -84,11 +84,10 @@ public class ResourceOracleImpl implements ResourceOracle {
    */
   @Override
   public URL findResource(String path) {
-    // maybe we can find file on the first attempt
-    URL url = getClass().getResource("/" + path);
-    if (url != null) {
-      return url;
-    }
+
+    URL resource = getUrlClassLoader(path);
+    if (resource != null)
+      return resource;
 
     String packageName = "";
     String relativeName = path.toString();
@@ -118,6 +117,10 @@ public class ResourceOracleImpl implements ResourceOracle {
    */
   @Override
   public URL findResource(String pkg, String relativeName) {
+    URL resource = getUrlClassLoader(pkg.replaceAll("\\.", "/") + relativeName);
+    if (resource != null)
+      return resource;
+
     return findResource(Arrays.asList(StandardLocation.SOURCE_PATH, StandardLocation.SOURCE_OUTPUT,
         StandardLocation.CLASS_PATH, StandardLocation.CLASS_OUTPUT,
         StandardLocation.ANNOTATION_PROCESSOR_PATH), pkg, relativeName);
@@ -160,6 +163,15 @@ public class ResourceOracleImpl implements ResourceOracle {
       }
     }
 
+    return null;
+  }
+
+  private URL getUrlClassLoader(String path) {
+    ClassLoader classLoader = getClass().getClassLoader();
+    URL resource = classLoader.getResource(path);
+    if (resource != null) {
+      return resource;
+    }
     return null;
   }
 }
