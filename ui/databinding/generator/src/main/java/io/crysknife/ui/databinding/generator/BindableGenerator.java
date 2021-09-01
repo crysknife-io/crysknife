@@ -26,16 +26,21 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
+import elemental2.dom.DomGlobal;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.ui.databinding.client.BindableProxy;
 import io.crysknife.ui.databinding.client.BindableProxyAgent;
 import io.crysknife.ui.databinding.client.BindableProxyFactory;
@@ -51,6 +56,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.util.GenerationUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -64,12 +70,8 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   @Override
   public void register() {
-    // iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); //PARAMETER
+    // iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); // PARAMETER
     iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); // PARAMETER
-    TypeElement type = iocContext.getGenerationContext().getElements()
-        .getTypeElement(DataBinder.class.getCanonicalName());
-    BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
-    beanDefinition.setGenerator(this);
     iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
   }
 
@@ -145,6 +147,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type) {
     new BindableProxyGenerator(
+        iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils(),
         iocContext.getGenerationContext().getProcessingEnvironment().getTypeUtils(),
         methodDeclaration, type).generate();
   }
@@ -152,9 +155,13 @@ public class BindableGenerator extends ScopedBeanGenerator {
   @Override
   public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
-    MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
-    return new NameExpr("io.crysknife.databinding.client.api.DataBinder_Factory.get().forType("
-        + MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
-        + ".class)");
+    return generationUtils.wrapCallInstanceImpl(classBuilder,
+        new MethodCallExpr(
+            new MethodCallExpr(
+                new NameExpr("io.crysknife.ui.databinding.client.api.DataBinder_Factory"), "get"),
+            "forType")
+                .addArgument(new NameExpr(
+                    MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
+                        + ".class")));
   }
 }
