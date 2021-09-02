@@ -28,7 +28,7 @@ import io.crysknife.generator.definition.ExecutableDefinition;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
-@Generator(priority = 100000)
+@Generator(priority = Integer.MAX_VALUE)
 public class PostConstructGenerator extends IOCGenerator {
 
   public PostConstructGenerator(IOCContext iocContext) {

@@ -63,6 +63,8 @@ public class ComponentScanner {
                 .addAll(iocContext.getTypeElementsByAnnotation(meta.annotation));
           } else if (meta.wiringElementType.equals(WiringElementType.FIELD_TYPE)) {
             elements.get(annotation).addAll(iocContext.getFieldsByAnnotation(meta.annotation));
+          } else if (meta.wiringElementType.equals(WiringElementType.FIELD_DECORATOR)) {
+            elements.get(annotation).addAll(iocContext.getFieldsByAnnotation(meta.annotation));
           } else if (meta.wiringElementType.equals(WiringElementType.METHOD_DECORATOR)) {
             elements.get(annotation).addAll(iocContext.getMethodsByAnnotation(meta.annotation));
           } else if (meta.wiringElementType.equals(WiringElementType.PRODUCER_ELEMENT)) {

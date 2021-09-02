@@ -66,11 +66,6 @@ public class IOCContext {
 
   private final List<String> blacklist = new ArrayList<>();
 
-  // TODO Temporary solution before ill find out why in j2cl-m-p apt get*AnnotatedWith isn't able to
-  // process
-  // annotations in external deps
-  private final ScanResult scanResult = new ClassGraph().enableAllInfo().scan();
-
   private final Map<String, Set<TypeElement>> classesByAnnotation = new HashMap<>();
 
   private final Map<String, Set<ExecutableElement>> methodsByAnnotation = new HashMap<>();
@@ -128,8 +123,10 @@ public class IOCContext {
   public BeanDefinition getBean(FieldPoint fieldPoint) {
     if (fieldPoint.getType().getModifiers().contains(ABSTRACT)) {
 
-      if (fieldPoint.isNamed()) {
-        return getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed());
+      if (fieldPoint.isNamed() && fieldPoint.getNamed() != null) {
+        if (qualifiers.containsKey(fieldPoint.getType())
+            && qualifiers.get(fieldPoint.getType()).containsKey(fieldPoint.getNamed()))
+          return qualifiers.get(fieldPoint.getType()).get(fieldPoint.getNamed());
       }
       if (getQualifiers().containsKey(fieldPoint.getType())) {
         GenerationUtils generationUtils = new GenerationUtils(this);
@@ -178,7 +175,8 @@ public class IOCContext {
         getElementsByAnnotation(annotation).stream().filter(elm -> (elm instanceof TypeElement))
             .map(element -> ((TypeElement) element)).collect(Collectors.toSet());
 
-    ClassInfoList routeClassInfoList = scanResult.getClassesWithAnnotation(annotation);
+    ClassInfoList routeClassInfoList =
+        generationContext.getScanResult().getClassesWithAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       TypeElement type = elements.getTypeElement(routeClassInfo.getName());
       if (type != null) {
@@ -206,7 +204,8 @@ public class IOCContext {
         .filter(elm -> (elm instanceof ExecutableElement))
         .map(element -> ((ExecutableElement) element)).collect(Collectors.toSet());
 
-    ClassInfoList routeClassInfoList = scanResult.getClassesWithMethodAnnotation(annotation);
+    ClassInfoList routeClassInfoList =
+        generationContext.getScanResult().getClassesWithMethodAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredMethodInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
@@ -233,7 +232,7 @@ public class IOCContext {
         .map(element -> ((VariableElement) element)).collect(Collectors.toSet());
 
     ClassInfoList routeClassInfoList =
-        scanResult.getClassesWithMethodParameterAnnotation(annotation);
+        generationContext.getScanResult().getClassesWithMethodParameterAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredMethodInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
@@ -263,7 +262,8 @@ public class IOCContext {
         .filter(elm -> (elm instanceof VariableElement)).map(element -> ((VariableElement) element))
         .collect(Collectors.toSet());
 
-    ClassInfoList routeClassInfoList = scanResult.getClassesWithMethodAnnotation(annotation);
+    ClassInfoList routeClassInfoList =
+        generationContext.getScanResult().getClassesWithMethodAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredFieldInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());

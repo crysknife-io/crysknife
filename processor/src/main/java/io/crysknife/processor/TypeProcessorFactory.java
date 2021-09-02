@@ -51,6 +51,8 @@ public class TypeProcessorFactory {
         return Optional.of(new ClassDecoratorTypeProcessor(generator));
       case METHOD_DECORATOR:
         return Optional.of(new MethodDecoratorTypeProcessor(generator));
+      case FIELD_DECORATOR:
+        return Optional.of(new FieldDecoratorTypeProcessor(generator));
       case PARAMETER:
         return Optional.of(new ParameterTypeProcessor(generator));
       default:
