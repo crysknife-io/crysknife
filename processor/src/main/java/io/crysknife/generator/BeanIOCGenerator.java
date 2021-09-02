@@ -29,6 +29,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 
 /**

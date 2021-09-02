@@ -58,11 +58,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
   protected FieldAccessExpr instance;
 
-  private GenerationUtils generationUtils;
-
   public ScopedBeanGenerator(IOCContext iocContext) {
     super(iocContext);
-    this.generationUtils = new GenerationUtils(iocContext);
   }
 
   protected Expression generateInstanceInitializer(ClassBuilder classBuilder,
@@ -155,6 +152,8 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
       generateInstanceGetMethodBuilder(clazz, beanDefinition);
 
       generateDependantFieldDeclaration(clazz, beanDefinition);
+
+      generateInstanceGetFieldDecorators(clazz, beanDefinition);
 
       generateInstanceGetMethodDecorators(clazz, beanDefinition);
 
@@ -296,6 +295,13 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     AssignExpr assign = new AssignExpr().setTarget(field).setValue(lambda);
 
     classBuilder.addStatementToConstructor(assign);
+  }
+
+  private void generateInstanceGetFieldDecorators(ClassBuilder clazz,
+      BeanDefinition beanDefinition) {
+    beanDefinition.getFieldInjectionPoints().forEach(fi -> {
+      fi.postActions.forEach(gen -> gen.generateBeanFactory(clazz, beanDefinition));
+    });
   }
 
   private void generateInstanceGetMethodDecorators(ClassBuilder clazz,

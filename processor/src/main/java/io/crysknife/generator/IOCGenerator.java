@@ -17,6 +17,7 @@ package io.crysknife.generator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.Definition;
+import io.crysknife.util.GenerationUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
@@ -25,8 +26,11 @@ public abstract class IOCGenerator {
 
   protected final IOCContext iocContext;
 
+  protected final GenerationUtils generationUtils;
+
   public IOCGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
+    this.generationUtils = new GenerationUtils(iocContext);
   }
 
   public abstract void register();

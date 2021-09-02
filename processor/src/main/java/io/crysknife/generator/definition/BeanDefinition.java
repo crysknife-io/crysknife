@@ -25,6 +25,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.point.ConstructorPoint;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
@@ -95,6 +96,10 @@ public class BeanDefinition extends Definition {
     }
   }
 
+  public boolean hasGenerator() {
+    return generator != null;
+  }
+
   public void generateDecorators(ClassBuilder builder) {
     super.generateDecorators(builder);
 
@@ -129,12 +134,16 @@ public class BeanDefinition extends Definition {
             String.format(
                 "Unable to determine bean type for %s, it will be processed as common bean ",
                 fieldPoint.getType().getQualifiedName().toString()));
-        return new ObjectCreationExpr().setType(
-            new ClassOrInterfaceType().setName(fieldPoint.getType().getQualifiedName().toString()));
+        return new GenerationUtils(context).wrapCallInstanceImpl(builder,
+            new ObjectCreationExpr().setType(new ClassOrInterfaceType()
+                .setName(fieldPoint.getType().getQualifiedName().toString())));
       }
 
       BeanDefinition candidate = maybeHasOnlyOneImplementation(context, fieldPoint);
-      if (candidate != null) {
+
+
+      if (candidate != null && !context.getGenerationContext().getTypes()
+          .isSameType(candidate.getType().asType(), fieldPoint.getType().asType())) {
         defaultImplementation = candidate;
         return candidate.generateBeanCall(context, builder, fieldPoint);
       }
@@ -243,7 +252,8 @@ public class BeanDefinition extends Definition {
     Set<TypeElement> subs = context.getSubClassesOf(field.getType());
     if (subs.size() == 1) {
       TypeElement candidate = subs.iterator().next();
-      if (candidate.getKind().isClass()) {
+
+      if (candidate.getKind().isClass() && hasGenerator()) {
         bean = context.getBeanDefinitionOrCreateAndReturn(candidate);
         defaultImplementation = bean;
       }
