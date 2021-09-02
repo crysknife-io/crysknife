@@ -14,16 +14,16 @@
 
 package io.crysknife.demo.client.databinding;
 
-import javax.enterprise.context.Dependent;
+import org.gwtproject.user.client.ui.TextBox;
 
-//import org.gwtproject.user.client.ui.TextBox;
+import javax.enterprise.context.Dependent;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 12/3/19
  */
 @Dependent
-public class MyTextBox //extends TextBox
+public class MyTextBox extends TextBox
 {
 
 }

@@ -22,15 +22,17 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
+import io.crysknife.ui.databinding.client.api.AutoBound;
+import io.crysknife.ui.databinding.client.api.Bound;
+import io.crysknife.ui.databinding.client.api.DataBinder;
+import io.crysknife.ui.databinding.client.api.StateSync;
+import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeHandler;
+import io.crysknife.ui.templates.client.annotation.EventHandler;
 import org.gwtproject.event.dom.client.ClickEvent;
-//import org.gwtproject.user.client.ui.TextBox;
+import org.gwtproject.user.client.ui.TextBox;
 import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
-import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.Templated;
-/*import io.crysknife.databinding.client.api.DataBinder;
-import io.crysknife.databinding.client.api.StateSync;
-import io.crysknife.databinding.client.api.handler.property.PropertyChangeHandler;*/
 import io.crysknife.ui.navigation.client.local.Page;
 
 /**
@@ -42,22 +44,29 @@ import io.crysknife.ui.navigation.client.local.Page;
 @Templated(value = "databinding.html")
 public class Databinding implements IsElement<HTMLDivElement> {
 
-    @DataField HTMLDivElement root;
+    @DataField
+    HTMLDivElement root = (HTMLDivElement) DomGlobal.document.createElement("div");
 
-/*    @Inject
-    protected DataBinder<Customer> dataBinder;*/
-/*    @DataField
     @Inject
-    protected TextBox nameBox;*/
-    //@DataField
-    //@Inject
-    //protected MyTextBox cityBox;
+    @AutoBound
+    protected DataBinder<Customer> dataBinder;
+
+    @DataField
+    @Inject
+    @Bound(property= "name")
+    protected TextBox nameBox;
+    @DataField
+    @Inject
+    @Bound(property= "address.city")
+    protected MyTextBox cityBox;
     @Inject
     @DataField
+    @Bound(property= "address.street.name")
     protected HTMLInputElement streetBox;
     @Inject
     @DataField
-    protected HTMLInputElement ageBox;
+    @Bound
+    protected HTMLInputElement age;
     @Inject
     @DataField
     protected HTMLInputElement resultBox;
@@ -73,22 +82,23 @@ public class Databinding implements IsElement<HTMLDivElement> {
     @Inject
     @DataField("resumeBtn")
     protected HTMLButtonElement resume;
+
     private Customer customer;
 
     @PostConstruct
     public void init() {
-
-/*        customer = dataBinder
+        DomGlobal.console.log(getClass().getCanonicalName()+"INIT");
+        customer = dataBinder
                 .bind(nameBox, "name")
                 .bind(cityBox, "address.city")
                 .bind(streetBox, "address.street.name")
-                .bind(ageBox, "age")
+                .bind(age, "age")
                 .getModel();
 
         dataBinder.addPropertyChangeHandler((PropertyChangeHandler<Customer>) event -> {
             DomGlobal.console.log("new value " + event.toString());
             onPropertyChange(event.toString());
-        });*/
+        });
 
     }
 
@@ -101,12 +111,12 @@ public class Databinding implements IsElement<HTMLDivElement> {
         resultBox.value = state;
     }
 
-    //@EventHandler("cityBox")
+    @EventHandler("cityBox")
     void onCityClick(final ClickEvent e) {
         DomGlobal.console.log("cityBox click");
     }
 
-/*    @EventHandler("modelBtn")
+    @EventHandler("modelBtn")
     void getModel(final ClickEvent e) {
         onPropertyChange(dataBinder.getModel().toString());
     }
@@ -123,6 +133,6 @@ public class Databinding implements IsElement<HTMLDivElement> {
 
     @EventHandler("resumeBtn")
     void onResume(final ClickEvent e) {
-        dataBinder.resume(StateSync.FROM_UI);
-    }*/
+       dataBinder.resume(StateSync.FROM_UI);
+    }
 }
