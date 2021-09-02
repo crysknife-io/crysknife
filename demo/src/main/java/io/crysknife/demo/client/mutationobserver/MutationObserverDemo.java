@@ -41,7 +41,7 @@ import io.crysknife.ui.navigation.client.local.Page;
  */
 @Singleton
 @Page
-@Templated(value = "mutationobserverdemo.html#mutationobserverdemo")
+@Templated(value = "mutationobserverdemo.html#mutationobserverdemo", stylesheet = "style.css")
 public class MutationObserverDemo implements IsElement<HTMLDivElement> {
 
     @DataField

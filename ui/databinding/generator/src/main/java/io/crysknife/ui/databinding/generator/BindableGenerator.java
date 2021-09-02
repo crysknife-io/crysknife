@@ -26,8 +26,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -38,9 +36,7 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
-import elemental2.dom.DomGlobal;
 import io.crysknife.annotation.Generator;
-import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.ui.databinding.client.BindableProxy;
 import io.crysknife.ui.databinding.client.BindableProxyAgent;
 import io.crysknife.ui.databinding.client.BindableProxyFactory;
@@ -56,7 +52,6 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.util.GenerationUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -70,7 +65,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   @Override
   public void register() {
-    // iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); // PARAMETER
+    // iocContext.register(AutoBound.class, WiringElementType.FIELD_TYPE, this); // PARAMETER
     iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); // PARAMETER
     iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
   }

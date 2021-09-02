@@ -19,7 +19,6 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.google.common.collect.HashMultimap;
@@ -83,7 +82,6 @@ import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -164,20 +162,12 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   @Override
   public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
-    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
-    classBuilder.getClassCompilationUnit().addImport(Provider.class);
     classBuilder.getClassCompilationUnit()
         .addImport(fieldPoint.getType().getQualifiedName().toString());
-
-    // new InstanceImpl<>(() -> (HTMLDivElement) DomGlobal.document.createElement("div"));
-
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(new MethodCallExpr(
-        new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
-        "createElement").addArgument(getTagFromType(fieldPoint))));
-
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+    return generationUtils.wrapCallInstanceImpl(classBuilder,
+        new MethodCallExpr(
+            new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
+            "createElement").addArgument(getTagFromType(fieldPoint)));
   }
 
   private StringLiteralExpr getTagFromType(FieldPoint fieldPoint) {
@@ -201,7 +191,8 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     if (HTML_ELEMENTS.get(clazz).stream().findFirst().get().equals("named")) {
       throw new GenerationException(
           "Unable to process " + fieldPoint.getType().getQualifiedName().toString() + ", "
-              + fieldPoint.getName() + " must be annotated with @Named(\"tag_name\")");
+              + fieldPoint.getField().getEnclosingElement() + "." + fieldPoint.getName()
+              + " must be annotated with @Named(\"tag_name\")");
     }
 
     return new StringLiteralExpr(HTML_ELEMENTS.get(clazz).stream().findFirst().get());

@@ -18,36 +18,19 @@ import io.crysknife.ui.databinding.client.api.Bindable;
 
 /**
  * @author Dmitrii Tikhomirov
- * Created by treblereel 11/25/19
+ * Created by treblereel 9/1/21
  */
 @Bindable
-public class Address {
+public class ValueHolder<T> {
 
-    private String city;
+    private T value;
 
-    private Street street;
 
-    public Street getStreet() {
-        return street;
+    public T getValue() {
+        return value;
     }
 
-    public void setStreet(Street street) {
-        this.street = street;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    @Override
-    public String toString() {
-        return "Address{" +
-                "city='" + city + '\'' +
-                ", street=" + street +
-                '}';
+    public void setValue(T value) {
+        this.value = value;
     }
 }
