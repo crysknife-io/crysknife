@@ -67,8 +67,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
-    super.generateBeanFactory(clazz, definition);
+  public void generate(ClassBuilder clazz, Definition definition) {
+    super.generate(clazz, definition);
   }
 
   @Override

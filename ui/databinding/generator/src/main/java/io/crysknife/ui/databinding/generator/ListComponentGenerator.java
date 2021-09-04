@@ -82,7 +82,7 @@ public class ListComponentGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition) {
+  public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
   }
 }

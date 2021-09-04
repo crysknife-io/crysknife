@@ -49,13 +49,13 @@ public abstract class Definition {
 
   public void generate(ClassBuilder classBuilder) {
     if (generator.isPresent()) {
-      generator.get().generateBeanFactory(classBuilder, this);
+      generator.get().generate(classBuilder, this);
     }
   }
 
   public void generateDecorators(ClassBuilder builder) {
     decorators.keySet().stream().sorted(iocGeneratorComparator)
-        .forEach(decorator -> (decorator).generateBeanFactory(builder, this));
+        .forEach(decorator -> (decorator).generate(builder, this));
   }
 
   public <T extends Definition> T addDecorator(IOCGenerator generator, Definition definition) {

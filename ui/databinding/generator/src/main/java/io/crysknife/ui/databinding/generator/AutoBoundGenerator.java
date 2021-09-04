@@ -53,7 +53,7 @@ public class AutoBoundGenerator extends IOCGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
+  public void generate(ClassBuilder classBuilder, Definition definition) {
     if (definition instanceof BeanDefinition) {
       BeanDefinition bean = (BeanDefinition) definition;
 
