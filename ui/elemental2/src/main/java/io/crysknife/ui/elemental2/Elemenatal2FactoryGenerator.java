@@ -155,7 +155,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
+  public void generate(ClassBuilder classBuilder, Definition definition) {
 
   }
 

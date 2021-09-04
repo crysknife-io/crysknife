@@ -68,7 +68,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+  public void generate(ClassBuilder clazz, Definition definition) {
     if (definition instanceof BeanDefinition) {
       BeanDefinition beanDefinition = (BeanDefinition) definition;
       initClassBuilder(clazz, beanDefinition);

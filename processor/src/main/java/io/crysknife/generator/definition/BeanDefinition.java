@@ -104,7 +104,7 @@ public class BeanDefinition extends Definition {
     super.generateDecorators(builder);
 
     executableDefinitions.forEach((gen, defs) -> defs.forEach(def -> {
-      gen.generateBeanFactory(builder, def);
+      gen.generate(builder, def);
     }));
   }
 

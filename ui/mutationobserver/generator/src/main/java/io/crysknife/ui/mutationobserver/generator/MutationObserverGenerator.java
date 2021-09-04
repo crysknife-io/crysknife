@@ -77,7 +77,7 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     }
   }
 
-  public void generateBeanFactory(ClassBuilder builder, Definition definition) {
+  public void generate(ClassBuilder builder, Definition definition) {
     if (definition instanceof ExecutableDefinition) {
       ExecutableDefinition mutationObserver = (ExecutableDefinition) definition;
       ifValid(mutationObserver);

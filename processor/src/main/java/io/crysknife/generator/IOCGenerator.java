@@ -35,7 +35,7 @@ public abstract class IOCGenerator {
 
   public abstract void register();
 
-  public abstract void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition);
+  public abstract void generate(ClassBuilder clazz, Definition beanDefinition);
 
   public void before() {
 

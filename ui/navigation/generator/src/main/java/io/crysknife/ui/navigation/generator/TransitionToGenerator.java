@@ -56,7 +56,7 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+  public void generate(ClassBuilder clazz, Definition definition) {
 
   }
 

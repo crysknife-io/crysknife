@@ -71,7 +71,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+  public void generate(ClassBuilder clazz, Definition definition) {
     if (definition instanceof BeanDefinition) {
       clazz.getClassCompilationUnit().addImport(((BeanDefinition) definition).getType().toString());
 
