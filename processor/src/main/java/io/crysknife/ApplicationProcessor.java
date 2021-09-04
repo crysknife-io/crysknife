@@ -31,6 +31,8 @@ import javax.tools.Diagnostic;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
+import io.crysknife.logger.PrintWriterTreeLogger;
+import io.crysknife.nextstep.BeanProcessor;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
@@ -77,6 +79,9 @@ public class ApplicationProcessor extends AbstractProcessor {
 
     processComponentScanAnnotation();
     initAndRegisterGenerators();
+
+    new BeanProcessor(iocContext, new PrintWriterTreeLogger()).process();
+
 
     processQualifiersScan();
     processComponentScan();

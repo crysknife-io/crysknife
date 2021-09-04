@@ -57,7 +57,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
 
   @Override
   public void register() {
-    iocContext.register(Inject.class, Event.class, WiringElementType.BEAN, this);
+    iocContext.register(Inject.class, Event.class, WiringElementType.FIELD_TYPE, this);
     iocContext.getBlacklist().add(Event.class.getCanonicalName());
 
     TypeElement type = iocContext.getGenerationContext().getElements()
