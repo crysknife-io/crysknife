@@ -15,9 +15,17 @@
 package io.crysknife.util;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.inject.Qualifier;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -28,6 +36,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 
 import com.google.auto.common.MoreElements;
+import io.crysknife.generator.context.IOCContext;
 import jsinterop.annotations.JsProperty;
 import io.crysknife.exception.GenerationException;
 
@@ -109,4 +118,84 @@ public class Utils {
     }
     throw new GenerationException("Unable to process bean " + elm.toString());
   }
+
+  public static List<AnnotationMirror> getAllElementQualifierAnnotations(IOCContext context,
+      Element element) {
+    System.out.println("element " + element);
+
+    List<AnnotationMirror> result = new ArrayList<>();
+    for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
+      for (AnnotationMirror allAnnotationMirror : context.getGenerationContext().getElements()
+          .getAllAnnotationMirrors(annotationMirror.getAnnotationType().asElement())) {
+        if (isAnnotationMirrorOfType(allAnnotationMirror,
+            javax.inject.Qualifier.class.getCanonicalName())) {
+          result.add(allAnnotationMirror);
+        }
+      }
+    }
+    return result;
+  }
+
+
+  /**
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   */
+  public static boolean containsAnnotation(Element element, String... annotations) {
+    assert element != null;
+    assert annotations != null;
+
+    List<String> annotationClassNames = new ArrayList<>();
+    Collections.addAll(annotationClassNames, annotations);
+
+    List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+    for (AnnotationMirror mirror : annotationMirrors) {
+      if (annotationClassNames.contains(mirror.getAnnotationType().toString())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   *
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   *
+   *      Returns {@code true} if the provided annotation type is of the same type as the provided
+   *      class, {@code false} otherwise. This method uses the string class names for comparison.
+   *      See also <a href=
+   *      "http://www.retep.org/2009/02/getting-class-values-from-annotations.html">getting-class-values-from-annotations</a>.
+   *
+   * @param annotationMirror The annotation mirror
+   * @param fqcn the fully qualified class name to check against
+   *
+   * @return {@code true} if the provided annotation type is of the same type as the provided class,
+   *         {@code false} otherwise.
+   */
+  public static boolean isAnnotationMirrorOfType(AnnotationMirror annotationMirror, String fqcn) {
+    assert annotationMirror != null;
+    assert fqcn != null;
+    String annotationClassName = annotationMirror.getAnnotationType().toString();
+
+    return annotationClassName.equals(fqcn);
+  }
+
+  /**
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   */
+  public static Object getAnnotationValue(AnnotationMirror annotationMirror,
+      String parameterValue) {
+    assert annotationMirror != null;
+    assert parameterValue != null;
+
+    Object returnValue = null;
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror
+        .getElementValues().entrySet()) {
+      if (parameterValue.equals(entry.getKey().getSimpleName().toString())) {
+        returnValue = entry.getValue().getValue();
+        break;
+      }
+    }
+    return returnValue;
+  }
+
 }

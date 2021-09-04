@@ -12,29 +12,10 @@
  * the License.
  */
 
-package org.treblereel.injection.named;
-
-import org.treblereel.injection.qualifiers.QualifierOne;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+package io.crysknife.nextstep.definition;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 9/4/21
  */
-@Singleton
-public class NamedFieldInjection {
-
-  @Inject
-  @QualifierOne
-  @Named("NamedBeanOne")
-  public NamedBean one;
-
-  @Inject
-  @Named("NamedBeanTwo")
-  public NamedBean two;
-
-  @Inject
-  public NamedBean def;
+public interface Definition {
 }
