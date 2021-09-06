@@ -26,12 +26,14 @@ import java.util.Set;
 public class InjectionPointDefinition implements Definition {
 
   private final VariableElement variableElement;
-  private final BeanDefinition beanDefinition;
-  private final Set<IOCGenerator> generators = new HashSet<>();
+  private final BeanDefinition parent;
+  private final Set<IOCGenerator> decorators = new HashSet<>();
+  private IOCGenerator generator;
+  private BeanDefinition implementation;
 
-  public InjectionPointDefinition(BeanDefinition beanDefinition, VariableElement variableElement) {
+  public InjectionPointDefinition(BeanDefinition parent, VariableElement variableElement) {
     this.variableElement = variableElement;
-    this.beanDefinition = beanDefinition;
+    this.parent = parent;
   }
 
   public VariableElement getVariableElement() {
@@ -39,10 +41,26 @@ public class InjectionPointDefinition implements Definition {
   }
 
   public BeanDefinition getBeanDefinition() {
-    return beanDefinition;
+    return parent;
   }
 
-  public Set<IOCGenerator> getGenerators() {
-    return generators;
+  public IOCGenerator getGenerator() {
+    return generator;
+  }
+
+  public void setGenerator(IOCGenerator generator) {
+    this.generator = generator;
+  }
+
+  public Set<IOCGenerator> getDecorators() {
+    return decorators;
+  }
+
+  public BeanDefinition getImplementation() {
+    return implementation;
+  }
+
+  public void setImplementation(BeanDefinition implementation) {
+    this.implementation = implementation;
   }
 }

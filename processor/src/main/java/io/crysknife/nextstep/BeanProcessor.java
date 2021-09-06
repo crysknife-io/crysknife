@@ -16,14 +16,19 @@ package io.crysknife.nextstep;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.Generator;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.nextstep.definition.BeanDefinitionFactory;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.nextstep.oracle.BeanOracle;
 
 import javax.inject.Inject;
 import javax.lang.model.element.Element;
@@ -35,6 +40,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -57,6 +63,8 @@ public class BeanProcessor {
   private final Types types;
   private final Elements elements;
   private final BeanDefinitionFactory beanDefinitionFactory;
+  private final Set<String> scoped;
+  private final BeanOracle oracle;
 
   private Map<String, BeanDefinition> holder = new HashMap<>();
   private Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
@@ -65,18 +73,25 @@ public class BeanProcessor {
   public BeanProcessor(IOCContext iocContext, PrintWriterTreeLogger logger) {
     this.iocContext = iocContext;
     this.logger = logger;
+    this.oracle = new BeanOracle(iocContext, beans);
     this.beanDefinitionFactory = new BeanDefinitionFactory(iocContext, logger);
     this.objectTypeMirror = iocContext.getGenerationContext().getElements()
         .getTypeElement(Object.class.getCanonicalName()).asType();
 
     types = iocContext.getGenerationContext().getTypes();
     elements = iocContext.getGenerationContext().getElements();
+
+    scoped = iocContext.getGenerators().entries().stream()
+        .sorted(Comparator
+            .comparingInt(o -> o.getValue().getClass().getAnnotation(Generator.class).priority()))
+        .filter(gen -> gen.getKey().wiringElementType.equals(WiringElementType.BEAN))
+        .map(v -> v.getKey().annotation).collect(Collectors.toSet());
   }
 
   public void process() {
     logger.log(TreeLogger.INFO, "start processing");
     findInjectionPoints();
-
+    processTypes();
 
 
     beans.forEach((k, v) -> {
@@ -95,14 +110,6 @@ public class BeanProcessor {
 
     });
 
-    holder.forEach((k, v) -> {
-      // System.out.println("REZ " + k);
-      v.getFields().forEach(f -> {
-        // System.out.println(" field " + f + " " + v.getType());
-
-      });
-    });
-
     logger.log(TreeLogger.INFO, "beans registred " + holder.size());
 
     long count =
@@ -113,12 +120,44 @@ public class BeanProcessor {
 
   }
 
+  private void processTypes() {
+    beans.forEach((type, definition) -> {
+      System.out.println("processTypes " + type);
+
+      Set<InjectionPointDefinition> dependencies = new HashSet<>();
+      dependencies.addAll(definition.getFields());
+      dependencies.addAll(definition.getConstructorParams());
+
+      for (InjectionPointDefinition point : dependencies) {
+        System.out.println("  processTypes " + point.getVariableElement() + " "
+            + point.getVariableElement().asType());
+
+        checkIfGeneric(point.getVariableElement());
+
+        TypeMirror beanTypeMirror = iocContext.getGenerationContext().getTypes()
+            .erasure(point.getVariableElement().asType());
+        TypeElement beanTypeElement = MoreTypes.asTypeElement(beanTypeMirror);
+
+        Optional<IOCGenerator> candidate = getGenerator(Inject.class.getCanonicalName(),
+            beanTypeElement, WiringElementType.FIELD_TYPE);
+
+        // Case 1: buildin type
+        if (candidate.isPresent()) {
+          point.setGenerator(candidate.get());
+        } else {
+          BeanDefinition implementation = oracle.guess(point);
+          point.setImplementation(implementation);
+        }
+      }
+    });
+
+
+  }
+
+  private void checkIfGeneric(VariableElement variableElement) {}
+
   private void findInjectionPoints() {
     TreeLogger logger = this.logger.branch(TreeLogger.INFO, "find Injection Points");
-
-    Set<String> scoped = iocContext.getGenerators().entries().stream()
-        .filter(gen -> gen.getKey().wiringElementType.equals(WiringElementType.BEAN))
-        .map(v -> v.getKey().annotation).collect(Collectors.toSet());
 
     iocContext.getGenerators().entries().stream().map(gen -> gen.getKey().exactType)
         .filter(elm -> !types.isSameType(elm.asType(), objectTypeMirror)).map(type -> type.asType())
@@ -133,49 +172,7 @@ public class BeanProcessor {
         .sorted(Comparator.comparing(o -> o.getQualifiedName().toString()))
         .collect(Collectors.toCollection(LinkedHashSet::new));
 
-
     processBeans(annotatedScopedBean);
-
-
-    annotatedScopedBean.stream().forEach(clazz -> {
-      // System.out.println("CLAZZ " + clazz.getQualifiedName());
-    });
-
-
-
-    scoped.forEach(sc -> {
-      // System.out.println("BEAN " + sc);
-    });
-
-    Set<Element> points = (Set<Element>) iocContext.getGenerationContext().getRoundEnvironment()
-        .getElementsAnnotatedWith(Inject.class);
-
-    points.forEach(p -> {
-      if (p.getKind().equals(ElementKind.FIELD)) {
-        VariableElement variableElement = (VariableElement) p;
-        /*
-         * logger.branch(TreeLogger.INFO, "field " + variableElement.asType() + " named " +
-         * variableElement.getSimpleName().toString() + " at " +
-         * variableElement.getEnclosingElement());
-         */
-      } else if (p.getKind().equals(ElementKind.CONSTRUCTOR)) {
-        ExecutableElement executableElement = (ExecutableElement) p;
-
-        executableElement.getParameters().stream().forEach(c -> {
-          VariableElement variableElement = (VariableElement) c;
-          /*
-           * logger.branch(TreeLogger.INFO, "const " + variableElement.asType() + " named " +
-           * variableElement.getSimpleName().toString() + " at " +
-           * variableElement.getEnclosingElement());
-           */
-        });
-
-      }
-
-
-      // logger.branch(TreeLogger.INFO, "point ");
-
-    });
   }
 
   private void processBeans(Set<TypeElement> annotatedScopedBean) {
@@ -186,12 +183,13 @@ public class BeanProcessor {
       } catch (UnableToCompleteException e) {
         errors.add(e);
       }
-      if (!errors.isEmpty()) {
-        for (UnableToCompleteException error : errors) {
-          logger.log(TreeLogger.Type.ERROR, error.getMessage());
-        }
-        throw new GenerationException();
+    }
+
+    if (!errors.isEmpty()) {
+      for (UnableToCompleteException error : errors) {
+        logger.log(TreeLogger.Type.ERROR, error.getMessage());
       }
+      throw new GenerationException();
     }
   }
 
@@ -199,6 +197,8 @@ public class BeanProcessor {
     TypeMirror key = types.erasure(type.asType());
     if (!beans.containsKey(key)) {
       BeanDefinition bean = beanDefinitionFactory.of(key);
+      setBeanDefinitionGenerator(bean);
+
       for (TypeMirror supr : types.directSupertypes(key)) {
         if (!types.isSameType(objectTypeMirror, supr)) {
           TypeMirror parent = types.erasure(supr);
@@ -211,6 +211,32 @@ public class BeanProcessor {
     } else {
       return Optional.of(beans.get(key));
     }
+  }
+
+  private void setBeanDefinitionGenerator(BeanDefinition bean) {
+    Set<String> annotations = bean.getAnnotationMirrors().stream()
+        .map(anno -> anno.getAnnotationType().toString()).collect(Collectors.toSet());
+
+    Set<String> intersection = new HashSet<>(annotations);
+    intersection.retainAll(scoped);
+
+    if (!intersection.isEmpty()) {
+      String annotation = intersection.iterator().next();
+      Optional<IOCGenerator> generator = getGenerator(annotation,
+          MoreTypes.asTypeElement(objectTypeMirror), WiringElementType.BEAN);
+      generator.ifPresent(bean::setIocGenerator);
+    }
+  }
+
+  private Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
+      WiringElementType wiringElementType) {
+    IOCContext.IOCGeneratorMeta meta =
+        new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);
+    Iterable<IOCGenerator> generators = iocContext.getGenerators().get(meta);
+    if (generators.iterator().hasNext()) {
+      return Optional.of(generators.iterator().next());
+    }
+    return Optional.empty();
   }
 
 }

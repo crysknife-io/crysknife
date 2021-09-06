@@ -15,9 +15,13 @@
 package io.crysknife.util;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +37,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
 import com.google.auto.common.MoreElements;
@@ -121,10 +128,11 @@ public class Utils {
 
   public static List<AnnotationMirror> getAllElementQualifierAnnotations(IOCContext context,
       Element element) {
-    System.out.println("element " + element);
-
     List<AnnotationMirror> result = new ArrayList<>();
     for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
+      if (isAnnotationMirrorOfType(annotationMirror, javax.inject.Named.class.getCanonicalName())) {
+        continue;
+      }
       for (AnnotationMirror allAnnotationMirror : context.getGenerationContext().getElements()
           .getAllAnnotationMirrors(annotationMirror.getAnnotationType().asElement())) {
         if (isAnnotationMirrorOfType(allAnnotationMirror,
@@ -134,6 +142,73 @@ public class Utils {
       }
     }
     return result;
+  }
+
+  /**
+   * see: typetools/checker-framework Return all methods declared in the given type or any
+   * superclass/interface. Note that no constructors will be returned. TODO: should this use
+   * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+   */
+  public static Collection<VariableElement> getAllFieldsIn(Elements elements, TypeElement type) {
+    Map<String, VariableElement> fields = new LinkedHashMap<>();
+    ElementFilter.fieldsIn(type.getEnclosedElements())
+        .forEach(field -> fields.put(field.getSimpleName().toString(), field));
+
+    List<TypeElement> alltypes = getSuperTypes(elements, type);
+    for (TypeElement atype : alltypes) {
+      ElementFilter.fieldsIn(atype.getEnclosedElements()).stream()
+          .filter(field -> !fields.containsKey(field.getSimpleName().toString()))
+          .forEach(field -> fields.put(field.getSimpleName().toString(), field));
+    }
+    return fields.values();
+  }
+
+  /**
+   * see: typetools/checker-framework Determine all type elements for the classes and interfaces
+   * referenced in the extends/implements clauses of the given type element. TODO: can we learn from
+   * the implementation of com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+   */
+  public static List<TypeElement> getSuperTypes(Elements elements, TypeElement type) {
+
+    List<TypeElement> superelems = new ArrayList<>();
+    if (type == null) {
+      return superelems;
+    }
+
+    // Set up a stack containing type, which is our starting point.
+    Deque<TypeElement> stack = new ArrayDeque<>();
+    stack.push(type);
+
+    while (!stack.isEmpty()) {
+      TypeElement current = stack.pop();
+
+      // For each direct supertype of the current type element, if it
+      // hasn't already been visited, push it onto the stack and
+      // add it to our superelems set.
+      TypeMirror supertypecls = current.getSuperclass();
+      if (supertypecls.getKind() != TypeKind.NONE) {
+        TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
+        if (!superelems.contains(supercls)) {
+          stack.push(supercls);
+          superelems.add(supercls);
+        }
+      }
+      for (TypeMirror supertypeitf : current.getInterfaces()) {
+        TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
+        if (!superelems.contains(superitf)) {
+          stack.push(superitf);
+          superelems.add(superitf);
+        }
+      }
+    }
+
+    // Include java.lang.Object as implicit superclass for all classes and interfaces.
+    TypeElement jlobject = elements.getTypeElement(Object.class.getCanonicalName());
+    if (!superelems.contains(jlobject)) {
+      superelems.add(jlobject);
+    }
+
+    return Collections.unmodifiableList(superelems);
   }
 
 

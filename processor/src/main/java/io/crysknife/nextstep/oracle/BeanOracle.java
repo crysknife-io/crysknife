@@ -1,0 +1,212 @@
+/*
+ * Copyright © 2021 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package io.crysknife.nextstep.oracle;
+
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.util.Utils;
+
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Specializes;
+import javax.inject.Named;
+import javax.inject.Qualifier;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * @author Dmitrii Tikhomirov Created by treblereel 9/5/21
+ */
+public class BeanOracle {
+
+  private final IOCContext context;
+  private final Map<TypeMirror, BeanDefinition> beans;
+
+  public BeanOracle(IOCContext context, Map<TypeMirror, BeanDefinition> beans) {
+    this.context = context;
+    this.beans = beans;
+  }
+
+  public BeanDefinition guess(InjectionPointDefinition point) {
+    Named named = point.getVariableElement().getAnnotation(Named.class);
+    Set<AnnotationMirror> qualifiers = getAnnotationMirrors(point);
+    boolean isInterfaceOrAbstractClass =
+        isInterfaceOrAbstractClass(point.getVariableElement().asType());
+
+    TypeMirror beanTypeMirror =
+        context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
+
+    if (isInterfaceOrAbstractClass) {
+
+      if (named != null) {
+        Optional<BeanDefinition> candidate = processName(point, named);
+        if (candidate.isPresent()) {
+          return candidate.get();
+        }
+      }
+
+      if (!qualifiers.isEmpty()) {
+        Optional<BeanDefinition> candidate = processQualifiers(point, qualifiers);
+        if (candidate.isPresent()) {
+          return candidate.get();
+        }
+      }
+
+      Optional<BeanDefinition> candidate = asInterfaceOrAbstractClass(point);
+      if (candidate.isPresent()) {
+        return candidate.get();
+      }
+    }
+
+
+    // Case 2: simple injection case, known type
+    if (beans.containsKey(beanTypeMirror)) {
+      BeanDefinition simpleInjectionCaseCandidate = beans.get(beanTypeMirror);
+
+      if (simpleInjectionCaseCandidate.getIocGenerator().isPresent()) {
+        // point.setImplementation(simpleInjectionCaseCandidate);
+        return simpleInjectionCaseCandidate;
+      }
+    } else {
+      System.out.println("ERROR " + beanTypeMirror);
+    }
+
+
+
+    return null;
+  }
+
+  private Optional<BeanDefinition> asInterfaceOrAbstractClass(InjectionPointDefinition point) {
+    Set<BeanDefinition> subclasses = getSubClasses(point);
+
+    Set<BeanDefinition> types = subclasses.stream()
+        .filter(bean -> !isInterfaceOrAbstractClass(bean.getType())).collect(Collectors.toSet());
+    // Case TheOnlyOneImpl
+    if (types.size() == 1) {
+      return types.stream().findFirst();
+    } else if (types.size() > 1) {
+      // Case @Default
+      Set<BeanDefinition> maybeDefault = types.stream()
+          .filter(
+              elm -> MoreTypes.asTypeElement(elm.getType()).getAnnotation(Default.class) != null)
+          .collect(Collectors.toSet());
+      if (maybeDefault.size() == 1) {
+        return maybeDefault.stream().findFirst();
+      }
+      // Case @Specializes
+      Set<BeanDefinition> maybeSpecializes = types.stream().filter(
+          elm -> MoreTypes.asTypeElement(elm.getType()).getAnnotation(Specializes.class) != null)
+          .collect(Collectors.toSet());
+      if (maybeSpecializes.size() == 1) {
+        return maybeSpecializes.stream().findFirst();
+      }
+
+    }
+
+
+    return Optional.empty();
+  }
+
+  private Optional<BeanDefinition> processQualifiers(InjectionPointDefinition point,
+      Set<AnnotationMirror> qualifiers) {
+    Set<BeanDefinition> subclasses = getSubClasses(point);
+
+    List<String> temp =
+        qualifiers.stream().map(a -> a.getAnnotationType().toString()).collect(Collectors.toList());
+    String[] annotations = temp.toArray(new String[temp.size()]);
+
+    return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
+        .filter(q -> Utils.containsAnnotation(MoreTypes.asTypeElement(q.getType()), annotations))
+        .findFirst();
+
+  }
+
+  private Optional<BeanDefinition> processName(InjectionPointDefinition point, Named named) {
+    Set<BeanDefinition> subclasses = getSubClasses(point);
+    return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
+        .filter(elm -> (MoreTypes.asTypeElement(elm.getType()).getAnnotation(Named.class) != null
+            && MoreTypes.asTypeElement(elm.getType()).getAnnotation(Named.class).value()
+                .equals(named.value())))
+        .findFirst();
+  }
+
+  private Set<BeanDefinition> getSubClasses(InjectionPointDefinition point) {
+    System.out.println("getSubClasses " + point.getVariableElement());
+    TypeMirror beanTypeMirror =
+        context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
+
+    System.out.println("getSubClasses 2 " + beanTypeMirror);
+
+
+    BeanDefinition type = beans.get(beanTypeMirror);
+
+    Set<BeanDefinition> subclasses = new HashSet<>(type.getSubclasses());
+    getAllSubtypes(type, subclasses);
+    return subclasses;
+  }
+
+  private Set<BeanDefinition> getAllSubtypes(BeanDefinition beanDefinition,
+      Set<BeanDefinition> subclasses) {
+    if (!beanDefinition.getSubclasses().isEmpty()) {
+      for (BeanDefinition subclass : beanDefinition.getSubclasses()) {
+        subclasses.add(subclass);
+        getAllSubtypes(subclass, subclasses);
+      }
+    }
+    return subclasses;
+  }
+
+  private boolean isInterfaceOrAbstractClass(TypeMirror type) {
+    return MoreTypes.asTypeElement(type).getKind().isInterface()
+        || MoreTypes.asTypeElement(type).getModifiers().contains(Modifier.ABSTRACT);
+  }
+
+  private String[] getQualifiedAnnotation(VariableElement element) {
+
+    element.getAnnotationMirrors().stream().filter(a -> {
+
+      DeclaredType asDeclaredType = a.getAnnotationType();
+      asDeclaredType.getAnnotationMirrors().forEach(aa -> {
+        System.out.println("               => " + asDeclaredType + " " + aa);
+      });
+
+
+
+      return a.getAnnotationType().getAnnotation(Qualifier.class) != null;
+    }).forEach(rez -> {
+      System.out.println("REZ            " + rez);
+    });
+
+    return new String[0];
+  }
+
+  private Set<AnnotationMirror> getAnnotationMirrors(InjectionPointDefinition point) {
+    return point.getVariableElement().getAnnotationMirrors().stream()
+        .filter(anno -> anno.getAnnotationType().asElement().getAnnotation(Qualifier.class) != null)
+        .collect(Collectors.toSet());
+  }
+}
