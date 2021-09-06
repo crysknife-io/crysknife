@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,24 +14,8 @@
 
 package org.treblereel.injection.named;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 9/5/21
  */
-@Singleton
-public class NamedFieldInjection {
-
-  @Inject
-  @Named("NamedBeanOne")
-  public NamedBean one;
-
-  @Inject
-  @Named("NamedBeanTwo")
-  public NamedBean two;
-
-  @Inject
-  public NamedBean def;
+public abstract class NamedBeanSubTwo extends NamedBeanSubOne {
 }

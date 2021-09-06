@@ -28,14 +28,19 @@ import io.crysknife.logger.TreeLogger;
 import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.nextstep.definition.BeanDefinitionFactory;
 import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.nextstep.definition.MethodDefinitionFactory;
+import io.crysknife.nextstep.definition.ProducesBeanDefinition;
 import io.crysknife.nextstep.oracle.BeanOracle;
+import io.crysknife.nextstep.validation.ProducesValidator;
 
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -63,6 +68,7 @@ public class BeanProcessor {
   private final Types types;
   private final Elements elements;
   private final BeanDefinitionFactory beanDefinitionFactory;
+  private final MethodDefinitionFactory methodDefinitionFactory;
   private final Set<String> scoped;
   private final BeanOracle oracle;
 
@@ -75,6 +81,7 @@ public class BeanProcessor {
     this.logger = logger;
     this.oracle = new BeanOracle(iocContext, beans);
     this.beanDefinitionFactory = new BeanDefinitionFactory(iocContext, logger);
+    this.methodDefinitionFactory = new MethodDefinitionFactory(iocContext, logger);
     this.objectTypeMirror = iocContext.getGenerationContext().getElements()
         .getTypeElement(Object.class.getCanonicalName()).asType();
 
@@ -91,7 +98,12 @@ public class BeanProcessor {
   public void process() {
     logger.log(TreeLogger.INFO, "start processing");
     findInjectionPoints();
+    findProduces();
+
     processTypes();
+
+    processMethodDecorators();
+    processMethodParamDecorators();
 
 
     beans.forEach((k, v) -> {
@@ -103,35 +115,149 @@ public class BeanProcessor {
 
       v.getFields().forEach(field -> {
         System.out.println("          F " + field.getVariableElement());
+        if (field.getGenerator() != null) {
+          System.out
+              .println("          F generator " + field.getGenerator().getClass().getSimpleName());
+        }
+        if (field.getImplementation() != null) {
+          System.out.println("          F generator bean "
+              + field.getImplementation().getIocGenerator().get().getClass().getSimpleName());
+        }
       });
       v.getConstructorParams().forEach(field -> {
         System.out.println("          C " + field.getVariableElement());
       });
 
+      v.getMethods().forEach(method -> {
+        String decorators = method.getDecorators().stream().map(e -> e.getClass().getSimpleName())
+            .collect(Collectors.joining(","));
+
+        System.out.println(
+            "          M " + method.getExecutableElement().getSimpleName() + " " + decorators);
+
+      });
+
+
     });
 
-    logger.log(TreeLogger.INFO, "beans registred " + holder.size());
+    logger.log(TreeLogger.INFO, "beans registered " + beans.size());
 
     long count =
-        holder.values().stream().map(BeanDefinition::getFields).flatMap(Collection::stream).count();
+        beans.values().stream().map(BeanDefinition::getFields).flatMap(Collection::stream).count();
+    count = count + beans.values().stream().map(BeanDefinition::getConstructorParams)
+        .flatMap(Collection::stream).count();
 
-    logger.log(TreeLogger.INFO, "fields registred " + count);
+
+    logger.log(TreeLogger.INFO, "fields registered " + count);
 
 
   }
 
+  private void processMethodParamDecorators() {
+    iocContext.getGenerators().asMap().entrySet().stream()
+        .filter(iocGeneratorMetaCollectionEntry -> iocGeneratorMetaCollectionEntry
+            .getKey().wiringElementType.equals(WiringElementType.PARAMETER))
+        .forEach(iocGeneratorMetaCollectionEntry -> {
+          iocGeneratorMetaCollectionEntry.getValue().forEach(gen -> {
+
+            TypeElement annotation = iocContext.getGenerationContext().getElements()
+                .getTypeElement(iocGeneratorMetaCollectionEntry.getKey().annotation);
+            Set<ExecutableElement> elements = iocContext.getGenerationContext()
+                .getRoundEnvironment().getElementsAnnotatedWith(annotation).stream()
+                .filter(elm -> elm.getKind().equals(ElementKind.PARAMETER))
+                .map(elm -> MoreElements.asVariable(elm))
+                .map(elm -> MoreElements.asExecutable(elm.getEnclosingElement()))
+                .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toSet());
+
+            elements.stream().forEach(e -> {
+              TypeMirror erased = iocContext.getGenerationContext().getTypes()
+                  .erasure(e.getEnclosingElement().asType());
+              BeanDefinition bean = beans.get(erased);
+              ExecutableType methodType = (ExecutableType) e.asType();
+              bean.getMethods().stream()
+                  .filter(mmethod -> iocContext.getGenerationContext().getTypes()
+                      .isSameType(methodType, mmethod.getExecutableElement().asType()))
+                  .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
+                  .addAll(iocGeneratorMetaCollectionEntry.getValue());
+            });
+          });
+        });
+
+
+
+  }
+
+  private void processMethodDecorators() {
+    iocContext.getGenerators().asMap().entrySet().stream()
+        .filter(iocGeneratorMetaCollectionEntry -> iocGeneratorMetaCollectionEntry
+            .getKey().wiringElementType.equals(WiringElementType.METHOD_DECORATOR))
+        .forEach(iocGeneratorMetaCollectionEntry -> {
+          iocGeneratorMetaCollectionEntry.getValue().forEach(gen -> {
+            TypeElement annotation = iocContext.getGenerationContext().getElements()
+                .getTypeElement(iocGeneratorMetaCollectionEntry.getKey().annotation);
+
+            Set<ExecutableElement> elements = iocContext.getGenerationContext()
+                .getRoundEnvironment().getElementsAnnotatedWith(annotation).stream()
+                .filter(elm -> elm.getKind().equals(ElementKind.METHOD))
+                .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toSet());
+
+            elements.stream().forEach(e -> {
+              TypeMirror erased = iocContext.getGenerationContext().getTypes()
+                  .erasure(e.getEnclosingElement().asType());
+              BeanDefinition bean = beans.get(erased);
+              ExecutableType methodType = (ExecutableType) e.asType();
+              bean.getMethods().stream()
+                  .filter(mmethod -> iocContext.getGenerationContext().getTypes()
+                      .isSameType(methodType, mmethod.getExecutableElement().asType()))
+                  .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
+                  .addAll(iocGeneratorMetaCollectionEntry.getValue());
+            });
+          });
+        });
+  }
+
+  private void findProduces() {
+    ProducesValidator validator = new ProducesValidator(iocContext);
+    Set<Element> produces = (Set<Element>) iocContext.getGenerationContext().getRoundEnvironment()
+        .getElementsAnnotatedWith(Produces.class);
+
+    List<UnableToCompleteException> errors = new ArrayList<>();
+
+    for (Element produce : produces) {
+      try {
+        validator.validate(produce);
+        ExecutableElement method = (ExecutableElement) produce;
+
+        Optional<IOCGenerator> generator = getGenerator(Produces.class.getCanonicalName(),
+            MoreTypes.asTypeElement(objectTypeMirror), WiringElementType.PRODUCER_ELEMENT);
+
+        if (generator.isPresent()) {
+          ProducesBeanDefinition beanDefinition = beanDefinitionFactory.of(method);
+          beanDefinition.setIocGenerator(generator.get());
+          TypeMirror beanTypeMirror =
+              iocContext.getGenerationContext().getTypes().erasure(method.getReturnType());
+          beans.put(beanTypeMirror, beanDefinition);
+        }
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
+    }
+
+    if (!errors.isEmpty()) {
+      for (UnableToCompleteException error : errors) {
+        logger.log(TreeLogger.Type.ERROR, error.getMessage());
+      }
+      throw new GenerationException();
+    }
+  }
+
   private void processTypes() {
     beans.forEach((type, definition) -> {
-      System.out.println("processTypes " + type);
-
       Set<InjectionPointDefinition> dependencies = new HashSet<>();
       dependencies.addAll(definition.getFields());
       dependencies.addAll(definition.getConstructorParams());
 
       for (InjectionPointDefinition point : dependencies) {
-        System.out.println("  processTypes " + point.getVariableElement() + " "
-            + point.getVariableElement().asType());
-
         checkIfGeneric(point.getVariableElement());
 
         TypeMirror beanTypeMirror = iocContext.getGenerationContext().getTypes()
@@ -147,11 +273,10 @@ public class BeanProcessor {
         } else {
           BeanDefinition implementation = oracle.guess(point);
           point.setImplementation(implementation);
+          definition.getDependencies().add(implementation);
         }
       }
     });
-
-
   }
 
   private void checkIfGeneric(VariableElement variableElement) {}

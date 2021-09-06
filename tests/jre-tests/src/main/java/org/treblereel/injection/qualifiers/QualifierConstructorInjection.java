@@ -34,8 +34,8 @@ public class QualifierConstructorInjection {
   public QualifierBean qualifier;
 
   @Inject
-  public QualifierConstructorInjection(@QualifierTwo @Lazy QualifierBean qualifierBeanTwo,
-      @QualifierOne QualifierBean qualifierBeanOne) {
+  public QualifierConstructorInjection(@QualifierTwo @Lazy final QualifierBean qualifierBeanTwo,
+      @QualifierOne final QualifierBean qualifierBeanOne) {
     this.qualifierBeanOne = qualifierBeanOne;
     this.qualifierBeanTwo = qualifierBeanTwo;
   }

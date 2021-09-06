@@ -14,7 +14,6 @@
 
 package io.crysknife.nextstep.oracle;
 
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.nextstep.definition.BeanDefinition;
@@ -23,13 +22,14 @@ import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Specializes;
+import javax.enterprise.inject.Typed;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
 import java.util.HashSet;
 import java.util.List;
@@ -61,7 +61,6 @@ public class BeanOracle {
         context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
 
     if (isInterfaceOrAbstractClass) {
-
       if (named != null) {
         Optional<BeanDefinition> candidate = processName(point, named);
         if (candidate.isPresent()) {
@@ -82,21 +81,13 @@ public class BeanOracle {
       }
     }
 
-
     // Case 2: simple injection case, known type
     if (beans.containsKey(beanTypeMirror)) {
       BeanDefinition simpleInjectionCaseCandidate = beans.get(beanTypeMirror);
-
       if (simpleInjectionCaseCandidate.getIocGenerator().isPresent()) {
-        // point.setImplementation(simpleInjectionCaseCandidate);
         return simpleInjectionCaseCandidate;
       }
-    } else {
-      System.out.println("ERROR " + beanTypeMirror);
     }
-
-
-
     return null;
   }
 
@@ -124,10 +115,32 @@ public class BeanOracle {
       if (maybeSpecializes.size() == 1) {
         return maybeSpecializes.stream().findFirst();
       }
-
+      // Case @Typed
+      Set<BeanDefinition> maybeTyped = types.stream()
+          .filter(elm -> MoreTypes.asTypeElement(elm.getType()).getAnnotation(Typed.class) != null)
+          .collect(Collectors.toSet());
+      if (!maybeTyped.isEmpty()) {
+        TypeMirror mirror =
+            context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
+        for (BeanDefinition typed : maybeTyped) {
+          Optional<List<TypeMirror>> annotations = getTypedAnnotationValues(typed.getType());
+          if (annotations.isPresent()) {
+            if (annotations.get().contains(mirror)) {
+              return Optional.of(typed);
+            }
+          }
+        }
+      }
     }
+    return Optional.empty();
+  }
 
-
+  private Optional<List<TypeMirror>> getTypedAnnotationValues(TypeMirror typeMirror) {
+    try {
+      MoreTypes.asTypeElement(typeMirror).getAnnotation(Typed.class).value();
+    } catch (MirroredTypesException e) {
+      return Optional.of((List<TypeMirror>) e.getTypeMirrors());
+    }
     return Optional.empty();
   }
 
@@ -155,15 +168,9 @@ public class BeanOracle {
   }
 
   private Set<BeanDefinition> getSubClasses(InjectionPointDefinition point) {
-    System.out.println("getSubClasses " + point.getVariableElement());
     TypeMirror beanTypeMirror =
         context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
-
-    System.out.println("getSubClasses 2 " + beanTypeMirror);
-
-
     BeanDefinition type = beans.get(beanTypeMirror);
-
     Set<BeanDefinition> subclasses = new HashSet<>(type.getSubclasses());
     getAllSubtypes(type, subclasses);
     return subclasses;
@@ -183,25 +190,6 @@ public class BeanOracle {
   private boolean isInterfaceOrAbstractClass(TypeMirror type) {
     return MoreTypes.asTypeElement(type).getKind().isInterface()
         || MoreTypes.asTypeElement(type).getModifiers().contains(Modifier.ABSTRACT);
-  }
-
-  private String[] getQualifiedAnnotation(VariableElement element) {
-
-    element.getAnnotationMirrors().stream().filter(a -> {
-
-      DeclaredType asDeclaredType = a.getAnnotationType();
-      asDeclaredType.getAnnotationMirrors().forEach(aa -> {
-        System.out.println("               => " + asDeclaredType + " " + aa);
-      });
-
-
-
-      return a.getAnnotationType().getAnnotation(Qualifier.class) != null;
-    }).forEach(rez -> {
-      System.out.println("REZ            " + rez);
-    });
-
-    return new String[0];
   }
 
   private Set<AnnotationMirror> getAnnotationMirrors(InjectionPointDefinition point) {
