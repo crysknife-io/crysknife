@@ -21,8 +21,7 @@ import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.nextstep.validation.InjectionPointValidator;
 
 import javax.lang.model.element.VariableElement;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -43,7 +42,7 @@ public abstract class InjectionPointProcessor {
   protected void process(BeanDefinition bean, Set<VariableElement> points)
       throws UnableToCompleteException {
 
-    List<UnableToCompleteException> errors = new ArrayList<>();
+    Set<UnableToCompleteException> errors = new HashSet<>();
 
     for (VariableElement field : points) {
       try {
@@ -58,7 +57,7 @@ public abstract class InjectionPointProcessor {
       TreeLogger logger =
           this.logger.branch(TreeLogger.ERROR, "Unable to process bean: " + bean.getType());
       for (UnableToCompleteException error : errors) {
-        // logger.log(TreeLogger.ERROR, error.getMessage());
+        logger.log(TreeLogger.ERROR, error.getMessage());
       }
       throw new UnableToCompleteException();
     }

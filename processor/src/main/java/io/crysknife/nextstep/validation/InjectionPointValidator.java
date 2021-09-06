@@ -34,12 +34,46 @@ import java.util.Set;
 public class InjectionPointValidator {
 
   private FieldValidator fieldValidator;
+  private IOCContext context;
+
+  private Set<Check> checks = new HashSet<Check>() {
+    {
+      add(new Check() {
+        @Override
+        public void check(VariableElement variableElement) throws UnableToCompleteException {
+          if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
+            log(variableElement, "Field injection point must not be abstract");
+          }
+        }
+      });
+
+      add(new Check() {
+        @Override
+        public void check(VariableElement variableElement) throws UnableToCompleteException {
+          List<AnnotationMirror> qualifiers =
+              Utils.getAllElementQualifierAnnotations(context, variableElement);
+          if (qualifiers.size() > 1) {
+            log(variableElement,
+                "Injection point must be annotated with only one @Qualifier, but there is "
+                    + qualifiers.size());
+          }
+          Named named = variableElement.getAnnotation(Named.class);
+          if (named != null && !qualifiers.isEmpty()) {
+            log(variableElement,
+                "Injection point must be annotated with @Named or @Qualifier, but not both at the same time");
+          }
+        }
+      });
+    }
+  };
+
 
   public InjectionPointValidator(IOCContext context, Element parent) {
+    this.context = context;
     if (parent.getKind().equals(ElementKind.CLASS)) {
-      fieldValidator = new InjectionPointFieldValidator(context);
+      fieldValidator = new InjectionPointFieldValidator(this);
     } else if (parent.getKind().equals(ElementKind.CONSTRUCTOR)) {
-      fieldValidator = new InjectionPointConstructorValidator();
+      fieldValidator = new InjectionPointConstructorValidator(this);
     }
   }
 
@@ -66,46 +100,30 @@ public class InjectionPointValidator {
 
   private static class InjectionPointFieldValidator implements FieldValidator {
 
-    private final IOCContext context;
+    private Set<Check> checks = new HashSet<>();
 
-    private InjectionPointFieldValidator(IOCContext context) {
-      this.context = context;
+    private InjectionPointFieldValidator(InjectionPointValidator validator) {
+      checks.addAll(validator.checks);
+
+      checks.add(new Check() {
+        @Override
+        public void check(VariableElement variableElement) throws UnableToCompleteException {
+          if (variableElement.getModifiers().contains(Modifier.FINAL)) {
+            log(variableElement, "Field injection point must not be final");
+          }
+        }
+      });
+
+      checks.add(new Check() {
+        @Override
+        public void check(VariableElement variableElement) throws UnableToCompleteException {
+          if (variableElement.getModifiers().contains(Modifier.FINAL)) {
+            log(variableElement, "Field injection point must not be final");
+          }
+        }
+      });
+
     }
-
-    private Set<Check> checks = new HashSet<Check>() {
-      {
-        add(new Check() {
-          @Override
-          public void check(VariableElement variableElement) throws UnableToCompleteException {
-            if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
-              log(variableElement, "Field injection point must not be abstract");
-            }
-          }
-        });
-
-        add(new Check() {
-          @Override
-          public void check(VariableElement variableElement) throws UnableToCompleteException {
-            if (variableElement.getModifiers().contains(Modifier.FINAL)) {
-              log(variableElement, "Field injection point must not be final");
-            }
-          }
-        });
-
-        add(new Check() {
-          @Override
-          public void check(VariableElement variableElement) throws UnableToCompleteException {
-            List<AnnotationMirror> qualifiers =
-                Utils.getAllElementQualifierAnnotations(context, variableElement);
-            Named named = variableElement.getAnnotation(Named.class);
-            if (named != null && !qualifiers.isEmpty()) {
-              log(variableElement,
-                  "Injection point must be annotated with @Named or @Qualifier, but not both at the same time");
-            }
-          }
-        });
-      }
-    };
 
     @Override
     public void validate(VariableElement variableElement) throws UnableToCompleteException {
@@ -117,10 +135,17 @@ public class InjectionPointValidator {
 
   private static class InjectionPointConstructorValidator implements FieldValidator {
 
-    @Override
-    public void validate(VariableElement variableElement) {
+    private Set<Check> checks = new HashSet<>();
 
+    private InjectionPointConstructorValidator(InjectionPointValidator validator) {
+      checks.addAll(validator.checks);
     }
 
+    @Override
+    public void validate(VariableElement variableElement) throws UnableToCompleteException {
+      for (Check check : checks) {
+        check.check(variableElement);
+      }
+    }
   }
 }

@@ -15,11 +15,14 @@
 package io.crysknife.nextstep.definition;
 
 import com.google.auto.common.MoreTypes;
+import io.crysknife.generator.IOCGenerator;
 
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -32,6 +35,8 @@ public class BeanDefinition implements Definition {
   private Set<InjectionPointDefinition> fields = new LinkedHashSet<>();
   private Set<InjectionPointDefinition> constructorParams = new LinkedHashSet<>();
   private Set<MethodDefinition> methods = new LinkedHashSet<>();
+  private Set<BeanDefinition> dependencies = new LinkedHashSet<>();
+  private Optional<IOCGenerator> iocGenerator = Optional.empty();
 
   private Set<BeanDefinition> subclasses = new LinkedHashSet<>();
 
@@ -51,6 +56,30 @@ public class BeanDefinition implements Definition {
     return constructorParams;
   }
 
+  public List<? extends AnnotationMirror> getAnnotationMirrors() {
+    return MoreTypes.asTypeElement(type).getAnnotationMirrors();
+  }
+
+  public Set<BeanDefinition> getSubclasses() {
+    return subclasses;
+  }
+
+  public Set<MethodDefinition> getMethods() {
+    return methods;
+  }
+
+  public Set<BeanDefinition> getDependencies() {
+    return dependencies;
+  }
+
+  public Optional<IOCGenerator> getIocGenerator() {
+    return iocGenerator;
+  }
+
+  public void setIocGenerator(IOCGenerator iocGenerator) {
+    this.iocGenerator = Optional.of(iocGenerator);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -65,17 +94,5 @@ public class BeanDefinition implements Definition {
   @Override
   public int hashCode() {
     return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
-  }
-
-  public Set<BeanDefinition> getSubclasses() {
-    return subclasses;
-  }
-
-  public void setSubclasses(Set<BeanDefinition> subclasses) {
-    this.subclasses = subclasses;
-  }
-
-  public Set<MethodDefinition> getMethods() {
-    return methods;
   }
 }

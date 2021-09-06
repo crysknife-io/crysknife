@@ -14,7 +14,11 @@
 
 package io.crysknife.nextstep.definition;
 
+import io.crysknife.generator.IOCGenerator;
+
 import javax.lang.model.element.ExecutableElement;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/4/21
@@ -23,6 +27,8 @@ public class MethodDefinition implements Definition {
 
   private final ExecutableElement executableElement;
   private final BeanDefinition beanDefinition;
+  private final Set<IOCGenerator> decorators = new HashSet<>();
+
 
   MethodDefinition(BeanDefinition beanDefinition, ExecutableElement executableElement) {
     this.beanDefinition = beanDefinition;
@@ -36,4 +42,9 @@ public class MethodDefinition implements Definition {
   public BeanDefinition getBeanDefinition() {
     return beanDefinition;
   }
+
+  public Set<IOCGenerator> getDecorators() {
+    return decorators;
+  }
+
 }

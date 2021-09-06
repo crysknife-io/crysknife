@@ -21,6 +21,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.util.Utils;
 
 import javax.inject.Inject;
 import javax.lang.model.element.VariableElement;
@@ -38,9 +39,10 @@ public class FieldProcessor extends InjectionPointProcessor {
 
   @Override
   public void process(BeanDefinition bean) throws UnableToCompleteException {
-    Set<VariableElement> fields = context.getGenerationContext().getElements()
-        .getAllMembers(MoreTypes.asTypeElement(bean.getType())).stream()
-        .filter(field -> field.getKind().isField())
+    Set<VariableElement> fields = Utils
+        .getAllFieldsIn(context.getGenerationContext().getElements(),
+            MoreTypes.asTypeElement(bean.getType()))
+        .stream().filter(field -> field.getKind().isField())
         .filter(elm -> elm.getAnnotation(Inject.class) != null)
         .map(elm -> MoreElements.asVariable(elm)).collect(Collectors.toSet());
 

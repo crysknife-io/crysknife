@@ -26,7 +26,7 @@ import io.crysknife.util.Utils;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-@Generator(priority = 2)
+@Generator(priority = 1)
 public class DependentGenerator extends ScopedBeanGenerator {
 
   public DependentGenerator(IOCContext iocContext) {
