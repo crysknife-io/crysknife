@@ -91,6 +91,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
   @Override
   public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
+    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class.getCanonicalName());
     MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
 
     LambdaExpr lambda = new LambdaExpr();

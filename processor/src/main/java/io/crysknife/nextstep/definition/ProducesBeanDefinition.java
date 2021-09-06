@@ -12,26 +12,19 @@
  * the License.
  */
 
-package org.treblereel.injection.named;
+package io.crysknife.nextstep.definition;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import javax.lang.model.element.ExecutableElement;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/12/19
+ * @author Dmitrii Tikhomirov Created by treblereel 9/6/21
  */
-@Singleton
-public class NamedFieldInjection {
+public class ProducesBeanDefinition extends BeanDefinition {
 
-  @Inject
-  @Named("NamedBeanOne")
-  public NamedBean one;
+  private ExecutableElement method;
 
-  @Inject
-  @Named("NamedBeanTwo")
-  public NamedBean two;
-
-  @Inject
-  public NamedBean def;
+  ProducesBeanDefinition(ExecutableElement method) {
+    super(method.getReturnType());
+    this.method = method;
+  }
 }

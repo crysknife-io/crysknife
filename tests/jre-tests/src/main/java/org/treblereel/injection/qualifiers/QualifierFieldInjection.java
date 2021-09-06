@@ -18,6 +18,7 @@ import org.treblereel.injection.qualifiers.typed.MorphNodeToolboxAction;
 
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 /**

@@ -20,6 +20,7 @@ import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.nextstep.ConstructorInjectionPointProcessor;
 import io.crysknife.nextstep.FieldProcessor;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -47,6 +48,11 @@ public class BeanDefinitionFactory {
     fieldProcessor.process(bean);
     constructorInjectionPointProcessor.process(bean);
 
+    return bean;
+  }
+
+  public ProducesBeanDefinition of(ExecutableElement produces) throws UnableToCompleteException {
+    ProducesBeanDefinition bean = new ProducesBeanDefinition(produces);
     return bean;
   }
 
