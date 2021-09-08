@@ -31,6 +31,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -69,6 +70,30 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
   }
 
   @Override
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectionPointDefinition fieldPoint) {
+
+    clazz.getClassCompilationUnit().addImport(ManagedInstance.class);
+    clazz.getClassCompilationUnit().addImport(ManagedInstanceImpl.class);
+    clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
+
+    TypeMirror param =
+        MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
+
+    ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
+        .addArgument(new NameExpr(param.toString() + ".class"))
+        .addArgument(new NameExpr("beanManager"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(instance));
+
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+
+  }
+
+
+  @Override
   public void register() {
     iocContext.register(Inject.class, ManagedInstance.class, WiringElementType.FIELD_TYPE, this);
     iocContext.register(Inject.class, Instance.class, WiringElementType.FIELD_TYPE, this);
@@ -77,6 +102,12 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
   }
 
   @Override
+  public void generate(ClassBuilder clazz,
+      io.crysknife.nextstep.definition.Definition beanDefinition) {
+
+  }
+
+  // @Override
   public void generate(ClassBuilder clazz, Definition beanDefinition) {
     // do nothing
   }

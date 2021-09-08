@@ -16,6 +16,7 @@ package io.crysknife.nextstep;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -24,8 +25,10 @@ import io.crysknife.nextstep.definition.InjectionPointDefinition;
 
 import javax.inject.Inject;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,14 +44,25 @@ public class ConstructorInjectionPointProcessor extends InjectionPointProcessor 
 
   @Override
   public void process(BeanDefinition bean) throws UnableToCompleteException {
-    Set<VariableElement> fields = context.getGenerationContext().getElements()
+    List<ExecutableElement> constructors = context.getGenerationContext().getElements()
         .getAllMembers(MoreTypes.asTypeElement(bean.getType())).stream()
         .filter(field -> field.getKind().equals(ElementKind.CONSTRUCTOR))
         .filter(elm -> elm.getAnnotation(Inject.class) != null)
-        .map(elm -> MoreElements.asExecutable(elm)).limit(1).map(e -> e.getParameters())
-        .flatMap(Collection::stream).collect(Collectors.toSet());
+        .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toList());
 
-    process(bean, fields);
+    if (constructors.isEmpty()) {
+      return;
+    }
+
+    if (constructors.size() > 1) {
+      throw new GenerationException(
+          bean.getType() + "must contain only one constructor annotated with @Inject");
+    }
+    ExecutableElement constructor = constructors.iterator().next();
+    for (int i = 0; i < constructor.getParameters().size(); i++) {
+      process(bean, constructor.getParameters().get(i));
+
+    }
   }
 
   @Override

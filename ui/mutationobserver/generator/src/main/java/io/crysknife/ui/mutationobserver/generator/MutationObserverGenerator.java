@@ -72,9 +72,18 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
         iocContext.getBeanDefinitionOrCreateAndReturn(mutationObserver);
 
     iocContext.getBeans().put(mutationObserver, mutationObserverBeanDefinition);
-    if (!iocContext.getOrderedBeans().contains(mutationObserver)) {
-      iocContext.getOrderedBeans().add(mutationObserver);
+    TypeMirror mirror =
+        iocContext.getGenerationContext().getTypes().erasure(mutationObserver.asType());
+
+    if (!iocContext.getOrderedBeans().contains(mirror)) {
+      iocContext.getOrderedBeans().add(mirror);
     }
+  }
+
+  @Override
+  public void generate(ClassBuilder clazz,
+      io.crysknife.nextstep.definition.Definition beanDefinition) {
+
   }
 
   public void generate(ClassBuilder builder, Definition definition) {

@@ -18,6 +18,7 @@ import io.crysknife.generator.IOCGenerator;
 
 import javax.lang.model.element.VariableElement;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -29,7 +30,7 @@ public class InjectionPointDefinition implements Definition {
   private final BeanDefinition parent;
   private final Set<IOCGenerator> decorators = new HashSet<>();
   private IOCGenerator generator;
-  private BeanDefinition implementation;
+  private Optional<BeanDefinition> implementation = Optional.empty();
 
   public InjectionPointDefinition(BeanDefinition parent, VariableElement variableElement) {
     this.variableElement = variableElement;
@@ -56,11 +57,11 @@ public class InjectionPointDefinition implements Definition {
     return decorators;
   }
 
-  public BeanDefinition getImplementation() {
+  public Optional<BeanDefinition> getImplementation() {
     return implementation;
   }
 
   public void setImplementation(BeanDefinition implementation) {
-    this.implementation = implementation;
+    this.implementation = Optional.of(implementation);
   }
 }

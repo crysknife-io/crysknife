@@ -14,36 +14,37 @@
 
 package io.crysknife.generator.info;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.nextstep.BeanProcessor;
+import io.crysknife.nextstep.definition.BeanDefinition;
 
 import javax.tools.JavaFileObject;
-
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
 public class BeanInfoGenerator {
 
+  private final BeanProcessor beanProcessor;
   private IOCContext iocContext;
-
   private AbstractBeanInfoGenerator generator;
 
-  public BeanInfoGenerator(IOCContext iocContext) {
+  public BeanInfoGenerator(IOCContext iocContext, BeanProcessor beanProcessor) {
     this.iocContext = iocContext;
+    this.beanProcessor = beanProcessor;
     if (iocContext.getGenerationContext().isGwt2()) {
       generator = new BeanInfoGWT2GeneratorBuilder(iocContext);
     } else if (iocContext.getGenerationContext().isJre()) {
-      generator = new BeanInfoJREGeneratorBuilder(iocContext);
+      generator = new BeanInfoJREGeneratorBuilder(iocContext, beanProcessor);
     } else {
       generator = new BeanInfoJ2CLGeneratorBuilder(iocContext);
     }
   }
 
   public void generate() {
-    iocContext.getBeans().forEach((k, bean) -> {
+    beanProcessor.getBeans().forEach((k, bean) -> {
       try {
         generate(bean);
       } catch (IOException e) {
@@ -53,7 +54,7 @@ public class BeanInfoGenerator {
   }
 
   private void generate(BeanDefinition bean) throws IOException {
-    if (!bean.getFieldInjectionPoints().isEmpty()) {
+    if (!bean.getFields().isEmpty()) {
       JavaFileObject builderFile = iocContext.getGenerationContext().getProcessingEnvironment()
           .getFiler().createSourceFile(bean.getQualifiedName() + "Info");
       try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {

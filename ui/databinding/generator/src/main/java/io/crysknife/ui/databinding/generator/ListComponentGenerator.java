@@ -25,8 +25,8 @@ import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.Definition;
 import io.crysknife.ui.databinding.client.components.DefaultListComponent;
 import io.crysknife.ui.databinding.client.components.ListComponent;
 
@@ -85,4 +85,5 @@ public class ListComponentGenerator extends BeanIOCGenerator {
   public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
   }
+
 }

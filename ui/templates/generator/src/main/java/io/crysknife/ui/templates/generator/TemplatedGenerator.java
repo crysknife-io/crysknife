@@ -338,6 +338,12 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   @Override
+  public void generate(ClassBuilder clazz,
+      io.crysknife.nextstep.definition.Definition beanDefinition) {
+
+  }
+
+  // @Override
   public void generate(ClassBuilder builder, Definition definition) {
     if (definition instanceof BeanDefinition) {
       beanDefinition = (BeanDefinition) definition;

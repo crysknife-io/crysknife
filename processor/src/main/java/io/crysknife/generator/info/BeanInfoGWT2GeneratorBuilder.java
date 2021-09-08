@@ -16,9 +16,11 @@ package io.crysknife.generator.info;
 
 import java.io.IOException;
 
+import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -38,47 +40,49 @@ public class BeanInfoGWT2GeneratorBuilder extends AbstractBeanInfoGenerator {
     this.bean = bean;
     this.clazz = new StringBuilder();
     initClass();
-    addFields();
+    // addFields();
     return clazz.append(newLine).append("}").toString();
   }
 
   private void initClass() {
-    clazz.append("package ").append(bean.getPackageName()).append(";");
+    String clazzName = MoreTypes.asTypeElement(bean.getType()).getSimpleName().toString();
+    String pkg = Utils.getPackageName(MoreTypes.asTypeElement(bean.getType()));
+
+
+    clazz.append("package ").append(clazzName).append(";");
     clazz.append(newLine);
-    clazz.append("class ").append(bean.getClassName()).append("Info").append(" {");
+    clazz.append("class ").append(pkg).append("Info").append(" {");
   }
 
-  private void addFields() {
-    for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
-      clazz.append(newLine);
-      makeSetter(fieldPoint);
-      clazz.append(newLine);
-      makeGetter(fieldPoint);
-    }
-  }
+  /*
+   * private void addFields() { for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
+   * clazz.append(newLine); makeSetter(fieldPoint); clazz.append(newLine); makeGetter(fieldPoint); }
+   */
 
-  private void makeSetter(FieldPoint fieldPoint) {
-    clazz.append("static native void ").append(fieldPoint.getName()).append("(");
-    clazz.append(bean.getClassName()).append(" ").append(" instance").append(",");
-    clazz.append("Object").append(" ").append(" value").append(")/*-{");
-    clazz.append(newLine);
+  // private void makeSetter(FieldPoint fieldPoint) {
+  // clazz.append("static native void ").append(fieldPoint.getName()).append("(");
+  // clazz.append(bean.getClassName()).append(" ").append(" instance").append(",");
+  // clazz.append("Object").append(" ").append(" value").append(")/*-{");
+  // clazz.append(newLine);
 
-    clazz.append("    ").append("instance.@").append(bean.getQualifiedName()).append("::")
-        .append(fieldPoint.getName()).append("=").append("value;");
+  // clazz.append(" ").append("instance.@").append(bean.getQualifiedName()).append("::")
+  // .append(fieldPoint.getName()).append("=").append("value;");
 
-    clazz.append(newLine).append("}-*/;");
-  }
+  // clazz.append(newLine).append("}-*/;");
+  // }
 
-  private void makeGetter(FieldPoint fieldPoint) {
-    clazz.append("static native ").append(fieldPoint.getType().getQualifiedName().toString())
-        .append(" ").append(fieldPoint.getName()).append("(");
-    clazz.append(bean.getClassName()).append(" ").append(" instance");
-    clazz.append(")/*-{");
-    clazz.append(newLine);
+  // private void makeGetter(FieldPoint fieldPoint) {
+  // clazz.append("static native ").append(fieldPoint.getType().getQualifiedName().toString())
+  // .append(" ").append(fieldPoint.getName()).append("(");
+  // clazz.append(bean.getClassName()).append(" ").append(" instance");
+  // clazz.append(")/*-{");
+  // clazz.append(newLine);
 
-    clazz.append("    ").append("return instance.@").append(bean.getQualifiedName()).append("::")
-        .append(fieldPoint.getName()).append(";");
+  // clazz.append(" ").append("return instance.@").append(bean.getQualifiedName()).append("::")
+  // .append(fieldPoint.getName()).append(";");
 
-    clazz.append(newLine).append("}-*/;");
-  }
+  // clazz.append(newLine).append("}-*/;");
+  // }
+
+
 }

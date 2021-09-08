@@ -75,7 +75,8 @@ public class BeanOracle {
         }
       }
 
-      Optional<BeanDefinition> candidate = asInterfaceOrAbstractClass(point);
+      Optional<BeanDefinition> candidate =
+          asInterfaceOrAbstractClass(point.getVariableElement().asType());
       if (candidate.isPresent()) {
         return candidate.get();
       }
@@ -91,7 +92,11 @@ public class BeanOracle {
     return null;
   }
 
-  private Optional<BeanDefinition> asInterfaceOrAbstractClass(InjectionPointDefinition point) {
+  public Optional<BeanDefinition> guessDefaultImpl(TypeMirror point) {
+    return asInterfaceOrAbstractClass(point);
+  }
+
+  private Optional<BeanDefinition> asInterfaceOrAbstractClass(TypeMirror point) {
     Set<BeanDefinition> subclasses = getSubClasses(point);
 
     Set<BeanDefinition> types = subclasses.stream()
@@ -120,8 +125,7 @@ public class BeanOracle {
           .filter(elm -> MoreTypes.asTypeElement(elm.getType()).getAnnotation(Typed.class) != null)
           .collect(Collectors.toSet());
       if (!maybeTyped.isEmpty()) {
-        TypeMirror mirror =
-            context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
+        TypeMirror mirror = context.getGenerationContext().getTypes().erasure(point);
         for (BeanDefinition typed : maybeTyped) {
           Optional<List<TypeMirror>> annotations = getTypedAnnotationValues(typed.getType());
           if (annotations.isPresent()) {
@@ -146,7 +150,7 @@ public class BeanOracle {
 
   private Optional<BeanDefinition> processQualifiers(InjectionPointDefinition point,
       Set<AnnotationMirror> qualifiers) {
-    Set<BeanDefinition> subclasses = getSubClasses(point);
+    Set<BeanDefinition> subclasses = getSubClasses(point.getVariableElement().asType());
 
     List<String> temp =
         qualifiers.stream().map(a -> a.getAnnotationType().toString()).collect(Collectors.toList());
@@ -159,7 +163,7 @@ public class BeanOracle {
   }
 
   private Optional<BeanDefinition> processName(InjectionPointDefinition point, Named named) {
-    Set<BeanDefinition> subclasses = getSubClasses(point);
+    Set<BeanDefinition> subclasses = getSubClasses(point.getVariableElement().asType());
     return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
         .filter(elm -> (MoreTypes.asTypeElement(elm.getType()).getAnnotation(Named.class) != null
             && MoreTypes.asTypeElement(elm.getType()).getAnnotation(Named.class).value()
@@ -167,12 +171,12 @@ public class BeanOracle {
         .findFirst();
   }
 
-  private Set<BeanDefinition> getSubClasses(InjectionPointDefinition point) {
-    TypeMirror beanTypeMirror =
-        context.getGenerationContext().getTypes().erasure(point.getVariableElement().asType());
+  private Set<BeanDefinition> getSubClasses(TypeMirror point) {
+    TypeMirror beanTypeMirror = context.getGenerationContext().getTypes().erasure(point);
     BeanDefinition type = beans.get(beanTypeMirror);
     Set<BeanDefinition> subclasses = new HashSet<>(type.getSubclasses());
     getAllSubtypes(type, subclasses);
+    type.getSubclasses().addAll(subclasses);
     return subclasses;
   }
 

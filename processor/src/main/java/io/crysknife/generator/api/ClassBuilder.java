@@ -29,8 +29,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
@@ -50,7 +49,8 @@ public class ClassBuilder {
   }
 
   public void build() {
-    beanDefinition.generate(this);
+    beanDefinition.getIocGenerator()
+        .ifPresent(iocGenerator -> iocGenerator.generate(this, beanDefinition));
   }
 
   public String toSourceCode() {

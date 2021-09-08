@@ -62,7 +62,7 @@ public class IOCContext {
 
   private final GenerationContext generationContext;
 
-  private final List<TypeElement> orderedBeans = new LinkedList<>();
+  private final List<TypeMirror> orderedBeans = new LinkedList<>();
 
   private final List<String> blacklist = new ArrayList<>();
 
@@ -128,18 +128,14 @@ public class IOCContext {
             && qualifiers.get(fieldPoint.getType()).containsKey(fieldPoint.getNamed()))
           return qualifiers.get(fieldPoint.getType()).get(fieldPoint.getNamed());
       }
-      if (getQualifiers().containsKey(fieldPoint.getType())) {
-        GenerationUtils generationUtils = new GenerationUtils(this);
-        String isQualifier = generationUtils.isQualifier(fieldPoint);
-        if (isQualifier != null) {
-          return getQualifiers().get(fieldPoint.getType()).get(isQualifier);
-        }
-        BeanDefinition defaultBeanDefinition =
-            getQualifiers().get(fieldPoint.getType()).get(Default.class.getCanonicalName());
-        if (defaultBeanDefinition != null) {
-          return defaultBeanDefinition;
-        }
-      }
+      /*
+       * if (getQualifiers().containsKey(fieldPoint.getType())) { GenerationUtils generationUtils =
+       * new GenerationUtils(this); String isQualifier = generationUtils.isQualifier(fieldPoint); if
+       * (isQualifier != null) { return getQualifiers().get(fieldPoint.getType()).get(isQualifier);
+       * } BeanDefinition defaultBeanDefinition =
+       * getQualifiers().get(fieldPoint.getType()).get(Default.class.getCanonicalName()); if
+       * (defaultBeanDefinition != null) { return defaultBeanDefinition; } }
+       */
 
     }
     return getBean(fieldPoint.getType());
@@ -156,7 +152,7 @@ public class IOCContext {
     return qualifiers;
   }
 
-  public List<TypeElement> getOrderedBeans() {
+  public List<TypeMirror> getOrderedBeans() {
     return orderedBeans;
   }
 

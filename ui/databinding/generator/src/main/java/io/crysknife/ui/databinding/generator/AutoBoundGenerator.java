@@ -53,6 +53,11 @@ public class AutoBoundGenerator extends IOCGenerator {
   }
 
   @Override
+  public void generate(ClassBuilder clazz,
+      io.crysknife.nextstep.definition.Definition beanDefinition) {
+
+  }
+
   public void generate(ClassBuilder classBuilder, Definition definition) {
     if (definition instanceof BeanDefinition) {
       BeanDefinition bean = (BeanDefinition) definition;

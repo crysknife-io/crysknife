@@ -37,6 +37,8 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.Definition;
 import io.crysknife.ui.databinding.client.BindableProxy;
 import io.crysknife.ui.databinding.client.BindableProxyAgent;
 import io.crysknife.ui.databinding.client.BindableProxyFactory;
@@ -49,8 +51,6 @@ import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
 
 /**
