@@ -22,14 +22,18 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.util.GenerationUtils;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
 import io.crysknife.util.Utils;
 
 /**

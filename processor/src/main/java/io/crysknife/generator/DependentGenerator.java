@@ -20,7 +20,7 @@ import com.github.javaparser.ast.Modifier;
 import io.crysknife.annotation.Generator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.util.Utils;
 
 /**

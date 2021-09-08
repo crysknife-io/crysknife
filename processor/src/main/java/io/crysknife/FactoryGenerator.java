@@ -16,14 +16,22 @@ package io.crysknife;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
+import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.Application;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.nextstep.BeanProcessor;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.oracle.BeanOracle;
+
+import static javax.lang.model.element.Modifier.ABSTRACT;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/20/19
@@ -31,17 +39,54 @@ import io.crysknife.generator.definition.BeanDefinition;
 public class FactoryGenerator {
 
   private final IOCContext iocContext;
+  private final BeanProcessor beanProcessor;
+  private final BeanOracle oracle;
 
-  FactoryGenerator(IOCContext iocContext) {
+
+  FactoryGenerator(IOCContext iocContext, BeanProcessor beanProcessor) {
     this.iocContext = iocContext;
+    this.beanProcessor = beanProcessor;
+    this.oracle = new BeanOracle(iocContext, beanProcessor.getBeans());
   }
 
   void generate() {
-    Set<Map.Entry<TypeElement, BeanDefinition>> beans =
-        new HashSet<>(iocContext.getBeans().entrySet());
+    Set<TypeMirror> processed = new HashSet<>();
 
-    for (Map.Entry<TypeElement, BeanDefinition> entry : beans) {
-      new ClassBuilder(entry.getValue()).build();
-    }
+    iocContext.getOrderedBeans().stream()
+        // .filter(field -> (MoreTypes.asTypeElement(field).getAnnotation(Application.class) ==
+        // null))
+        .forEach(bean -> {
+          TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
+          System.out.println("TOP " + bean);
+          if (!processed.contains(bean)) {
+            processed.add(bean);
+            io.crysknife.nextstep.definition.BeanDefinition beanDefinition =
+                beanProcessor.getBeans().get(erased);
+            if (isSuitableBeanDefinition(beanDefinition)) {
+              new ClassBuilder(beanDefinition).build();
+            } else {
+              Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
+              maybe.ifPresent(candidate -> {
+                new ClassBuilder(candidate).build();
+              });
+            }
+          }
+        });
+
+
+    /*
+     * Set<Map.Entry<TypeElement, BeanDefinition>> beans = new
+     * HashSet<>(iocContext.getBeans().entrySet());
+     * 
+     * for (Map.Entry<TypeElement, BeanDefinition> entry : beans) {
+     * System.out.println("FactoryGenerator " + entry.getKey()); new
+     * ClassBuilder(entry.getValue()).build(); }
+     */
   }
+
+  private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
+    return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
+        && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT);
+  }
+
 }

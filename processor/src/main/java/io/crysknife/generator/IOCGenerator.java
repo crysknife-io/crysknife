@@ -14,9 +14,15 @@
 
 package io.crysknife.generator;
 
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
+import io.crysknife.nextstep.definition.Definition;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
 import io.crysknife.util.GenerationUtils;
 
 /**
@@ -36,6 +42,16 @@ public abstract class IOCGenerator {
   public abstract void register();
 
   public abstract void generate(ClassBuilder clazz, Definition beanDefinition);
+
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectionPointDefinition fieldPoint) {
+    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
+            .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),
+            "class"));
+    generationUtils.maybeAddQualifiers(iocContext, callForProducer, fieldPoint);
+    return callForProducer;
+  }
 
   public void before() {
 

@@ -80,18 +80,25 @@ public class ApplicationProcessor extends AbstractProcessor {
     processComponentScanAnnotation();
     initAndRegisterGenerators();
 
-    new BeanProcessor(iocContext, new PrintWriterTreeLogger()).process();
+    BeanProcessor beanProcessor =
+        new BeanProcessor(iocContext, new PrintWriterTreeLogger()).process();
+
+    beanProcessor.getBeans().keySet().forEach(key -> {
+      System.out.println("key " + key);
+    });
 
 
-    processQualifiersScan();
-    processComponentScan();
-    processInjectionScan();
-    processProducersScan();
+    // processQualifiersScan();
+    // processComponentScan();
+    // processInjectionScan();
+    // processProducersScan();
     fireIOCGeneratorBefore();
-    processGraph();
-    new FactoryGenerator(iocContext).generate();
-    new BeanInfoGenerator(iocContext).generate();
-    new BeanManagerGenerator(iocContext, context).generate();
+
+
+    processGraph(beanProcessor);
+    new FactoryGenerator(iocContext, beanProcessor).generate();
+    new BeanInfoGenerator(iocContext, beanProcessor).generate();
+    new BeanManagerGenerator(iocContext, beanProcessor).generate();
     fireIOCGeneratorAfter();
 
     return false;
@@ -166,8 +173,8 @@ public class ApplicationProcessor extends AbstractProcessor {
     iocContext.getGenerators().forEach((meta, generator) -> generator.before());
   }
 
-  private void processGraph() {
-    new Graph(iocContext).process(application);
+  private void processGraph(BeanProcessor beanProcessor) {
+    new Graph(iocContext, beanProcessor.getBeans()).process(application);
   }
 
   private void fireIOCGeneratorAfter() {

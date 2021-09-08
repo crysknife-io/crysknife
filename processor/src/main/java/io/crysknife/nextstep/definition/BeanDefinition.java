@@ -16,6 +16,7 @@ package io.crysknife.nextstep.definition;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.IOCGenerator;
+import io.crysknife.util.Utils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
@@ -81,6 +82,11 @@ public class BeanDefinition implements Definition {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -91,8 +97,15 @@ public class BeanDefinition implements Definition {
         .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
+  public String getPackageName() {
+    return Utils.getPackageName(MoreTypes.asTypeElement(type));
+  }
+
+  public String getClassFactoryName() {
+    return Utils.getQualifiedFactoryName(type);
+  }
+
+  public String getQualifiedName() {
+    return MoreTypes.asTypeElement(type).getQualifiedName().toString();
   }
 }

@@ -23,11 +23,11 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
@@ -39,9 +39,10 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.Definition;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Instance;
@@ -73,8 +74,11 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   @Override
   public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
-    clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
-    clazz.getClassCompilationUnit().addImport(beanDefinition.getQualifiedName());
+    String pkg = Utils.getPackageName(MoreTypes.asTypeElement(beanDefinition.getType()));
+
+    String classFactoryName = Utils.getQualifiedFactoryName(beanDefinition.getType());
+
+    clazz.getClassCompilationUnit().setPackageDeclaration(pkg);
 
     if (!iocContext.getGenerationContext().isGwt2()) {
       clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
@@ -86,38 +90,48 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
       clazz.getClassCompilationUnit().addImport(BeanManager.class);
     }
 
-    clazz.setClassName(beanDefinition.getType().getSimpleName().toString() + BOOTSTRAP_EXTENSION);
+    clazz.setClassName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString()
+        + BOOTSTRAP_EXTENSION);
 
-    clazz.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
+    clazz.addField(MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName().toString(),
+        "instance", Modifier.Keyword.PRIVATE);
 
-    // clazz.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager")
     clazz.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager",
         new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get"),
         Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
 
-    beanDefinition.getFieldInjectionPoints().forEach(f -> {
-      generateFactoryFieldDeclaration(clazz, f);
+    beanDefinition.getFields().forEach(field -> {
+      generateFactoryFieldDeclaration(clazz, field);
     });
 
   }
 
-  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, FieldPoint fieldPoint) {
+  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
+      InjectionPointDefinition fieldPoint) {
 
-    String varName = "_field_" + fieldPoint.getName();
+    String varName = "_field_" + fieldPoint.getVariableElement().getSimpleName().toString();
     ClassOrInterfaceType supplier =
         new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
 
     ClassOrInterfaceType type = new ClassOrInterfaceType();
     type.setName(Instance.class.getSimpleName());
-    type.setTypeArguments(
-        new ClassOrInterfaceType().setName(fieldPoint.getType().getQualifiedName().toString()));
+    type.setTypeArguments(new ClassOrInterfaceType().setName(MoreTypes
+        .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()));
     supplier.setTypeArguments(type);
-    Expression call = iocContext.getBeans().get(fieldPoint.getType()).generateBeanCall(iocContext,
-        classBuilder, fieldPoint);
+
+    Expression beanCall = null;
+
+    if (fieldPoint.getImplementation().isPresent()
+        && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
+      beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
+          .generateBeanLookupCall(classBuilder, fieldPoint);
+    } else if (fieldPoint.getGenerator() != null) {
+      beanCall = fieldPoint.getGenerator().generateBeanLookupCall(classBuilder, fieldPoint);
+    }
 
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(call));
+    lambda.setBody(new ExpressionStmt(beanCall));
 
     classBuilder.addFieldWithInitializer(supplier, varName, lambda, Modifier.Keyword.PRIVATE);
 
@@ -143,11 +157,11 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
           .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
               .setValue(new MethodCallExpr(new NameExpr("interceptor"), "getProxy")));
     }
-    if (!iocContext.getGenerationContext().isJre()) {
-      beanDefinition.getFieldInjectionPoints()
-          .forEach(fieldPoint -> classBuilder.getGetMethodDeclaration().getBody().get()
-              .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint)));
-    }
+    /*
+     * if (!iocContext.getGenerationContext().isJre()) { beanDefinition.getFieldInjectionPoints()
+     * .forEach(fieldPoint -> classBuilder.getGetMethodDeclaration().getBody().get()
+     * .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint))); }
+     */
   }
 
   @Override
@@ -156,12 +170,14 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     classBuilder.addConstructorDeclaration();
     Parameter arg = new Parameter();
     arg.setName("application");
-    arg.setType(beanDefinition.getType().getSimpleName().toString());
+    arg.setType(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString());
 
     classBuilder.addParametersToConstructor(arg);
 
-    beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> iocContext.getBeans()
-        .get(fieldPoint.getType()).generateBeanCall(iocContext, classBuilder, fieldPoint));
+    /*
+     * beanDefinition.getFieldInjectionPoints().forEach(fieldPoint -> iocContext.getBeans()
+     * .get(fieldPoint.getType()).generateBeanCall(iocContext, classBuilder, fieldPoint));
+     */
 
     AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance"))
         .setValue(new NameExpr("application"));
@@ -174,24 +190,25 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   }
 
-  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-    ClassOrInterfaceType type = new ClassOrInterfaceType();
-    type.setName(Instance.class.getCanonicalName());
-    type.setTypeArguments(new ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
-
-    classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE);
-  }
+  /*
+   * protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder, BeanDefinition
+   * beanDefinition) { String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
+   * ClassOrInterfaceType type = new ClassOrInterfaceType();
+   * type.setName(Instance.class.getCanonicalName()); type.setTypeArguments(new
+   * ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
+   * 
+   * classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE); }
+   */
 
   @Override
   public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
     try {
-      String fileName = Utils.getQualifiedName(beanDefinition.getType()) + BOOTSTRAP_EXTENSION;
+      String fileName = Utils.getQualifiedName(MoreTypes.asElement(beanDefinition.getType()))
+          + BOOTSTRAP_EXTENSION;
       String source = clazz.toSourceCode();
       build(fileName, source, context);
     } catch (IOException e1) {
-      throw new GenerationException(e1);
+      // throw new GenerationException(e1);
     }
   }
 }

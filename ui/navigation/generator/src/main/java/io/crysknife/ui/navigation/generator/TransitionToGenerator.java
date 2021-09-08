@@ -32,8 +32,8 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.Definition;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.TransitionTo;
 
@@ -56,7 +56,7 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, Definition definition) {
+  public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
   }
 

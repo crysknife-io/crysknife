@@ -31,7 +31,7 @@ public class ProducerDefinition extends BeanDefinition {
 
   private final TypeElement producer;
 
-  private ProducerDefinition(ExecutableElement method, TypeElement producer) {
+  public ProducerDefinition(ExecutableElement method, TypeElement producer) {
     super(MoreElements.asType(MoreTypes.asElement(method.getReturnType())));
     this.method = method;
     this.producer = producer;

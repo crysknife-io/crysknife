@@ -101,11 +101,12 @@ public class BeanDefinition extends Definition {
   }
 
   public void generateDecorators(ClassBuilder builder) {
-    super.generateDecorators(builder);
-
-    executableDefinitions.forEach((gen, defs) -> defs.forEach(def -> {
-      gen.generate(builder, def);
-    }));
+    /*
+     * super.generateDecorators(builder);
+     * 
+     * executableDefinitions.forEach((gen, defs) -> defs.forEach(def -> { gen.generate(builder,
+     * def); }));
+     */
   }
 
   @Override

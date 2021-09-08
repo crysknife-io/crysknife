@@ -30,13 +30,12 @@ import io.crysknife.client.BeanManager;
 import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.logger.PrintWriterTreeLogger;
+import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
-import io.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
@@ -61,17 +60,17 @@ public class NavigationGenerator extends SingletonGenerator {
             .stream().filter(elm -> elm.getKind().equals(ElementKind.CLASS))
             .map(elm -> MoreElements.asType(elm)).collect(Collectors.toSet());
 
-    TypeElement type = iocContext.getGenerationContext().getElements()
-        .getTypeElement(Navigation.class.getCanonicalName());
-    BeanDefinition navigation = iocContext.getBeanDefinitionOrCreateAndReturn(type);
-
-    pages.forEach(elm -> {
-      BeanDefinition page = iocContext.getBeanDefinitionOrCreateAndReturn(elm);
-      navigation.getDependsOn().add(page);
-    });
-
-    new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
-        iocContext.getGenerationContext());
+    /*
+     * TypeElement type = iocContext.getGenerationContext().getElements()
+     * .getTypeElement(Navigation.class.getCanonicalName()); BeanDefinition navigation =
+     * iocContext.getBeanDefinitionOrCreateAndReturn(type);
+     * 
+     * pages.forEach(elm -> { BeanDefinition page =
+     * iocContext.getBeanDefinitionOrCreateAndReturn(elm); navigation.getDependsOn().add(page); });
+     * 
+     * new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
+     * iocContext.getGenerationContext());
+     */
   }
 
   @Override

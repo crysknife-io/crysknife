@@ -78,8 +78,8 @@ import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.Definition;
 
 import javax.inject.Inject;
 
@@ -155,7 +155,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder classBuilder, Definition definition) {
+  public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
   }
 

@@ -53,6 +53,12 @@ public class ObservesGenerator extends IOCGenerator {
   }
 
   @Override
+  public void generate(ClassBuilder clazz,
+      io.crysknife.nextstep.definition.Definition beanDefinition) {
+
+  }
+
+  // @Override
   public void generate(ClassBuilder classBuilder, Definition definition) {
     if (definition instanceof ExecutableDefinition) {
       ExecutableDefinition methodDefinition = (ExecutableDefinition) definition;

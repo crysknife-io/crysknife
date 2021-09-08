@@ -40,9 +40,9 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.Definition;
 import io.crysknife.util.Utils;
 
 /**
@@ -60,11 +60,11 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
     iocContext.register(Inject.class, Event.class, WiringElementType.FIELD_TYPE, this);
     iocContext.getBlacklist().add(Event.class.getCanonicalName());
 
-    TypeElement type = iocContext.getGenerationContext().getElements()
-        .getTypeElement(Event.class.getCanonicalName());
-    BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
-    beanDefinition.setGenerator(this);
-    iocContext.getBeans().put(type, beanDefinition);
+    // TypeElement type = iocContext.getGenerationContext().getElements()
+    // .getTypeElement(Event.class.getCanonicalName());
+    // BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
+    // beanDefinition.setGenerator(this);
+    // iocContext.getBeans().put(type, beanDefinition);
   }
 
   @Override

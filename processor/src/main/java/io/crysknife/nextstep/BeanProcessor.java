@@ -22,7 +22,6 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.nextstep.definition.BeanDefinition;
@@ -45,7 +44,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -71,10 +69,8 @@ public class BeanProcessor {
   private final MethodDefinitionFactory methodDefinitionFactory;
   private final Set<String> scoped;
   private final BeanOracle oracle;
-
-  private Map<String, BeanDefinition> holder = new HashMap<>();
-  private Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
-  private Set<TypeMirror> buildin = new HashSet<>();
+  private final Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
+  private final Set<TypeMirror> buildin = new HashSet<>();
 
   public BeanProcessor(IOCContext iocContext, PrintWriterTreeLogger logger) {
     this.iocContext = iocContext;
@@ -95,7 +91,7 @@ public class BeanProcessor {
         .map(v -> v.getKey().annotation).collect(Collectors.toSet());
   }
 
-  public void process() {
+  public BeanProcessor process() {
     logger.log(TreeLogger.INFO, "start processing");
     findInjectionPoints();
     findProduces();
@@ -119,10 +115,10 @@ public class BeanProcessor {
           System.out
               .println("          F generator " + field.getGenerator().getClass().getSimpleName());
         }
-        if (field.getImplementation() != null) {
+        field.getImplementation().ifPresent(impl -> {
           System.out.println("          F generator bean "
-              + field.getImplementation().getIocGenerator().get().getClass().getSimpleName());
-        }
+              + impl.getIocGenerator().get().getClass().getSimpleName());
+        });
       });
       v.getConstructorParams().forEach(field -> {
         System.out.println("          C " + field.getVariableElement());
@@ -150,7 +146,7 @@ public class BeanProcessor {
 
     logger.log(TreeLogger.INFO, "fields registered " + count);
 
-
+    return this;
   }
 
   private void processMethodParamDecorators() {
@@ -362,6 +358,10 @@ public class BeanProcessor {
       return Optional.of(generators.iterator().next());
     }
     return Optional.empty();
+  }
+
+  public Map<TypeMirror, BeanDefinition> getBeans() {
+    return beans;
   }
 
 }

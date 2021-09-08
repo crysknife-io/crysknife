@@ -25,8 +25,8 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.Definition;
 import org.gwtproject.dom.client.AnchorElement;
 import org.gwtproject.dom.client.AreaElement;
 import org.gwtproject.dom.client.AudioElement;
@@ -443,6 +443,11 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
+  public void generate(ClassBuilder clazz, Definition beanDefinition) {
+
+  }
+
+  @Override
   public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
     classBuilder.getClassCompilationUnit().addImport(Provider.class);
@@ -457,11 +462,6 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
           + " " + e.getMessage());
     }
     return HTML_ELEMENTS.get(clazz).apply(fieldPoint);
-  }
-
-  @Override
-  public void generate(ClassBuilder classBuilder, Definition definition) {
-
   }
 
 }

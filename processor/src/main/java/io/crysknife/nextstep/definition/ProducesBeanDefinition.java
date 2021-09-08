@@ -27,4 +27,8 @@ public class ProducesBeanDefinition extends BeanDefinition {
     super(method.getReturnType());
     this.method = method;
   }
+
+  public ExecutableElement getMethod() {
+    return method;
+  }
 }

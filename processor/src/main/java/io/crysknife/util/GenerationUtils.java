@@ -37,6 +37,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
 import jsinterop.base.Js;
 
 import javax.inject.Named;
@@ -76,20 +77,22 @@ public class GenerationUtils {
                 .addArgument("instance"));
   }
 
-  public Expression beanManagerLookupBeanCall(FieldPoint fieldPoint) {
+  public Expression beanManagerLookupBeanCall(InjectionPointDefinition fieldPoint) {
     MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(
-            new NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
+        .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
+            .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),
+            "class"));
 
     maybeAddQualifiers(context, callForProducer, fieldPoint);
     return callForProducer;
   }
 
-  public void maybeAddQualifiers(IOCContext context, MethodCallExpr call, FieldPoint field) {
+  public void maybeAddQualifiers(IOCContext context, MethodCallExpr call,
+      InjectionPointDefinition field) {
 
     String annotationName = null;
 
-    if (field.isNamed()) {
+    if (field.getVariableElement().getAnnotation(Named.class) != null) {
       annotationName = Named.class.getCanonicalName();
     } else if (isQualifier(field) != null) {
       annotationName = isQualifier(field);
@@ -109,13 +112,13 @@ public class GenerationUtils {
           .addAndGetStatement(new ReturnStmt(new NameExpr(annotationName + ".class")));
       anonymousClassBody.add(annotationType);
 
-      if (field.isNamed()) {
+      if (field.getVariableElement().getAnnotation(Named.class) != null) {
         MethodDeclaration value = new MethodDeclaration();
         value.setModifiers(Modifier.Keyword.PUBLIC);
         value.setName("value");
         value.setType(new ClassOrInterfaceType().setName("String"));
-        value.getBody().get()
-            .addAndGetStatement(new ReturnStmt(new StringLiteralExpr(field.getNamed())));
+        value.getBody().get().addAndGetStatement(new ReturnStmt(
+            new StringLiteralExpr(field.getVariableElement().getAnnotation(Named.class).value())));
         anonymousClassBody.add(value);
       }
 
@@ -128,8 +131,8 @@ public class GenerationUtils {
   }
 
 
-  public String isQualifier(FieldPoint field) {
-    for (AnnotationMirror ann : field.getField().getAnnotationMirrors()) {
+  public String isQualifier(InjectionPointDefinition field) {
+    for (AnnotationMirror ann : field.getVariableElement().getAnnotationMirrors()) {
       for (AnnotationMirror e : context.getGenerationContext().getProcessingEnvironment()
           .getElementUtils()
           .getAllAnnotationMirrors(MoreTypes.asElement(ann.getAnnotationType()))) {

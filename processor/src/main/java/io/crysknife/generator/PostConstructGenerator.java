@@ -40,6 +40,12 @@ public class PostConstructGenerator extends IOCGenerator {
     iocContext.register(PostConstruct.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
+  @Override
+  public void generate(ClassBuilder clazz,
+      io.crysknife.nextstep.definition.Definition beanDefinition) {
+
+  }
+
   public void generate(ClassBuilder builder, Definition definition) {
     if (definition instanceof ExecutableDefinition) {
       ExecutableDefinition postConstract = (ExecutableDefinition) definition;

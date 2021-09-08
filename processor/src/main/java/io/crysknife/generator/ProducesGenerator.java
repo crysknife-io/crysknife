@@ -14,15 +14,6 @@
 
 package io.crysknife.generator;
 
-import java.util.function.Supplier;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -41,15 +32,23 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.definition.ProducerDefinition;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.util.Utils;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.ProducesBeanDefinition;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import java.util.function.Supplier;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/4/19
@@ -68,15 +67,15 @@ public class ProducesGenerator extends ScopedBeanGenerator {
     iocContext.register(Produces.class, WiringElementType.PRODUCER_ELEMENT, this);
   }
 
-  @Override
   public void generateDependantFieldDeclaration(ClassBuilder builder, BeanDefinition definition) {
-    if (definition instanceof ProducerDefinition) {
-      ProducerDefinition producesDefinition = (ProducerDefinition) definition;
+    if (definition instanceof ProducesBeanDefinition) {
+      ProducesBeanDefinition producesDefinition = (ProducesBeanDefinition) definition;
 
       builder.getClassCompilationUnit().addImport(Instance.class);
       builder.getClassCompilationUnit().addImport(Supplier.class);
       builder.getClassCompilationUnit()
-          .addImport(producesDefinition.getInstance().getQualifiedName().toString());
+          .addImport(MoreElements.asType(producesDefinition.getMethod().getEnclosingElement())
+              .getQualifiedName().toString());
       builder.getClassCompilationUnit()
           .addImport(producesDefinition.getMethod().getReturnType().toString());
 
@@ -92,7 +91,8 @@ public class ProducesGenerator extends ScopedBeanGenerator {
           new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "beanManager"))
               .setValue(new NameExpr("beanManager")));
 
-      TypeElement instance = producesDefinition.getInstance();
+      TypeElement instance =
+          MoreElements.asType(producesDefinition.getMethod().getEnclosingElement());
 
       Expression call = getBeanManagerCallExpr(instance);
 
@@ -122,8 +122,8 @@ public class ProducesGenerator extends ScopedBeanGenerator {
 
   @Override
   public void generateInstanceGetMethodReturn(ClassBuilder builder, BeanDefinition definition) {
-    if (definition instanceof ProducerDefinition) {
-      ExecutableElement method = ((ProducerDefinition) definition).getMethod();
+    if (definition instanceof ProducesBeanDefinition) {
+      ExecutableElement method = ((ProducesBeanDefinition) definition).getMethod();
       if (isSingleton(method)) {
         builder.addField(MoreTypes.asTypeElement(method.getReturnType()).getSimpleName().toString(),
             "holder", Modifier.Keyword.PRIVATE);
@@ -134,7 +134,7 @@ public class ProducesGenerator extends ScopedBeanGenerator {
 
         ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(
             new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "holder"))
-                .setValue(getMethodCallExpr((ProducerDefinition) definition))));
+                .setValue(getMethodCallExpr((ProducesBeanDefinition) definition))));
 
         builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(ifStmt);
 
@@ -142,7 +142,7 @@ public class ProducesGenerator extends ScopedBeanGenerator {
             .addAndGetStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "holder")));
       } else {
         builder.getGetMethodDeclaration().getBody().ifPresent(body -> body.addAndGetStatement(
-            new ReturnStmt(getMethodCallExpr((ProducerDefinition) definition))));
+            new ReturnStmt(getMethodCallExpr((ProducesBeanDefinition) definition))));
       }
     }
   }
@@ -152,9 +152,10 @@ public class ProducesGenerator extends ScopedBeanGenerator {
         || method.getAnnotation(Singleton.class) != null;
   }
 
-  private MethodCallExpr getMethodCallExpr(ProducerDefinition definition) {
+  private MethodCallExpr getMethodCallExpr(ProducesBeanDefinition definition) {
     CastExpr onCast = new CastExpr(
-        new ClassOrInterfaceType().setName(definition.getInstance().getSimpleName().toString()),
+        new ClassOrInterfaceType()
+            .setName(definition.getMethod().getEnclosingElement().getSimpleName().toString()),
         new MethodCallExpr(
             new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), "producer"), "get"), "get"));
 

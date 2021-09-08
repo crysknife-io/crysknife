@@ -17,7 +17,6 @@ package io.crysknife.generator.info;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -32,26 +31,27 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ForEachStmt;
-import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
 import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.nextstep.BeanProcessor;
+import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.InjectionPointDefinition;
 import io.crysknife.util.GenerationUtils;
+import io.crysknife.util.Utils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import javax.enterprise.inject.Instance;
 import java.lang.reflect.Field;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -59,13 +59,15 @@ import java.util.function.Supplier;
  */
 public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
+  private final BeanProcessor beanProcessor;
   private BeanDefinition bean;
   private ClassBuilder classBuilder;
   private GenerationUtils generationUtils;
 
-  BeanInfoJREGeneratorBuilder(IOCContext iocContext) {
+  BeanInfoJREGeneratorBuilder(IOCContext iocContext, BeanProcessor beanProcessor) {
     super(iocContext);
     this.generationUtils = new GenerationUtils(iocContext);
+    this.beanProcessor = beanProcessor;
   }
 
   @Override
@@ -80,8 +82,11 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
   }
 
   private void initClass() {
-    classBuilder.setClassName(bean.getClassName() + "Info");
-    classBuilder.getClassCompilationUnit().setPackageDeclaration(bean.getPackageName());
+
+    classBuilder
+        .setClassName(MoreTypes.asTypeElement(bean.getType()).getSimpleName().toString() + "Info");
+    classBuilder.getClassCompilationUnit()
+        .setPackageDeclaration(Utils.getPackageName(MoreTypes.asTypeElement(bean.getType())));
     classBuilder.getClassDeclaration().getAnnotations()
         .add(new NormalAnnotationExpr().setName(new Name("Aspect")));
     classBuilder.getClassCompilationUnit().addImport("org.aspectj.lang.JoinPoint");
@@ -100,10 +105,11 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
   }
 
   private void addFields() {
-    for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
+
+    for (InjectionPointDefinition fieldPoint : bean.getFields()) {
       String methodName =
-          fieldPoint.getField().getEnclosingElement().toString().replaceAll("\\.", "_") + "_"
-              + fieldPoint.getName();
+          fieldPoint.getVariableElement().getEnclosingElement().toString().replaceAll("\\.", "_")
+              + "_" + fieldPoint.getVariableElement().getSimpleName();
       boolean isLocal = isLocal(bean, fieldPoint);
 
       MethodDeclaration methodDeclaration =
@@ -118,9 +124,16 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
           .add(new MemberValuePair().setName("value").setValue(getAnnotationValue(fieldPoint)));
       methodDeclaration.addAnnotation(annotationExpr);
 
-      Expression beanCall = new MethodCallExpr(
-          iocContext.getBean(fieldPoint).generateBeanCall(iocContext, classBuilder, fieldPoint),
-          "get");
+      Expression _beanCall = null;
+      if (fieldPoint.getImplementation().isPresent()
+          && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
+        _beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
+            .generateBeanLookupCall(classBuilder, fieldPoint);
+      } else if (fieldPoint.getGenerator() != null) {
+        _beanCall = fieldPoint.getGenerator().generateBeanLookupCall(classBuilder, fieldPoint);
+      }
+
+      Expression beanCall = new MethodCallExpr(_beanCall, "get");
 
       ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
           .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
@@ -131,7 +144,8 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
       blockStmt.addAndGetStatement(new AssignExpr()
           .setTarget(new VariableDeclarationExpr(
               new ClassOrInterfaceType().setName(String.class.getSimpleName()), "fieldName"))
-          .setValue(new StringLiteralExpr(fieldPoint.getName())));
+          .setValue(
+              new StringLiteralExpr(fieldPoint.getVariableElement().getSimpleName().toString())));
 
       blockStmt.addAndGetStatement(new AssignExpr()
           .setTarget(new VariableDeclarationExpr(
@@ -163,14 +177,16 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     }
   }
 
-  private boolean isLocal(BeanDefinition bean, FieldPoint fieldPoint) {
-    return bean.getType().equals(MoreElements.asType(fieldPoint.getField().getEnclosingElement()));
+  private boolean isLocal(BeanDefinition bean, InjectionPointDefinition fieldPoint) {
+    return bean.getType()
+        .equals(MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()));
   }
 
-  private StringLiteralExpr getAnnotationValue(FieldPoint fieldPoint) {
+  private StringLiteralExpr getAnnotationValue(InjectionPointDefinition fieldPoint) {
     StringBuffer sb = new StringBuffer();
-    sb.append("get(").append("*").append(" ").append(fieldPoint.getEnclosingElement()).append(".")
-        .append(fieldPoint.getName()).append(")");
+    sb.append("get(").append("*").append(" ")
+        .append(fieldPoint.getVariableElement().getEnclosingElement()).append(".")
+        .append(fieldPoint.getVariableElement().getSimpleName()).append(")");
     return new StringLiteralExpr(sb.toString());
   }
 

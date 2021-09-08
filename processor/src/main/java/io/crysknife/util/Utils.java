@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.enterprise.inject.Default;
 import javax.inject.Qualifier;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -43,6 +44,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.context.IOCContext;
 import jsinterop.annotations.JsProperty;
 import io.crysknife.exception.GenerationException;
@@ -54,6 +56,10 @@ public class Utils {
 
   private Utils() {
 
+  }
+
+  public static String getQualifiedFactoryName(TypeMirror bean) {
+    return getQualifiedFactoryName(MoreTypes.asTypeElement(bean));
   }
 
   public static String getQualifiedFactoryName(TypeElement bean) {
@@ -68,6 +74,10 @@ public class Utils {
     return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
         : (bean.getEnclosingElement().getSimpleName() + "_")) + bean.getSimpleName().toString()
         + "_Factory";
+  }
+
+  public static String getSimpleClassName(TypeMirror bean) {
+    return getSimpleClassName(MoreTypes.asTypeElement(bean));
   }
 
   public static String getSimpleClassName(TypeElement bean) {
@@ -133,11 +143,14 @@ public class Utils {
       if (isAnnotationMirrorOfType(annotationMirror, javax.inject.Named.class.getCanonicalName())) {
         continue;
       }
+      if (isAnnotationMirrorOfType(annotationMirror, Default.class.getCanonicalName())) {
+        continue;
+      }
       for (AnnotationMirror allAnnotationMirror : context.getGenerationContext().getElements()
           .getAllAnnotationMirrors(annotationMirror.getAnnotationType().asElement())) {
         if (isAnnotationMirrorOfType(allAnnotationMirror,
             javax.inject.Qualifier.class.getCanonicalName())) {
-          result.add(allAnnotationMirror);
+          result.add(annotationMirror);
         }
       }
     }
