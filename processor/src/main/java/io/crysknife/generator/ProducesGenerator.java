@@ -38,7 +38,6 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.ProducerDefinition;
 import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.nextstep.definition.ProducesBeanDefinition;
 
@@ -63,10 +62,12 @@ public class ProducesGenerator extends ScopedBeanGenerator {
   }
 
   @Override
+
   public void register() {
-    iocContext.register(Produces.class, WiringElementType.PRODUCER_ELEMENT, this);
+    iocContext.register(Produces.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
+  @Override
   public void generateDependantFieldDeclaration(ClassBuilder builder, BeanDefinition definition) {
     if (definition instanceof ProducesBeanDefinition) {
       ProducesBeanDefinition producesDefinition = (ProducesBeanDefinition) definition;
@@ -120,46 +121,4 @@ public class ProducesGenerator extends ScopedBeanGenerator {
     return lambda;
   }
 
-  @Override
-  public void generateInstanceGetMethodReturn(ClassBuilder builder, BeanDefinition definition) {
-    if (definition instanceof ProducesBeanDefinition) {
-      ExecutableElement method = ((ProducesBeanDefinition) definition).getMethod();
-      if (isSingleton(method)) {
-        builder.addField(MoreTypes.asTypeElement(method.getReturnType()).getSimpleName().toString(),
-            "holder", Modifier.Keyword.PRIVATE);
-
-        IfStmt ifStmt =
-            new IfStmt().setCondition(new BinaryExpr(new FieldAccessExpr(new ThisExpr(), "holder"),
-                new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-
-        ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(
-            new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "holder"))
-                .setValue(getMethodCallExpr((ProducesBeanDefinition) definition))));
-
-        builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(ifStmt);
-
-        builder.getGetMethodDeclaration().getBody().get()
-            .addAndGetStatement(new ReturnStmt(new FieldAccessExpr(new ThisExpr(), "holder")));
-      } else {
-        builder.getGetMethodDeclaration().getBody().ifPresent(body -> body.addAndGetStatement(
-            new ReturnStmt(getMethodCallExpr((ProducesBeanDefinition) definition))));
-      }
-    }
-  }
-
-  private boolean isSingleton(ExecutableElement method) {
-    return method.getAnnotation(ApplicationScoped.class) != null
-        || method.getAnnotation(Singleton.class) != null;
-  }
-
-  private MethodCallExpr getMethodCallExpr(ProducesBeanDefinition definition) {
-    CastExpr onCast = new CastExpr(
-        new ClassOrInterfaceType()
-            .setName(definition.getMethod().getEnclosingElement().getSimpleName().toString()),
-        new MethodCallExpr(
-            new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), "producer"), "get"), "get"));
-
-    return new MethodCallExpr(new EnclosedExpr(onCast),
-        definition.getMethod().getSimpleName().toString());
-  }
 }

@@ -169,11 +169,7 @@ public class BeanManagerTest extends AbstractTest {
     assertEquals("org.treblereel.injection.named.NamedBeanTwo", componentTwo.say());
 
 
-    assertEquals(5, StreamSupport
-        .stream(super.app.beanManager.lookupBeans(NamedBean.class).spliterator(), false).count());
-
-
-    assertEquals(5, StreamSupport
+    assertEquals(4, StreamSupport
         .stream(super.app.beanManager.lookupBeans(NamedBean.class).spliterator(), false).count());
 
     assertEquals(1, StreamSupport

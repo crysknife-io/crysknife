@@ -176,6 +176,20 @@ public class Utils {
     return fields.values();
   }
 
+  public static Collection<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
+    Map<String, ExecutableElement> methods = new LinkedHashMap<>();
+    ElementFilter.methodsIn(type.getEnclosedElements())
+        .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+
+    List<TypeElement> alltypes = getSuperTypes(elements, type);
+    for (TypeElement atype : alltypes) {
+      ElementFilter.methodsIn(atype.getEnclosedElements()).stream()
+          .filter(method -> !methods.containsKey(method.getSimpleName().toString()))
+          .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+    }
+    return methods.values();
+  }
+
   /**
    * see: typetools/checker-framework Determine all type elements for the classes and interfaces
    * referenced in the extends/implements clauses of the given type element. TODO: can we learn from

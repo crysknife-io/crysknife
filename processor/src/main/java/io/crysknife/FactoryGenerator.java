@@ -29,6 +29,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.nextstep.BeanProcessor;
 import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.nextstep.definition.ProducesBeanDefinition;
 import io.crysknife.nextstep.oracle.BeanOracle;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
@@ -52,36 +53,25 @@ public class FactoryGenerator {
   void generate() {
     Set<TypeMirror> processed = new HashSet<>();
 
-    iocContext.getOrderedBeans().stream()
-        // .filter(field -> (MoreTypes.asTypeElement(field).getAnnotation(Application.class) ==
-        // null))
-        .forEach(bean -> {
-          TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
-          System.out.println("TOP " + bean);
-          if (!processed.contains(bean)) {
-            processed.add(bean);
-            io.crysknife.nextstep.definition.BeanDefinition beanDefinition =
-                beanProcessor.getBeans().get(erased);
-            if (isSuitableBeanDefinition(beanDefinition)) {
-              new ClassBuilder(beanDefinition).build();
-            } else {
-              Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
-              maybe.ifPresent(candidate -> {
-                new ClassBuilder(candidate).build();
-              });
-            }
-          }
-        });
+    for (TypeMirror bean : iocContext.getOrderedBeans()) {
+      TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
+      if (!processed.contains(bean)) {
+        processed.add(bean);
+        BeanDefinition beanDefinition = beanProcessor.getBeans().get(erased);
+        if (beanDefinition instanceof ProducesBeanDefinition) {
+          continue;
+        }
 
-
-    /*
-     * Set<Map.Entry<TypeElement, BeanDefinition>> beans = new
-     * HashSet<>(iocContext.getBeans().entrySet());
-     * 
-     * for (Map.Entry<TypeElement, BeanDefinition> entry : beans) {
-     * System.out.println("FactoryGenerator " + entry.getKey()); new
-     * ClassBuilder(entry.getValue()).build(); }
-     */
+        if (isSuitableBeanDefinition(beanDefinition)) {
+          new ClassBuilder(beanDefinition).build();
+        } else {
+          Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
+          maybe.ifPresent(candidate -> {
+            new ClassBuilder(candidate).build();
+          });
+        }
+      }
+    }
   }
 
   private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {

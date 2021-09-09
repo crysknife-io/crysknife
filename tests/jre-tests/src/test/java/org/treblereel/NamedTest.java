@@ -65,7 +65,7 @@ public class NamedTest extends AbstractTest {
     }
 
 
-    assertEquals(5, beans.size());
+    assertEquals(4, beans.size());
     List<String> result = new ArrayList<>();
     for (Instance lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
       result.add(((NamedBean) lookupBean.get()).say());
