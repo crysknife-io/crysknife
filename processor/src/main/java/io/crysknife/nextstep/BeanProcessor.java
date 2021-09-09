@@ -219,6 +219,7 @@ public class BeanProcessor {
         if (candidate.isPresent()) {
           point.setGenerator(candidate.get());
         } else if (beans.get(beanTypeMirror) instanceof ProducesBeanDefinition) {
+          // TODO
         } else {
           BeanDefinition implementation = oracle.guess(point);
           if (implementation != null) {

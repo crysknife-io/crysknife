@@ -18,6 +18,7 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.nextstep.definition.BeanDefinition;
 import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.nextstep.definition.UnscopedBeanDefinition;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
@@ -26,11 +27,15 @@ import javax.enterprise.inject.Typed;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +94,33 @@ public class BeanOracle {
         return simpleInjectionCaseCandidate;
       }
     }
+
+    if (isUnscopedBean(beanTypeMirror)) {
+      return new UnscopedBeanDefinition(beanTypeMirror, context);
+    }
+
     return null;
+  }
+
+  private boolean isUnscopedBean(TypeMirror beanTypeMirror) {
+    TypeElement type = MoreTypes.asTypeElement(beanTypeMirror);
+
+    if (type.getKind().isClass() && !type.getModifiers().contains(Modifier.ABSTRACT)
+        && type.getModifiers().contains(Modifier.PUBLIC)) {
+      Set<ExecutableElement> constructors = ElementFilter.methodsIn(type.getEnclosedElements())
+          .stream().filter(elm -> elm.getKind().equals(ElementKind.CONSTRUCTOR))
+          .collect(Collectors.toSet());
+      if (constructors.isEmpty()) {
+        return true;
+      }
+
+      if (constructors.stream().filter(elm -> elm.getParameters().isEmpty())
+          .filter(elm -> elm.getModifiers().contains(Modifier.PUBLIC)).count() == 1) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public Optional<BeanDefinition> guessDefaultImpl(TypeMirror point) {
