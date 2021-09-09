@@ -14,7 +14,13 @@
 
 package io.crysknife.nextstep.definition;
 
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/6/21
@@ -30,5 +36,14 @@ public class ProducesBeanDefinition extends BeanDefinition {
 
   public ExecutableElement getMethod() {
     return method;
+  }
+
+  public TypeElement getProducer() {
+    return MoreElements.asType(method.getEnclosingElement());
+  }
+
+  public boolean isSingleton() {
+    return method.getAnnotation(Singleton.class) != null
+        || method.getAnnotation(ApplicationScoped.class) != null;
   }
 }

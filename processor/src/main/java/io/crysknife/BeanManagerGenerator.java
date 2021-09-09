@@ -19,12 +19,15 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -32,15 +35,14 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.internal.AbstractBeanManager;
+import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.nextstep.BeanProcessor;
@@ -53,7 +55,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -101,34 +102,6 @@ public class BeanManagerGenerator {
     }
   }
 
-  /*
-   * private void maybeAddQualifiers(MethodCallExpr call, TypeElement field, String annotationName)
-   * { if (annotationName != null) { boolean isNamed = field.getAnnotation(Named.class) != null;
-   * annotationName = isNamed ? Named.class.getCanonicalName() : annotationName; ObjectCreationExpr
-   * annotation = new ObjectCreationExpr(); annotation.setType(new ClassOrInterfaceType()
-   * .setName(isNamed ? Named.class.getCanonicalName() : annotationName));
-   * NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
-   *
-   * MethodDeclaration annotationType = new MethodDeclaration();
-   * annotationType.setModifiers(Modifier.Keyword.PUBLIC); annotationType.setName("annotationType");
-   * annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
-   * annotationType.getBody().get() .addAndGetStatement(new ReturnStmt(new NameExpr(annotationName +
-   * ".class"))); anonymousClassBody.add(annotationType);
-   *
-   * if (isNamed) { MethodDeclaration value = new MethodDeclaration();
-   * value.setModifiers(Modifier.Keyword.PUBLIC); value.setName("value"); value.setType(new
-   * ClassOrInterfaceType().setName("String")); String namedValue =
-   * (field.getAnnotation(Named.class).value().length() == 0) ? field.getQualifiedName().toString()
-   * : field.getAnnotation(Named.class).value();
-   *
-   * value.getBody().get().addAndGetStatement(new ReturnStmt(new StringLiteralExpr(namedValue)));
-   * anonymousClassBody.add(value); }
-   *
-   * annotation.setAnonymousClassBody(anonymousClassBody);
-   *
-   * call.addArgument(annotation); } }
-   */
-
   public class BeanManagerGeneratorBuilder {
 
     private CompilationUnit clazz = new CompilationUnit();
@@ -163,6 +136,7 @@ public class BeanManagerGenerator {
       clazz.addImport(HashMap.class);
       clazz.addImport(Annotation.class);
       clazz.addImport(Instance.class);
+      clazz.addImport(InstanceImpl.class);
       clazz.addImport(AbstractBeanManager.class);
 
       ClassOrInterfaceType factory = new ClassOrInterfaceType();
@@ -193,14 +167,13 @@ public class BeanManagerGenerator {
           .filter(
               field -> (MoreTypes.asTypeElement(field).getAnnotation(Application.class) == null))
           .forEach(bean -> {
-            System.out.println("TOP " + bean);
             if (!processed.contains(bean)) {
               processed.add(bean);
               TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
               BeanDefinition beanDefinition = beanProcessor.getBeans().get(erased);
 
               if (beanDefinition instanceof ProducesBeanDefinition) {
-
+                addProducesBeanDefinition((ProducesBeanDefinition) beanDefinition);
               } else {
 
                 if (isSuitableBeanDefinition(beanDefinition)) {
@@ -237,6 +210,84 @@ public class BeanManagerGenerator {
               }
             }
           });
+    }
+
+    private void addProducesBeanDefinition(ProducesBeanDefinition beanDefinition) {
+      ProducesBeanDefinition producesBeanDefinition = beanDefinition;
+
+      String qualifiedName = MoreTypes.asTypeElement(
+          iocContext.getGenerationContext().getTypes().erasure(producesBeanDefinition.getType()))
+          .getQualifiedName().toString();
+
+
+      ObjectCreationExpr newInstance = new ObjectCreationExpr();
+      newInstance.setType(new ClassOrInterfaceType().setName(InstanceImpl.class.getSimpleName()));
+
+      ObjectCreationExpr provider = new ObjectCreationExpr();
+      provider.setType(new ClassOrInterfaceType().setName(Provider.class.getSimpleName()));
+
+      newInstance.addArgument(provider);
+
+      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
+
+      MethodDeclaration get = new MethodDeclaration();
+      get.setModifiers(Modifier.Keyword.PUBLIC);
+      get.addAnnotation(Override.class);
+      get.setName("get");
+      get.setType(new ClassOrInterfaceType().setName(qualifiedName));
+
+      String producerClass = producesBeanDefinition.getProducer().toString();
+
+      ClassOrInterfaceType instance =
+          new ClassOrInterfaceType().setName(Instance.class.getSimpleName());
+      instance.setTypeArguments(new ClassOrInterfaceType().setName(producerClass));
+
+
+      if (producesBeanDefinition.isSingleton()) {
+
+        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("holder"),
+            new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
+        BlockStmt blockStmt = new BlockStmt();
+
+        blockStmt
+            .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("holder"))
+                .setValue(new MethodCallExpr(
+                    new EnclosedExpr(
+                        new CastExpr(new ClassOrInterfaceType().setName(producerClass),
+                            new MethodCallExpr(new MethodCallExpr("lookupBean")
+                                .addArgument(producerClass + ".class"), "get"))),
+                    producesBeanDefinition.getMethod().getSimpleName().toString())));
+
+        ifStmt.setThenStmt(blockStmt);
+        get.getBody().get().addAndGetStatement(ifStmt);
+
+        VariableDeclarator holder =
+            new VariableDeclarator(new ClassOrInterfaceType().setName(qualifiedName), "holder");
+        FieldDeclaration field = new FieldDeclaration();
+        field.getVariables().add(holder);
+        anonymousClassBody.add(field);
+
+
+
+        get.getBody().get().addAndGetStatement(new ReturnStmt(new NameExpr("holder")));
+      } else {
+        get.getBody().get()
+            .addAndGetStatement(
+                new ReturnStmt(new MethodCallExpr(
+                    new EnclosedExpr(
+                        new CastExpr(new ClassOrInterfaceType().setName(producerClass),
+                            new MethodCallExpr(new MethodCallExpr("lookupBean")
+                                .addArgument(producerClass + ".class"), "get"))),
+                    producesBeanDefinition.getMethod().getSimpleName().toString())));
+
+      }
+      anonymousClassBody.add(get);
+      provider.setAnonymousClassBody(anonymousClassBody);
+      MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
+          .addArgument(new FieldAccessExpr(new NameExpr(qualifiedName), "class"))
+          .addArgument(newInstance);
+
+      init.getBody().ifPresent(body -> body.addAndGetStatement(call));
     }
 
     private void addQualifierInitEntry(MethodDeclaration init, TypeMirror type, TypeMirror factory,
@@ -310,10 +361,6 @@ public class BeanManagerGenerator {
       generateInitEntry(init, field, field, null);
     }
 
-    private void generateInitEntry(MethodDeclaration init, TypeMirror field, TypeMirror factory) {
-      generateInitEntry(init, field, factory, null);
-    }
-
     private void generateInitEntry(MethodDeclaration init, TypeMirror field, TypeMirror factory,
         Expression annotation) {
       String qualifiedName =
@@ -344,11 +391,6 @@ public class BeanManagerGenerator {
           init.getBody().ifPresent(body -> body.addAndGetStatement(call));
 
         } else {
-          /*
-           * factoryCreationExpr = new LambdaExpr().setEnclosingParameters(true).setBody(new
-           * ExpressionStmt( new MethodCallExpr("lookupBean").addArgument(factoryQualifiedName +
-           * ".class")));
-           */
           Expression temp =
               new MethodCallExpr("lookupBean").addArgument(factoryQualifiedName + ".class");
 
@@ -359,15 +401,12 @@ public class BeanManagerGenerator {
             call.addArgument(annotation);
           }
           qualifiers.add(call);
-
         }
-
-
-        /*
-         * if (annotation != null) { call.addArgument(annotation); } init.getBody().ifPresent(body
-         * -> body.addAndGetStatement(call));
-         */
       }
+    }
+
+    private void generateInitEntry(MethodDeclaration init, TypeMirror field, TypeMirror factory) {
+      generateInitEntry(init, field, factory, null);
     }
 
     private void addGetInstanceMethod() {

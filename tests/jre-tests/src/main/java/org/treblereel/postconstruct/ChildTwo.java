@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 public class ChildTwo extends Parent {
 
   @PostConstruct
-  protected void init1() {
+  protected void init11() {
     calls.add("ChildTwo");
   }
 }

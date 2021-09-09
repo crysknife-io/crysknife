@@ -17,8 +17,11 @@ package io.crysknife;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -33,6 +36,7 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.nextstep.BeanProcessor;
+import io.crysknife.nextstep.definition.BeanDefinition;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
@@ -83,10 +87,11 @@ public class ApplicationProcessor extends AbstractProcessor {
     BeanProcessor beanProcessor =
         new BeanProcessor(iocContext, new PrintWriterTreeLogger()).process();
 
-    beanProcessor.getBeans().keySet().forEach(key -> {
-      System.out.println("key " + key);
+    beanProcessor.getBeans().values().forEach(bean -> {
+      Set<BeanDefinition> flattened =
+          bean.getSubclasses().stream().flatMap(Helper::flatten).collect(Collectors.toSet());
+      bean.getSubclasses().addAll(flattened);
     });
-
 
     // processQualifiersScan();
     // processComponentScan();
@@ -102,6 +107,16 @@ public class ApplicationProcessor extends AbstractProcessor {
     fireIOCGeneratorAfter();
 
     return false;
+  }
+
+  private static class Helper {
+
+    private Helper() {}
+
+    public static Stream<BeanDefinition> flatten(BeanDefinition order) {
+      return Stream.concat(Stream.of(order),
+          order.getSubclasses().stream().flatMap(Helper::flatten));
+    }
   }
 
   private Optional<TypeElement> processApplicationAnnotation(IOCContext iocContext) {

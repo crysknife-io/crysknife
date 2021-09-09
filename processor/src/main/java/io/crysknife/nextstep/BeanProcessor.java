@@ -30,7 +30,6 @@ import io.crysknife.nextstep.definition.InjectionPointDefinition;
 import io.crysknife.nextstep.definition.MethodDefinitionFactory;
 import io.crysknife.nextstep.definition.ProducesBeanDefinition;
 import io.crysknife.nextstep.oracle.BeanOracle;
-import io.crysknife.nextstep.validation.ProducesValidator;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -97,44 +96,8 @@ public class BeanProcessor {
     findProduces();
 
     processTypes();
-
     processMethodDecorators();
     processMethodParamDecorators();
-
-
-    beans.forEach((k, v) -> {
-      System.out.println("BEAN " + k);
-
-      v.getSubclasses().forEach(sub -> {
-        System.out.println("          " + sub.getType());
-      });
-
-      v.getFields().forEach(field -> {
-        System.out.println("          F " + field.getVariableElement());
-        if (field.getGenerator() != null) {
-          System.out
-              .println("          F generator " + field.getGenerator().getClass().getSimpleName());
-        }
-        field.getImplementation().ifPresent(impl -> {
-          System.out.println("          F generator bean "
-              + impl.getIocGenerator().get().getClass().getSimpleName());
-        });
-      });
-      v.getConstructorParams().forEach(field -> {
-        System.out.println("          C " + field.getVariableElement());
-      });
-
-      v.getMethods().forEach(method -> {
-        String decorators = method.getDecorators().stream().map(e -> e.getClass().getSimpleName())
-            .collect(Collectors.joining(","));
-
-        System.out.println(
-            "          M " + method.getExecutableElement().getSimpleName() + " " + decorators);
-
-      });
-
-
-    });
 
     logger.log(TreeLogger.INFO, "beans registered " + beans.size());
 
@@ -213,7 +176,8 @@ public class BeanProcessor {
   }
 
   private void findProduces() {
-    ProducesValidator validator = new ProducesValidator(iocContext);
+    ProducesProcessor producesProcessor = new ProducesProcessor(iocContext, this, logger);
+
     Set<Element> produces = (Set<Element>) iocContext.getGenerationContext().getRoundEnvironment()
         .getElementsAnnotatedWith(Produces.class);
 
@@ -221,19 +185,7 @@ public class BeanProcessor {
 
     for (Element produce : produces) {
       try {
-        validator.validate(produce);
-        ExecutableElement method = (ExecutableElement) produce;
-
-        Optional<IOCGenerator> generator = getGenerator(Produces.class.getCanonicalName(),
-            MoreTypes.asTypeElement(objectTypeMirror), WiringElementType.PRODUCER_ELEMENT);
-
-        if (generator.isPresent()) {
-          ProducesBeanDefinition beanDefinition = beanDefinitionFactory.of(method);
-          beanDefinition.setIocGenerator(generator.get());
-          TypeMirror beanTypeMirror =
-              iocContext.getGenerationContext().getTypes().erasure(method.getReturnType());
-          beans.put(beanTypeMirror, beanDefinition);
-        }
+        producesProcessor.process(produce);
       } catch (UnableToCompleteException e) {
         errors.add(e);
       }
@@ -266,10 +218,13 @@ public class BeanProcessor {
         // Case 1: buildin type
         if (candidate.isPresent()) {
           point.setGenerator(candidate.get());
+        } else if (beans.get(beanTypeMirror) instanceof ProducesBeanDefinition) {
         } else {
           BeanDefinition implementation = oracle.guess(point);
-          point.setImplementation(implementation);
-          definition.getDependencies().add(implementation);
+          if (implementation != null) {
+            point.setImplementation(implementation);
+            definition.getDependencies().add(implementation);
+          }
         }
       }
     });
@@ -349,7 +304,7 @@ public class BeanProcessor {
     }
   }
 
-  private Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
+  Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
       WiringElementType wiringElementType) {
     IOCContext.IOCGeneratorMeta meta =
         new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);

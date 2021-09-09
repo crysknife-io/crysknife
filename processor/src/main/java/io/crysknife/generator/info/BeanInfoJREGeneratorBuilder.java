@@ -20,6 +20,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
@@ -131,6 +132,12 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
             .generateBeanLookupCall(classBuilder, fieldPoint);
       } else if (fieldPoint.getGenerator() != null) {
         _beanCall = fieldPoint.getGenerator().generateBeanLookupCall(classBuilder, fieldPoint);
+      } else {
+        _beanCall = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+            .addArgument(new FieldAccessExpr(
+                new NameExpr(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+                    .getQualifiedName().toString()),
+                "class"));
       }
 
       Expression beanCall = new MethodCallExpr(_beanCall, "get");

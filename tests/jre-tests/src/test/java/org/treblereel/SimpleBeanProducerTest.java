@@ -31,6 +31,11 @@ public class SimpleBeanProducerTest extends AbstractTest {
         app.getSimpleBeanProducerTest().getSimpleBeanDependentTwo());
     assertEquals(app.getSimpleBeanProducerTest().getSimpleBeanSingletonOne(),
         app.getSimpleBeanProducerTest().getSimpleBeanSingletonTwo());
+
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanDependentOne());
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanDependentTwo());
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanSingletonOne());
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanSingletonTwo());
   }
 
   @Test
