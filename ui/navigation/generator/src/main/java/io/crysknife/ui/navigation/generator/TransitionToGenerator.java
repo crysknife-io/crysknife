@@ -31,9 +31,8 @@ import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.definition.Definition;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.TransitionTo;
 
@@ -61,7 +60,8 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectionPointDefinition fieldPoint) {
     clazz.getClassCompilationUnit().addImport(TransitionTo.class);
     clazz.getClassCompilationUnit().addImport(Navigation.class);
     clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
@@ -70,8 +70,8 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
     lambda.setEnclosingParameters(true);
     lambda
         .setBody(new ExpressionStmt(new ObjectCreationExpr().setType(TransitionTo.class)
-            .addArgument(MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments()
-                .get(0).toString() + ".class")
+            .addArgument(MoreTypes.asDeclared(fieldPoint.getVariableElement().asType())
+                .getTypeArguments().get(0).toString() + ".class")
             .addArgument(
                 new CastExpr(new ClassOrInterfaceType().setName(Navigation.class.getSimpleName()),
                     new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")

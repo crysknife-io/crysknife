@@ -25,20 +25,18 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
-import io.crysknife.nextstep.definition.BeanDefinition;
-import io.crysknife.nextstep.definition.Definition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
 import io.crysknife.ui.databinding.client.BindableProxy;
 import io.crysknife.ui.databinding.client.BindableProxyAgent;
 import io.crysknife.ui.databinding.client.BindableProxyFactory;
@@ -51,7 +49,6 @@ import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.FieldPoint;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -147,16 +144,12 @@ public class BindableGenerator extends ScopedBeanGenerator {
         methodDeclaration, type).generate();
   }
 
-  @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
-    classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
-    return generationUtils.wrapCallInstanceImpl(classBuilder,
-        new MethodCallExpr(
-            new MethodCallExpr(
-                new NameExpr("io.crysknife.ui.databinding.client.api.DataBinder_Factory"), "get"),
-            "forType")
-                .addArgument(new NameExpr(
-                    MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
-                        + ".class")));
-  }
+  /*
+   * @Override public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint)
+   * { classBuilder.getClassCompilationUnit().addImport(DataBinder.class); return
+   * generationUtils.wrapCallInstanceImpl(classBuilder, new MethodCallExpr( new MethodCallExpr( new
+   * NameExpr("io.crysknife.ui.databinding.client.api.DataBinder_Factory"), "get"), "forType")
+   * .addArgument(new NameExpr(
+   * MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0) + ".class"))); }
+   */
 }

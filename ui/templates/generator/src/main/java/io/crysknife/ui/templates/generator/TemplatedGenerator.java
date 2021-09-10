@@ -103,9 +103,9 @@ import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.DataField;
@@ -338,18 +338,12 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz,
-      io.crysknife.nextstep.definition.Definition beanDefinition) {
-
-  }
-
-  // @Override
   public void generate(ClassBuilder builder, Definition definition) {
     if (definition instanceof BeanDefinition) {
       beanDefinition = (BeanDefinition) definition;
-      validateType(beanDefinition.getType(),
+      validateType(MoreTypes.asTypeElement(beanDefinition.getType()),
           beanDefinition.getType().getAnnotation(Templated.class));
-      processType(builder, beanDefinition.getType(),
+      processType(builder, MoreTypes.asTypeElement(beanDefinition.getType()),
           beanDefinition.getType().getAnnotation(Templated.class));
     }
   }
@@ -525,7 +519,8 @@ public class TemplatedGenerator extends IOCGenerator {
 
   private void generateWrapper(ClassBuilder builder, TemplateContext templateContext) {
     ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
-    wrapper.setName(beanDefinition.getClassName());
+    wrapper
+        .setName(MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName().toString());
     wrapper.addExtendedType(beanDefinition.getQualifiedName());
     wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
     String element = getElementFromTag(templateContext);
@@ -534,20 +529,20 @@ public class TemplatedGenerator extends IOCGenerator {
 
     ConstructorDeclaration constructor =
         wrapper.addConstructor(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-    if (beanDefinition.getConstructorInjectionPoint() != null) {
+    if (beanDefinition.getConstructorParams() != null) {
       List<String> args = new LinkedList<>();
-      for (FieldPoint argument : beanDefinition.getConstructorInjectionPoint().getArguments()) {
-        constructor.addAndGetParameter(argument.getType().getQualifiedName().toString(),
-            argument.getName());
-        args.add(argument.getName());
+      for (InjectionPointDefinition argument : beanDefinition.getConstructorParams()) {
+        constructor.addAndGetParameter(MoreTypes
+            .asTypeElement(argument.getVariableElement().asType()).getQualifiedName().toString(),
+            argument.getVariableElement().getSimpleName().toString());
+        args.add(argument.getVariableElement().getSimpleName().toString());
       }
       StringJoiner joiner = new StringJoiner(",");
       args.stream().forEach(joiner::add);
       constructor.getBody().addStatement("super(" + joiner + ");");
     }
 
-    DataElementInfo.Kind dataElementInfo =
-        getDataElementInfoKind(beanDefinition.getType().asType());
+    DataElementInfo.Kind dataElementInfo = getDataElementInfoKind(beanDefinition.getType());
 
     addElementMethod(wrapper, templateContext, dataElementInfo);
     addInitMethod(wrapper, templateContext, dataElementInfo);
@@ -723,7 +718,9 @@ public class TemplatedGenerator extends IOCGenerator {
 
       MethodCallExpr fieldSetCallExpr = null;
       if (iocContext.getGenerationContext().isGwt2()) {
-        fieldSetCallExpr = new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+        fieldSetCallExpr = new MethodCallExpr(
+            new NameExpr(
+                MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
             element.getName()).addArgument("instance");
       } else if (!iocContext.getGenerationContext().isJre()) {
         fieldSetCallExpr = new MethodCallExpr(
@@ -779,7 +776,9 @@ public class TemplatedGenerator extends IOCGenerator {
 
   private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
     if (iocContext.getGenerationContext().isGwt2()) {
-      return new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+      return new MethodCallExpr(
+          new NameExpr(
+              MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
           field.getSimpleName().toString()).addArgument("instance");
     }
 
@@ -819,11 +818,12 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   private VariableElement getVariableElement(String elementName) {
-    return beanDefinition.getType().getEnclosedElements().stream()
+    return MoreTypes.asTypeElement(beanDefinition.getType()).getEnclosedElements().stream()
         .filter(elm -> elm.getKind().equals(ElementKind.FIELD))
         .filter(elm -> elm.getSimpleName().toString().equals(elementName))
-        .map(elm -> MoreElements.asVariable(elm)).findFirst().orElseThrow(() -> new Error(
-            "Unable to find @DataField " + elementName + " in " + beanDefinition.getClassName()));
+        .map(elm -> MoreElements.asVariable(elm)).findFirst()
+        .orElseThrow(() -> new Error("Unable to find @DataField " + elementName + " in "
+            + MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName()));
   }
 
   private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {

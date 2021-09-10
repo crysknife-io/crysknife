@@ -35,9 +35,9 @@ import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.definition.ExecutableDefinition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.MethodDefinition;
 import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
 import io.crysknife.ui.mutationobserver.client.api.ObserverCallback;
 import io.crysknife.ui.mutationobserver.client.api.OnAttach;
@@ -68,27 +68,22 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     TypeElement mutationObserver = iocContext.getGenerationContext().getElements()
         .getTypeElement(MutationObserver.class.getCanonicalName());
 
-    mutationObserverBeanDefinition =
-        iocContext.getBeanDefinitionOrCreateAndReturn(mutationObserver);
-
-    iocContext.getBeans().put(mutationObserver, mutationObserverBeanDefinition);
-    TypeMirror mirror =
-        iocContext.getGenerationContext().getTypes().erasure(mutationObserver.asType());
-
-    if (!iocContext.getOrderedBeans().contains(mirror)) {
-      iocContext.getOrderedBeans().add(mirror);
-    }
-  }
-
-  @Override
-  public void generate(ClassBuilder clazz,
-      io.crysknife.nextstep.definition.Definition beanDefinition) {
-
+    /*
+     * mutationObserverBeanDefinition =
+     * iocContext.getBeanDefinitionOrCreateAndReturn(mutationObserver);
+     * 
+     * iocContext.getBeans().put(mutationObserver.asType(), mutationObserverBeanDefinition);
+     * TypeMirror mirror =
+     * iocContext.getGenerationContext().getTypes().erasure(mutationObserver.asType());
+     * 
+     * if (!iocContext.getOrderedBeans().contains(mirror)) {
+     * iocContext.getOrderedBeans().add(mirror); }
+     */
   }
 
   public void generate(ClassBuilder builder, Definition definition) {
-    if (definition instanceof ExecutableDefinition) {
-      ExecutableDefinition mutationObserver = (ExecutableDefinition) definition;
+    if (definition instanceof MethodDefinition) {
+      MethodDefinition mutationObserver = (MethodDefinition) definition;
       ifValid(mutationObserver);
       VariableElement target = findField(mutationObserver);
       isValid(target);
@@ -113,7 +108,7 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     }
   }
 
-  private VariableElement findField(ExecutableDefinition mutationObserver) {
+  private VariableElement findField(MethodDefinition mutationObserver) {
     String fieldName = findFieldName(mutationObserver.getExecutableElement());
 
     Element target = mutationObserver.getExecutableElement().getEnclosingElement()
@@ -138,7 +133,7 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     throw new Error("Unable to find field name");
   }
 
-  private void ifValid(ExecutableDefinition mutationObserver) {
+  private void ifValid(MethodDefinition mutationObserver) {
     if (mutationObserver.getExecutableElement().getParameters().size() > 1
         || mutationObserver.getExecutableElement().getParameters().isEmpty()) {
       throw new Error("Method [" + mutationObserver.getExecutableElement().getSimpleName() + " in "
@@ -169,7 +164,7 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     }
   }
 
-  public void generateCallback(ClassBuilder builder, ExecutableDefinition definition) {
+  public void generateCallback(ClassBuilder builder, MethodDefinition definition) {
     builder.getClassCompilationUnit().addImport(MutationObserver.class);
     builder.getClassCompilationUnit().addImport(ObserverCallback.class);
     builder.getClassCompilationUnit().addImport("io.crysknife.client.BeanManagerImpl");

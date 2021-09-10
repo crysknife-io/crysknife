@@ -22,9 +22,7 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import io.crysknife.annotation.Generator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.definition.ExecutableDefinition;
-import io.crysknife.nextstep.definition.MethodDefinition;
+import io.crysknife.definition.MethodDefinition;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
@@ -42,7 +40,7 @@ public class PostConstructGenerator extends IOCGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, io.crysknife.nextstep.definition.Definition definition) {
+  public void generate(ClassBuilder clazz, io.crysknife.definition.Definition definition) {
     if (definition instanceof MethodDefinition) {
       MethodDefinition postConstract = (MethodDefinition) definition;
       FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
@@ -53,13 +51,12 @@ public class PostConstructGenerator extends IOCGenerator {
 
   }
 
-  public void generate(ClassBuilder builder, Definition definition) {
-    if (definition instanceof ExecutableDefinition) {
-      ExecutableDefinition postConstract = (ExecutableDefinition) definition;
-      FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-      MethodCallExpr method = new MethodCallExpr(instance,
-          postConstract.getExecutableElement().getSimpleName().toString());
-      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
-    }
-  }
+  /*
+   * public void generate(ClassBuilder builder, Definition definition) { if (definition instanceof
+   * ExecutableDefinition) { ExecutableDefinition postConstract = (ExecutableDefinition) definition;
+   * FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance"); MethodCallExpr
+   * method = new MethodCallExpr(instance,
+   * postConstract.getExecutableElement().getSimpleName().toString());
+   * builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(method); } }
+   */
 }

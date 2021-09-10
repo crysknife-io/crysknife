@@ -43,10 +43,8 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.BeanProcessor;
-import io.crysknife.nextstep.definition.BeanDefinition;
-import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -60,15 +58,13 @@ import java.util.function.Supplier;
  */
 public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
-  private final BeanProcessor beanProcessor;
   private BeanDefinition bean;
   private ClassBuilder classBuilder;
   private GenerationUtils generationUtils;
 
-  BeanInfoJREGeneratorBuilder(IOCContext iocContext, BeanProcessor beanProcessor) {
+  BeanInfoJREGeneratorBuilder(IOCContext iocContext) {
     super(iocContext);
     this.generationUtils = new GenerationUtils(iocContext);
-    this.beanProcessor = beanProcessor;
   }
 
   @Override

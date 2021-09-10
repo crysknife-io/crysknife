@@ -14,13 +14,12 @@
 
 package io.crysknife.generator.info;
 
-import java.io.IOException;
-
 import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.util.Utils;
+
+import java.io.IOException;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20

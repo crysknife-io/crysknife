@@ -29,7 +29,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19

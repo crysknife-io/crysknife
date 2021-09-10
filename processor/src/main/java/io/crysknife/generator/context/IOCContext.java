@@ -16,18 +16,14 @@ package io.crysknife.generator.context;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import io.crysknife.exception.GenerationException;
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.util.GenerationUtils;
-import io.github.classgraph.ClassGraph;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinitionFactory;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
 
-import javax.enterprise.inject.Default;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -35,19 +31,15 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.Diagnostic;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static javax.lang.model.element.Modifier.ABSTRACT;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
@@ -56,9 +48,7 @@ public class IOCContext {
 
   private final SetMultimap<IOCGeneratorMeta, IOCGenerator> generators = HashMultimap.create();
 
-  private final Map<TypeElement, BeanDefinition> beans = new HashMap<>();
-
-  private final Map<TypeElement, Map<String, BeanDefinition>> qualifiers = new HashMap<>();
+  private final Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
 
   private final GenerationContext generationContext;
 
@@ -74,8 +64,11 @@ public class IOCContext {
 
   private final Map<String, Set<VariableElement>> parametersByAnnotation = new HashMap<>();
 
+  private final BeanDefinitionFactory beanDefinitionFactory;
+
   public IOCContext(GenerationContext generationContext) {
     this.generationContext = generationContext;
+    this.beanDefinitionFactory = new BeanDefinitionFactory(this, null);
   }
 
   public void register(final Class annotation, final WiringElementType wiringElementType,
@@ -90,9 +83,14 @@ public class IOCContext {
     generators.put(new IOCGeneratorMeta(annotation.getCanonicalName(), type, wiringElementType),
         generator);
     if (!exactType.equals(Object.class)) {
-      BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndReturn(type);
-      beanDefinition.setGenerator(generator);
-      getBeans().put(type, beanDefinition);
+      BeanDefinition beanDefinition = null;
+      try {
+        beanDefinition = getBeanDefinitionOrCreateAndReturn(type.asType());
+      } catch (UnableToCompleteException e) {
+        e.printStackTrace();
+      }
+      beanDefinition.setIocGenerator(generator);
+      getBeans().put(type.asType(), beanDefinition);
     }
   }
 
@@ -100,56 +98,28 @@ public class IOCContext {
     return generationContext;
   }
 
-  public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
-    BeanDefinition beanDefinition;
-    if (beans.containsKey(typeElement)) {
-      return getBeans().get(typeElement);
+
+  public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeMirror typeElement)
+      throws UnableToCompleteException {
+    TypeMirror candidate = generationContext.getTypes().erasure(typeElement);
+    BeanDefinition beanDefinition = null;
+    if (beans.containsKey(candidate)) {
+      return beans.get(candidate);
     } else {
-      beanDefinition = BeanDefinition.of(typeElement, this);
-      beans.put(typeElement, beanDefinition);
-      beanDefinition.processInjections(this);
+      beanDefinition = beanDefinitionFactory.of(candidate);
+      beans.put(candidate, beanDefinition);
+      // beanDefinition.processInjections(this);
     }
+
     return beanDefinition;
   }
 
-  public Map<TypeElement, BeanDefinition> getBeans() {
+  public Map<TypeMirror, BeanDefinition> getBeans() {
     return beans;
   }
 
   public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
     return generators;
-  }
-
-  public BeanDefinition getBean(FieldPoint fieldPoint) {
-    if (fieldPoint.getType().getModifiers().contains(ABSTRACT)) {
-
-      if (fieldPoint.isNamed() && fieldPoint.getNamed() != null) {
-        if (qualifiers.containsKey(fieldPoint.getType())
-            && qualifiers.get(fieldPoint.getType()).containsKey(fieldPoint.getNamed()))
-          return qualifiers.get(fieldPoint.getType()).get(fieldPoint.getNamed());
-      }
-      /*
-       * if (getQualifiers().containsKey(fieldPoint.getType())) { GenerationUtils generationUtils =
-       * new GenerationUtils(this); String isQualifier = generationUtils.isQualifier(fieldPoint); if
-       * (isQualifier != null) { return getQualifiers().get(fieldPoint.getType()).get(isQualifier);
-       * } BeanDefinition defaultBeanDefinition =
-       * getQualifiers().get(fieldPoint.getType()).get(Default.class.getCanonicalName()); if
-       * (defaultBeanDefinition != null) { return defaultBeanDefinition; } }
-       */
-
-    }
-    return getBean(fieldPoint.getType());
-  }
-
-  public BeanDefinition getBean(TypeElement bean) {
-    if (beans.containsKey(bean)) {
-      return beans.get(bean);
-    }
-    throw new GenerationException(bean.toString());
-  }
-
-  public Map<TypeElement, Map<String, BeanDefinition>> getQualifiers() {
-    return qualifiers;
   }
 
   public List<TypeMirror> getOrderedBeans() {
@@ -276,11 +246,15 @@ public class IOCContext {
     return results;
   }
 
-  public Set<TypeElement> getSubClassesOf(TypeElement type) {
-    Types types = generationContext.getTypes();
-    TypeMirror erased = types.erasure(type.asType());
-    return beans.keySet().stream().filter(t -> types.isSubtype(types.erasure(t.asType()), erased)
-        && !types.isSameType(types.erasure(t.asType()), erased)).collect(Collectors.toSet());
+  public Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
+      WiringElementType wiringElementType) {
+    IOCContext.IOCGeneratorMeta meta =
+        new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);
+    Iterable<IOCGenerator> generators = getGenerators().get(meta);
+    if (generators.iterator().hasNext()) {
+      return Optional.of(generators.iterator().next());
+    }
+    return Optional.empty();
   }
 
   public static class IOCGeneratorMeta {

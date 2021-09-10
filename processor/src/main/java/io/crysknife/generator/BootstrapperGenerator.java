@@ -35,14 +35,12 @@ import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.Factory;
 import io.crysknife.client.internal.OnFieldAccessed;
-import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.definition.BeanDefinition;
-import io.crysknife.nextstep.definition.Definition;
-import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Instance;

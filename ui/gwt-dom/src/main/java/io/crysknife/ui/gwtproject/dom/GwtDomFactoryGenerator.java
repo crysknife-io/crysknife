@@ -17,6 +17,7 @@ package io.crysknife.ui.gwtproject.dom;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.exception.GenerationException;
@@ -24,9 +25,8 @@ import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.definition.Definition;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectionPointDefinition;
 import org.gwtproject.dom.client.AnchorElement;
 import org.gwtproject.dom.client.AreaElement;
 import org.gwtproject.dom.client.AudioElement;
@@ -79,6 +79,7 @@ import org.gwtproject.dom.client.UListElement;
 import org.gwtproject.dom.client.VideoElement;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Locale;
@@ -91,7 +92,7 @@ import java.util.function.Function;
 @Generator(priority = 100000)
 public class GwtDomFactoryGenerator extends BeanIOCGenerator {
 
-  private static final Map<Class, Function<FieldPoint, MethodCallExpr>> HTML_ELEMENTS =
+  private static final Map<Class, Function<InjectionPointDefinition, MethodCallExpr>> HTML_ELEMENTS =
       new HashMap<>();
 
   static {
@@ -126,12 +127,12 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
             "createBRElement"));
 
     HTML_ELEMENTS.put(ButtonElement.class, fieldPoint -> {
-      if (fieldPoint.isNamed()) {
-        if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("submit")) {
+      if (isNamed(fieldPoint)) {
+        if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("submit")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createSubmitButtonElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("reset")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("reset")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createResetButtonElement");
@@ -183,8 +184,8 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
             "createHeadElement"));
 
     HTML_ELEMENTS.put(HeadingElement.class, fieldPoint -> {
-      if (fieldPoint.isNamed()) {
-        String h = fieldPoint.getNamed();
+      if (isNamed(fieldPoint)) {
+        String h = getNamed(fieldPoint);
         return new MethodCallExpr(
             new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
             "createHElement").addArgument(h);
@@ -210,41 +211,41 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
             "createImageElement"));
 
     HTML_ELEMENTS.put(InputElement.class, fieldPoint -> {
-      if (fieldPoint.isNamed()) {
+      if (isNamed(fieldPoint)) {
 
-        if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("checkbox")) {
+        if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("checkbox")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createCheckInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("file")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("file")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createFileInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("hidden")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("hidden")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createHiddenInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("image")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("image")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createImageInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("password")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("password")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createPasswordInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("radio")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("radio")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createRadioInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("reset")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("reset")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createResetInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("submit")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("submit")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createSubmitInputElement");
-        } else if (fieldPoint.getNamed().toLowerCase(Locale.ROOT).equals("text")) {
+        } else if (getNamed(fieldPoint).toLowerCase(Locale.ROOT).equals("text")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
               "createTextInputElement");
@@ -386,8 +387,8 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
             "createTRElement"));
 
     HTML_ELEMENTS.put(TableSectionElement.class, fieldPoint -> {
-      if (fieldPoint.isNamed()) {
-        String h = fieldPoint.getNamed().toLowerCase(Locale.ROOT);
+      if (isNamed(fieldPoint)) {
+        String h = getNamed(fieldPoint).toLowerCase(Locale.ROOT);
         if (h.equals("tbody")) {
           return new MethodCallExpr(
               new MethodCallExpr(new NameExpr(Document.class.getCanonicalName()), "get"),
@@ -430,6 +431,15 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
             "createVideoElement"));
   }
 
+  private static boolean isNamed(InjectionPointDefinition fieldPoint) {
+    return fieldPoint.getVariableElement().getAnnotation(Named.class) != null
+        && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("");
+  }
+
+  private static String getNamed(InjectionPointDefinition fieldPoint) {
+    return fieldPoint.getVariableElement().getAnnotation(Named.class).value();
+  }
+
   public GwtDomFactoryGenerator(IOCContext iocContext) {
     super(iocContext);
   }
@@ -448,18 +458,21 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint) {
+  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
+      InjectionPointDefinition fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
     classBuilder.getClassCompilationUnit().addImport(Provider.class);
-    classBuilder.getClassCompilationUnit()
-        .addImport(fieldPoint.getType().getQualifiedName().toString());
+    classBuilder.getClassCompilationUnit().addImport(MoreTypes
+        .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
 
     Class clazz;
     try {
-      clazz = Class.forName(fieldPoint.getType().getQualifiedName().toString());
+      clazz = Class.forName(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+          .getQualifiedName().toString());
     } catch (ClassNotFoundException e) {
-      throw new Error("Unable to process " + fieldPoint.getType().getQualifiedName().toString()
-          + " " + e.getMessage());
+      throw new Error(
+          "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+              .getQualifiedName().toString() + " " + e.getMessage());
     }
     return HTML_ELEMENTS.get(clazz).apply(fieldPoint);
   }
