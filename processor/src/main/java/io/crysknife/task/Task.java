@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,23 +12,14 @@
  * the License.
  */
 
-package io.crysknife.generator.info;
+package io.crysknife.task;
 
-import java.io.IOException;
-
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.UnableToCompleteException;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 9/9/21
  */
-public abstract class AbstractBeanInfoGenerator {
+public interface Task {
 
-  protected IOCContext iocContext;
-
-  protected AbstractBeanInfoGenerator(IOCContext iocContext) {
-    this.iocContext = iocContext;
-  }
-
-  protected abstract String build(BeanDefinition bean) throws IOException;
+  void execute() throws UnableToCompleteException;
 }

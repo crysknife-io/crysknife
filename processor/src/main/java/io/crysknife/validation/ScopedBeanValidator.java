@@ -12,23 +12,10 @@
  * the License.
  */
 
-package io.crysknife.generator.info;
-
-import java.io.IOException;
-
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
+package io.crysknife.validation;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 9/5/21
  */
-public abstract class AbstractBeanInfoGenerator {
-
-  protected IOCContext iocContext;
-
-  protected AbstractBeanInfoGenerator(IOCContext iocContext) {
-    this.iocContext = iocContext;
-  }
-
-  protected abstract String build(BeanDefinition bean) throws IOException;
+public class ScopedBeanValidator {
 }

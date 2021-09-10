@@ -20,14 +20,15 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
 import io.crysknife.ui.databinding.client.api.AutoBound;
 import io.crysknife.ui.databinding.client.api.Bound;
 import io.crysknife.ui.databinding.client.api.DataBinder;
@@ -52,22 +53,16 @@ public class AutoBoundGenerator extends IOCGenerator {
     iocContext.register(AutoBound.class, WiringElementType.FIELD_DECORATOR, this); // PARAMETER
   }
 
-  @Override
-  public void generate(ClassBuilder clazz,
-      io.crysknife.nextstep.definition.Definition beanDefinition) {
-
-  }
-
   public void generate(ClassBuilder classBuilder, Definition definition) {
     if (definition instanceof BeanDefinition) {
       BeanDefinition bean = (BeanDefinition) definition;
 
-      Set<VariableElement> autoBound = bean.getType().getEnclosedElements().stream()
-          .filter(elm -> elm.getKind().isField()).map(elm -> MoreElements.asVariable(elm))
+      Set<VariableElement> autoBound = MoreTypes.asTypeElement(bean.getType()).getEnclosedElements()
+          .stream().filter(elm -> elm.getKind().isField()).map(elm -> MoreElements.asVariable(elm))
           .filter(elm -> elm.getAnnotation(AutoBound.class) != null).collect(Collectors.toSet());
 
-      Set<VariableElement> bounds = bean.getType().getEnclosedElements().stream()
-          .filter(elm -> elm.getKind().isField()).map(elm -> MoreElements.asVariable(elm))
+      Set<VariableElement> bounds = MoreTypes.asTypeElement(bean.getType()).getEnclosedElements()
+          .stream().filter(elm -> elm.getKind().isField()).map(elm -> MoreElements.asVariable(elm))
           .filter(elm -> elm.getAnnotation(Bound.class) != null).collect(Collectors.toSet());
 
       if (autoBound.size() > 1) {

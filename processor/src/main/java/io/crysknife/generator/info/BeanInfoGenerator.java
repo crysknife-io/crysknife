@@ -14,9 +14,10 @@
 
 package io.crysknife.generator.info;
 
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.nextstep.BeanProcessor;
-import io.crysknife.nextstep.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.task.Task;
 
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -25,26 +26,24 @@ import java.io.PrintWriter;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
-public class BeanInfoGenerator {
+public class BeanInfoGenerator implements Task {
 
-  private final BeanProcessor beanProcessor;
   private IOCContext iocContext;
   private AbstractBeanInfoGenerator generator;
 
-  public BeanInfoGenerator(IOCContext iocContext, BeanProcessor beanProcessor) {
+  public BeanInfoGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
-    this.beanProcessor = beanProcessor;
     if (iocContext.getGenerationContext().isGwt2()) {
       generator = new BeanInfoGWT2GeneratorBuilder(iocContext);
     } else if (iocContext.getGenerationContext().isJre()) {
-      generator = new BeanInfoJREGeneratorBuilder(iocContext, beanProcessor);
+      generator = new BeanInfoJREGeneratorBuilder(iocContext);
     } else {
       generator = new BeanInfoJ2CLGeneratorBuilder(iocContext);
     }
   }
 
-  public void generate() {
-    beanProcessor.getBeans().forEach((k, bean) -> {
+  public void execute() throws UnableToCompleteException {
+    iocContext.getBeans().forEach((k, bean) -> {
       try {
         generate(bean);
       } catch (IOException e) {

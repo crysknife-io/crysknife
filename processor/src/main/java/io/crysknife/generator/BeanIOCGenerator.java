@@ -14,27 +14,18 @@
 
 package io.crysknife.generator;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.annotation.processing.FilerException;
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
-
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.definition.BeanDefinition;
-import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.util.Utils;
+
+import javax.annotation.processing.FilerException;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/4/19
@@ -44,14 +35,6 @@ public abstract class BeanIOCGenerator extends IOCGenerator {
   public BeanIOCGenerator(IOCContext iocContext) {
     super(iocContext);
   }
-
-  /**
-   * @param clazz
-   * @param fieldPoint
-   *
-   * @return Expression, how to call instance of this bean ?
-   */
-  public abstract Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint);
 
   public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
     try {

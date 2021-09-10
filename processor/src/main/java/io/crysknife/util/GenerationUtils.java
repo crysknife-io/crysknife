@@ -25,19 +25,16 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.InstanceImpl;
-import io.crysknife.client.internal.OnFieldAccessed;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.point.FieldPoint;
-import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectionPointDefinition;
 import jsinterop.base.Js;
 
 import javax.inject.Named;
@@ -64,7 +61,7 @@ public class GenerationUtils {
   public MethodCallExpr getFieldAccessCallExpr(BeanDefinition beanDefinition,
       VariableElement field) {
     if (context.getGenerationContext().isGwt2()) {
-      return new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+      return new MethodCallExpr(new NameExpr(beanDefinition.getType() + "Info"),
           field.getSimpleName().toString()).addArgument("instance");
     }
 

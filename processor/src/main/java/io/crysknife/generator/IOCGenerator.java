@@ -21,8 +21,8 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.nextstep.definition.Definition;
-import io.crysknife.nextstep.definition.InjectionPointDefinition;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.util.GenerationUtils;
 
 /**
