@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.enterprise.event.Event;
+import javax.inject.Inject;
 
 import org.jboss.elemento.IsElement;
 import io.crysknife.client.BeanManager;
@@ -47,9 +48,16 @@ import io.crysknife.ui.navigation.client.shared.NavigationEvent;
  */
 public abstract class NavigationGraph {
 
+  @Inject
   protected BeanManager beanManager;
-
+  @Inject
   protected Event<NavigationEvent> event;
+
+
+  public NavigationGraph(BeanManager beanManager, Event<NavigationEvent> event) {
+    this.beanManager = beanManager;
+    this.event = event;
+  }
 
   /**
    * Maps page names to the classes that implement them. The subclass's constructor is responsible

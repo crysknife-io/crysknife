@@ -124,6 +124,9 @@ public class NavigationGraphGenerator {
     constructorDeclaration.addParameter(BeanManager.class.getSimpleName(), "beanManager");
     constructorDeclaration.addParameter("Event<NavigationEvent>", "event");
 
+    MethodCallExpr superExpr =
+        new MethodCallExpr("super").addArgument("beanManager").addArgument("event");
+    constructorDeclaration.getBody().addAndGetStatement(superExpr);
     generatePages(constructorDeclaration);
 
     try {

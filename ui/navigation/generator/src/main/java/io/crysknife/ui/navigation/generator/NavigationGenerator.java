@@ -14,26 +14,30 @@
 
 package io.crysknife.ui.navigation.generator;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.google.auto.common.MoreElements;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
+import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
+
+import javax.inject.Inject;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
@@ -47,7 +51,12 @@ public class NavigationGenerator extends SingletonGenerator {
 
   @Override
   public void register() {
-    iocContext.register(Inject.class, NavigationGraph.class, WiringElementType.BEAN, this);
+
+    iocContext.register(Inject.class, NavigationGraph.class, WiringElementType.FIELD_TYPE, this);
+    iocContext.getBlacklist().add(NavigationGraph.class.getCanonicalName());
+
+    iocContext.getOrderedBeans().add(iocContext.getTypeMirror(NavigationGraph.class));
+    // iocContext.getOrderedBeans().add(iocContext.getTypeMirror(Navigation.class));
   }
 
   @Override
@@ -58,28 +67,32 @@ public class NavigationGenerator extends SingletonGenerator {
             .stream().filter(elm -> elm.getKind().equals(ElementKind.CLASS))
             .map(elm -> MoreElements.asType(elm)).collect(Collectors.toSet());
 
-    /*
-     * TypeElement type = iocContext.getGenerationContext().getElements()
-     * .getTypeElement(Navigation.class.getCanonicalName()); BeanDefinition navigation =
-     * iocContext.getBeanDefinitionOrCreateAndReturn(type);
-     * 
-     * pages.forEach(elm -> { BeanDefinition page =
-     * iocContext.getBeanDefinitionOrCreateAndReturn(elm); navigation.getDependsOn().add(page); });
-     * 
-     * new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
-     * iocContext.getGenerationContext());
-     */
+    new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
+        iocContext.getGenerationContext());
   }
 
   @Override
   protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
-    return newInstance
+    newInstance.setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph");
+    newInstance.addArgument("beanManager");
+    newInstance.addArgument(
+        new MethodCallExpr(new MethodCallExpr(new NameExpr("_field_event"), "get"), "get"));
+    return newInstance;
+  }
+
+  @Override
+  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
+      InjectionPointDefinition fieldPoint) {
+    ObjectCreationExpr newInstance = new ObjectCreationExpr();
+
+
+    return generationUtils.wrapCallInstanceImpl(classBuilder, newInstance
         .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
         .addArgument(new MethodCallExpr(
             new NameExpr(BeanManager.class.getPackage().getName() + ".BeanManagerImpl"), "get"))
         .addArgument(new MethodCallExpr(
             new MethodCallExpr(new NameExpr("javax.enterprise.event.Event_Factory"), "get"), "get")
-                .addArgument(NavigationEvent.class.getCanonicalName() + ".class"));
+                .addArgument(NavigationEvent.class.getCanonicalName() + ".class")));
   }
 }
