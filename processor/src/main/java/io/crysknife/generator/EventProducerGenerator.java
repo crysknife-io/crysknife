@@ -14,29 +14,38 @@
 
 package io.crysknife.generator;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.IOCContext;
+import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
+
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.lang.model.element.TypeElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/31/19
@@ -51,13 +60,22 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
   @Override
   public void register() {
     iocContext.register(Inject.class, Event.class, WiringElementType.FIELD_TYPE, this);
-    iocContext.getBlacklist().add(Event.class.getCanonicalName());
+  }
 
-    // TypeElement type = iocContext.getGenerationContext().getElements()
-    // .getTypeElement(Event.class.getCanonicalName());
-    // BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
-    // beanDefinition.setGenerator(this);
-    // iocContext.getBeans().put(type, beanDefinition);
+  @Override
+  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
+      InjectionPointDefinition fieldPoint) {
+    classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
+    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class.getCanonicalName());
+    MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments();
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(new NameExpr("Event_Factory.get().get("
+        + MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0)
+        + ".class)")));
+
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
   }
 
   @Override
@@ -65,7 +83,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
     if (definition instanceof BeanDefinition) {
       BeanDefinition beanDefinition = (BeanDefinition) definition;
       initClassBuilder(clazz, beanDefinition);
-      generateFactoryCreateMethod(clazz, beanDefinition);
+      generateBeanGetMethod(clazz, beanDefinition);
       write(clazz, beanDefinition, iocContext.getGenerationContext());
     }
   }
@@ -73,7 +91,8 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
   @Override
   public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
     clazz.getClassCompilationUnit().setPackageDeclaration(beanDefinition.getPackageName());
-    clazz.setClassName(beanDefinition.getClassFactoryName());
+    clazz.setClassName(
+        MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString() + "_Factory");
     clazz.getClassCompilationUnit().addImport("io.crysknife.client.internal.AbstractEventFactory");
 
     ClassOrInterfaceType factory = new ClassOrInterfaceType();
@@ -81,35 +100,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
     clazz.getExtendedTypes().add(factory);
   }
 
-  /*
-   * @Override public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint)
-   * { classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
-   * classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class.getCanonicalName());
-   * MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
-   * 
-   * LambdaExpr lambda = new LambdaExpr(); lambda.setEnclosingParameters(true); lambda.setBody(new
-   * ExpressionStmt(new NameExpr("Event_Factory.get().get(" +
-   * MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0) + ".class)")));
-   * 
-   * return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda); }
-   */
-
-  // @Override
-  public void addFactoryFieldInitialization(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
-    String varName = Utils.toVariableName(beanDefinition.getQualifiedName());
-    MethodCallExpr callForBeanManagerImpl =
-        new MethodCallExpr(new NameExpr("Event_Factory").getNameAsExpression(), "get");
-    ThisExpr clazz = new ThisExpr();
-    FieldAccessExpr field = new FieldAccessExpr(clazz, varName);
-    AssignExpr assign = new AssignExpr().setTarget(field).setValue(callForBeanManagerImpl);
-    classBuilder.addStatementToConstructor(assign);
-  }
-
-  // @Override
-  public void generateFactoryCreateMethod(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
+  public void generateBeanGetMethod(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
     MethodDeclaration getMethodDeclaration =
         classBuilder.addMethod("get", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
     getMethodDeclaration.setType("Event_Factory");

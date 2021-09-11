@@ -37,6 +37,7 @@ public class BeanDefinition implements Definition {
   private Set<InjectionPointDefinition> constructorParams = new LinkedHashSet<>();
   private Set<MethodDefinition> methods = new LinkedHashSet<>();
   private Set<BeanDefinition> dependencies = new LinkedHashSet<>();
+  private Set<IOCGenerator> decorators = new LinkedHashSet<>();
   private Optional<IOCGenerator> iocGenerator = Optional.empty();
 
   private Set<BeanDefinition> subclasses = new LinkedHashSet<>();
@@ -107,5 +108,9 @@ public class BeanDefinition implements Definition {
 
   public String getQualifiedName() {
     return MoreTypes.asTypeElement(type).getQualifiedName().toString();
+  }
+
+  public Set<IOCGenerator> getDecorators() {
+    return decorators;
   }
 }

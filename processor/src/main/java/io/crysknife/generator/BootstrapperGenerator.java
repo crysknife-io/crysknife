@@ -35,12 +35,12 @@ import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.Factory;
 import io.crysknife.client.internal.OnFieldAccessed;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.GenerationContext;
-import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.GenerationContext;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Instance;
@@ -73,8 +73,6 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   @Override
   public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
     String pkg = Utils.getPackageName(MoreTypes.asTypeElement(beanDefinition.getType()));
-
-    String classFactoryName = Utils.getQualifiedFactoryName(beanDefinition.getType());
 
     clazz.getClassCompilationUnit().setPackageDeclaration(pkg);
 
@@ -155,11 +153,14 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
           .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
               .setValue(new MethodCallExpr(new NameExpr("interceptor"), "getProxy")));
     }
-    /*
-     * if (!iocContext.getGenerationContext().isJre()) { beanDefinition.getFieldInjectionPoints()
-     * .forEach(fieldPoint -> classBuilder.getGetMethodDeclaration().getBody().get()
-     * .addStatement(getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint))); }
-     */
+
+    if (!iocContext.getGenerationContext().isJre()) {
+      for (InjectionPointDefinition fieldPoint : beanDefinition.getFields()) {
+        classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+            getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field"));
+      }
+    }
+
   }
 
   @Override
@@ -194,7 +195,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
    * ClassOrInterfaceType type = new ClassOrInterfaceType();
    * type.setName(Instance.class.getCanonicalName()); type.setTypeArguments(new
    * ClassOrInterfaceType().setName(beanDefinition.getQualifiedName()));
-   * 
+   *
    * classBuilder.addField(type, varName, Modifier.Keyword.FINAL, Modifier.Keyword.PRIVATE); }
    */
 

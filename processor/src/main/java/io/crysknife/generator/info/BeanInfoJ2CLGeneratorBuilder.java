@@ -15,11 +15,14 @@
 package io.crysknife.generator.info;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
-import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 /**
@@ -55,11 +58,13 @@ public class BeanInfoJ2CLGeneratorBuilder extends AbstractBeanInfoGenerator {
   }
 
   private void addFields() {
-    /*
-     * for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
-     * classDeclaration.addFieldWithInitializer(String.class, fieldPoint.getName(), new
-     * StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getField())), Modifier.Keyword.PUBLIC,
-     * Modifier.Keyword.FINAL, Modifier.Keyword.STATIC); }
-     */
+
+    for (InjectionPointDefinition fieldPoint : bean.getFields()) {
+      classDeclaration.addFieldWithInitializer(String.class,
+          fieldPoint.getVariableElement().getSimpleName().toString(),
+          new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getVariableElement())),
+          Modifier.Keyword.PUBLIC, Modifier.Keyword.FINAL, Modifier.Keyword.STATIC);
+    }
+
   }
 }

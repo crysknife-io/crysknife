@@ -36,12 +36,12 @@ import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.Factory;
 import io.crysknife.client.internal.OnFieldAccessed;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.annotation.PostConstruct;
@@ -152,8 +152,18 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     }
 
     beanDefinition.getFields().forEach(field -> {
+      if (!iocContext.getGenerationContext().isJre()) {
+        Expression expression =
+            getFieldAccessorExpression(classBuilder, beanDefinition, field, "field");
+        classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(expression);
+      }
       addFactoryFieldInitialization(classBuilder, field, "field", beanDefinition);
     });
+
+    beanDefinition.getDecorators().stream()
+        .sorted(
+            Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
+        .forEach(gen -> gen.generate(classBuilder, beanDefinition));
   }
 
   public void addFactoryFieldInitialization(ClassBuilder classBuilder,
@@ -252,16 +262,12 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
     while (injectionPointDefinitionIterator.hasNext()) {
       InjectionPointDefinition argument = injectionPointDefinitionIterator.next();
       generateFactoryFieldDeclaration(classBuilder, argument, "constructor");
-      newInstance
-          .addArgument(new MethodCallExpr(new MethodCallExpr(
-              new FieldAccessExpr(new ThisExpr(),
-                  "_constructor_" + argument.getVariableElement().getSimpleName().toString()),
-              "get"), "get"));
+      newInstance.addArgument(
+          getFieldAccessorExpression(classBuilder, definition, argument, "constructor"));
     }
 
-    definition.getFields().forEach(field -> {
-      generateFactoryFieldDeclaration(classBuilder, field, "field");
-    });
+    definition.getFields()
+        .forEach(field -> generateFactoryFieldDeclaration(classBuilder, field, "field"));
 
     Expression instanceFieldAssignExpr;
 
@@ -304,41 +310,44 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
   }
 
-  /*
-   * @Override public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
-   * 
-   * MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-   * .addArgument(new FieldAccessExpr( new
-   * NameExpr(fieldPoint.getType().getQualifiedName().toString()), "class"));
-   * 
-   * return callForProducer; }
-   */
+  protected Expression getFieldAccessorExpression(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition, InjectionPointDefinition fieldPoint, String kind) {
 
-  /*
-   * protected Expression getFieldAccessorExpression(ClassBuilder classBuilder, BeanDefinition
-   * beanDefinition, FieldPoint fieldPoint) { String varName = "_field_" + fieldPoint.getName();
-   * 
-   * if (iocContext.getGenerationContext().isGwt2()) { return new
-   * MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType()) + "Info." +
-   * fieldPoint.getName()) .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
-   * .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")); }
-   * 
-   * FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor"); String
-   * clazzName = MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString();
-   * 
-   * MethodCallExpr reflect = new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()),
-   * "objectProperty") .addArgument(clazzName + "Info." + fieldPoint.getName()) .addArgument(new
-   * FieldAccessExpr(new ThisExpr(), "instance"));
-   * 
-   * LambdaExpr lambda = new LambdaExpr(); lambda.setEnclosingParameters(true); lambda.setBody(new
-   * ExpressionStmt( new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
-   * 
-   * ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
-   * onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
-   * onFieldAccessedCreationExpr.addArgument(lambda);
-   * 
-   * return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
-   * .addArgument(onFieldAccessedCreationExpr); }
-   */
+    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
+
+    if (kind.equals("constructor")) {
+      return new MethodCallExpr(
+          new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "get");
+    }
+
+
+    if (iocContext.getGenerationContext().isGwt2()) {
+      return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
+          + "Info." + fieldPoint.getVariableElement().getSimpleName())
+              .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
+              .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"));
+    }
+
+    FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
+    String clazzName = MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString();
+
+    MethodCallExpr reflect =
+        new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+            .addArgument(clazzName + "Info." + fieldPoint.getVariableElement().getSimpleName())
+            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(
+        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
+
+    ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
+    onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
+    onFieldAccessedCreationExpr.addArgument(lambda);
+
+    return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
+        .addArgument(onFieldAccessedCreationExpr);
+  }
+
 
 }

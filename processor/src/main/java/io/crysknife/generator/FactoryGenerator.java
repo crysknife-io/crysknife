@@ -60,15 +60,16 @@ public class FactoryGenerator implements Task {
           new ClassBuilder(beanDefinition).build();
         } else {
           Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
-          maybe.ifPresent(candidate -> {
-            new ClassBuilder(candidate).build();
-          });
+          maybe.ifPresent(candidate -> new ClassBuilder(candidate).build());
         }
       }
     }
   }
 
   private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
+    if (beanDefinition.getIocGenerator().isPresent()) {
+      return true;
+    }
     return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
         && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT);
   }
