@@ -15,6 +15,7 @@
 package org.treblereel;
 
 import org.junit.Test;
+import org.treblereel.produces.scoped.URLPatternMatcherHolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -43,4 +44,16 @@ public class SimpleBeanProducerTest extends AbstractTest {
     assertNotNull(app.getQualifierBeanProducerTest().getQualifierBean());
     assertEquals("REDHAT", app.getQualifierBeanProducerTest().getQualifierBean().say());
   }
+
+  @Test
+  public void testURLPatternMatcherTest() {
+    assertNotNull(app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
+        .get().matcher);
+    assertNotNull(app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
+        .get().matcher.test());
+    assertEquals("URLPatternMatcherProvider", app.beanManager
+        .<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class).get().matcher.test());
+  }
+
+
 }

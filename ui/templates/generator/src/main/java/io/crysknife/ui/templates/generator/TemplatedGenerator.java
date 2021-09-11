@@ -342,9 +342,9 @@ public class TemplatedGenerator extends IOCGenerator {
     if (definition instanceof BeanDefinition) {
       beanDefinition = (BeanDefinition) definition;
       validateType(MoreTypes.asTypeElement(beanDefinition.getType()),
-          beanDefinition.getType().getAnnotation(Templated.class));
+          MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
       processType(builder, MoreTypes.asTypeElement(beanDefinition.getType()),
-          beanDefinition.getType().getAnnotation(Templated.class));
+          MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
     }
   }
 
@@ -519,8 +519,7 @@ public class TemplatedGenerator extends IOCGenerator {
 
   private void generateWrapper(ClassBuilder builder, TemplateContext templateContext) {
     ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
-    wrapper
-        .setName(MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName().toString());
+    wrapper.setName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString());
     wrapper.addExtendedType(beanDefinition.getQualifiedName());
     wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
     String element = getElementFromTag(templateContext);

@@ -18,19 +18,19 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.MutationRecord;
 import io.crysknife.annotation.Generator;
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
@@ -64,21 +64,6 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
 
     htmlElement = iocContext.getGenerationContext().getElements()
         .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
-
-    TypeElement mutationObserver = iocContext.getGenerationContext().getElements()
-        .getTypeElement(MutationObserver.class.getCanonicalName());
-
-    /*
-     * mutationObserverBeanDefinition =
-     * iocContext.getBeanDefinitionOrCreateAndReturn(mutationObserver);
-     * 
-     * iocContext.getBeans().put(mutationObserver.asType(), mutationObserverBeanDefinition);
-     * TypeMirror mirror =
-     * iocContext.getGenerationContext().getTypes().erasure(mutationObserver.asType());
-     * 
-     * if (!iocContext.getOrderedBeans().contains(mirror)) {
-     * iocContext.getOrderedBeans().add(mirror); }
-     */
   }
 
   public void generate(ClassBuilder builder, Definition definition) {
@@ -167,10 +152,6 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
   public void generateCallback(ClassBuilder builder, MethodDefinition definition) {
     builder.getClassCompilationUnit().addImport(MutationObserver.class);
     builder.getClassCompilationUnit().addImport(ObserverCallback.class);
-    builder.getClassCompilationUnit().addImport("io.crysknife.client.BeanManagerImpl");
-
-    ClassOrInterfaceDeclaration factoryDeclaration =
-        new ClassOrInterfaceDeclaration().setName("BeanManagerImpl");
 
     String callbackMethodName =
         definition.getExecutableElement().getAnnotation(OnAttach.class) != null
@@ -183,10 +164,8 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
 
     EnclosedExpr castToAbstractEventHandler =
         new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("MutationObserver"),
-            new MethodCallExpr(new MethodCallExpr(
-                new MethodCallExpr(factoryDeclaration.getNameAsExpression(), "get"), "lookupBean")
-                    .addArgument("MutationObserver.class"),
-                "get")));
+            new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                .addArgument("MutationObserver.class"), "get")));
 
     builder.getGetMethodDeclaration().getBody().get()
         .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)

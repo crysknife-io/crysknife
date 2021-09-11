@@ -83,10 +83,12 @@ public class ApplicationProcessor extends AbstractProcessor {
 
     TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
     // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
+    taskGroup.addTask(new FireBeforeTask(iocContext, logger));
+
     taskGroup.addTask(new ProcessComponentScanAnnotationTask(iocContext, logger, application));
     taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
     taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
-    taskGroup.addTask(new FireBeforeTask(iocContext, logger));
+    // taskGroup.addTask(new FireBeforeTask(iocContext, logger));
     taskGroup.addTask(new ProcessGraphTask(iocContext, logger, application));
     taskGroup.addTask(new FactoryGenerator(iocContext));
     taskGroup.addTask(new BeanInfoGenerator(iocContext));

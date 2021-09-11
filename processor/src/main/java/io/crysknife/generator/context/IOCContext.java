@@ -218,6 +218,14 @@ public class IOCContext {
     return results;
   }
 
+  public TypeMirror getTypeMirror(Class clazz) {
+    return getTypeMirror(clazz.getCanonicalName());
+  }
+
+  public TypeMirror getTypeMirror(String clazz) {
+    return generationContext.getElements().getTypeElement(clazz).asType();
+  }
+
   public Set<VariableElement> getFieldsByAnnotation(String annotation) {
     if (fieldsByAnnotation.containsKey(annotation)) {
       return fieldsByAnnotation.get(annotation);

@@ -14,9 +14,9 @@
 
 package io.crysknife.generator.info;
 
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
 import io.crysknife.task.Task;
 
 import javax.tools.JavaFileObject;
@@ -46,6 +46,8 @@ public class BeanInfoGenerator implements Task {
     iocContext.getBeans().forEach((k, bean) -> {
       try {
         generate(bean);
+      } catch (javax.annotation.processing.FilerException e) {
+        // Attempt to recreate a file for type
       } catch (IOException e) {
         throw new Error(e);
       }
