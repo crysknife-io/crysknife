@@ -33,12 +33,12 @@ public class BeanDefinition implements Definition {
 
   private final TypeMirror type;
 
-  private Set<InjectionPointDefinition> fields = new LinkedHashSet<>();
-  private Set<InjectionPointDefinition> constructorParams = new LinkedHashSet<>();
+  private Set<InjectableVariableDefinition> fields = new LinkedHashSet<>();
+  private Set<InjectionParameterDefinition> constructorParams = new LinkedHashSet<>();
   private Set<MethodDefinition> methods = new LinkedHashSet<>();
   private Set<BeanDefinition> dependencies = new LinkedHashSet<>();
-  private Set<IOCGenerator> decorators = new LinkedHashSet<>();
-  private Optional<IOCGenerator> iocGenerator = Optional.empty();
+  private Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
+  private Optional<IOCGenerator<BeanDefinition>> iocGenerator = Optional.empty();
 
   private Set<BeanDefinition> subclasses = new LinkedHashSet<>();
 
@@ -50,11 +50,11 @@ public class BeanDefinition implements Definition {
     return type;
   }
 
-  public Set<InjectionPointDefinition> getFields() {
+  public Set<InjectableVariableDefinition> getFields() {
     return fields;
   }
 
-  public Set<InjectionPointDefinition> getConstructorParams() {
+  public Set<InjectionParameterDefinition> getConstructorParams() {
     return constructorParams;
   }
 
@@ -74,11 +74,11 @@ public class BeanDefinition implements Definition {
     return dependencies;
   }
 
-  public Optional<IOCGenerator> getIocGenerator() {
+  public Optional<IOCGenerator<BeanDefinition>> getIocGenerator() {
     return iocGenerator;
   }
 
-  public void setIocGenerator(IOCGenerator iocGenerator) {
+  public void setIocGenerator(IOCGenerator<BeanDefinition> iocGenerator) {
     this.iocGenerator = Optional.of(iocGenerator);
   }
 
@@ -110,7 +110,7 @@ public class BeanDefinition implements Definition {
     return MoreTypes.asTypeElement(type).getQualifiedName().toString();
   }
 
-  public Set<IOCGenerator> getDecorators() {
+  public Set<IOCGenerator<BeanDefinition>> getDecorators() {
     return decorators;
   }
 }

@@ -71,13 +71,13 @@ import elemental2.dom.HTMLTrackElement;
 import elemental2.dom.HTMLUListElement;
 import elemental2.dom.HTMLVideoElement;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -159,7 +159,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
 
   @Override
   public Expression generateBeanLookupCall(ClassBuilder classBuilder,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
     classBuilder.getClassCompilationUnit().addImport(MoreTypes
         .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
@@ -169,7 +169,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
             "createElement").addArgument(getTagFromType(fieldPoint)));
   }
 
-  private StringLiteralExpr getTagFromType(InjectionPointDefinition fieldPoint) {
+  private StringLiteralExpr getTagFromType(InjectableVariableDefinition fieldPoint) {
     if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null
         && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("")) {
       return new StringLiteralExpr(

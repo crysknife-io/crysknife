@@ -21,7 +21,7 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
@@ -59,7 +59,7 @@ public class BeanInfoJ2CLGeneratorBuilder extends AbstractBeanInfoGenerator {
 
   private void addFields() {
 
-    for (InjectionPointDefinition fieldPoint : bean.getFields()) {
+    for (InjectableVariableDefinition fieldPoint : bean.getFields()) {
       classDeclaration.addFieldWithInitializer(String.class,
           fieldPoint.getVariableElement().getSimpleName().toString(),
           new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getVariableElement())),

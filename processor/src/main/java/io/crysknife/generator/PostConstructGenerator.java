@@ -14,21 +14,21 @@
 
 package io.crysknife.generator;
 
-import javax.annotation.PostConstruct;
-
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.MethodDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.MethodDefinition;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
 @Generator(priority = Integer.MAX_VALUE)
-public class PostConstructGenerator extends IOCGenerator {
+public class PostConstructGenerator extends IOCGenerator<MethodDefinition> {
 
   public PostConstructGenerator(IOCContext iocContext) {
     super(iocContext);
@@ -40,14 +40,11 @@ public class PostConstructGenerator extends IOCGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, io.crysknife.definition.Definition definition) {
-    if (definition instanceof MethodDefinition) {
-      MethodDefinition postConstract = (MethodDefinition) definition;
-      FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-      MethodCallExpr method = new MethodCallExpr(instance,
-          postConstract.getExecutableElement().getSimpleName().toString());
-      clazz.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
-    }
+  public void generate(ClassBuilder clazz, MethodDefinition postConstract) {
+    FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
+    MethodCallExpr method = new MethodCallExpr(instance,
+        postConstract.getExecutableElement().getSimpleName().toString());
+    clazz.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
 
   }
 

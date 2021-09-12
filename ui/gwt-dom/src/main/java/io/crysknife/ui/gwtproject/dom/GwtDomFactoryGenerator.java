@@ -20,13 +20,13 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
 import org.gwtproject.dom.client.AnchorElement;
 import org.gwtproject.dom.client.AreaElement;
 import org.gwtproject.dom.client.AudioElement;
@@ -92,7 +92,7 @@ import java.util.function.Function;
 @Generator(priority = 100000)
 public class GwtDomFactoryGenerator extends BeanIOCGenerator {
 
-  private static final Map<Class, Function<InjectionPointDefinition, MethodCallExpr>> HTML_ELEMENTS =
+  private static final Map<Class, Function<InjectableVariableDefinition, MethodCallExpr>> HTML_ELEMENTS =
       new HashMap<>();
 
   static {
@@ -431,12 +431,12 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
             "createVideoElement"));
   }
 
-  private static boolean isNamed(InjectionPointDefinition fieldPoint) {
+  private static boolean isNamed(InjectableVariableDefinition fieldPoint) {
     return fieldPoint.getVariableElement().getAnnotation(Named.class) != null
         && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("");
   }
 
-  private static String getNamed(InjectionPointDefinition fieldPoint) {
+  private static String getNamed(InjectableVariableDefinition fieldPoint) {
     return fieldPoint.getVariableElement().getAnnotation(Named.class).value();
   }
 
@@ -458,7 +458,7 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
 
   @Override
   public Expression generateBeanLookupCall(ClassBuilder classBuilder,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
     classBuilder.getClassCompilationUnit().addImport(Provider.class);
     classBuilder.getClassCompilationUnit().addImport(MoreTypes

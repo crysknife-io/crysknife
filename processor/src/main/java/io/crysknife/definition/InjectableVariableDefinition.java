@@ -17,50 +17,36 @@ package io.crysknife.definition;
 import io.crysknife.generator.IOCGenerator;
 
 import javax.lang.model.element.VariableElement;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/4/21
+ * @author Dmitrii Tikhomirov Created by treblereel 9/11/21
  */
-public class InjectionPointDefinition implements Definition {
+public class InjectableVariableDefinition extends VariableDefinition implements Injectable {
 
-  private final VariableElement variableElement;
-  private final BeanDefinition parent;
-  private final Set<IOCGenerator> decorators = new HashSet<>();
-  private IOCGenerator generator;
+  private Optional<IOCGenerator<BeanDefinition>> generator = Optional.empty();
   private Optional<BeanDefinition> implementation = Optional.empty();
 
-  public InjectionPointDefinition(BeanDefinition parent, VariableElement variableElement) {
-    this.variableElement = variableElement;
-    this.parent = parent;
+  public InjectableVariableDefinition(BeanDefinition parent, VariableElement variableElement) {
+    super(parent, variableElement);
   }
 
-  public VariableElement getVariableElement() {
-    return variableElement;
-  }
-
-  public BeanDefinition getBeanDefinition() {
-    return parent;
-  }
-
-  public IOCGenerator getGenerator() {
+  @Override
+  public Optional<IOCGenerator<BeanDefinition>> getGenerator() {
     return generator;
   }
 
-  public void setGenerator(IOCGenerator generator) {
-    this.generator = generator;
+  @Override
+  public void setGenerator(IOCGenerator<BeanDefinition> generator) {
+    this.generator = Optional.of(generator);
   }
 
-  public Set<IOCGenerator> getDecorators() {
-    return decorators;
-  }
-
+  @Override
   public Optional<BeanDefinition> getImplementation() {
     return implementation;
   }
 
+  @Override
   public void setImplementation(BeanDefinition implementation) {
     this.implementation = Optional.of(implementation);
   }

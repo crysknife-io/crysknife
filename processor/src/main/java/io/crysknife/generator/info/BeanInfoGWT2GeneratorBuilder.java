@@ -16,7 +16,7 @@ package io.crysknife.generator.info;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
@@ -56,7 +56,7 @@ public class BeanInfoGWT2GeneratorBuilder extends AbstractBeanInfoGenerator {
 
 
   private void addFields() {
-    for (InjectionPointDefinition fieldPoint : bean.getFields()) {
+    for (InjectableVariableDefinition fieldPoint : bean.getFields()) {
       clazz.append(newLine);
       makeSetter(fieldPoint);
       clazz.append(newLine);
@@ -64,7 +64,7 @@ public class BeanInfoGWT2GeneratorBuilder extends AbstractBeanInfoGenerator {
     }
   }
 
-  private void makeSetter(InjectionPointDefinition fieldPoint) {
+  private void makeSetter(InjectableVariableDefinition fieldPoint) {
     clazz.append("static native void ").append(fieldPoint.getVariableElement().getSimpleName())
         .append("(");
     clazz.append(MoreTypes.asTypeElement(bean.getType()).getQualifiedName()).append(" ")
@@ -78,7 +78,7 @@ public class BeanInfoGWT2GeneratorBuilder extends AbstractBeanInfoGenerator {
     clazz.append(newLine).append("}-*/;");
   }
 
-  private void makeGetter(InjectionPointDefinition fieldPoint) {
+  private void makeGetter(InjectableVariableDefinition fieldPoint) {
     clazz.append("static native ")
         .append(
             MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName())

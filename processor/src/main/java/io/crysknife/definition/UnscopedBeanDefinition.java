@@ -54,8 +54,7 @@ public class UnscopedBeanDefinition extends BeanDefinition {
     }
 
     public Expression generateBeanLookupCall(ClassBuilder clazz,
-        InjectionPointDefinition fieldPoint) {
-      // new InstanceImpl(() -> new org.treblereel.produces.SimpleBeanSingleton())
+        InjectableVariableDefinition fieldPoint) {
 
       String clazzName =
           Utils.getQualifiedName(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()));

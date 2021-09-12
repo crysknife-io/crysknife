@@ -19,17 +19,14 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
-import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.Definition;
 import io.crysknife.ui.databinding.client.api.AutoBound;
 import io.crysknife.ui.databinding.client.api.Bound;
 import io.crysknife.ui.databinding.client.api.DataBinder;
@@ -44,7 +41,7 @@ import java.util.stream.Collectors;
  * @author Dmitrii Tikhomirov Created by treblereel 9/1/21
  */
 @Generator(priority = 100003)
-public class AutoBoundGenerator extends IOCGenerator {
+public class AutoBoundGenerator extends IOCGenerator<InjectableVariableDefinition> {
 
   public AutoBoundGenerator(IOCContext iocContext) {
     super(iocContext);
@@ -55,48 +52,43 @@ public class AutoBoundGenerator extends IOCGenerator {
     iocContext.register(AutoBound.class, WiringElementType.FIELD_DECORATOR, this); // PARAMETER
   }
 
-  public void generate(ClassBuilder classBuilder, Definition definition) {
-    if (definition instanceof InjectionPointDefinition) {
-      InjectionPointDefinition field = (InjectionPointDefinition) definition;
+  public void generate(ClassBuilder classBuilder, InjectableVariableDefinition field) {
+    Set<VariableElement> autoBound = ElementFilter
+        .fieldsIn(MoreTypes.asElement(field.getVariableElement().getEnclosingElement().asType())
+            .getEnclosedElements())
+        .stream().filter(elm -> elm.getAnnotation(AutoBound.class) != null)
+        .collect(Collectors.toSet());
 
-      Set<VariableElement> autoBound = ElementFilter
-          .fieldsIn(MoreTypes.asElement(field.getVariableElement().getEnclosingElement().asType())
-              .getEnclosedElements())
-          .stream().filter(elm -> elm.getAnnotation(AutoBound.class) != null)
-          .collect(Collectors.toSet());
+    Set<VariableElement> bounds = ElementFilter
+        .fieldsIn(MoreTypes.asElement(field.getVariableElement().getEnclosingElement().asType())
+            .getEnclosedElements())
+        .stream().filter(elm -> elm.getAnnotation(Bound.class) != null).collect(Collectors.toSet());
 
-      Set<VariableElement> bounds = ElementFilter
-          .fieldsIn(MoreTypes.asElement(field.getVariableElement().getEnclosingElement().asType())
-              .getEnclosedElements())
-          .stream().filter(elm -> elm.getAnnotation(Bound.class) != null)
-          .collect(Collectors.toSet());
-
-      if (autoBound.size() > 1) {
-        throw new GenerationException(
-            "only one elemental annotated with @AutoBound must be presented at "
-                + field.getBeanDefinition().getQualifiedName());
-      }
-
-      // bounds
-      classBuilder.getGetMethodDeclaration().getBody().ifPresent(
-          body -> autoBound.stream().forEach(dataBinderVariableElement -> bounds.forEach(bound -> {
-            Expression fieldAccessExpr = generationUtils
-                .getFieldAccessCallExpr(field.getBeanDefinition(), dataBinderVariableElement);
-            MethodCallExpr call =
-                new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
-                    .addArgument(fieldAccessExpr);
-            call.setTypeArguments(
-                new ClassOrInterfaceType().setName(DataBinder.class.getCanonicalName()));
-            MethodCallExpr bind = new MethodCallExpr(call, "bind");
-            String boundName = bound.getAnnotation(Bound.class).property().equals("")
-                ? bound.getSimpleName().toString()
-                : bound.getAnnotation(Bound.class).property();
-
-            bind.addArgument(
-                generationUtils.getFieldAccessCallExpr(field.getBeanDefinition(), bound));
-            bind.addArgument(new StringLiteralExpr(boundName));
-            body.addAndGetStatement(bind);
-          })));
+    if (autoBound.size() > 1) {
+      throw new GenerationException(
+          "only one elemental annotated with @AutoBound must be presented at "
+              + field.getBeanDefinition().getQualifiedName());
     }
+
+    // bounds
+    classBuilder.getGetMethodDeclaration().getBody().ifPresent(
+        body -> autoBound.stream().forEach(dataBinderVariableElement -> bounds.forEach(bound -> {
+          Expression fieldAccessExpr = generationUtils
+              .getFieldAccessCallExpr(field.getBeanDefinition(), dataBinderVariableElement);
+          MethodCallExpr call =
+              new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
+                  .addArgument(fieldAccessExpr);
+          call.setTypeArguments(
+              new ClassOrInterfaceType().setName(DataBinder.class.getCanonicalName()));
+          MethodCallExpr bind = new MethodCallExpr(call, "bind");
+          String boundName = bound.getAnnotation(Bound.class).property().equals("")
+              ? bound.getSimpleName().toString()
+              : bound.getAnnotation(Bound.class).property();
+
+          bind.addArgument(
+              generationUtils.getFieldAccessCallExpr(field.getBeanDefinition(), bound));
+          bind.addArgument(new StringLiteralExpr(boundName));
+          body.addAndGetStatement(bind);
+        })));
   }
 }

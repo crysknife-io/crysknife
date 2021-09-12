@@ -24,9 +24,9 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.internal.ManagedInstanceImpl;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.InjectionPointDefinition;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
@@ -77,7 +77,7 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
 
   @Override
   public Expression generateBeanLookupCall(ClassBuilder clazz,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
 
     clazz.getClassCompilationUnit().addImport(ManagedInstance.class);
     clazz.getClassCompilationUnit().addImport(ManagedInstanceImpl.class);
