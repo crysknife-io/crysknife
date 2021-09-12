@@ -51,7 +51,7 @@ public class FactoryGenerator implements Task {
       TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
       if (!processed.contains(bean)) {
         processed.add(bean);
-        BeanDefinition beanDefinition = iocContext.getBeans().get(erased);
+        BeanDefinition beanDefinition = iocContext.getBean(erased);
         if (beanDefinition instanceof ProducesBeanDefinition) {
           continue;
         }

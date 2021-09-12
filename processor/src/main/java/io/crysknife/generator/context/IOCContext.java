@@ -16,6 +16,7 @@ package io.crysknife.generator.context;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
@@ -117,6 +118,16 @@ public class IOCContext {
 
   public Map<TypeMirror, BeanDefinition> getBeans() {
     return beans;
+  }
+
+  public BeanDefinition getBean(TypeMirror type) {
+    TypeMirror erased = generationContext.getTypes().erasure(type);
+
+    if (!beans.containsKey(erased)) {
+      throw new GenerationException("Unable to find Bean [" + erased + "], check scopes");
+    }
+
+    return beans.get(erased);
   }
 
   public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {

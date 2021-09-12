@@ -52,7 +52,7 @@ public class ProcessGraphTask implements Task {
     stack.push(application.asType());
     while (!stack.isEmpty()) {
       TypeMirror scan = stack.pop();
-      BeanDefinition parent = context.getBeans().get(scan);
+      BeanDefinition parent = context.getBean(scan);
       graph.addNode(scan);
       if (parent == null) {
         continue;

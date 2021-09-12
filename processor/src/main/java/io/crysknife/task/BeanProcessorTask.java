@@ -180,7 +180,7 @@ public class BeanProcessorTask implements Task {
           iocContext
               .getTypeElementsByAnnotation(iocGeneratorMetaCollectionEntry.getKey().annotation)
               .stream().map(e -> iocContext.getGenerationContext().getTypes().erasure(e.asType()))
-              .forEach(type -> iocContext.getBeans().get(type).getDecorators()
+              .forEach(type -> iocContext.getBean(type).getDecorators()
                   .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
                       .map(em -> (IOCGenerator<BeanDefinition>) em).collect(Collectors.toSet())));
         });
