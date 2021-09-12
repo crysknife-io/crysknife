@@ -21,7 +21,6 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.task.Task;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;

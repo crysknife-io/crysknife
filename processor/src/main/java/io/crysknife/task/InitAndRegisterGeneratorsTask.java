@@ -20,7 +20,6 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.task.Task;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;

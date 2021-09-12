@@ -88,12 +88,12 @@ public class Databinding implements IsElement<HTMLDivElement> {
     @PostConstruct
     public void init() {
         DomGlobal.console.log(getClass().getCanonicalName()+"INIT");
-        customer = dataBinder
+/*        customer = dataBinder
                 .bind(nameBox, "name")
                 .bind(cityBox, "address.city")
                 .bind(streetBox, "address.street.name")
                 .bind(age, "age")
-                .getModel();
+                .getModel();*/
 
         dataBinder.addPropertyChangeHandler((PropertyChangeHandler<Customer>) event -> {
             DomGlobal.console.log("new value " + event.toString());
