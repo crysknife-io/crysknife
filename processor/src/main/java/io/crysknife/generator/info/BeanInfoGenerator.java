@@ -14,21 +14,21 @@
 
 package io.crysknife.generator.info;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.task.Task;
 
 import javax.tools.JavaFileObject;
-
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
-public class BeanInfoGenerator {
+public class BeanInfoGenerator implements Task {
 
   private IOCContext iocContext;
-
   private AbstractBeanInfoGenerator generator;
 
   public BeanInfoGenerator(IOCContext iocContext) {
@@ -42,10 +42,12 @@ public class BeanInfoGenerator {
     }
   }
 
-  public void generate() {
+  public void execute() throws UnableToCompleteException {
     iocContext.getBeans().forEach((k, bean) -> {
       try {
         generate(bean);
+      } catch (javax.annotation.processing.FilerException e) {
+        // Attempt to recreate a file for type
       } catch (IOException e) {
         throw new Error(e);
       }
@@ -53,7 +55,7 @@ public class BeanInfoGenerator {
   }
 
   private void generate(BeanDefinition bean) throws IOException {
-    if (!bean.getFieldInjectionPoints().isEmpty()) {
+    if (!bean.getFields().isEmpty()) {
       JavaFileObject builderFile = iocContext.getGenerationContext().getProcessingEnvironment()
           .getFiler().createSourceFile(bean.getQualifiedName() + "Info");
       try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {

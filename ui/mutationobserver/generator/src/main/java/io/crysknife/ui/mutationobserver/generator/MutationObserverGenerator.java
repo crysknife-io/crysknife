@@ -14,40 +14,38 @@
 
 package io.crysknife.ui.mutationobserver.generator;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.MutationRecord;
 import io.crysknife.annotation.Generator;
-import io.crysknife.generator.ScopedBeanGenerator;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.MethodDefinition;
+import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.definition.ExecutableDefinition;
 import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
 import io.crysknife.ui.mutationobserver.client.api.ObserverCallback;
 import io.crysknife.ui.mutationobserver.client.api.OnAttach;
 import io.crysknife.ui.mutationobserver.client.api.OnDetach;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator(priority = 100002)
-public class MutationObserverGenerator extends ScopedBeanGenerator {
+public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
   private TypeMirror htmlElement;
 
@@ -64,27 +62,13 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
 
     htmlElement = iocContext.getGenerationContext().getElements()
         .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
-
-    TypeElement mutationObserver = iocContext.getGenerationContext().getElements()
-        .getTypeElement(MutationObserver.class.getCanonicalName());
-
-    mutationObserverBeanDefinition =
-        iocContext.getBeanDefinitionOrCreateAndReturn(mutationObserver);
-
-    iocContext.getBeans().put(mutationObserver, mutationObserverBeanDefinition);
-    if (!iocContext.getOrderedBeans().contains(mutationObserver)) {
-      iocContext.getOrderedBeans().add(mutationObserver);
-    }
   }
 
-  public void generateBeanFactory(ClassBuilder builder, Definition definition) {
-    if (definition instanceof ExecutableDefinition) {
-      ExecutableDefinition mutationObserver = (ExecutableDefinition) definition;
-      ifValid(mutationObserver);
-      VariableElement target = findField(mutationObserver);
-      isValid(target);
-      generateCallback(builder, mutationObserver);
-    }
+  public void generate(ClassBuilder builder, MethodDefinition mutationObserver) {
+    ifValid(mutationObserver);
+    VariableElement target = findField(mutationObserver);
+    isValid(target);
+    generateCallback(builder, mutationObserver);
   }
 
   private void isValid(VariableElement target) {
@@ -104,7 +88,7 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     }
   }
 
-  private VariableElement findField(ExecutableDefinition mutationObserver) {
+  private VariableElement findField(MethodDefinition mutationObserver) {
     String fieldName = findFieldName(mutationObserver.getExecutableElement());
 
     Element target = mutationObserver.getExecutableElement().getEnclosingElement()
@@ -129,7 +113,7 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     throw new Error("Unable to find field name");
   }
 
-  private void ifValid(ExecutableDefinition mutationObserver) {
+  private void ifValid(MethodDefinition mutationObserver) {
     if (mutationObserver.getExecutableElement().getParameters().size() > 1
         || mutationObserver.getExecutableElement().getParameters().isEmpty()) {
       throw new Error("Method [" + mutationObserver.getExecutableElement().getSimpleName() + " in "
@@ -160,13 +144,9 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
     }
   }
 
-  public void generateCallback(ClassBuilder builder, ExecutableDefinition definition) {
+  public void generateCallback(ClassBuilder builder, MethodDefinition definition) {
     builder.getClassCompilationUnit().addImport(MutationObserver.class);
     builder.getClassCompilationUnit().addImport(ObserverCallback.class);
-    builder.getClassCompilationUnit().addImport("io.crysknife.client.BeanManagerImpl");
-
-    ClassOrInterfaceDeclaration factoryDeclaration =
-        new ClassOrInterfaceDeclaration().setName("BeanManagerImpl");
 
     String callbackMethodName =
         definition.getExecutableElement().getAnnotation(OnAttach.class) != null
@@ -179,10 +159,8 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
 
     EnclosedExpr castToAbstractEventHandler =
         new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("MutationObserver"),
-            new MethodCallExpr(new MethodCallExpr(
-                new MethodCallExpr(factoryDeclaration.getNameAsExpression(), "get"), "lookupBean")
-                    .addArgument("MutationObserver.class"),
-                "get")));
+            new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                .addArgument("MutationObserver.class"), "get")));
 
     builder.getGetMethodDeclaration().getBody().get()
         .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)

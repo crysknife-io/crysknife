@@ -22,7 +22,6 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDivElement;
 import io.crysknife.demo.client.events.Address;
 import io.crysknife.demo.client.events.User;
-import io.crysknife.demo.client.named.NamedBeanConstructorInjectionPanel;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.ComponentScan;
 import io.crysknife.ui.navigation.client.local.DefaultPage;
@@ -34,9 +33,6 @@ public class App {
 
     @Inject
     private HTMLDivElement toast;
-
-    @Inject
-    private NamedBeanConstructorInjectionPanel namedBeanConstructorInjectionPanel;
 
     @Inject
     private Main main;

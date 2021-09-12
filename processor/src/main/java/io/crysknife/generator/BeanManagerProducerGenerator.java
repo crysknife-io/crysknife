@@ -23,7 +23,7 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/30/19

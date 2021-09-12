@@ -19,7 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/18/21
  */
-// @ApplicationScoped
+@ApplicationScoped
 public class LienzoCanvasCommandFactory implements CanvasCommandFactory<AbstractCanvasHandler> {
 
   @Override

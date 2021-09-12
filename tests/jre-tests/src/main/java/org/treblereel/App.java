@@ -22,11 +22,13 @@ import io.crysknife.client.BeanManager;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
+import org.treblereel.injection.inheritance.InheritanceBean;
 import org.treblereel.injection.managedinstance.ManagedInstanceBean;
 import org.treblereel.injection.named.NamedTestBean;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierFieldInjection;
 import org.treblereel.injection.qualifiers.controls.NodeBuilderControl;
+import org.treblereel.injection.qualifiers.specializes.SpecializesBeanHolder;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
 import org.treblereel.postconstruct.Child;
@@ -74,8 +76,14 @@ public class App {
   @Inject
   protected PostConstructs postConstructs;
 
-  // @Inject
+  @Inject
+  public InheritanceBean inheritanceBean;
+
+  @Inject
   public NodeBuilderControl nodeBuilderControl;
+
+  @Inject
+  public SpecializesBeanHolder specializesBeanHolder;
 
   public void onModuleLoad() {
     new AppBootstrap(this).initialize();

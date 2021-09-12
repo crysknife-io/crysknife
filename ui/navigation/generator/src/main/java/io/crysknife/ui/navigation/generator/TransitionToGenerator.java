@@ -16,19 +16,23 @@ package io.crysknife.ui.navigation.generator;
 
 import javax.inject.Inject;
 
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.definition.Definition;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.TransitionTo;
 
@@ -47,26 +51,31 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   @Override
   public void register() {
     iocContext.register(Inject.class, TransitionTo.class, WiringElementType.BEAN, this);
-    iocContext.getBlacklist().add(TransitionTo.class.getCanonicalName());
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
+  public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectableVariableDefinition fieldPoint) {
     clazz.getClassCompilationUnit().addImport(TransitionTo.class);
+    clazz.getClassCompilationUnit().addImport(Navigation.class);
+    clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
 
-    return new ObjectCreationExpr().setType(TransitionTo.class)
-        .addArgument(MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
-            .toString() + ".class")
-        .addArgument(
-            new MethodCallExpr(
-                new MethodCallExpr(new MethodCallExpr(new NameExpr("BeanManagerImpl"), "get"),
-                    "lookupBean").addArgument(Navigation.class.getCanonicalName() + ".class"),
-                "get"));
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda
+        .setBody(new ExpressionStmt(new ObjectCreationExpr().setType(TransitionTo.class)
+            .addArgument(MoreTypes.asDeclared(fieldPoint.getVariableElement().asType())
+                .getTypeArguments().get(0).toString() + ".class")
+            .addArgument(
+                new CastExpr(new ClassOrInterfaceType().setName(Navigation.class.getSimpleName()),
+                    new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                        .addArgument(Navigation.class.getSimpleName() + ".class"), "get")))));
+
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
   }
 }

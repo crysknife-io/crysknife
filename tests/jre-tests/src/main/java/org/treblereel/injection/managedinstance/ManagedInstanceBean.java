@@ -14,15 +14,14 @@
 
 package org.treblereel.injection.managedinstance;
 
-import java.lang.annotation.Annotation;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
+import org.treblereel.injection.dependent.SimpleBeanDependent;
+import org.treblereel.produces.qualifier.QualifierBean;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -33,15 +32,53 @@ public class ManagedInstanceBean {
   @Inject
   private BeanManager beanManager;
 
+  @Inject
   private ManagedInstance<ComponentIface> managedInstanceBean;
 
-  @PostConstruct
-  void init() {
-    managedInstanceBean = new ManagedInstanceImpl<>(ComponentIface.class, beanManager);
+  @Inject
+  private Instance<ComponentIface> InstanceBean;
+
+  @Inject
+  private Instance<SimpleBeanDependent> bean;
+
+  @Inject
+  private Instance<QualifierBean> bean2;
+
+  @Inject
+  public Instance<SimpleBean> simpleBean1;
+
+  @Inject
+  public ManagedInstance<SimpleBean> simpleBean2;
+
+  public Instance<SimpleBean> constructor_simpleBean1;
+
+  public ManagedInstance<SimpleBean> constructor_simpleBean2;
+
+  public ManagedInstanceBean() {
+
   }
+
+  @Inject
+  public ManagedInstanceBean(Instance<SimpleBean> simpleBean1,
+      ManagedInstance<SimpleBean> simpleBean2) {
+    this.constructor_simpleBean1 = simpleBean1;
+    this.constructor_simpleBean2 = simpleBean2;
+  }
+
 
   public ManagedInstance<ComponentIface> getManagedInstanceBean() {
     return managedInstanceBean;
   }
 
+  public Instance<ComponentIface> getInstanceBean() {
+    return InstanceBean;
+  }
+
+  public Instance<SimpleBeanDependent> getBean() {
+    return bean;
+  }
+
+  public Instance<QualifierBean> getBean2() {
+    return bean2;
+  }
 }

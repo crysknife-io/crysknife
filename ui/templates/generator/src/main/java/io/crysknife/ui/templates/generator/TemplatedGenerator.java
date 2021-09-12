@@ -46,6 +46,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
+import com.inet.lib.less.Less;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Event;
 import elemental2.dom.HTMLAnchorElement;
@@ -97,14 +98,13 @@ import elemental2.dom.HTMLUListElement;
 import elemental2.dom.HTMLVideoElement;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.Reflect;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.point.FieldPoint;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.DataField;
@@ -113,7 +113,6 @@ import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.util.Utils;
 import jsinterop.base.Js;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.gwtproject.event.dom.client.BlurEvent;
 import org.gwtproject.event.dom.client.CanPlayThroughEvent;
@@ -168,9 +167,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.lesscss.LessCompiler;
-import org.lesscss.LessException;
-import org.lesscss.LessSource;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -187,13 +183,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -213,7 +206,7 @@ import static java.util.stream.Collectors.joining;
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator
-public class TemplatedGenerator extends IOCGenerator {
+public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
   private static final String QUOTE = "\"";
   private static final Escaper JAVA_STRING_ESCAPER =
@@ -268,6 +261,7 @@ public class TemplatedGenerator extends IOCGenerator {
     HTML_ELEMENTS.put(HTMLSourceElement.class.getName(), "source");
     HTML_ELEMENTS.put(HTMLTableElement.class.getName(), "table");
     HTML_ELEMENTS.put(HTMLTableCellElement.class.getName(), "td");
+    HTML_ELEMENTS.put(HTMLTableCellElement.class.getName(), "th");
     HTML_ELEMENTS.put(HTMLTextAreaElement.class.getName(), "textarea");
     HTML_ELEMENTS.put(HTMLTableRowElement.class.getName(), "tr");
     HTML_ELEMENTS.put(HTMLTrackElement.class.getName(), "track");
@@ -317,12 +311,16 @@ public class TemplatedGenerator extends IOCGenerator {
   private Messager messager;
   private BeanDefinition beanDefinition;
   private TypeElement isWidget;
+  private TypeElement GWT3_Event;
 
   public TemplatedGenerator(IOCContext iocContext) {
     super(iocContext);
 
     isWidget = iocContext.getGenerationContext().getElements()
         .getTypeElement("org.gwtproject.user.client.ui.IsWidget");
+
+    GWT3_Event = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.user.client.Event");
 
   }
 
@@ -339,14 +337,12 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder builder, Definition definition) {
-    if (definition instanceof BeanDefinition) {
-      beanDefinition = (BeanDefinition) definition;
-      validateType(beanDefinition.getType(),
-          beanDefinition.getType().getAnnotation(Templated.class));
-      processType(builder, beanDefinition.getType(),
-          beanDefinition.getType().getAnnotation(Templated.class));
-    }
+  public void generate(ClassBuilder builder, BeanDefinition beanDefinition) {
+    this.beanDefinition = beanDefinition;
+    validateType(MoreTypes.asTypeElement(beanDefinition.getType()),
+        MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
+    processType(builder, MoreTypes.asTypeElement(beanDefinition.getType()),
+        MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
   }
 
   // ------------------------------------------------------ root element / template
@@ -383,29 +379,35 @@ public class TemplatedGenerator extends IOCGenerator {
   private StyleSheet getStylesheet(TypeElement type, Templated templated) {
     if (Strings.emptyToNull(templated.stylesheet()) == null) {
       List<String> postfixes = Arrays.asList(".css", ".gss", ".less");
-      String path = type.getQualifiedName().toString().replaceAll("\\.", "/");
+      String path = MoreElements.getPackage(type).toString().replaceAll("\\.", "/");
       for (String postfix : postfixes) {
+        String beanName = type.getSimpleName().toString() + postfix;
         URL file =
-            iocContext.getGenerationContext().getResourceOracle().findResource(path, postfix);
-        try {
-          if (file != null && new File(file.toURI()).exists()) {
-            return new StyleSheet(type.getSimpleName() + "" + postfix, new File(file.toURI()));
-          }
-        } catch (URISyntaxException e) {
+            iocContext.getGenerationContext().getResourceOracle().findResource(path, beanName);
+        if (file != null) {
+          return new StyleSheet(type.getSimpleName() + postfix, file);
         }
       }
     } else {
       try {
-        return new StyleSheet(templated.stylesheet(),
-            new File(iocContext.getGenerationContext().getResourceOracle()
-                .findResource(MoreElements.getPackage(type).getQualifiedName().toString(),
-                    templated.stylesheet())
-                .toURI()));
-      } catch (URISyntaxException e) {
-        throw new GenerationException(e);
+        String path =
+            MoreElements.getPackage(type).getQualifiedName().toString().replaceAll("\\.", "/") + "/"
+                + templated.stylesheet();
+
+        URL url = iocContext.getGenerationContext().getResourceOracle().findResource(path);
+        if (url != null) {
+          return new StyleSheet(templated.stylesheet(), url);
+        }
+      } catch (IllegalArgumentException e1) {
+        String path =
+            MoreElements.getPackage(type).getQualifiedName().toString().replaceAll("\\.", "/") + "/"
+                + templated.stylesheet();
+
+        throw new GenerationException(path, e1);
       }
+      throw new GenerationException(
+          String.format("Unable to find stylesheet defined at %s", type.getQualifiedName()));
     }
-    System.out.println(String.format("Unable to find stylesheet for %s", type.getQualifiedName()));
 
     return null;
   }
@@ -514,7 +516,7 @@ public class TemplatedGenerator extends IOCGenerator {
 
   private void generateWrapper(ClassBuilder builder, TemplateContext templateContext) {
     ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
-    wrapper.setName(beanDefinition.getClassName());
+    wrapper.setName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString());
     wrapper.addExtendedType(beanDefinition.getQualifiedName());
     wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
     String element = getElementFromTag(templateContext);
@@ -523,20 +525,20 @@ public class TemplatedGenerator extends IOCGenerator {
 
     ConstructorDeclaration constructor =
         wrapper.addConstructor(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-    if (beanDefinition.getConstructorInjectionPoint() != null) {
+    if (beanDefinition.getConstructorParams() != null) {
       List<String> args = new LinkedList<>();
-      for (FieldPoint argument : beanDefinition.getConstructorInjectionPoint().getArguments()) {
-        constructor.addAndGetParameter(argument.getType().getQualifiedName().toString(),
-            argument.getName());
-        args.add(argument.getName());
+      for (InjectionParameterDefinition argument : beanDefinition.getConstructorParams()) {
+        constructor.addAndGetParameter(MoreTypes
+            .asTypeElement(argument.getVariableElement().asType()).getQualifiedName().toString(),
+            argument.getVariableElement().getSimpleName().toString());
+        args.add(argument.getVariableElement().getSimpleName().toString());
       }
       StringJoiner joiner = new StringJoiner(",");
       args.stream().forEach(joiner::add);
       constructor.getBody().addStatement("super(" + joiner + ");");
     }
 
-    DataElementInfo.Kind dataElementInfo =
-        getDataElementInfoKind(beanDefinition.getType().asType());
+    DataElementInfo.Kind dataElementInfo = getDataElementInfoKind(beanDefinition.getType());
 
     addElementMethod(wrapper, templateContext, dataElementInfo);
     addInitMethod(wrapper, templateContext, dataElementInfo);
@@ -639,11 +641,11 @@ public class TemplatedGenerator extends IOCGenerator {
 
         String css;
         try {
-          css = FileUtils.readFileToString(templateContext.getStylesheet().getFile(),
-              StandardCharsets.UTF_8);
+          css =
+              IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
         } catch (IOException e) {
           throw new GenerationException(
-              "Unable to process Css/Gss :" + templateContext.getStylesheet());
+              "Unable to process Css/Gss :" + templateContext.getStylesheet(), e);
         }
 
         // TODO Temporary workaround, till gwt-dom StyleInjector ll be fixed
@@ -653,16 +655,17 @@ public class TemplatedGenerator extends IOCGenerator {
                 "fromString").addArgument(new StringLiteralExpr(escape(css))), "inject"));
       } else {
         try {
-          final LessSource source = new LessSource(templateContext.getStylesheet().getFile());
-          final LessCompiler compiler = new LessCompiler();
-          final String compiledCss = compiler.compile(source);
+          String less =
+              IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
+          Less.compile(null, less, false);
+          final String compiledCss = Less.compile(null, less, false);
           builder.getGetMethodDeclaration().getBody().get()
               .addStatement(new MethodCallExpr(
                   new MethodCallExpr(
                       new ClassOrInterfaceType().setName("StyleInjector").getNameAsExpression(),
                       "fromString").addArgument(new StringLiteralExpr(escape(compiledCss))),
                   "inject"));
-        } catch (LessException | IOException e) {
+        } catch (IOException e) {
           throw new GenerationException(
               "Unable to process Less " + templateContext.getStylesheet());
         }
@@ -711,7 +714,9 @@ public class TemplatedGenerator extends IOCGenerator {
 
       MethodCallExpr fieldSetCallExpr = null;
       if (iocContext.getGenerationContext().isGwt2()) {
-        fieldSetCallExpr = new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+        fieldSetCallExpr = new MethodCallExpr(
+            new NameExpr(
+                MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
             element.getName()).addArgument("instance");
       } else if (!iocContext.getGenerationContext().isJre()) {
         fieldSetCallExpr = new MethodCallExpr(
@@ -744,6 +749,10 @@ public class TemplatedGenerator extends IOCGenerator {
     return expr;
   }
 
+  private String getMethodName(DataElementInfo element) {
+    return getMethodName(element.getKind());
+  }
+
   private String getMethodName(DataElementInfo.Kind kind) {
     if (kind.equals(DataElementInfo.Kind.ElementoIsElement)
         || kind.equals(DataElementInfo.Kind.HTMLElement)) {
@@ -756,10 +765,6 @@ public class TemplatedGenerator extends IOCGenerator {
     throw new GenerationException("Unable to find type of " + kind);
   }
 
-  private String getMethodName(DataElementInfo element) {
-    return getMethodName(element.getKind());
-  }
-
   private MethodCallExpr getFieldAccessCallExpr(String fieldName) {
     VariableElement field = getVariableElement(fieldName);
     return getFieldAccessCallExpr(field);
@@ -767,7 +772,9 @@ public class TemplatedGenerator extends IOCGenerator {
 
   private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
     if (iocContext.getGenerationContext().isGwt2()) {
-      return new MethodCallExpr(new NameExpr(beanDefinition.getClassName() + "Info"),
+      return new MethodCallExpr(
+          new NameExpr(
+              MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
           field.getSimpleName().toString()).addArgument("instance");
     }
 
@@ -807,11 +814,12 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   private VariableElement getVariableElement(String elementName) {
-    return beanDefinition.getType().getEnclosedElements().stream()
+    return MoreTypes.asTypeElement(beanDefinition.getType()).getEnclosedElements().stream()
         .filter(elm -> elm.getKind().equals(ElementKind.FIELD))
         .filter(elm -> elm.getSimpleName().toString().equals(elementName))
-        .map(elm -> MoreElements.asVariable(elm)).findFirst().orElseThrow(() -> new Error(
-            "Unable to find @DataField " + elementName + " in " + beanDefinition.getClassName()));
+        .map(elm -> MoreElements.asVariable(elm)).findFirst()
+        .orElseThrow(() -> new Error("Unable to find @DataField " + elementName + " in "
+            + MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName()));
   }
 
   private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {
@@ -838,9 +846,14 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   private void setInnerHTML(BlockStmt block, TemplateContext templateContext) {
-    block.addAndGetStatement(new AssignExpr()
-        .setTarget(new FieldAccessExpr(new FieldAccessExpr(new ThisExpr(), "root"), "innerHTML"))
-        .setValue(new StringLiteralExpr(templateContext.getRoot().getInnerHtml())));
+
+    if (templateContext.getRoot().getInnerHtml() != null
+        && !templateContext.getRoot().getInnerHtml().isEmpty()) {
+
+      block.addAndGetStatement(new AssignExpr()
+          .setTarget(new FieldAccessExpr(new FieldAccessExpr(new ThisExpr(), "root"), "innerHTML"))
+          .setValue(new StringLiteralExpr(templateContext.getRoot().getInnerHtml())));
+    }
   }
 
   private void setAttributes(BlockStmt block, TemplateContext templateContext) {
@@ -904,7 +917,8 @@ public class TemplatedGenerator extends IOCGenerator {
 
           // verify method
           if (method.getModifiers().contains(Modifier.PRIVATE)) {
-            abortWithError(method, "@%s method must not be private",
+            abortWithError(method,
+                "@%s method must not be private " + method.getEnclosingElement() + ".",
                 DataField.class.getSimpleName());
           }
           if (method.getModifiers().contains(Modifier.STATIC)) {
@@ -994,6 +1008,8 @@ public class TemplatedGenerator extends IOCGenerator {
               .getTypeElement(Event.class.getCanonicalName());
 
           if (!iocContext.getGenerationContext().getTypes().isSubtype(declaredType, event.asType())
+              && !(GWT3_Event != null && iocContext.getGenerationContext().getTypes()
+                  .isSubtype(declaredType, GWT3_Event.asType()))
               && !EVENTS.containsKey(declaredType.toString())) {
             abortWithError(method.getEnclosingElement(),
                 "@%s method must have only one parameter and this parameter must be type or subtype of  "
@@ -1050,9 +1066,15 @@ public class TemplatedGenerator extends IOCGenerator {
   private void verifySelector(String selector, Element element, TemplateSelector templateSelector,
       org.jsoup.nodes.Element root) {
     // make sure to use the same logic for finding matching elements as in TemplateUtils!
+
+    if (root.getElementById(selector) != null) {
+      return;
+    }
+
     Elements elements = root.getElementsByAttributeValue("data-field", selector);
     long matchCount = elements.stream()
         .filter(elem -> elem.attributes().getIgnoreCase("data-element").equals(selector)).count();
+
     if (elements.isEmpty() && matchCount == 0) {
       abortWithError(element,
           "Cannot find a matching element in %s using \"[data-field=%s]\" as selector",
@@ -1138,9 +1160,8 @@ public class TemplatedGenerator extends IOCGenerator {
         abortWithError(type, "Cannot find template \"%s\". Please make sure the template exists.",
             fqTemplate);
       }
-      Document document = Jsoup.parse(IOUtils.toString(
-          iocContext.getGenerationContext().getResourceOracle().findResource(fqTemplate),
-          Charset.defaultCharset()));
+      String html = IOUtils.toString(url, Charset.defaultCharset());
+      Document document = Jsoup.parse(html);
       if (templateSelector.hasSelector()) {
         String query = "[data-field=" + templateSelector.selector + "]";
         Elements selector = document.select(query);

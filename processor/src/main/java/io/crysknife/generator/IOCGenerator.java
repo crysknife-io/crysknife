@@ -14,24 +14,44 @@
 
 package io.crysknife.generator;
 
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
+import io.crysknife.definition.Definition;
+import io.crysknife.util.GenerationUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-public abstract class IOCGenerator {
+public abstract class IOCGenerator<T extends Definition> {
 
   protected final IOCContext iocContext;
 
+  protected final GenerationUtils generationUtils;
+
   public IOCGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
+    this.generationUtils = new GenerationUtils(iocContext);
   }
 
   public abstract void register();
 
-  public abstract void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition);
+  public abstract void generate(ClassBuilder clazz, T beanDefinition);
+
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectableVariableDefinition fieldPoint) {
+    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
+            .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),
+            "class"));
+    generationUtils.maybeAddQualifiers(iocContext, callForProducer, fieldPoint);
+    return callForProducer;
+  }
 
   public void before() {
 

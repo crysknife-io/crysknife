@@ -30,7 +30,4 @@ public class QualifierBeanProducerTest {
     return qualifierBean;
   }
 
-  public void setQualifierBean(QualifierBean qualifierBean) {
-    this.qualifierBean = qualifierBean;
-  }
 }

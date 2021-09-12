@@ -66,7 +66,7 @@
         <elemento.version>1.0.3</elemento.version>
         <jsoup.version>1.11.3</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
-        <lesscss.version>1.7.0.1.1</lesscss.version>
+        <lesscss.version>1.10</lesscss.version>
         <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
@@ -162,8 +162,8 @@
                 <version>${jsoup.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.lesscss</groupId>
-                <artifactId>lesscss</artifactId>
+                <groupId>de.inetsoftware</groupId>
+                <artifactId>jlessc</artifactId>
                 <version>${lesscss.version}</version>
             </dependency>
             <dependency>

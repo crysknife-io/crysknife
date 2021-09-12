@@ -14,13 +14,21 @@
 
 package org.treblereel;
 
-import io.crysknife.client.Instance;
 import org.junit.Test;
 import org.treblereel.injection.qualifiers.QualifierBean;
 import org.treblereel.injection.qualifiers.QualifierBeanDefault;
 import org.treblereel.injection.qualifiers.QualifierBeanOne;
 import org.treblereel.injection.qualifiers.QualifierBeanTwo;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
+import org.treblereel.injection.qualifiers.QualifierOne;
+import org.treblereel.injection.qualifiers.QualifierTwo;
+
+import javax.enterprise.inject.Instance;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +46,10 @@ public class QualifierTest extends AbstractTest {
   public void testQualifierFieldInjectionBean() {
     assertEquals(QualifierBeanDefault.class.getSimpleName(),
         app.getQualifierFieldInjection().getQualifierBeanDefault().getClass().getSimpleName());
+
     assertEquals(QualifierBeanOne.class.getSimpleName(),
         app.getQualifierFieldInjection().qualifierBeanOne.getClass().getSimpleName());
+
     assertEquals(QualifierBeanTwo.class.getSimpleName(),
         app.getQualifierFieldInjection().qualifierBeanTwo.getClass().getSimpleName());
   }
@@ -57,13 +67,42 @@ public class QualifierTest extends AbstractTest {
 
   @Test
   public void testBeanManager() {
-    assertEquals(3, app.beanManager.lookupBeans(QualifierBean.class).size());
-    List<String> beans = new ArrayList<>();
-    for (Instance lookupBean : app.beanManager.lookupBeans(QualifierBean.class)) {
-      beans.add(((QualifierBean) lookupBean.get()).say());
+    Set<QualifierBean> beans = new HashSet<>();
+    for (Instance<QualifierBean> lookupBean : app.beanManager
+        .<QualifierBean>lookupBeans(QualifierBean.class)) {
+      beans.add(lookupBean.get());
     }
-    assertTrue(beans.contains("org.treblereel.injection.qualifiers.QualifierBeanDefault"));
-    assertTrue(beans.contains("org.treblereel.injection.qualifiers.QualifierBeanOne"));
-    assertTrue(beans.contains("org.treblereel.injection.qualifiers.QualifierBeanTwo"));
+
+    assertEquals(3, beans.size());
+    List<String> result = new ArrayList<>();
+    for (Instance lookupBean : app.beanManager.lookupBeans(QualifierBean.class)) {
+      result.add(((QualifierBean) lookupBean.get()).say());
+    }
+    assertTrue(result.contains("org.treblereel.injection.qualifiers.QualifierBeanDefault"));
+    assertTrue(result.contains("org.treblereel.injection.qualifiers.QualifierBeanOne"));
+    assertTrue(result.contains("org.treblereel.injection.qualifiers.QualifierBeanTwo"));
+
+    QualifierOne qualifierOne = new org.treblereel.injection.qualifiers.QualifierOne() {
+
+      public Class<? extends Annotation> annotationType() {
+        return org.treblereel.injection.qualifiers.QualifierOne.class;
+      }
+    };
+
+    QualifierTwo qualifierTwo = new org.treblereel.injection.qualifiers.QualifierTwo() {
+
+      public Class<? extends Annotation> annotationType() {
+        return org.treblereel.injection.qualifiers.QualifierTwo.class;
+      }
+    };
+
+    assertEquals(QualifierBeanOne.class,
+        app.beanManager.lookupBean(QualifierBean.class, qualifierOne).get().getClass());
+    assertEquals(QualifierBeanTwo.class,
+        app.beanManager.lookupBean(QualifierBean.class, qualifierTwo).get().getClass());
+    assertEquals(QualifierBeanDefault.class,
+        app.beanManager.lookupBean(QualifierBean.class).get().getClass());
+
+
   }
 }

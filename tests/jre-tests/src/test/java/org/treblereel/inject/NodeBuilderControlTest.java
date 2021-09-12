@@ -27,8 +27,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class NodeBuilderControlTest extends AbstractTest {
 
-  // @Test
+  @Test
   public void testQualifierFieldInjectionBean() {
-    assertEquals(QualifierBeanDefault.class.getSimpleName(), app.nodeBuilderControl.get().hey());
+    assertEquals("LienzoCanvasCommandFactory", app.nodeBuilderControl.get().hey());
   }
 }

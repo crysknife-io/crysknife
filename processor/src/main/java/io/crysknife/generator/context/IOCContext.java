@@ -14,32 +14,32 @@
 
 package io.crysknife.generator.context;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.IOCGenerator;
+import io.crysknife.generator.WiringElementType;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinitionFactory;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.definition.BeanDefinition;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
@@ -48,20 +48,13 @@ public class IOCContext {
 
   private final SetMultimap<IOCGeneratorMeta, IOCGenerator> generators = HashMultimap.create();
 
-  private final Map<TypeElement, BeanDefinition> beans = new HashMap<>();
-
-  private final Map<TypeElement, Map<String, BeanDefinition>> qualifiers = new HashMap<>();
+  private final Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
 
   private final GenerationContext generationContext;
 
-  private final List<TypeElement> orderedBeans = new LinkedList<>();
+  private final List<TypeMirror> orderedBeans = new LinkedList<>();
 
-  private final List<String> blacklist = new ArrayList<>();
-
-  // TODO Temporary solution before ill find out why in j2cl-m-p apt get*AnnotatedWith isn't able to
-  // process
-  // annotations in external deps
-  private final ScanResult scanResult = new ClassGraph().enableAllInfo().scan();
+  private final List<String> buildIn = new ArrayList<>();
 
   private final Map<String, Set<TypeElement>> classesByAnnotation = new HashMap<>();
 
@@ -71,8 +64,11 @@ public class IOCContext {
 
   private final Map<String, Set<VariableElement>> parametersByAnnotation = new HashMap<>();
 
+  private final BeanDefinitionFactory beanDefinitionFactory;
+
   public IOCContext(GenerationContext generationContext) {
     this.generationContext = generationContext;
+    this.beanDefinitionFactory = new BeanDefinitionFactory(this, null);
   }
 
   public void register(final Class annotation, final WiringElementType wiringElementType,
@@ -87,53 +83,52 @@ public class IOCContext {
     generators.put(new IOCGeneratorMeta(annotation.getCanonicalName(), type, wiringElementType),
         generator);
     if (!exactType.equals(Object.class)) {
-      BeanDefinition beanDefinition = getBeanDefinitionOrCreateAndReturn(type);
-      beanDefinition.setGenerator(generator);
-      getBeans().put(type, beanDefinition);
+      BeanDefinition beanDefinition = null;
+      try {
+        beanDefinition = getBeanDefinitionOrCreateAndReturn(type.asType());
+      } catch (UnableToCompleteException e) {
+        e.printStackTrace();
+      }
+      beanDefinition.setIocGenerator(generator);
+      getBeans().put(type.asType(), beanDefinition);
+      buildIn.add(exactType.getCanonicalName());
     }
-  }
-
-  public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
-    return generators;
-  }
-
-  public Map<TypeElement, BeanDefinition> getBeans() {
-    return beans;
-  }
-
-  public BeanDefinition getBean(TypeElement bean) {
-    if (beans.containsKey(bean)) {
-      return beans.get(bean);
-    }
-    throw new GenerationException(bean.toString());
   }
 
   public GenerationContext getGenerationContext() {
     return generationContext;
   }
 
-  public Map<TypeElement, Map<String, BeanDefinition>> getQualifiers() {
-    return qualifiers;
+
+  public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeMirror typeElement)
+      throws UnableToCompleteException {
+    TypeMirror candidate = generationContext.getTypes().erasure(typeElement);
+    BeanDefinition beanDefinition = null;
+    if (beans.containsKey(candidate)) {
+      return beans.get(candidate);
+    } else {
+      beanDefinition = beanDefinitionFactory.of(candidate);
+      beans.put(candidate, beanDefinition);
+      // beanDefinition.processInjections(this);
+    }
+
+    return beanDefinition;
   }
 
-  public List<TypeElement> getOrderedBeans() {
+  public Map<TypeMirror, BeanDefinition> getBeans() {
+    return beans;
+  }
+
+  public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
+    return generators;
+  }
+
+  public List<TypeMirror> getOrderedBeans() {
     return orderedBeans;
   }
 
-  public List<String> getBlacklist() {
-    return blacklist;
-  }
-
-  public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeElement typeElement) {
-    BeanDefinition beanDefinition;
-    if (getBeans().containsKey(typeElement)) {
-      return getBeans().get(typeElement);
-    } else {
-      beanDefinition = BeanDefinition.of(typeElement, this);
-      getBeans().put(typeElement, beanDefinition);
-      beanDefinition.processInjections(this);
-    }
-    return beanDefinition;
+  public List<String> getBuildIn() {
+    return buildIn;
   }
 
   // TODO j2cl-m-p workaround
@@ -147,7 +142,8 @@ public class IOCContext {
         getElementsByAnnotation(annotation).stream().filter(elm -> (elm instanceof TypeElement))
             .map(element -> ((TypeElement) element)).collect(Collectors.toSet());
 
-    ClassInfoList routeClassInfoList = scanResult.getClassesWithAnnotation(annotation);
+    ClassInfoList routeClassInfoList =
+        generationContext.getScanResult().getClassesWithAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       TypeElement type = elements.getTypeElement(routeClassInfo.getName());
       if (type != null) {
@@ -175,7 +171,8 @@ public class IOCContext {
         .filter(elm -> (elm instanceof ExecutableElement))
         .map(element -> ((ExecutableElement) element)).collect(Collectors.toSet());
 
-    ClassInfoList routeClassInfoList = scanResult.getClassesWithMethodAnnotation(annotation);
+    ClassInfoList routeClassInfoList =
+        generationContext.getScanResult().getClassesWithMethodAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredMethodInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
@@ -202,7 +199,7 @@ public class IOCContext {
         .map(element -> ((VariableElement) element)).collect(Collectors.toSet());
 
     ClassInfoList routeClassInfoList =
-        scanResult.getClassesWithMethodParameterAnnotation(annotation);
+        generationContext.getScanResult().getClassesWithMethodParameterAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredMethodInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
@@ -222,24 +219,32 @@ public class IOCContext {
     return results;
   }
 
+  public TypeMirror getTypeMirror(Class clazz) {
+    return getTypeMirror(clazz.getCanonicalName());
+  }
+
+  public TypeMirror getTypeMirror(String clazz) {
+    return generationContext.getElements().getTypeElement(clazz).asType();
+  }
+
   public Set<VariableElement> getFieldsByAnnotation(String annotation) {
     if (fieldsByAnnotation.containsKey(annotation)) {
       return fieldsByAnnotation.get(annotation);
     }
-
     Elements elements = getGenerationContext().getElements();
     Set<VariableElement> results = getGenerationContext().getRoundEnvironment()
         .getElementsAnnotatedWith(elements.getTypeElement(annotation)).stream()
         .filter(elm -> (elm instanceof VariableElement)).map(element -> ((VariableElement) element))
         .collect(Collectors.toSet());
 
-    ClassInfoList routeClassInfoList = scanResult.getClassesWithMethodAnnotation(annotation);
+    ClassInfoList routeClassInfoList =
+        generationContext.getScanResult().getClassesWithMethodAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredFieldInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
         if (type != null) {
           type.getEnclosedElements().stream().filter(elm -> (elm instanceof VariableElement))
-              .filter(elm -> ((VariableElement) elm).getAnnotationMirrors().stream()
+              .filter(elm -> elm.getAnnotationMirrors().stream()
                   .map(a -> a.getAnnotationType().toString()).filter(a -> a.equals(annotation))
                   .count() > 0)
               .map(method -> ((VariableElement) method)).forEach(results::add);
@@ -248,6 +253,17 @@ public class IOCContext {
     }
     fieldsByAnnotation.put(annotation, results);
     return results;
+  }
+
+  public Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
+      WiringElementType wiringElementType) {
+    IOCContext.IOCGeneratorMeta meta =
+        new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);
+    Iterable<IOCGenerator> generators = getGenerators().get(meta);
+    if (generators.iterator().hasNext()) {
+      return Optional.of(generators.iterator().next());
+    }
+    return Optional.empty();
   }
 
   public static class IOCGeneratorMeta {
@@ -264,9 +280,8 @@ public class IOCContext {
     }
 
     @Override
-    public String toString() {
-      return "IOCGeneratorMeta{" + "annotation='" + annotation + '\'' + ", exactType=" + exactType
-          + ", wiringElementType=" + wiringElementType + '}';
+    public int hashCode() {
+      return Objects.hash(annotation, exactType, wiringElementType);
     }
 
     @Override
@@ -284,8 +299,9 @@ public class IOCContext {
     }
 
     @Override
-    public int hashCode() {
-      return Objects.hash(annotation, exactType, wiringElementType);
+    public String toString() {
+      return "IOCGeneratorMeta{" + "annotation='" + annotation + '\'' + ", exactType=" + exactType
+          + ", wiringElementType=" + wiringElementType + '}';
     }
   }
 }

@@ -70,6 +70,12 @@
       <artifactId>navigation-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>navigation-generator</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.gwtproject.user.window</groupId>
@@ -79,14 +85,28 @@
 
     <dependency>
       <groupId>io.crysknife</groupId>
-      <artifactId>navigation-generator</artifactId>
+      <artifactId>databinding-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>databinding-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-   </dependencies>
+  </dependencies>
 
   <build>
     <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.java</include>
+          <include>**/*.html</include>
+          <include>**/*.css</include>
+          <include>**/*.less</include>
+        </includes>
+      </resource>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
@@ -118,6 +138,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
@@ -128,11 +149,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-          <configuration>
+        <version>3.3.1</version>
+        <configuration>
             <packagingExcludes>WEB-INF/classes/**</packagingExcludes>
           </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.0.1</version>
         <executions>

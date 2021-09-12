@@ -14,7 +14,7 @@
 
 package org.jboss.gwt.elemento.processor.context;
 
-import java.io.File;
+import java.net.URL;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 6/2/19
@@ -22,9 +22,9 @@ import java.io.File;
 public class StyleSheet {
 
   private String style;
-  private File file;
+  private URL file;
 
-  public StyleSheet(String style, File file) {
+  public StyleSheet(String style, URL file) {
 
     this.style = style;
     this.file = file;
@@ -34,7 +34,7 @@ public class StyleSheet {
     return style;
   }
 
-  public File getFile() {
+  public URL getFile() {
     return file;
   }
 

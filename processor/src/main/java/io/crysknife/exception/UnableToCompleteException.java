@@ -13,6 +13,8 @@
  */
 package io.crysknife.exception;
 
+import java.util.Set;
+
 /**
  * Used to indicate that some part of a multi-step process failed. Typically, operation can continue
  * after this exception is caught.
@@ -57,6 +59,9 @@ package io.crysknife.exception;
  * </pre>
  */
 public class UnableToCompleteException extends Exception {
+
+  public Set<UnableToCompleteException> errors;
+
   public UnableToCompleteException(String msg, Exception e) {
     super(msg, e);
   }
@@ -67,6 +72,10 @@ public class UnableToCompleteException extends Exception {
 
   public UnableToCompleteException(String e) {
     super(e);
+  }
+
+  public UnableToCompleteException(Set<UnableToCompleteException> e) {
+    this.errors = e;
   }
 
   public UnableToCompleteException() {}

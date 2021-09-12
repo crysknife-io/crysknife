@@ -15,13 +15,12 @@
 package io.crysknife.client.internal;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.Instance;
 import io.crysknife.client.ManagedInstance;
+
+import javax.enterprise.inject.Instance;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -32,7 +31,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   private final Class<T> type;
 
-  private final Set<Instance<T>> beans;
+  private final Iterable<Instance<T>> beans;
 
   public ManagedInstanceImpl(Class<T> type, BeanManager beanManager) {
     this.type = type;
@@ -40,7 +39,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
     this.beans = beanManager.lookupBeans(type);
   }
 
-  public ManagedInstanceImpl(Class<T> type, BeanManager beanManager, Set<Instance<T>> beans) {
+  public ManagedInstanceImpl(Class<T> type, BeanManager beanManager, Iterable<Instance<T>> beans) {
     this.type = type;
     this.beanManager = beanManager;
     this.beans = beans;
@@ -49,6 +48,11 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
   @Override
   public ManagedInstance<T> select(Annotation... qualifiers) {
     return new ManagedInstanceImpl<>(type, beanManager, beanManager.lookupBeans(type, qualifiers));
+  }
+
+  @Override
+  public <U extends T> Instance<U> select(Class<U> clazz, Annotation... qualifiers) {
+    return beanManager.lookupBean(clazz, qualifiers);
   }
 
   @Override
@@ -73,19 +77,19 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public Iterator<T> iterator() {
-    return new ManagedInstanceImplIterator(beans);
+    return new ManagedInstanceImplIterator<T>(beans);
   }
 
   @Override
   public T get() {
-    return beanManager.lookupBean(type).get();
+    return beanManager.<T>lookupBean(type).get();
   }
 
   private static class ManagedInstanceImplIterator<T> implements Iterator<T> {
 
     private final Iterator<Instance<T>> delegate;
 
-    public ManagedInstanceImplIterator(final Collection<Instance<T>> beans) {
+    public ManagedInstanceImplIterator(final Iterable<Instance<T>> beans) {
       this.delegate = beans.iterator();
     }
 

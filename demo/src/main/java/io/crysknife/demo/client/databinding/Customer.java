@@ -14,13 +14,13 @@
 
 package io.crysknife.demo.client.databinding;
 
-//import io.crysknife.databinding.client.api.Bindable;
+import io.crysknife.ui.databinding.client.api.Bindable;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 11/18/19
  */
-//@Bindable
+@Bindable
 public class Customer {
 
     private String name;

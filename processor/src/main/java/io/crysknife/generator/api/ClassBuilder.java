@@ -29,7 +29,7 @@ import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
@@ -37,7 +37,7 @@ import io.crysknife.generator.definition.BeanDefinition;
 public class ClassBuilder {
 
   public final BeanDefinition beanDefinition;
-  Set<Expression> statementToConstructor = new HashSet<>();
+  private Set<Expression> statementToConstructor = new HashSet<>();
   private CompilationUnit clazz = new CompilationUnit();
   private ClassOrInterfaceDeclaration classDeclaration;
   private MethodDeclaration getGetMethodDeclaration;
@@ -49,7 +49,8 @@ public class ClassBuilder {
   }
 
   public void build() {
-    beanDefinition.generate(this);
+    beanDefinition.getIocGenerator()
+        .ifPresent(iocGenerator -> iocGenerator.generate(this, beanDefinition));
   }
 
   public String toSourceCode() {
@@ -117,7 +118,11 @@ public class ClassBuilder {
   }
 
   public void addStatementToConstructor(Expression expr) {
-    if (!statementToConstructor.contains(expr) && getConstructorDeclaration() != null) {
+    if (constructorDeclaration == null) {
+      this.constructorDeclaration = classDeclaration.addConstructor(Modifier.Keyword.PUBLIC);
+    }
+
+    if (!statementToConstructor.contains(expr)) {
       getConstructorDeclaration().getBody().addStatement(expr);
       statementToConstructor.add(expr);
     }

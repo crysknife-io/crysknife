@@ -15,9 +15,11 @@
 package org.treblereel;
 
 import org.junit.Test;
+import org.treblereel.produces.scoped.URLPatternMatcherHolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -30,10 +32,28 @@ public class SimpleBeanProducerTest extends AbstractTest {
         app.getSimpleBeanProducerTest().getSimpleBeanDependentTwo());
     assertEquals(app.getSimpleBeanProducerTest().getSimpleBeanSingletonOne(),
         app.getSimpleBeanProducerTest().getSimpleBeanSingletonTwo());
+
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanDependentOne());
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanDependentTwo());
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanSingletonOne());
+    assertNotNull(app.getSimpleBeanProducerTest().getSimpleBeanSingletonTwo());
   }
 
-  // @Test
+  @Test
   public void testQualifierBeanProducerTest() {
-    assertEquals("ZZZ", app.getQualifierBeanProducerTest().getQualifierBean().say());
+    assertNotNull(app.getQualifierBeanProducerTest().getQualifierBean());
+    assertEquals("REDHAT", app.getQualifierBeanProducerTest().getQualifierBean().say());
   }
+
+  @Test
+  public void testURLPatternMatcherTest() {
+    assertNotNull(app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
+        .get().matcher);
+    assertNotNull(app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
+        .get().matcher.test());
+    assertEquals("URLPatternMatcherProvider", app.beanManager
+        .<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class).get().matcher.test());
+  }
+
+
 }

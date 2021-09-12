@@ -14,18 +14,13 @@
 
 package io.crysknife.generator.info;
 
-import java.lang.reflect.Field;
-import java.util.function.Supplier;
-
-import javax.lang.model.element.TypeElement;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.Name;
@@ -37,17 +32,26 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import io.crysknife.client.Instance;
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.client.BeanManager;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.util.GenerationUtils;
+import io.crysknife.util.Utils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+
+import javax.enterprise.inject.Instance;
+import java.lang.reflect.Field;
+import java.util.function.Supplier;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -56,9 +60,11 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
   private BeanDefinition bean;
   private ClassBuilder classBuilder;
+  private GenerationUtils generationUtils;
 
   BeanInfoJREGeneratorBuilder(IOCContext iocContext) {
     super(iocContext);
+    this.generationUtils = new GenerationUtils(iocContext);
   }
 
   @Override
@@ -68,145 +74,217 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     initClass();
     addFields();
     addOnInvoke();
+    addGetField();
     return classBuilder.toSourceCode();
   }
 
   private void initClass() {
-    classBuilder.setClassName(bean.getClassName() + "Info");
-    classBuilder.getClassCompilationUnit().setPackageDeclaration(bean.getPackageName());
+
+    classBuilder
+        .setClassName(MoreTypes.asTypeElement(bean.getType()).getSimpleName().toString() + "Info");
+    classBuilder.getClassCompilationUnit()
+        .setPackageDeclaration(Utils.getPackageName(MoreTypes.asTypeElement(bean.getType())));
     classBuilder.getClassDeclaration().getAnnotations()
         .add(new NormalAnnotationExpr().setName(new Name("Aspect")));
-    classBuilder.getClassCompilationUnit().addImport("org.aspectj.lang.ProceedingJoinPoint");
-    classBuilder.getClassCompilationUnit().addImport("org.aspectj.lang.annotation.Around");
+    classBuilder.getClassCompilationUnit().addImport("org.aspectj.lang.JoinPoint");
+    classBuilder.getClassCompilationUnit().addImport("org.aspectj.lang.annotation.Before");
     classBuilder.getClassCompilationUnit().addImport("org.aspectj.lang.annotation.Aspect");
     classBuilder.getClassCompilationUnit().addImport("io.crysknife.client.BeanManagerImpl");
     classBuilder.getClassCompilationUnit().addImport(Field.class);
     classBuilder.getClassCompilationUnit().addImport(Supplier.class);
+    classBuilder.getClassCompilationUnit().addImport(FieldUtils.class);
     classBuilder.getClassCompilationUnit().addImport(Instance.class);
+    classBuilder.getClassCompilationUnit().addImport(BeanManager.class);
+
+    classBuilder.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager",
+        new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get"),
+        Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
   }
 
   private void addFields() {
-    for (FieldPoint fieldPoint : bean.getFieldInjectionPoints()) {
-      generateFactoryFieldDeclaration(fieldPoint);
+
+    for (InjectableVariableDefinition fieldPoint : bean.getFields()) {
+      String methodName =
+          fieldPoint.getVariableElement().getEnclosingElement().toString().replaceAll("\\.", "_")
+              + "_" + fieldPoint.getVariableElement().getSimpleName();
+      boolean isLocal = isLocal(bean, fieldPoint);
+
       MethodDeclaration methodDeclaration =
-          classBuilder.addMethod(fieldPoint.getName(), Modifier.Keyword.PUBLIC);
-      methodDeclaration.setType(Object.class.getSimpleName());
-      methodDeclaration.addParameter("ProceedingJoinPoint", "joinPoint");
-      methodDeclaration.addThrownException(Throwable.class);
+          classBuilder.addMethod(methodName, Modifier.Keyword.PUBLIC);
+      methodDeclaration.addParameter("JoinPoint", "joinPoint");
+      methodDeclaration.addThrownException(NoSuchFieldException.class);
+      methodDeclaration.addThrownException(IllegalAccessException.class);
 
       NormalAnnotationExpr annotationExpr = new NormalAnnotationExpr();
-      annotationExpr.setName(new Name("Around"));
-      annotationExpr.getPairs().add(
-          new MemberValuePair().setName("value").setValue(getAnnotationValue(bean, fieldPoint)));
+      annotationExpr.setName(new Name("Before"));
+      annotationExpr.getPairs()
+          .add(new MemberValuePair().setName("value").setValue(getAnnotationValue(fieldPoint)));
       methodDeclaration.addAnnotation(annotationExpr);
 
+      Expression _beanCall = null;
+      if (fieldPoint.getImplementation().isPresent()
+          && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
+        _beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
+            .generateBeanLookupCall(classBuilder, fieldPoint);
+      } else if (fieldPoint.getGenerator().isPresent()) {
+        _beanCall =
+            fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
+      } else {
+        _beanCall = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+            .addArgument(new FieldAccessExpr(
+                new NameExpr(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+                    .getQualifiedName().toString()),
+                "class"));
+      }
+
+      Expression beanCall = new MethodCallExpr(_beanCall, "get");
+
+      ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
+          .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
+
+      TryStmt ts = new TryStmt();
+      BlockStmt blockStmt = new BlockStmt();
+
+      blockStmt.addAndGetStatement(new AssignExpr()
+          .setTarget(new VariableDeclarationExpr(
+              new ClassOrInterfaceType().setName(String.class.getSimpleName()), "fieldName"))
+          .setValue(
+              new StringLiteralExpr(fieldPoint.getVariableElement().getSimpleName().toString())));
+
+      blockStmt.addAndGetStatement(new AssignExpr()
+          .setTarget(new VariableDeclarationExpr(
+              new ClassOrInterfaceType().setName(Field.class.getSimpleName()), "field"))
+          .setValue(new MethodCallExpr("getField")
+              .addArgument(new MethodCallExpr(
+                  new MethodCallExpr(new NameExpr("joinPoint"), "getTarget"), "getClass"))
+              .addArgument(new NameExpr("fieldName"))));
+
+      blockStmt.addAndGetStatement(new MethodCallExpr("onInvoke").addArgument("joinPoint")
+          .addArgument("field").addArgument(beanCall));
+
+      CatchClause catchClause1 = new CatchClause().setParameter(new Parameter()
+          .setType(new ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
+      catchClause1.getBody().addAndGetStatement(throwStmt);
+
+      CatchClause catchClause2 = new CatchClause().setParameter(new Parameter()
+          .setType(new ClassOrInterfaceType().setName("IllegalAccessException")).setName("e"));
+      catchClause2.getBody().addAndGetStatement(throwStmt);
+
+      ts.getCatchClauses().add(catchClause1);
+      ts.getCatchClauses().add(catchClause2);
+
+      ts.setTryBlock(blockStmt);
+
       methodDeclaration.getBody().ifPresent(body -> {
-        body.addAndGetStatement(new ReturnStmt(new MethodCallExpr("onInvoke")
-            .addArgument("joinPoint").addArgument(new StringLiteralExpr(fieldPoint.getName()))
-            .addArgument(new MethodCallExpr(new NameExpr(fieldPoint.getName()), "get"))));
+        body.addAndGetStatement(ts);
       });
     }
+  }
+
+  private boolean isLocal(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {
+    return bean.getType()
+        .equals(MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()));
+  }
+
+  private StringLiteralExpr getAnnotationValue(InjectableVariableDefinition fieldPoint) {
+    StringBuffer sb = new StringBuffer();
+    sb.append("get(").append("*").append(" ")
+        .append(fieldPoint.getVariableElement().getEnclosingElement()).append(".")
+        .append(fieldPoint.getVariableElement().getSimpleName()).append(")");
+    return new StringLiteralExpr(sb.toString());
   }
 
   private void addOnInvoke() {
     MethodDeclaration methodDeclaration =
         classBuilder.addMethod("onInvoke", Modifier.Keyword.PRIVATE);
-    methodDeclaration.setType(Object.class.getSimpleName());
-    methodDeclaration.addParameter("ProceedingJoinPoint", "joinPoint");
-    methodDeclaration.addParameter("String", "fieldName");
-    methodDeclaration.addParameter("Instance", "instance");
-    methodDeclaration.addThrownException(Throwable.class);
+    methodDeclaration.addParameter("JoinPoint", "joinPoint");
+    methodDeclaration.addParameter("Field", "field");
+    methodDeclaration.addParameter("Object", "instance");
+
+    methodDeclaration.addThrownException(NoSuchFieldException.class);
+    methodDeclaration.addThrownException(IllegalAccessException.class);
 
     methodDeclaration.getBody().ifPresent(body -> {
-      body.addAndGetStatement(new VariableDeclarationExpr(
-          new ClassOrInterfaceType().setName(Field.class.getSimpleName()), "field"));
-      TryStmt ts = new TryStmt();
-      body.addAndGetStatement(ts);
-      BlockStmt blockStmt = new BlockStmt();
-      ts.setTryBlock(blockStmt);
-
-      blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("field"))
-          .setValue(new MethodCallExpr(
-              new MethodCallExpr(new MethodCallExpr(new NameExpr("joinPoint"), "getTarget"),
-                  "getClass"),
-              "getDeclaredField").addArgument(new NameExpr("fieldName"))));
-      ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
-          .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
-      CatchClause catchClause = new CatchClause().setParameter(new Parameter()
-          .setType(new ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
-      catchClause.getBody().addAndGetStatement(throwStmt);
-      ts.getCatchClauses().add(catchClause);
-
       body.addAndGetStatement(
           new MethodCallExpr(new NameExpr("field"), "setAccessible").addArgument("true"));
 
-      IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(
+      BlockStmt thenStmt = new BlockStmt();
+
+      IfStmt ifStmtLocal = new IfStmt().setCondition(new BinaryExpr(
           new MethodCallExpr(new NameExpr("field"), "get")
               .addArgument(new MethodCallExpr(new NameExpr("joinPoint"), "getTarget")),
-          new NullLiteralExpr(), BinaryExpr.Operator.NOT_EQUALS));
-      ifStmt.setThenStmt(new ReturnStmt(new MethodCallExpr(new NameExpr("joinPoint"), "proceed")));
-      body.addAndGetStatement(ifStmt);
+          new NullLiteralExpr(), BinaryExpr.Operator.EQUALS)).setThenStmt(thenStmt);
 
-      ts = new TryStmt();
-      body.addAndGetStatement(ts);
-      blockStmt = new BlockStmt();
-      ts.setTryBlock(blockStmt);
-
-      blockStmt.addAndGetStatement(new MethodCallExpr(new NameExpr("field"), "set")
+      thenStmt.addAndGetStatement(new MethodCallExpr(new NameExpr("field"), "set")
           .addArgument(new MethodCallExpr(new NameExpr("joinPoint"), "getTarget"))
-          .addArgument(new MethodCallExpr(new NameExpr("instance"), "get")));
-      throwStmt = new ThrowStmt(new ObjectCreationExpr()
-          .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
-      catchClause = new CatchClause().setParameter(new Parameter()
-          .setType(new ClassOrInterfaceType().setName("IllegalAccessException")).setName("e"));
-      catchClause.getBody().addAndGetStatement(throwStmt);
-      ts.getCatchClauses().add(catchClause);
-
-      body.addAndGetStatement(
-          new ReturnStmt(new MethodCallExpr(new NameExpr("joinPoint"), "proceed")));
+          .addArgument(new NameExpr("instance")));
+      body.addAndGetStatement(ifStmtLocal);
     });
   }
 
-  private void generateFactoryFieldDeclaration(FieldPoint fieldPoint) {
-    ClassOrInterfaceType supplier =
-        new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
+  private void addGetField() {
 
-    ClassOrInterfaceType type = new ClassOrInterfaceType();
-    type.setName(Instance.class.getSimpleName());
-    type.setTypeArguments(
-        new ClassOrInterfaceType().setName(fieldPoint.getType().getQualifiedName().toString()));
-    supplier.setTypeArguments(type);
+    MethodDeclaration methodDeclaration =
+        classBuilder.addMethod("getField", Modifier.Keyword.PRIVATE);
+    methodDeclaration.addParameter("Class", "clazz");
+    methodDeclaration.addParameter("String", "name");
+    methodDeclaration.setType(Field.class);
 
-    ClassOrInterfaceType beanManager = new ClassOrInterfaceType().setName("BeanManagerImpl");
-    MethodCallExpr callForBeanManagerImpl =
-        new MethodCallExpr(beanManager.getNameAsExpression(), "get");
+    methodDeclaration.getBody().ifPresent(body -> {
 
-    TypeElement typeElement;
 
-    if (fieldPoint.isNamed()) {
-      typeElement =
-          iocContext.getQualifiers().get(fieldPoint.getType()).get(fieldPoint.getNamed()).getType();
-    } else {
-      typeElement = fieldPoint.getType();
-    }
+      ClassOrInterfaceType consumerClassDecloration =
+          new ClassOrInterfaceType().setName(Field.class.getCanonicalName());
+      VariableDeclarationExpr variableDeclarationExpr =
+          new VariableDeclarationExpr(consumerClassDecloration, "field");
 
-    MethodCallExpr callForProducer =
-        new MethodCallExpr(callForBeanManagerImpl, "lookupBean").addArgument(
-            new FieldAccessExpr(new NameExpr(typeElement.getQualifiedName().toString()), "class"));
 
-    LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(callForProducer));
+      ForEachStmt forStmt = new ForEachStmt();
+      forStmt.setVariable(variableDeclarationExpr);
+      forStmt.setIterable(
+          new MethodCallExpr(new NameExpr("FieldUtils"), "getAllFields").addArgument("clazz"));
 
-    classBuilder.addFieldWithInitializer(supplier, fieldPoint.getName(), lambda,
-        Modifier.Keyword.PRIVATE);
+      IfStmt ifStmt = new IfStmt().setCondition(
+          new MethodCallExpr(new MethodCallExpr(new NameExpr("field"), "getName"), "equals")
+              .addArgument("name"));
+      ifStmt.setThenStmt(new BlockStmt().addAndGetStatement(new ReturnStmt(new NameExpr("field"))));
+
+      BlockStmt blockStmt = new BlockStmt();
+      blockStmt.addAndGetStatement(ifStmt);
+
+      forStmt.setBody(blockStmt);
+
+      body.addAndGetStatement(forStmt);
+
+      /*
+       * TryStmt ts = new TryStmt(); BlockStmt blockStmt = new BlockStmt();
+       * ts.setTryBlock(blockStmt);
+       * 
+       * blockStmt.addAndGetStatement(new ReturnStmt( new MethodCallExpr(new NameExpr("clazz"),
+       * "getField").addArgument("name")));
+       * 
+       * CatchClause catchClause1 = new CatchClause().setParameter(new Parameter() .setType(new
+       * ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
+       * ts.getCatchClauses().add(catchClause1); body.addAndGetStatement(ts);
+       * 
+       * TryStmt ts1 = new TryStmt(); BlockStmt blockStmt1 = new BlockStmt();
+       * ts1.setTryBlock(blockStmt1);
+       * 
+       * blockStmt1.addAndGetStatement(new ReturnStmt( new MethodCallExpr(new NameExpr("clazz"),
+       * "getDeclaredField").addArgument("name")));
+       * 
+       * CatchClause catchClause2 = new CatchClause().setParameter(new Parameter() .setType(new
+       * ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
+       * ts1.getCatchClauses().add(catchClause2); body.addAndGetStatement(ts1);
+       */
+
+      ThrowStmt throwStmt = new ThrowStmt(
+          new ObjectCreationExpr().setType(new ClassOrInterfaceType().setName("Error"))
+              .addArgument("\"Error: no field named '\" + name + \"' at  \" + clazz + \" at \""));
+      body.addAndGetStatement(throwStmt);
+
+    });
+
   }
 
-  private StringLiteralExpr getAnnotationValue(BeanDefinition bean, FieldPoint fieldPoint) {
-    StringBuffer sb = new StringBuffer();
-    sb.append("get(").append("*")
-        // .append(fieldPoint.getType())
-        .append(" ").append(bean.getQualifiedName()).append(".").append(fieldPoint.getName())
-        .append(")");
-    return new StringLiteralExpr(sb.toString());
-  }
 }

@@ -21,13 +21,13 @@ import javax.inject.Inject;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/18/21
  */
-// @Dependent
+@Dependent
 // @Default
 public class NodeBuilderControlImpl implements NodeBuilderControl {
 
   public final CanvasCommandFactory<AbstractCanvasHandler> commandFactory;
 
-  // @Inject
+  @Inject
   public NodeBuilderControlImpl(final CanvasCommandFactory<AbstractCanvasHandler> commandFactory) {
     this.commandFactory = commandFactory;
   }

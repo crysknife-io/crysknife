@@ -14,13 +14,6 @@
 
 package io.crysknife.ui.databinding.generator;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.lang.model.element.TypeElement;
-
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -36,6 +29,12 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.generator.ScopedBeanGenerator;
+import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.databinding.client.BindableProxy;
 import io.crysknife.ui.databinding.client.BindableProxyAgent;
 import io.crysknife.ui.databinding.client.BindableProxyFactory;
@@ -44,13 +43,12 @@ import io.crysknife.ui.databinding.client.NonExistingPropertyException;
 import io.crysknife.ui.databinding.client.PropertyType;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.ui.databinding.client.api.DataBinder;
-import io.crysknife.generator.ScopedBeanGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.point.FieldPoint;
+
+import javax.inject.Inject;
+import javax.lang.model.element.TypeElement;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -64,47 +62,51 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   @Override
   public void register() {
-    // iocContext.register(Bindable.class, WiringElementType.CLASS_DECORATOR, this); //PARAMETER
     iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); // PARAMETER
-    TypeElement type = iocContext.getGenerationContext().getElements()
-        .getTypeElement(DataBinder.class.getCanonicalName());
-    BeanDefinition beanDefinition = iocContext.getBeanDefinitionOrCreateAndReturn(type);
-    beanDefinition.setGenerator(this);
-    iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition definition) {
-    if (definition instanceof BeanDefinition) {
-      clazz.getClassCompilationUnit().addImport(((BeanDefinition) definition).getType().toString());
+  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
+      InjectableVariableDefinition fieldPoint) {
+    classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
+    return generationUtils
+        .wrapCallInstanceImpl(classBuilder,
+            new MethodCallExpr(new MethodCallExpr(
+                new NameExpr("io.crysknife.ui.databinding.client.api.DataBinder_Factory"), "get"),
+                "forType").addArgument(
+                    new NameExpr(MoreTypes.asDeclared(fieldPoint.getVariableElement().asType())
+                        .getTypeArguments().get(0) + ".class")));
+  }
 
-      clazz.getClassCompilationUnit().addImport(DataBinder.class);
-      clazz.getClassCompilationUnit().addImport(Collections.class);
-      clazz.getClassCompilationUnit().addImport(HashMap.class);
-      clazz.getClassCompilationUnit().addImport(Map.class);
-      clazz.getClassCompilationUnit().addImport(PropertyType.class);
-      clazz.getClassCompilationUnit().addImport(NonExistingPropertyException.class);
-      clazz.getClassCompilationUnit().addImport(BindableProxyAgent.class);
-      clazz.getClassCompilationUnit().addImport(BindableProxy.class);
-      clazz.getClassCompilationUnit().addImport(BindableProxyProvider.class);
-      clazz.getClassCompilationUnit().addImport(BindableProxyFactory.class);
+  @Override
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
+    clazz.getClassCompilationUnit().addImport((beanDefinition).getType().toString());
 
-      BeanDefinition beanDefinition = (BeanDefinition) definition;
-      initClassBuilder(clazz, beanDefinition);
-      clazz.getImplementedTypes().clear();
+    clazz.getClassCompilationUnit().addImport(DataBinder.class);
+    clazz.getClassCompilationUnit().addImport(Collections.class);
+    clazz.getClassCompilationUnit().addImport(HashMap.class);
+    clazz.getClassCompilationUnit().addImport(Map.class);
+    clazz.getClassCompilationUnit().addImport(PropertyType.class);
+    clazz.getClassCompilationUnit().addImport(NonExistingPropertyException.class);
+    clazz.getClassCompilationUnit().addImport(BindableProxyAgent.class);
+    clazz.getClassCompilationUnit().addImport(BindableProxy.class);
+    clazz.getClassCompilationUnit().addImport(BindableProxyProvider.class);
+    clazz.getClassCompilationUnit().addImport(BindableProxyFactory.class);
 
-      MethodDeclaration methodDeclaration =
-          clazz.addMethod("loadBindableProxies", Modifier.Keyword.PRIVATE);
+    initClassBuilder(clazz, beanDefinition);
+    clazz.getImplementedTypes().clear();
 
-      iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName()).forEach(c -> {
-        clazz.getClassCompilationUnit().addImport(c.toString());
-        generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
-      });
+    MethodDeclaration methodDeclaration =
+        clazz.addMethod("loadBindableProxies", Modifier.Keyword.PRIVATE);
 
-      generateFactoryCreateMethod(clazz, beanDefinition);
-      generateFactoryForTypeMethod(clazz, beanDefinition);
-      write(clazz, beanDefinition, iocContext.getGenerationContext());
-    }
+    iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName()).forEach(c -> {
+      clazz.getClassCompilationUnit().addImport(c.toString());
+      generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
+    });
+
+    generateFactoryCreateMethod(clazz, beanDefinition);
+    generateFactoryForTypeMethod(clazz, beanDefinition);
+    write(clazz, beanDefinition, iocContext.getGenerationContext());
   }
 
   public void generateFactoryCreateMethod(ClassBuilder classBuilder,
@@ -145,17 +147,9 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type) {
     new BindableProxyGenerator(
+        iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils(),
         iocContext.getGenerationContext().getProcessingEnvironment().getTypeUtils(),
         methodDeclaration, type).generate();
   }
 
-  @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
-    classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
-    MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments();
-    return new NameExpr("io.crysknife.databinding.client.api.DataBinder_Factory.get().forType("
-        + MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0)
-        + ".class)");
-  }
 }

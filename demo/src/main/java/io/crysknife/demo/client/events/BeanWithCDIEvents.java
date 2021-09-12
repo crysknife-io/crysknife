@@ -15,10 +15,12 @@
 package io.crysknife.demo.client.events;
 
 import java.util.Random;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -26,6 +28,7 @@ import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MouseEvent;
+import io.crysknife.client.internal.AbstractEventFactory;
 import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;

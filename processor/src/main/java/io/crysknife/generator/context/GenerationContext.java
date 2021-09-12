@@ -22,6 +22,8 @@ import javax.tools.Diagnostic;
 
 import io.crysknife.generator.context.oracle.ResourceOracle;
 import io.crysknife.generator.context.oracle.ResourceOracleImpl;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/21/19
@@ -30,6 +32,7 @@ public class GenerationContext {
 
   private final RoundEnvironment roundEnvironment;
   private final ProcessingEnvironment processingEnvironment;
+  private final ScanResult scanResult = new ClassGraph().enableAllInfo().scan();
   private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
   private boolean isGwt2 = false;
   private boolean isJre = false;
@@ -84,5 +87,9 @@ public class GenerationContext {
 
   public ResourceOracle getResourceOracle() {
     return resourceOracle;
+  }
+
+  public ScanResult getScanResult() {
+    return scanResult;
   }
 }

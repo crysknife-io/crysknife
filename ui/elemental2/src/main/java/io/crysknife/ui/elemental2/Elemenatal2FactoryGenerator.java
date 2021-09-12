@@ -14,13 +14,12 @@
 
 package io.crysknife.ui.elemental2;
 
-import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import elemental2.dom.DomGlobal;
@@ -72,18 +71,16 @@ import elemental2.dom.HTMLTrackElement;
 import elemental2.dom.HTMLUListElement;
 import elemental2.dom.HTMLVideoElement;
 import io.crysknife.annotation.Generator;
-import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.definition.Definition;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
+import javax.inject.Named;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -152,53 +149,56 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   public void register() {
     HTML_ELEMENTS.keySet().forEach(clazz -> {
       iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
-      iocContext.getBlacklist().add(clazz.getCanonicalName());
     });
   }
 
   @Override
-  public Expression generateBeanCall(ClassBuilder classBuilder, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition) {
-    classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
-    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
-    classBuilder.getClassCompilationUnit().addImport(Provider.class);
-    classBuilder.getClassCompilationUnit()
-        .addImport(beanDefinition.getType().getQualifiedName().toString());
+  public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
-    return new CastExpr(
-        new ClassOrInterfaceType().setName(beanDefinition.getType().getSimpleName().toString()),
-        new MethodCallExpr(
-            new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
-            "createElement").addArgument(getTagFromType(fieldPoint, beanDefinition)));
   }
 
   @Override
-  public void generateBeanFactory(ClassBuilder classBuilder, Definition definition) {
-
+  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
+      InjectableVariableDefinition fieldPoint) {
+    classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
+    classBuilder.getClassCompilationUnit().addImport(MoreTypes
+        .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
+    return generationUtils.wrapCallInstanceImpl(classBuilder,
+        new MethodCallExpr(
+            new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
+            "createElement").addArgument(getTagFromType(fieldPoint)));
   }
 
-  private StringLiteralExpr getTagFromType(FieldPoint fieldPoint, BeanDefinition beanDefinition) {
-    if (fieldPoint.isNamed()) {
-      return new StringLiteralExpr(fieldPoint.getNamed());
+  private StringLiteralExpr getTagFromType(InjectableVariableDefinition fieldPoint) {
+    if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null
+        && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("")) {
+      return new StringLiteralExpr(
+          fieldPoint.getVariableElement().getAnnotation(Named.class).value());
     }
 
     Class clazz;
     try {
-      clazz = Class.forName(beanDefinition.getType().getQualifiedName().toString());
+      clazz = Class.forName(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+          .getQualifiedName().toString());
     } catch (ClassNotFoundException e) {
-      throw new Error("Unable to process " + beanDefinition.getType().getQualifiedName().toString()
-          + " " + e.getMessage());
+      throw new Error(
+          "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+              .getQualifiedName().toString() + " " + e.getMessage());
     }
 
     if (!HTML_ELEMENTS.containsKey(clazz)) {
-      throw new GenerationException(
-          "Unable to process " + beanDefinition.getType().getQualifiedName().toString());
+      throw new GenerationException("Unable to process " + MoreTypes
+          .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
     }
 
     if (HTML_ELEMENTS.get(clazz).stream().findFirst().get().equals("named")) {
-      throw new GenerationException(
-          "Unable to process " + beanDefinition.getType().getQualifiedName().toString() + ", "
-              + fieldPoint.getName() + " must be annotated with @Named(\"tag_name\")");
+      throw new GenerationException("Unable to process "
+          + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName()
+              .toString()
+          + ", "
+          + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getEnclosingElement()
+          + "." + fieldPoint.getVariableElement().getSimpleName()
+          + " must be annotated with @Named(\"tag_name\")");
     }
 
     return new StringLiteralExpr(HTML_ELEMENTS.get(clazz).stream().findFirst().get());

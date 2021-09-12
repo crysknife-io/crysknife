@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * @author Christian Sadilek <csadilek@redhat.com>
  */
 @Documented
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AutoBound {
 
