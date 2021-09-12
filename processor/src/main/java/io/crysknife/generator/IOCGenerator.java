@@ -19,16 +19,16 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.util.GenerationUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-public abstract class IOCGenerator {
+public abstract class IOCGenerator<T extends Definition> {
 
   protected final IOCContext iocContext;
 
@@ -41,10 +41,10 @@ public abstract class IOCGenerator {
 
   public abstract void register();
 
-  public abstract void generate(ClassBuilder clazz, Definition beanDefinition);
+  public abstract void generate(ClassBuilder clazz, T beanDefinition);
 
   public Expression generateBeanLookupCall(ClassBuilder clazz,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
     MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
         .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
             .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),

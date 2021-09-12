@@ -98,14 +98,13 @@ import elemental2.dom.HTMLUListElement;
 import elemental2.dom.HTMLVideoElement;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.Reflect;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.DataField;
@@ -207,7 +206,7 @@ import static java.util.stream.Collectors.joining;
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator
-public class TemplatedGenerator extends IOCGenerator {
+public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
   private static final String QUOTE = "\"";
   private static final Escaper JAVA_STRING_ESCAPER =
@@ -338,14 +337,12 @@ public class TemplatedGenerator extends IOCGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder builder, Definition definition) {
-    if (definition instanceof BeanDefinition) {
-      beanDefinition = (BeanDefinition) definition;
-      validateType(MoreTypes.asTypeElement(beanDefinition.getType()),
-          MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
-      processType(builder, MoreTypes.asTypeElement(beanDefinition.getType()),
-          MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
-    }
+  public void generate(ClassBuilder builder, BeanDefinition beanDefinition) {
+    this.beanDefinition = beanDefinition;
+    validateType(MoreTypes.asTypeElement(beanDefinition.getType()),
+        MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
+    processType(builder, MoreTypes.asTypeElement(beanDefinition.getType()),
+        MoreTypes.asTypeElement(beanDefinition.getType()).getAnnotation(Templated.class));
   }
 
   // ------------------------------------------------------ root element / template
@@ -530,7 +527,7 @@ public class TemplatedGenerator extends IOCGenerator {
         wrapper.addConstructor(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
     if (beanDefinition.getConstructorParams() != null) {
       List<String> args = new LinkedList<>();
-      for (InjectionPointDefinition argument : beanDefinition.getConstructorParams()) {
+      for (InjectionParameterDefinition argument : beanDefinition.getConstructorParams()) {
         constructor.addAndGetParameter(MoreTypes
             .asTypeElement(argument.getVariableElement().asType()).getQualifiedName().toString(),
             argument.getVariableElement().getSimpleName().toString());

@@ -27,12 +27,12 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.TransitionTo;
 
@@ -60,7 +60,7 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
 
   @Override
   public Expression generateBeanLookupCall(ClassBuilder clazz,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
     clazz.getClassCompilationUnit().addImport(TransitionTo.class);
     clazz.getClassCompilationUnit().addImport(Navigation.class);
     clazz.getClassCompilationUnit().addImport(InstanceImpl.class);

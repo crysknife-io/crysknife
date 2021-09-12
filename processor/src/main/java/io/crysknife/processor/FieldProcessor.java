@@ -16,11 +16,11 @@ package io.crysknife.processor;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.util.Utils;
 
 import javax.inject.Inject;
@@ -52,6 +52,6 @@ public class FieldProcessor extends InjectionPointProcessor {
   @Override
   protected void process(BeanDefinition bean, VariableElement field)
       throws UnableToCompleteException {
-    bean.getFields().add(new InjectionPointDefinition(bean, field));
+    bean.getFields().add(new InjectableVariableDefinition(bean, field));
   }
 }

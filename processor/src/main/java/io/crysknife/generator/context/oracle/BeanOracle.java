@@ -15,9 +15,9 @@
 package io.crysknife.generator.context.oracle;
 
 import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.definition.UnscopedBeanDefinition;
 import io.crysknife.util.Utils;
 
@@ -51,7 +51,7 @@ public class BeanOracle {
     this.context = context;
   }
 
-  public BeanDefinition guess(InjectionPointDefinition point) {
+  public BeanDefinition guess(InjectableVariableDefinition point) {
     Named named = point.getVariableElement().getAnnotation(Named.class);
     Set<AnnotationMirror> qualifiers = getAnnotationMirrors(point);
     boolean isInterfaceOrAbstractClass =
@@ -174,7 +174,7 @@ public class BeanOracle {
     return Optional.empty();
   }
 
-  private Optional<BeanDefinition> processQualifiers(InjectionPointDefinition point,
+  private Optional<BeanDefinition> processQualifiers(InjectableVariableDefinition point,
       Set<AnnotationMirror> qualifiers) {
     Set<BeanDefinition> subclasses = getSubClasses(point.getVariableElement().asType());
 
@@ -188,7 +188,7 @@ public class BeanOracle {
 
   }
 
-  private Optional<BeanDefinition> processName(InjectionPointDefinition point, Named named) {
+  private Optional<BeanDefinition> processName(InjectableVariableDefinition point, Named named) {
     Set<BeanDefinition> subclasses = getSubClasses(point.getVariableElement().asType());
     return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
         .filter(elm -> (MoreTypes.asTypeElement(elm.getType()).getAnnotation(Named.class) != null
@@ -222,7 +222,7 @@ public class BeanOracle {
         || MoreTypes.asTypeElement(type).getModifiers().contains(Modifier.ABSTRACT);
   }
 
-  private Set<AnnotationMirror> getAnnotationMirrors(InjectionPointDefinition point) {
+  private Set<AnnotationMirror> getAnnotationMirrors(InjectableVariableDefinition point) {
     return point.getVariableElement().getAnnotationMirrors().stream()
         .filter(anno -> anno.getAnnotationType().asElement().getAnnotation(Qualifier.class) != null)
         .collect(Collectors.toSet());

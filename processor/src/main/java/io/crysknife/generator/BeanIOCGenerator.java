@@ -30,13 +30,13 @@ import java.io.PrintWriter;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/4/19
  */
-public abstract class BeanIOCGenerator extends IOCGenerator {
+public abstract class BeanIOCGenerator<T extends BeanDefinition> extends IOCGenerator<T> {
 
   public BeanIOCGenerator(IOCContext iocContext) {
     super(iocContext);
   }
 
-  public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
+  public void write(ClassBuilder clazz, T beanDefinition, GenerationContext context) {
     try {
       String fileName = Utils.getQualifiedFactoryName(beanDefinition.getType());
       String source = clazz.toSourceCode();

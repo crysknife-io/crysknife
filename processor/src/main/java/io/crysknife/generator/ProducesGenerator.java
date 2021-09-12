@@ -51,7 +51,6 @@ public class ProducesGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-
   public void register() {
     iocContext.register(Produces.class, WiringElementType.METHOD_DECORATOR, this);
   }

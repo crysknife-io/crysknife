@@ -19,9 +19,11 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.BeanDefinitionFactory;
-import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.MethodDefinition;
 import io.crysknife.definition.MethodDefinitionFactory;
 import io.crysknife.definition.ProducesBeanDefinition;
+import io.crysknife.definition.VariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.IOCGenerator;
@@ -129,8 +131,11 @@ public class BeanProcessorTask implements Task {
               TypeMirror erased = iocContext.getGenerationContext().getTypes()
                   .erasure(field.getEnclosingElement().asType());
               BeanDefinition bean = iocContext.getBeans().get(erased);
-              bean.getFields().stream().filter(f -> f.getVariableElement().equals(field)).forEach(
-                  f -> f.getDecorators().addAll(iocGeneratorMetaCollectionEntry.getValue()));
+              bean.getFields().stream().filter(f -> f.getVariableElement().equals(field))
+                  .forEach(f -> f.getDecorators()
+                      .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
+                          .map(em -> (IOCGenerator<VariableDefinition>) em)
+                          .collect(Collectors.toSet())));
             });
           });
         });
@@ -160,7 +165,8 @@ public class BeanProcessorTask implements Task {
               bean.getMethods().stream()
                   .filter(mmethod -> mmethod.getExecutableElement().equals(methodType)).findFirst()
                   .orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
-                  .addAll(iocGeneratorMetaCollectionEntry.getValue());
+                  .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
+                      .map(em -> (IOCGenerator<MethodDefinition>) em).collect(Collectors.toSet()));
             });
           });
         });
@@ -175,7 +181,8 @@ public class BeanProcessorTask implements Task {
               .getTypeElementsByAnnotation(iocGeneratorMetaCollectionEntry.getKey().annotation)
               .stream().map(e -> iocContext.getGenerationContext().getTypes().erasure(e.asType()))
               .forEach(type -> iocContext.getBeans().get(type).getDecorators()
-                  .addAll(iocGeneratorMetaCollectionEntry.getValue()));
+                  .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
+                      .map(em -> (IOCGenerator<BeanDefinition>) em).collect(Collectors.toSet())));
         });
   }
 
@@ -201,7 +208,9 @@ public class BeanProcessorTask implements Task {
                 bean.getMethods().stream()
                     .filter(mmethod -> mmethod.getExecutableElement().equals(methodType))
                     .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
-                    .addAll(iocGeneratorMetaCollectionEntry.getValue());
+                    .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
+                        .map(em -> (IOCGenerator<MethodDefinition>) em)
+                        .collect(Collectors.toSet()));
               });
             }));
   }
@@ -233,11 +242,11 @@ public class BeanProcessorTask implements Task {
 
   private void processTypes() {
     iocContext.getBeans().forEach((type, definition) -> {
-      Set<InjectionPointDefinition> dependencies = new HashSet<>();
+      Set<InjectableVariableDefinition> dependencies = new HashSet<>();
       dependencies.addAll(definition.getFields());
       dependencies.addAll(definition.getConstructorParams());
 
-      for (InjectionPointDefinition point : dependencies) {
+      for (InjectableVariableDefinition point : dependencies) {
         checkIfGeneric(point.getVariableElement());
 
         TypeMirror beanTypeMirror = iocContext.getGenerationContext().getTypes()

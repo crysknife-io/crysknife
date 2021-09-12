@@ -22,7 +22,7 @@ import com.google.auto.common.MoreElements;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
@@ -80,7 +80,7 @@ public class NavigationGenerator extends SingletonGenerator {
 
   @Override
   public Expression generateBeanLookupCall(ClassBuilder classBuilder,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
 
 

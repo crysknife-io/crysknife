@@ -41,10 +41,10 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.BeanManager;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -103,7 +103,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
   private void addFields() {
 
-    for (InjectionPointDefinition fieldPoint : bean.getFields()) {
+    for (InjectableVariableDefinition fieldPoint : bean.getFields()) {
       String methodName =
           fieldPoint.getVariableElement().getEnclosingElement().toString().replaceAll("\\.", "_")
               + "_" + fieldPoint.getVariableElement().getSimpleName();
@@ -126,8 +126,9 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
           && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
         _beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
             .generateBeanLookupCall(classBuilder, fieldPoint);
-      } else if (fieldPoint.getGenerator() != null) {
-        _beanCall = fieldPoint.getGenerator().generateBeanLookupCall(classBuilder, fieldPoint);
+      } else if (fieldPoint.getGenerator().isPresent()) {
+        _beanCall =
+            fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
       } else {
         _beanCall = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
             .addArgument(new FieldAccessExpr(
@@ -180,12 +181,12 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     }
   }
 
-  private boolean isLocal(BeanDefinition bean, InjectionPointDefinition fieldPoint) {
+  private boolean isLocal(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {
     return bean.getType()
         .equals(MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()));
   }
 
-  private StringLiteralExpr getAnnotationValue(InjectionPointDefinition fieldPoint) {
+  private StringLiteralExpr getAnnotationValue(InjectableVariableDefinition fieldPoint) {
     StringBuffer sb = new StringBuffer();
     sb.append("get(").append("*").append(" ")
         .append(fieldPoint.getVariableElement().getEnclosingElement()).append(".")

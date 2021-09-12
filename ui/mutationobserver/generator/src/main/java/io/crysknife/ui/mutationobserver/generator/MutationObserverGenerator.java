@@ -14,13 +14,6 @@
 
 package io.crysknife.ui.mutationobserver.generator;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -30,24 +23,29 @@ import com.google.auto.common.MoreElements;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.MutationRecord;
 import io.crysknife.annotation.Generator;
-import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.ScopedBeanGenerator;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.MethodDefinition;
+import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.Definition;
-import io.crysknife.definition.MethodDefinition;
 import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
 import io.crysknife.ui.mutationobserver.client.api.ObserverCallback;
 import io.crysknife.ui.mutationobserver.client.api.OnAttach;
 import io.crysknife.ui.mutationobserver.client.api.OnDetach;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator(priority = 100002)
-public class MutationObserverGenerator extends ScopedBeanGenerator {
+public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
   private TypeMirror htmlElement;
 
@@ -66,14 +64,11 @@ public class MutationObserverGenerator extends ScopedBeanGenerator {
         .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
   }
 
-  public void generate(ClassBuilder builder, Definition definition) {
-    if (definition instanceof MethodDefinition) {
-      MethodDefinition mutationObserver = (MethodDefinition) definition;
-      ifValid(mutationObserver);
-      VariableElement target = findField(mutationObserver);
-      isValid(target);
-      generateCallback(builder, mutationObserver);
-    }
+  public void generate(ClassBuilder builder, MethodDefinition mutationObserver) {
+    ifValid(mutationObserver);
+    VariableElement target = findField(mutationObserver);
+    isValid(target);
+    generateCallback(builder, mutationObserver);
   }
 
   private void isValid(VariableElement target) {

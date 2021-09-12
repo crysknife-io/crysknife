@@ -36,16 +36,12 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.Utils;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.lang.model.element.TypeElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/31/19
@@ -64,7 +60,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
 
   @Override
   public Expression generateBeanLookupCall(ClassBuilder classBuilder,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class.getCanonicalName());
     MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments();

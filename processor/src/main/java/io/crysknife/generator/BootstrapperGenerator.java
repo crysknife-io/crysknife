@@ -37,7 +37,7 @@ import io.crysknife.client.internal.Factory;
 import io.crysknife.client.internal.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
-import io.crysknife.definition.InjectionPointDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
@@ -66,7 +66,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, Definition definition) {
+  public void generate(ClassBuilder clazz, BeanDefinition definition) {
     super.generate(clazz, definition);
   }
 
@@ -103,7 +103,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   }
 
   protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
-      InjectionPointDefinition fieldPoint) {
+      InjectableVariableDefinition fieldPoint) {
 
     String varName = "_field_" + fieldPoint.getVariableElement().getSimpleName().toString();
     ClassOrInterfaceType supplier =
@@ -121,8 +121,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
       beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
           .generateBeanLookupCall(classBuilder, fieldPoint);
-    } else if (fieldPoint.getGenerator() != null) {
-      beanCall = fieldPoint.getGenerator().generateBeanLookupCall(classBuilder, fieldPoint);
+    } else if (fieldPoint.getGenerator().isPresent()) {
+      beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
     }
 
     LambdaExpr lambda = new LambdaExpr();
@@ -155,7 +155,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     }
 
     if (!iocContext.getGenerationContext().isJre()) {
-      for (InjectionPointDefinition fieldPoint : beanDefinition.getFields()) {
+      for (InjectableVariableDefinition fieldPoint : beanDefinition.getFields()) {
         classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
             getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field"));
       }

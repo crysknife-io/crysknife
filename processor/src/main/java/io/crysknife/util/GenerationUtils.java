@@ -31,10 +31,10 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionPointDefinition;
 import jsinterop.base.Js;
 
 import javax.inject.Named;
@@ -74,7 +74,7 @@ public class GenerationUtils {
                 .addArgument("instance"));
   }
 
-  public Expression beanManagerLookupBeanCall(InjectionPointDefinition fieldPoint) {
+  public Expression beanManagerLookupBeanCall(InjectableVariableDefinition fieldPoint) {
     MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
         .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
             .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),
@@ -85,7 +85,7 @@ public class GenerationUtils {
   }
 
   public void maybeAddQualifiers(IOCContext context, MethodCallExpr call,
-      InjectionPointDefinition field) {
+      InjectableVariableDefinition field) {
 
     String annotationName = null;
 
@@ -128,7 +128,7 @@ public class GenerationUtils {
   }
 
 
-  public String isQualifier(InjectionPointDefinition field) {
+  public String isQualifier(InjectableVariableDefinition field) {
     for (AnnotationMirror ann : field.getVariableElement().getAnnotationMirrors()) {
       for (AnnotationMirror e : context.getGenerationContext().getProcessingEnvironment()
           .getElementUtils()

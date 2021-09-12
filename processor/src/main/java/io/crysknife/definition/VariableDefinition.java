@@ -16,35 +16,33 @@ package io.crysknife.definition;
 
 import io.crysknife.generator.IOCGenerator;
 
-import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/4/21
+ * @author Dmitrii Tikhomirov Created by treblereel 9/11/21
  */
-public class MethodDefinition implements Definition {
+public class VariableDefinition implements Definition {
 
-  private final ExecutableElement executableElement;
-  private final BeanDefinition beanDefinition;
-  private final Set<IOCGenerator<MethodDefinition>> decorators = new HashSet<>();
+  private final VariableElement variableElement;
+  private final BeanDefinition parent;
+  protected final Set<IOCGenerator<VariableDefinition>> decorators = new HashSet<>();
 
-
-  MethodDefinition(BeanDefinition beanDefinition, ExecutableElement executableElement) {
-    this.beanDefinition = beanDefinition;
-    this.executableElement = executableElement;
+  public VariableDefinition(BeanDefinition parent, VariableElement variableElement) {
+    this.variableElement = variableElement;
+    this.parent = parent;
   }
 
-  public ExecutableElement getExecutableElement() {
-    return executableElement;
+  public VariableElement getVariableElement() {
+    return variableElement;
   }
 
   public BeanDefinition getBeanDefinition() {
-    return beanDefinition;
+    return parent;
   }
 
-  public Set<IOCGenerator<MethodDefinition>> getDecorators() {
+  public Set<IOCGenerator<VariableDefinition>> getDecorators() {
     return decorators;
   }
-
 }
