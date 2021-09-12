@@ -30,7 +30,6 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.processor.ProducesProcessor;
-import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -48,7 +47,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -87,12 +85,12 @@ public class BeanProcessorTask implements Task {
   }
 
   public void execute() {
-    logger.log(TreeLogger.INFO, "start processing");
     findInjectionPoints();
     findProduces();
 
     processTypes();
     processTypeDecorators();
+    processFieldDecorators();
     processMethodDecorators();
     processMethodParamDecorators();
 
@@ -105,6 +103,37 @@ public class BeanProcessorTask implements Task {
 
 
     logger.log(TreeLogger.INFO, "fields registered " + count);
+  }
+
+  // TODO annotated field could be non-injectable
+  private void processFieldDecorators() {
+    iocContext.getGenerators().asMap().entrySet().stream()
+        .filter(iocGeneratorMetaCollectionEntry -> iocGeneratorMetaCollectionEntry
+
+            .getKey().wiringElementType.equals(WiringElementType.FIELD_DECORATOR))
+        .forEach(iocGeneratorMetaCollectionEntry -> {
+          iocGeneratorMetaCollectionEntry.getValue().forEach(gen -> {
+
+            TypeElement annotation = iocContext.getGenerationContext().getElements()
+                .getTypeElement(iocGeneratorMetaCollectionEntry.getKey().annotation);
+
+            Set<VariableElement> elements = iocContext.getGenerationContext().getRoundEnvironment()
+                .getElementsAnnotatedWith(annotation).stream()
+                .filter(elm -> elm.getKind().isField()).map(field -> MoreElements.asVariable(field))
+                .collect(Collectors.toSet());
+
+            elements.addAll(iocContext
+                .getFieldsByAnnotation(iocGeneratorMetaCollectionEntry.getKey().annotation));
+
+            elements.stream().forEach(field -> {
+              TypeMirror erased = iocContext.getGenerationContext().getTypes()
+                  .erasure(field.getEnclosingElement().asType());
+              BeanDefinition bean = iocContext.getBeans().get(erased);
+              bean.getFields().stream().filter(f -> f.getVariableElement().equals(field)).forEach(
+                  f -> f.getDecorators().addAll(iocGeneratorMetaCollectionEntry.getValue()));
+            });
+          });
+        });
   }
 
   private void processMethodParamDecorators() {
@@ -129,9 +158,8 @@ public class BeanProcessorTask implements Task {
               BeanDefinition bean = iocContext.getBeans().get(erased);
               ExecutableType methodType = (ExecutableType) e.asType();
               bean.getMethods().stream()
-                  .filter(mmethod -> iocContext.getGenerationContext().getTypes()
-                      .isSameType(methodType, mmethod.getExecutableElement().asType()))
-                  .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
+                  .filter(mmethod -> mmethod.getExecutableElement().equals(methodType)).findFirst()
+                  .orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
                   .addAll(iocGeneratorMetaCollectionEntry.getValue());
             });
           });
@@ -171,8 +199,7 @@ public class BeanProcessorTask implements Task {
                 BeanDefinition bean = iocContext.getBeans().get(erased);
                 ExecutableType methodType = (ExecutableType) e.asType();
                 bean.getMethods().stream()
-                    .filter(mmethod -> iocContext.getGenerationContext().getTypes()
-                        .isSameType(methodType, mmethod.getExecutableElement().asType()))
+                    .filter(mmethod -> mmethod.getExecutableElement().equals(methodType))
                     .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
                     .addAll(iocGeneratorMetaCollectionEntry.getValue());
               });
@@ -217,7 +244,7 @@ public class BeanProcessorTask implements Task {
             .erasure(point.getVariableElement().asType());
         TypeElement beanTypeElement = MoreTypes.asTypeElement(beanTypeMirror);
 
-        Optional<IOCGenerator> candidate = getGenerator(Inject.class.getCanonicalName(),
+        Optional<IOCGenerator> candidate = iocContext.getGenerator(Inject.class.getCanonicalName(),
             beanTypeElement, WiringElementType.FIELD_TYPE);
 
         // Case 1: buildin type
@@ -239,7 +266,7 @@ public class BeanProcessorTask implements Task {
   private void checkIfGeneric(VariableElement variableElement) {}
 
   private void findInjectionPoints() {
-    TreeLogger logger = this.logger.branch(TreeLogger.INFO, "find Injection Points");
+    //TreeLogger logger = this.logger.branch(TreeLogger.INFO, "find Injection Points");
 
     iocContext.getGenerators().entries().stream().map(gen -> gen.getKey().exactType)
         .filter(elm -> !types.isSameType(elm.asType(), objectTypeMirror)).map(TypeElement::asType)
@@ -258,8 +285,7 @@ public class BeanProcessorTask implements Task {
         .map(sc -> iocContext.getGenerationContext().getScanResult().getClassesWithAnnotation(sc))
         .flatMap(Collection::stream)
         .map(elm -> iocContext.getGenerationContext().getElements().getTypeElement(elm.getName()))
-        .filter(elm -> elm != null)
-        .forEach(annotatedScopedBean::add);
+        .filter(elm -> elm != null).forEach(annotatedScopedBean::add);
     processBeans(annotatedScopedBean);
   }
 
@@ -310,25 +336,9 @@ public class BeanProcessorTask implements Task {
 
     if (!intersection.isEmpty()) {
       String annotation = intersection.iterator().next();
-      Optional<IOCGenerator> generator = getGenerator(annotation,
+      Optional<IOCGenerator> generator = iocContext.getGenerator(annotation,
           MoreTypes.asTypeElement(objectTypeMirror), WiringElementType.BEAN);
       generator.ifPresent(bean::setIocGenerator);
     }
   }
-
-  Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
-      WiringElementType wiringElementType) {
-    IOCContext.IOCGeneratorMeta meta =
-        new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);
-    Iterable<IOCGenerator> generators = iocContext.getGenerators().get(meta);
-    if (generators.iterator().hasNext()) {
-      return Optional.of(generators.iterator().next());
-    }
-    return Optional.empty();
-  }
-
-  public Map<TypeMirror, BeanDefinition> getBeans() {
-    return iocContext.getBeans();
-  }
-
 }

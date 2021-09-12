@@ -41,7 +41,7 @@ public class MutationObserver {
 
   private final Map<HTMLElement, ObserverCallback> detach = new HashMap<>();
 
-  MutationObserver() {
+  public MutationObserver() {
     mutationObserverInit = MutationObserverInit.create();
     mutationObserverInit.setChildList(true);
     mutationObserverInit.setSubtree(true);

@@ -215,18 +215,19 @@ public abstract class ScopedBeanGenerator extends BeanIOCGenerator {
 
     Set<IOCGenerator> postConstruct = new LinkedHashSet<>();
 
-    beanDefinition.getMethods().stream()
-        .forEach(method -> method.getDecorators().stream()
-            .sorted(Comparator
-                .comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
-            .forEach(decorator -> {
-              // TODO PostConstruct hack
-              if (decorator instanceof PostConstructGenerator) {
-                postConstruct.add(decorator);
-              } else {
-                decorator.generate(clazz, method);
-              }
-            }));
+    beanDefinition.getMethods().stream().forEach(method -> {
+      method.getDecorators().stream()
+          .sorted(
+              Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
+          .forEach(decorator -> {
+            // TODO PostConstruct hack
+            if (decorator instanceof PostConstructGenerator) {
+              postConstruct.add(decorator);
+            } else {
+              decorator.generate(clazz, method);
+            }
+          });
+    });
 
   }
 

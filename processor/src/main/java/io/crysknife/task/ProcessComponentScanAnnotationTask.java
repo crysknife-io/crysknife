@@ -19,7 +19,6 @@ import io.crysknife.annotation.ComponentScan;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.task.Task;
 
 import javax.lang.model.element.TypeElement;
 import java.util.HashSet;
