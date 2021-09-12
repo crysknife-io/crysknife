@@ -240,6 +240,20 @@ public class BeanManagerGenerator implements Task {
           new ClassOrInterfaceType().setName(Instance.class.getSimpleName());
       instance.setTypeArguments(new ClassOrInterfaceType().setName(producerClass));
 
+      Expression getNewInstance;
+
+      if (producesBeanDefinition.getMethod().getModifiers()
+          .contains(javax.lang.model.element.Modifier.STATIC)) {
+        getNewInstance = new MethodCallExpr(
+            new NameExpr(Utils.getQualifiedName(producesBeanDefinition.getProducer())),
+            producesBeanDefinition.getMethod().getSimpleName().toString());
+      } else {
+        getNewInstance = new MethodCallExpr(new EnclosedExpr(new CastExpr(
+            new ClassOrInterfaceType().setName(producerClass),
+            new MethodCallExpr(
+                new MethodCallExpr("lookupBean").addArgument(producerClass + ".class"), "get"))),
+            producesBeanDefinition.getMethod().getSimpleName().toString());
+      }
 
       if (producesBeanDefinition.isSingleton()) {
 
@@ -247,14 +261,8 @@ public class BeanManagerGenerator implements Task {
             new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
         BlockStmt blockStmt = new BlockStmt();
 
-        blockStmt
-            .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("holder"))
-                .setValue(new MethodCallExpr(
-                    new EnclosedExpr(
-                        new CastExpr(new ClassOrInterfaceType().setName(producerClass),
-                            new MethodCallExpr(new MethodCallExpr("lookupBean")
-                                .addArgument(producerClass + ".class"), "get"))),
-                    producesBeanDefinition.getMethod().getSimpleName().toString())));
+        blockStmt.addAndGetStatement(
+            new AssignExpr().setTarget(new NameExpr("holder")).setValue(getNewInstance));
 
         ifStmt.setThenStmt(blockStmt);
         get.getBody().get().addAndGetStatement(ifStmt);
@@ -269,14 +277,7 @@ public class BeanManagerGenerator implements Task {
 
         get.getBody().get().addAndGetStatement(new ReturnStmt(new NameExpr("holder")));
       } else {
-        get.getBody().get()
-            .addAndGetStatement(
-                new ReturnStmt(new MethodCallExpr(
-                    new EnclosedExpr(
-                        new CastExpr(new ClassOrInterfaceType().setName(producerClass),
-                            new MethodCallExpr(new MethodCallExpr("lookupBean")
-                                .addArgument(producerClass + ".class"), "get"))),
-                    producesBeanDefinition.getMethod().getSimpleName().toString())));
+        get.getBody().get().addAndGetStatement(new ReturnStmt(getNewInstance));
 
       }
       anonymousClassBody.add(get);

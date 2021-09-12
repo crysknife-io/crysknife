@@ -14,6 +14,8 @@
 
 package org.treblereel.produces;
 
+import org.treblereel.produces.staticproduces.MyStaticBean;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -32,6 +34,9 @@ public class SimpleBeanProducerTest {
   @Inject
   private SimpleBeanDependent simpleBeanDependentTwo;
 
+  @Inject
+  private MyStaticBean myStaticBean;
+
   public SimpleBeanSingleton getSimpleBeanSingletonOne() {
     return simpleBeanSingletonOne;
   }
@@ -46,5 +51,9 @@ public class SimpleBeanProducerTest {
 
   public SimpleBeanDependent getSimpleBeanDependentTwo() {
     return simpleBeanDependentTwo;
+  }
+
+  public MyStaticBean getMyStaticBean() {
+    return myStaticBean;
   }
 }
