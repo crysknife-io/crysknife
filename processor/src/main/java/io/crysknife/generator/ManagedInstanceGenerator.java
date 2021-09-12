@@ -68,8 +68,6 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
   public void register() {
     iocContext.register(Inject.class, ManagedInstance.class, WiringElementType.FIELD_TYPE, this);
     iocContext.register(Inject.class, Instance.class, WiringElementType.FIELD_TYPE, this);
-    iocContext.getBlacklist().add(ManagedInstance.class.getCanonicalName());
-    iocContext.getBlacklist().add(Instance.class.getCanonicalName());
   }
 
   @Override

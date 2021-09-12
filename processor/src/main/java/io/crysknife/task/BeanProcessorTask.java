@@ -266,7 +266,7 @@ public class BeanProcessorTask implements Task {
   private void checkIfGeneric(VariableElement variableElement) {}
 
   private void findInjectionPoints() {
-    //TreeLogger logger = this.logger.branch(TreeLogger.INFO, "find Injection Points");
+    // TreeLogger logger = this.logger.branch(TreeLogger.INFO, "find Injection Points");
 
     iocContext.getGenerators().entries().stream().map(gen -> gen.getKey().exactType)
         .filter(elm -> !types.isSameType(elm.asType(), objectTypeMirror)).map(TypeElement::asType)

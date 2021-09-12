@@ -66,7 +66,6 @@ public class ListComponentGenerator extends BeanIOCGenerator {
   @Override
   public void register() {
     iocContext.register(Inject.class, ListComponent.class, WiringElementType.FIELD_TYPE, this);
-    iocContext.getBlacklist().add(ListComponent.class.getCanonicalName());
   }
 
   @Override

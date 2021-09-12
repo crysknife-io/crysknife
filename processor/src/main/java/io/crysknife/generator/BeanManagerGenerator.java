@@ -368,9 +368,7 @@ public class BeanManagerGenerator implements Task {
           MoreTypes.asTypeElement(iocContext.getGenerationContext().getTypes().erasure(factory))
               .getQualifiedName().toString();
 
-      if (!iocContext.getBlacklist().contains(qualifiedName)) {
-
-
+      if (!iocContext.getBuildIn().contains(qualifiedName)) {
         Expression factoryCreationExpr;
 
         if (iocContext.getGenerationContext().getTypes().isSubtype(field, factory)) {
@@ -381,7 +379,6 @@ public class BeanManagerGenerator implements Task {
           MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
               .addArgument(new FieldAccessExpr(new NameExpr(qualifiedName), "class"))
               .addArgument(factoryCreationExpr);
-
 
           if (annotation != null) {
             call.addArgument(annotation);

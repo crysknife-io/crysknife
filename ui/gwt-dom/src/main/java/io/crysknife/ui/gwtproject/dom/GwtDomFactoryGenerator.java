@@ -448,7 +448,6 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
   public void register() {
     HTML_ELEMENTS.keySet().forEach(clazz -> {
       iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
-      iocContext.getBlacklist().add(clazz.getCanonicalName());
     });
   }
 
