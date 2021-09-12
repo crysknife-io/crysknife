@@ -16,10 +16,12 @@ package org.treblereel;
 
 import org.junit.Test;
 import org.treblereel.produces.scoped.URLPatternMatcherHolder;
+import org.treblereel.produces.staticproduces.MyStaticBean;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -53,6 +55,22 @@ public class SimpleBeanProducerTest extends AbstractTest {
         .get().matcher.test());
     assertEquals("URLPatternMatcherProvider", app.beanManager
         .<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class).get().matcher.test());
+  }
+
+  @Test
+  public void testAppStaticBean() {
+    assertNotNull(app.getSimpleBeanProducerTest().getMyStaticBean());
+    assertTrue(app.getSimpleBeanProducerTest().getMyStaticBean().ready);
+    assertEquals(MyStaticBean.class.getCanonicalName(),
+        app.getSimpleBeanProducerTest().getMyStaticBean().whoami());
+
+    assertNotNull(app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).get());
+    assertTrue(app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).get().ready);
+
+    assertEquals(MyStaticBean.class.getCanonicalName(),
+        app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).get().whoami());
+
+
   }
 
 

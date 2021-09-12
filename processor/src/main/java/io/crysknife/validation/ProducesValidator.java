@@ -55,15 +55,6 @@ public class ProducesValidator {
       add(new Check() {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (variableElement.getModifiers().contains(Modifier.STATIC)) {
-            log(variableElement, "@Produces method must be non-static");
-          }
-        }
-      });
-
-      add(new Check() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
           if (!variableElement.getParameters().isEmpty()) {
             log(variableElement, "@Produces method must have no args");
           }
