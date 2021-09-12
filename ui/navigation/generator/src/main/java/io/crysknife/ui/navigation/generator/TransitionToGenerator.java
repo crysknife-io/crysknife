@@ -51,7 +51,6 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
   @Override
   public void register() {
     iocContext.register(Inject.class, TransitionTo.class, WiringElementType.BEAN, this);
-    iocContext.getBlacklist().add(TransitionTo.class.getCanonicalName());
   }
 
   @Override

@@ -63,9 +63,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   @Override
   public void register() {
-    // iocContext.register(AutoBound.class, WiringElementType.FIELD_TYPE, this); // PARAMETER
     iocContext.register(Inject.class, DataBinder.class, WiringElementType.BEAN, this); // PARAMETER
-    iocContext.getBlacklist().add(DataBinder.class.getCanonicalName());
   }
 
   @Override

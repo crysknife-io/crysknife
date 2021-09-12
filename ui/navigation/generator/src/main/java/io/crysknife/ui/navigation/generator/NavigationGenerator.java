@@ -53,10 +53,7 @@ public class NavigationGenerator extends SingletonGenerator {
   public void register() {
 
     iocContext.register(Inject.class, NavigationGraph.class, WiringElementType.FIELD_TYPE, this);
-    iocContext.getBlacklist().add(NavigationGraph.class.getCanonicalName());
-
     iocContext.getOrderedBeans().add(iocContext.getTypeMirror(NavigationGraph.class));
-    // iocContext.getOrderedBeans().add(iocContext.getTypeMirror(Navigation.class));
   }
 
   @Override

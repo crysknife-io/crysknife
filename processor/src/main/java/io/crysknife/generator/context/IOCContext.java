@@ -54,7 +54,7 @@ public class IOCContext {
 
   private final List<TypeMirror> orderedBeans = new LinkedList<>();
 
-  private final List<String> blacklist = new ArrayList<>();
+  private final List<String> buildIn = new ArrayList<>();
 
   private final Map<String, Set<TypeElement>> classesByAnnotation = new HashMap<>();
 
@@ -91,6 +91,7 @@ public class IOCContext {
       }
       beanDefinition.setIocGenerator(generator);
       getBeans().put(type.asType(), beanDefinition);
+      buildIn.add(exactType.getCanonicalName());
     }
   }
 
@@ -126,8 +127,8 @@ public class IOCContext {
     return orderedBeans;
   }
 
-  public List<String> getBlacklist() {
-    return blacklist;
+  public List<String> getBuildIn() {
+    return buildIn;
   }
 
   // TODO j2cl-m-p workaround
