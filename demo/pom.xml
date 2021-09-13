@@ -94,6 +94,20 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>gwt-dom-generator</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gwtproject.dom</groupId>
+      <artifactId>gwt-dom</artifactId>
+      <version>HEAD-SNAPSHOT</version>
+    </dependency>
+
   </dependencies>
 
   <build>

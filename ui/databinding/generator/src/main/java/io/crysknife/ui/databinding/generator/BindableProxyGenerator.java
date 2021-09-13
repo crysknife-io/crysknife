@@ -30,6 +30,8 @@ import org.apache.commons.lang3.StringUtils;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import org.checkerframework.checker.units.qual.K;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -220,10 +222,15 @@ public class BindableProxyGenerator {
   }
 
   private String getFieldType(TypeMirror mirror) {
+    TypeMirror collection = elements.getTypeElement(Collection.class.getCanonicalName()).asType();
+
+    if (types.isSubtype(mirror, collection)) {
+      return types.erasure(mirror).toString();
+    }
     if (mirror.getKind().isPrimitive()) {
       return types.boxedClass(MoreTypes.asPrimitiveType(mirror)).toString();
     }
-    return mirror.toString();
+    return types.erasure(mirror).toString();
   }
 
   private void get(Set<VariableElement> fields, StringBuffer sb) {
@@ -357,6 +364,13 @@ public class BindableProxyGenerator {
   }
 
   private String compileSetterMethodName(VariableElement variable) {
+    // String type = variable.asType().getKind().equals(TypeKind)
+
+    MoreElements.asType(variable.getEnclosingElement()).getTypeParameters();
+
+    System.out
+        .println("? " + variable + " " + variable.asType() + " " + variable.asType().getKind());
+
     String varName = variable.getSimpleName().toString();
     StringBuffer sb = new StringBuffer();
     sb.append("set");
