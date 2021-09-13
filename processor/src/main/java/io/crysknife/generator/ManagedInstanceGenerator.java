@@ -87,7 +87,8 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
         MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
 
     ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
-        .addArgument(new NameExpr(param.toString() + ".class"))
+        .addArgument(new NameExpr(
+            iocContext.getGenerationContext().getTypes().erasure(param).toString() + ".class"))
         .addArgument(new NameExpr("beanManager"));
 
     LambdaExpr lambda = new LambdaExpr();
