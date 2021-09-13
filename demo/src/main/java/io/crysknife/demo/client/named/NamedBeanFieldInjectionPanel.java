@@ -33,7 +33,7 @@ import io.crysknife.ui.templates.client.annotation.Templated;
  * @author Dmitrii Tikhomirov
  * Created by treblereel 2/22/19
  */
-//@Dependent
+@Dependent
 //@Page(path = "ZZZZ")
 @Templated("namedbeanfieldinjectionpanel.html")
 public class NamedBeanFieldInjectionPanel implements IsElement<HTMLDivElement> {

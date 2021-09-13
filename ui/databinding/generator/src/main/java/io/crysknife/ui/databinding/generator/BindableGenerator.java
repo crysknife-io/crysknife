@@ -69,13 +69,14 @@ public class BindableGenerator extends ScopedBeanGenerator {
   public Expression generateBeanLookupCall(ClassBuilder classBuilder,
       InjectableVariableDefinition fieldPoint) {
     classBuilder.getClassCompilationUnit().addImport(DataBinder.class);
-    return generationUtils
-        .wrapCallInstanceImpl(classBuilder,
-            new MethodCallExpr(new MethodCallExpr(
-                new NameExpr("io.crysknife.ui.databinding.client.api.DataBinder_Factory"), "get"),
-                "forType").addArgument(
-                    new NameExpr(MoreTypes.asDeclared(fieldPoint.getVariableElement().asType())
-                        .getTypeArguments().get(0) + ".class")));
+    return generationUtils.wrapCallInstanceImpl(classBuilder, new MethodCallExpr(
+        new MethodCallExpr(
+            new NameExpr("io.crysknife.ui.databinding.client.api.DataBinder_Factory"), "get"),
+        "forType")
+            .addArgument(new NameExpr(iocContext
+                .getGenerationContext().getTypes().erasure(MoreTypes
+                    .asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0))
+                + ".class")));
   }
 
   @Override

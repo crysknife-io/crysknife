@@ -14,9 +14,14 @@
 
 package io.crysknife.ui.gwtproject.dom;
 
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.InstanceImpl;
@@ -473,7 +478,10 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
           "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
               .getQualifiedName().toString() + " " + e.getMessage());
     }
-    return HTML_ELEMENTS.get(clazz).apply(fieldPoint);
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(HTML_ELEMENTS.get(clazz).apply(fieldPoint)));
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
   }
 
 }
