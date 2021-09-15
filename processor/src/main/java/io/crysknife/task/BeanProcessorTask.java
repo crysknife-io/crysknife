@@ -16,6 +16,7 @@ package io.crysknife.task;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.BeanDefinitionFactory;
@@ -32,12 +33,15 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.processor.ProducesProcessor;
+import io.crysknife.util.Utils;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
@@ -88,6 +92,7 @@ public class BeanProcessorTask implements Task {
 
   public void execute() {
     findInjectionPoints();
+    processInjectionPointsInUnscopedBeans();
     findProduces();
 
     processTypes();
@@ -295,8 +300,37 @@ public class BeanProcessorTask implements Task {
         .flatMap(Collection::stream)
         .map(elm -> iocContext.getGenerationContext().getElements().getTypeElement(elm.getName()))
         .filter(elm -> elm != null).forEach(annotatedScopedBean::add);
+
     processBeans(annotatedScopedBean);
   }
+
+  private void processInjectionPointsInUnscopedBeans() {
+    String[] annotations = scoped.toArray(new String[scoped.size()]);
+
+    Set<TypeMirror> unscoped = iocContext.getGenerationContext().getRoundEnvironment()
+        .getElementsAnnotatedWith(Inject.class).stream()
+        .map(p -> MoreElements.asType(p.getEnclosingElement()))
+        .filter(type -> type.getAnnotation(Application.class) == null) // TODO
+        .filter(
+            type -> type.getKind().isClass() && !type.getModifiers().contains(Modifier.ABSTRACT))
+        .filter(point -> !Utils.containsAnnotation(point, annotations))
+        .map(elm -> iocContext.getGenerationContext().getTypes().erasure(elm.asType()))
+        .filter(type -> !iocContext.getBeans().containsKey(type)).collect(Collectors.toSet());
+
+    IOCGenerator dependentGenerator = iocContext.getGenerator(Dependent.class.getCanonicalName(),
+        MoreTypes.asTypeElement(objectTypeMirror), WiringElementType.BEAN).get();
+
+    for (TypeMirror typeMirror : unscoped) {
+      TypeElement typeElement = MoreTypes.asTypeElement(typeMirror);
+      try {
+        processBean(typeElement).ifPresent(bean -> bean.setIocGenerator(dependentGenerator));
+      } catch (UnableToCompleteException e) {
+        throw new GenerationException(e);
+      }
+
+    }
+  }
+
 
   private void processBeans(Set<TypeElement> annotatedScopedBean) {
     List<UnableToCompleteException> errors = new ArrayList<>();
