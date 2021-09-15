@@ -199,7 +199,7 @@ public class BeanOracle {
 
   private Set<BeanDefinition> getSubClasses(TypeMirror point) {
     TypeMirror beanTypeMirror = context.getGenerationContext().getTypes().erasure(point);
-    BeanDefinition type = context.getBeans().get(beanTypeMirror);
+    BeanDefinition type = context.getBean(beanTypeMirror);
     Set<BeanDefinition> subclasses = new HashSet<>(type.getSubclasses());
     getAllSubtypes(type, subclasses);
     type.getSubclasses().addAll(subclasses);
