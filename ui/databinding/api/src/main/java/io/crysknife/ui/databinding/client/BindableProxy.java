@@ -16,20 +16,22 @@ package io.crysknife.ui.databinding.client;
 
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.ui.databinding.client.api.Converter;
+import io.crysknife.ui.databinding.client.api.WrappedPortable;
+import org.gwtproject.user.client.ui.Widget;
 
 /**
  * This interface is implemented by the generated proxies for {@link Bindable} types.
- * 
+ *
  * @author Christian Sadilek <csadilek@redhat.com>
  */
-public interface BindableProxy<T> extends HasProperties {
+public interface BindableProxy<T> extends WrappedPortable, HasProperties {
 
   /**
    * Returns the {@link BindableProxyAgent} of this proxy.
-   * 
+   *
    * @return the proxy's agent, never null.
    */
-  BindableProxyAgent<T> getBindableProxyAgent();
+  public BindableProxyAgent<T> getBindableProxyAgent();
 
   /**
    * Updates all widgets bound to the model instance associated with this proxy (see
@@ -37,13 +39,13 @@ public interface BindableProxy<T> extends HasProperties {
    * model instance has undergone changes that were not caused by calls to methods on this proxy and
    * were therefore not visible to this proxy (e.g direct field access by JPA).
    */
-  void updateWidgets();
+  public void updateWidgets();
 
   /**
    * Returns a new non-proxied instance with state copied recursively from this target.
-   * 
+   *
    * @return A recursively unwrapped (i.e. non-proxied) instance with state copied from the proxy
    *         target.
    */
-  T deepUnwrap();
+  public T deepUnwrap();
 }

@@ -94,6 +94,8 @@ public class BindableProxyGenerator {
 
     sb.append(String.format("  p.put(\"this\", new PropertyType(%s.class, true, false));",
         type.getSimpleName()));
+
+    sb.append(newLine);
     sb.append("  agent.copyValues();");
     sb.append(newLine);
 
@@ -101,18 +103,21 @@ public class BindableProxyGenerator {
     sb.append("}");
     sb.append(newLine);
 
+    sb.append(newLine);
     sb.append("public BindableProxyAgent getBindableProxyAgent() {");
     sb.append(newLine);
     sb.append(" return agent;");
     sb.append(newLine);
     sb.append("}");
 
+    sb.append(newLine);
     sb.append("public void updateWidgets() {");
     sb.append(newLine);
     sb.append(" agent.updateWidgetsAndFireEvents();");
     sb.append(newLine);
     sb.append("}");
 
+    sb.append(newLine);
     sb.append(String.format("public %s unwrap() {", type.getSimpleName()));
     sb.append(newLine);
     sb.append(" return target;");
@@ -122,18 +127,21 @@ public class BindableProxyGenerator {
     deepUnwrap(fields, sb);
     equals(clazzName, sb);
 
+    sb.append(newLine);
     sb.append("public int hashCode() {");
     sb.append(newLine);
     sb.append(" return target.hashCode();");
     sb.append(newLine);
     sb.append("}");
 
+    sb.append(newLine);
     sb.append("public String toString() {");
     sb.append(newLine);
     sb.append(" return target.toString();");
     sb.append(newLine);
     sb.append("}");
 
+    sb.append(newLine);
     sb.append("private void changeAndFire(String property, Object value) {");
     sb.append(newLine);
     sb.append(" final Object oldValue = get(property);");
@@ -234,6 +242,7 @@ public class BindableProxyGenerator {
   }
 
   private void get(Set<VariableElement> fields, StringBuffer sb) {
+    sb.append(newLine);
     sb.append("public Object get(String property) {");
     sb.append(newLine);
     sb.append("  switch (property) {");
@@ -258,6 +267,7 @@ public class BindableProxyGenerator {
 
   private void getterAndSetter(Set<VariableElement> fields, StringBuffer sb) {
     fields.forEach(elm -> {
+      sb.append(newLine);
       sb.append(String.format("public %s %s() {", getType(elm), getGetter(elm)));
       sb.append(newLine);
       sb.append(String.format("  return target.%s();", getGetter(elm)));
@@ -265,6 +275,7 @@ public class BindableProxyGenerator {
       sb.append("}");
       sb.append(newLine);
 
+      sb.append(newLine);
       sb.append(String.format("public void %s(%s value) {", getSetter(elm), getType(elm)));
       sb.append(newLine);
       sb.append(String.format("  changeAndFire(\"%s\", value);", elm.getSimpleName().toString()));
@@ -282,6 +293,7 @@ public class BindableProxyGenerator {
   }
 
   private void equals(String clazzName, StringBuffer sb) {
+    sb.append(newLine);
     sb.append("public boolean equals(Object obj) {");
     sb.append(newLine);
     sb.append(String.format("  if (obj instanceof %s) {", clazzName));
@@ -296,6 +308,7 @@ public class BindableProxyGenerator {
   }
 
   private void deepUnwrap(Set<VariableElement> fields, StringBuffer sb) {
+    sb.append(newLine);
     sb.append(String.format("public %s deepUnwrap() {", type.getSimpleName()));
     sb.append(newLine);
     sb.append(
@@ -367,9 +380,6 @@ public class BindableProxyGenerator {
     // String type = variable.asType().getKind().equals(TypeKind)
 
     MoreElements.asType(variable.getEnclosingElement()).getTypeParameters();
-
-    System.out
-        .println("? " + variable + " " + variable.asType() + " " + variable.asType().getKind());
 
     String varName = variable.getSimpleName().toString();
     StringBuffer sb = new StringBuffer();

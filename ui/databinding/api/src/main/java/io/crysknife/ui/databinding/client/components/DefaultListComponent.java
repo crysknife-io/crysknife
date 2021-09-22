@@ -24,9 +24,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import elemental2.dom.Element;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
-import org.gwtproject.dom.client.Element;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.client.TakesValue;
 import io.crysknife.client.internal.Assert;
@@ -79,7 +79,7 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
   }
 
   @Override
-  public HTMLElement element() {
+  public HTMLElement getElement() {
     return Js.uncheckedCast(root);
   }
 
@@ -180,10 +180,9 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
     final C component = createComponent(item);
     final HTMLElement element = Assert.notNull(elementAccessor.apply(component));
     if (index < components.size()) {
-      root.insertBefore(Js.uncheckedCast(element),
-          Js.uncheckedCast(Assert.notNull(elementAccessor.apply(components.get(index)))));
+      root.insertBefore(element, Assert.notNull(elementAccessor.apply(components.get(index))));
     } else {
-      root.appendChild(Js.uncheckedCast(element));
+      root.appendChild(element);
     }
     components.add(index, component);
     for (final Consumer<C> handler : creationHandlers) {
