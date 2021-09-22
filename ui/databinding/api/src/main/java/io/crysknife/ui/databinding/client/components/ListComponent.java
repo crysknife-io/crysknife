@@ -23,15 +23,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import elemental2.dom.DomGlobal;
+import elemental2.dom.Element;
+import io.crysknife.client.IsElement;
 import jsinterop.base.Js;
-import org.gwtproject.dom.client.DivElement;
-import org.gwtproject.dom.client.Document;
-import org.gwtproject.dom.client.Element;
 import org.gwtproject.dom.client.TableSectionElement;
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.gwtproject.user.client.TakesValue;
 import org.gwtproject.user.client.ui.IsWidget;
-import org.jboss.elemento.IsElement;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.ui.databinding.client.api.handler.list.BindableListChangeHandler;
 
@@ -101,7 +100,7 @@ public interface ListComponent<M, C extends TakesValue<M>>
   void setSelector(Consumer<C> selector);
 
   /**
-   * @param selector A {@link Consumer} called for every component that is unselected via
+   * @param deselector A {@link Consumer} called for every component that is unselected via
    *        {@link #deselectComponent(TakesValue)}, {@link #deselectComponents(Collection)}, or
    *        {@link #deselectAll()} .
    */
@@ -233,7 +232,7 @@ public interface ListComponent<M, C extends TakesValue<M>>
   static <M, C extends TakesValue<M> & IsElement> Builder<M, C> forIsElementComponent(
       final Supplier<C> supplier, final Consumer<C> destroyer) {
     return new Builder<>(
-        root -> new DefaultListComponent<>(root, supplier, destroyer, c -> c.element()));
+        root -> new DefaultListComponent<>(root, supplier, destroyer, c -> c.getElement()));
   }
 
   /**
@@ -271,7 +270,7 @@ public interface ListComponent<M, C extends TakesValue<M>>
      *         the given tag name.
      */
     public ListComponent<M, C> inElement(final String tagName) {
-      return factory.apply(Document.get().createElement(tagName));
+      return factory.apply(DomGlobal.document.createElement(tagName));
     }
 
     /**
@@ -279,7 +278,7 @@ public interface ListComponent<M, C extends TakesValue<M>>
      *         tag.
      */
     public ListComponent<M, C> inDiv() {
-      return inElement(DivElement.TAG);
+      return inElement("div");
     }
 
     /**

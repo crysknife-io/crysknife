@@ -14,6 +14,12 @@
 
 package io.crysknife.ui.databinding.client;
 
+import io.crysknife.client.internal.Assert;
+import io.crysknife.ui.databinding.client.api.handler.list.BindableListChangeHandler;
+import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeEvent;
+import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeHandler;
+import org.gwtproject.event.shared.HandlerRegistration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,12 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-
-import org.gwtproject.event.shared.HandlerRegistration;
-import io.crysknife.client.internal.Assert;
-import io.crysknife.ui.databinding.client.api.handler.list.BindableListChangeHandler;
-import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeEvent;
-import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeHandler;
 
 /**
  * Wraps a List<M> to notify change handlers of all operations that mutate the underlying list.
@@ -51,10 +51,10 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   private final Map<BindableProxyAgent<?>, PropertyChangeHandler<?>> elementChangeHandlers =
-      new HashMap<>();
+      new HashMap<BindableProxyAgent<?>, PropertyChangeHandler<?>>();
 
   private final Map<PropertyChangeHandler<?>, PropertyChangeUnsubscribeHandle> unsubscribeHandlesByHandler =
-      new HashMap<>();
+      new HashMap<PropertyChangeHandler<?>, PropertyChangeUnsubscribeHandle>();
 
   private final BindableProxyAgent<List<M>> agent;
 
@@ -458,6 +458,11 @@ public class BindableListWrapper<M> implements List<M>, BindableProxy<List<M>> {
         handler.onItemAddedAt(oldValue, index, e);
       }
     }
+  }
+
+  @Override
+  public Object unwrap() {
+    return list;
   }
 
   @Override

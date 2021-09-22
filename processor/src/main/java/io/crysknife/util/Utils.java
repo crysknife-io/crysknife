@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.inject.Default;
 import javax.lang.model.element.AnnotationMirror;
@@ -36,10 +37,12 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -172,6 +175,13 @@ public class Utils {
           .forEach(field -> fields.put(field.getSimpleName().toString(), field));
     }
     return fields.values();
+  }
+
+  public static Collection<ExecutableType> getAllTypedMethodsIn(Elements elements, Types types,
+      TypeMirror type) {
+    return getAllMethodsIn(elements, MoreTypes.asTypeElement(type)).stream()
+        .map(e -> types.asMemberOf(MoreTypes.asDeclared(type), e)).map(e -> (ExecutableType) e)
+        .collect(Collectors.toSet());
   }
 
   public static Collection<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
