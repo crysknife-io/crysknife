@@ -24,6 +24,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -42,13 +43,18 @@ import io.crysknife.ui.databinding.client.BindableProxyProvider;
 import io.crysknife.ui.databinding.client.NonExistingPropertyException;
 import io.crysknife.ui.databinding.client.PropertyType;
 import io.crysknife.ui.databinding.client.api.Bindable;
+import io.crysknife.ui.databinding.client.api.Convert;
+import io.crysknife.ui.databinding.client.api.Converter;
 import io.crysknife.ui.databinding.client.api.DataBinder;
+import io.crysknife.ui.databinding.client.api.DefaultConverter;
 
 import javax.inject.Inject;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -105,9 +111,40 @@ public class BindableGenerator extends ScopedBeanGenerator {
       generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
     });
 
+    maybeAddDefaultConverters(clazz, methodDeclaration);
     generateFactoryCreateMethod(clazz, beanDefinition);
     generateFactoryForTypeMethod(clazz, beanDefinition);
     write(clazz, beanDefinition, iocContext.getGenerationContext());
+  }
+
+  private void maybeAddDefaultConverters(ClassBuilder clazz, MethodDeclaration methodDeclaration) {
+    TypeMirror converter =
+        iocContext.getGenerationContext().getTypes().erasure(iocContext.getGenerationContext()
+            .getElements().getTypeElement(Converter.class.getCanonicalName()).asType());
+
+    iocContext.getTypeElementsByAnnotation(DefaultConverter.class.getCanonicalName()).stream()
+        .filter(type -> iocContext.getGenerationContext().getTypes().isAssignable(type.asType(),
+            converter))
+        .collect(Collectors.toSet()).forEach(con -> {
+          con.getInterfaces().forEach(i -> {
+            if (iocContext.getGenerationContext().getTypes().isSameType(converter,
+                iocContext.getGenerationContext().getTypes().erasure(i))) {
+              methodDeclaration.getBody().ifPresent(body -> {
+                body.addAndGetStatement(new ExpressionStmt(
+                    new MethodCallExpr(new NameExpr(Convert.class.getCanonicalName()),
+                        "registerDefaultConverter")
+                            .addArgument(new NameExpr(
+                                MoreTypes.asDeclared(i).getTypeArguments().get(0).toString()
+                                    + ".class"))
+                            .addArgument(new NameExpr(
+                                MoreTypes.asDeclared(i).getTypeArguments().get(1).toString()
+                                    + ".class"))
+                            .addArgument(new ObjectCreationExpr()
+                                .setType(con.getQualifiedName().toString()))));
+              });
+            }
+          });
+        });
   }
 
   public void generateFactoryCreateMethod(ClassBuilder classBuilder,
