@@ -18,6 +18,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.ui.databinding.client.api.Bindable;
+import io.crysknife.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.lang.model.element.ElementKind;
@@ -45,6 +46,7 @@ public class BindableProxyGenerator {
   private Elements elements;
 
   private final TypeMirror listTypeMirror;
+  private final TypeMirror objectTypeMirror;
 
   BindableProxyGenerator(Elements elements, Types types, MethodDeclaration methodDeclaration,
       TypeElement type) {
@@ -54,6 +56,7 @@ public class BindableProxyGenerator {
     this.elements = elements;
 
     listTypeMirror = elements.getTypeElement(List.class.getCanonicalName()).asType();
+    objectTypeMirror = elements.getTypeElement(Object.class.getCanonicalName()).asType();
   }
 
   void generate() {
@@ -62,7 +65,7 @@ public class BindableProxyGenerator {
     StringBuffer sb = new StringBuffer();
 
     Set<VariableElement> fields =
-        type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField())
+        Utils.getAllFieldsIn(elements, type).stream().filter(elm -> elm.getKind().isField())
             .filter(e -> !e.getModifiers().contains(Modifier.FINAL))
             .filter(e -> !e.getModifiers().contains(Modifier.STATIC))
             .map(e -> MoreElements.asVariable(e)).collect(Collectors.toSet());
@@ -154,9 +157,9 @@ public class BindableProxyGenerator {
     sb.append(newLine);
     sb.append("}");
 
-    getterAndSetter(fields, sb);
+    getterAndSetter(type, fields, sb);
     get(fields, sb);
-    set(fields, sb);
+    set(type, fields, sb);
     getBeanProperties(sb);
 
     sb.append("}");
@@ -202,7 +205,7 @@ public class BindableProxyGenerator {
     sb.append(newLine);
   }
 
-  private void set(Set<VariableElement> fields, StringBuffer sb) {
+  private void set(TypeElement type, Set<VariableElement> fields, StringBuffer sb) {
     sb.append("public void set(String property, Object value) {");
     sb.append(newLine);
     sb.append("  switch (property) {");
@@ -210,7 +213,7 @@ public class BindableProxyGenerator {
 
     fields.forEach(elm -> {
       sb.append(String.format("case \"%s\": target.%s((%s) value);", elm.getSimpleName().toString(),
-          getSetter(elm), getFieldType(getType(elm))));
+          getSetter(elm), getFieldType(getType(type, elm))));
       sb.append(newLine);
       sb.append("break;");
       sb.append(newLine);
@@ -267,10 +270,10 @@ public class BindableProxyGenerator {
     sb.append(newLine);
   }
 
-  private void getterAndSetter(Set<VariableElement> fields, StringBuffer sb) {
+  private void getterAndSetter(TypeElement type, Set<VariableElement> fields, StringBuffer sb) {
     fields.forEach(elm -> {
       sb.append(newLine);
-      sb.append(String.format("public %s %s() {", getType(elm), getGetter(elm)));
+      sb.append(String.format("public %s %s() {", getType(type, elm), getGetter(elm)));
       sb.append(newLine);
       sb.append(String.format("  return target.%s();", getGetter(elm)));
       sb.append(newLine);
@@ -278,7 +281,7 @@ public class BindableProxyGenerator {
       sb.append(newLine);
 
       sb.append(newLine);
-      sb.append(String.format("public void %s(%s value) {", getSetter(elm), getType(elm)));
+      sb.append(String.format("public void %s(%s value) {", getSetter(elm), getType(type, elm)));
       sb.append(newLine);
       sb.append(String.format("  changeAndFire(\"%s\", value);", elm.getSimpleName().toString()));
       sb.append(newLine);
@@ -287,9 +290,13 @@ public class BindableProxyGenerator {
     });
   }
 
-  private TypeMirror getType(VariableElement elm) {
+  private TypeMirror getType(TypeElement parent, VariableElement elm) {
     if (elm.asType().getKind().equals(TypeKind.TYPEVAR)) {
-      return elements.getTypeElement(Object.class.getCanonicalName()).asType();
+      TypeMirror typeMirror = types.asMemberOf(MoreTypes.asDeclared(parent.asType()), elm);
+      if (typeMirror.getKind().equals(TypeKind.TYPEVAR)) {
+        return objectTypeMirror;
+      }
+      return typeMirror;
     }
     return elm.asType();
   }
@@ -367,7 +374,8 @@ public class BindableProxyGenerator {
 
   private String getGetter(VariableElement variable) {
     String method = compileGetterMethodName(variable);
-    return type.getEnclosedElements().stream().filter(e -> e.getKind().equals(ElementKind.METHOD))
+    return Utils.getAllMethodsIn(elements, type).stream()
+        .filter(e -> e.getKind().equals(ElementKind.METHOD))
         .filter(e -> e.toString().equals(method))
         .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
         .map(e -> e.getSimpleName().toString()).orElseThrow(() -> new Error(String
@@ -395,7 +403,8 @@ public class BindableProxyGenerator {
 
   private String getSetter(VariableElement variable) {
     String method = compileSetterMethodName(variable);
-    return type.getEnclosedElements().stream().filter(e -> e.getKind().equals(ElementKind.METHOD))
+    return Utils.getAllMethodsIn(elements, type).stream()
+        .filter(e -> e.getKind().equals(ElementKind.METHOD))
         .filter(e -> e.toString().equals(method))
         .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
         .map(e -> e.getSimpleName().toString()).orElseThrow(() -> new Error(String
@@ -408,14 +417,14 @@ public class BindableProxyGenerator {
   }
 
   private void generatePropertyType(StringBuffer sb, TypeElement type) {
-    type.getEnclosedElements().stream().filter(elm -> elm.getKind().isField())
-        .forEach(field -> generatePropertyType(sb, ((VariableElement) field)));
+    Utils.getAllFieldsIn(elements, type).stream()
+        .forEach(field -> generatePropertyType(type, sb, field));
   }
 
-  private void generatePropertyType(StringBuffer sb, VariableElement field) {
+  private void generatePropertyType(TypeElement type, StringBuffer sb, VariableElement field) {
     boolean isList = types.isSubtype(listTypeMirror, types.erasure(field.asType()));
     sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, %b));",
-        field.getSimpleName(), getFieldType(getType(field)), isBindableType(field), isList));
+        field.getSimpleName(), getFieldType(getType(type, field)), isBindableType(field), isList));
     sb.append(newLine);
   }
 }
