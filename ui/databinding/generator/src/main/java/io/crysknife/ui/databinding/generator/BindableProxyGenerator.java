@@ -14,6 +14,12 @@
 
 package io.crysknife.ui.databinding.generator;
 
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.ui.databinding.client.api.Bindable;
+import org.apache.commons.lang3.StringUtils;
+
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -22,14 +28,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
-import org.apache.commons.lang3.StringUtils;
-import io.crysknife.ui.databinding.client.api.Bindable;
-import org.checkerframework.checker.units.qual.K;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -46,12 +44,16 @@ public class BindableProxyGenerator {
   private Types types;
   private Elements elements;
 
+  private final TypeMirror listTypeMirror;
+
   BindableProxyGenerator(Elements elements, Types types, MethodDeclaration methodDeclaration,
       TypeElement type) {
     this.methodDeclaration = methodDeclaration;
     this.type = type;
     this.types = types;
     this.elements = elements;
+
+    listTypeMirror = elements.getTypeElement(List.class.getCanonicalName()).asType();
   }
 
   void generate() {
@@ -355,11 +357,12 @@ public class BindableProxyGenerator {
     if (elm.asType().getKind().isPrimitive()) {
       return false;
     }
-    if (elm.asType().getKind().equals(TypeKind.TYPEVAR)) {
+
+    if (elm.asType().getKind().equals(TypeKind.ARRAY)) {
       return false;
     }
 
-    return MoreTypes.asTypeElement(elm.asType()).getAnnotation(Bindable.class) != null;
+    return MoreTypes.asElement(elm.asType()).getAnnotation(Bindable.class) != null;
   }
 
   private String getGetter(VariableElement variable) {
@@ -377,7 +380,6 @@ public class BindableProxyGenerator {
   }
 
   private String compileSetterMethodName(VariableElement variable) {
-    // String type = variable.asType().getKind().equals(TypeKind)
 
     MoreElements.asType(variable.getEnclosingElement()).getTypeParameters();
 
@@ -401,7 +403,8 @@ public class BindableProxyGenerator {
   }
 
   private boolean isBoolean(VariableElement variable) {
-    return variable.getKind().equals(TypeKind.BOOLEAN);
+    return variable.asType().getKind().equals(TypeKind.BOOLEAN)
+        || variable.asType().toString().equals(Boolean.class.getCanonicalName());
   }
 
   private void generatePropertyType(StringBuffer sb, TypeElement type) {
@@ -410,8 +413,9 @@ public class BindableProxyGenerator {
   }
 
   private void generatePropertyType(StringBuffer sb, VariableElement field) {
-    sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, false));",
-        field.getSimpleName(), getFieldType(getType(field)), isBindableType(field)));
+    boolean isList = types.isSubtype(listTypeMirror, types.erasure(field.asType()));
+    sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, %b));",
+        field.getSimpleName(), getFieldType(getType(field)), isBindableType(field), isList));
     sb.append(newLine);
   }
 }
