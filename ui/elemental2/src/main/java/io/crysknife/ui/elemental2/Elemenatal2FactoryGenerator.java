@@ -66,6 +66,7 @@ import elemental2.dom.HTMLTableCellElement;
 import elemental2.dom.HTMLTableColElement;
 import elemental2.dom.HTMLTableElement;
 import elemental2.dom.HTMLTableRowElement;
+import elemental2.dom.HTMLTableSectionElement;
 import elemental2.dom.HTMLTextAreaElement;
 import elemental2.dom.HTMLTrackElement;
 import elemental2.dom.HTMLUListElement;
@@ -81,6 +82,10 @@ import io.crysknife.definition.Definition;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -107,8 +112,14 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     HTML_ELEMENTS.put(HTMLEmbedElement.class, "embed");
     HTML_ELEMENTS.put(HTMLFieldSetElement.class, "fieldset");
     HTML_ELEMENTS.put(HTMLFormElement.class, "form");
-    HTML_ELEMENTS.put(HTMLHeadingElement.class, "named");
-    HTML_ELEMENTS.put(HTMLElement.class, "named");
+    HTML_ELEMENTS.put(HTMLHeadingElement.class, "h1");
+    HTML_ELEMENTS.put(HTMLHeadingElement.class, "h2");
+    HTML_ELEMENTS.put(HTMLHeadingElement.class, "h3");
+    HTML_ELEMENTS.put(HTMLHeadingElement.class, "h4");
+    HTML_ELEMENTS.put(HTMLHeadingElement.class, "h5");
+    HTML_ELEMENTS.put(HTMLHeadingElement.class, "h6");
+    HTML_ELEMENTS.put(HTMLElement.class, "");
+    HTML_ELEMENTS.put(HTMLElement.class, "span");
     HTML_ELEMENTS.put(HTMLHRElement.class, "hr");
     HTML_ELEMENTS.put(HTMLImageElement.class, "img");
     HTML_ELEMENTS.put(HTMLInputElement.class, "input");
@@ -139,6 +150,10 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     HTML_ELEMENTS.put(HTMLTrackElement.class, "track");
     HTML_ELEMENTS.put(HTMLUListElement.class, "ul");
     HTML_ELEMENTS.put(HTMLVideoElement.class, "video");
+
+    HTML_ELEMENTS.put(HTMLTableSectionElement.class, "thead");
+    HTML_ELEMENTS.put(HTMLTableSectionElement.class, "tfoot");
+    HTML_ELEMENTS.put(HTMLTableSectionElement.class, "tbody");
   }
 
   public Elemenatal2FactoryGenerator(IOCContext iocContext) {
@@ -172,8 +187,8 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   private StringLiteralExpr getTagFromType(InjectableVariableDefinition fieldPoint) {
     if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null
         && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("")) {
-      return new StringLiteralExpr(
-          fieldPoint.getVariableElement().getAnnotation(Named.class).value());
+      return new StringLiteralExpr(fieldPoint.getVariableElement().getAnnotation(Named.class)
+          .value().toLowerCase(Locale.ROOT));
     }
 
     Class clazz;
@@ -191,7 +206,9 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
           .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
     }
 
-    if (HTML_ELEMENTS.get(clazz).stream().findFirst().get().equals("named")) {
+    long count = HTML_ELEMENTS.get(clazz).stream().count();
+
+    if (count > 1) {
       throw new GenerationException("Unable to process "
           + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName()
               .toString()
@@ -202,5 +219,10 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     }
 
     return new StringLiteralExpr(HTML_ELEMENTS.get(clazz).stream().findFirst().get());
+  }
+
+  public static Set<Map.Entry<Class, String>> getHTMLElementByTag(String tag) {
+    return HTML_ELEMENTS.entries().stream().filter(elm -> elm.getValue().equals(tag))
+        .collect(Collectors.toSet());
   }
 }
