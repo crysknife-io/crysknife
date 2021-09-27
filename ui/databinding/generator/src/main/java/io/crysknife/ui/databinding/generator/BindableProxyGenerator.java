@@ -17,6 +17,8 @@ package io.crysknife.ui.databinding.generator;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +32,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +50,8 @@ public class BindableProxyGenerator {
 
   private final TypeMirror listTypeMirror;
   private final TypeMirror objectTypeMirror;
+  private final Set<UnableToCompleteException> errors = new HashSet<>();
+
 
   BindableProxyGenerator(Elements elements, Types types, MethodDeclaration methodDeclaration,
       TypeElement type) {
@@ -57,9 +62,11 @@ public class BindableProxyGenerator {
 
     listTypeMirror = elements.getTypeElement(List.class.getCanonicalName()).asType();
     objectTypeMirror = elements.getTypeElement(Object.class.getCanonicalName()).asType();
+
+    errors.clear();
   }
 
-  void generate() {
+  void generate() throws UnableToCompleteException {
     String clazzName = type.getQualifiedName().toString().replaceAll("\\.", "_") + "Proxy";
 
     StringBuffer sb = new StringBuffer();
@@ -168,6 +175,10 @@ public class BindableProxyGenerator {
     addBindableProxy(clazzName, sb);
 
     methodDeclaration.getBody().get().addAndGetStatement(sb.toString());
+
+    if (!errors.isEmpty()) {
+      throw new UnableToCompleteException(errors);
+    }
   }
 
   private void addBindableProxy(String clazzName, StringBuffer sb) {
@@ -212,8 +223,13 @@ public class BindableProxyGenerator {
     sb.append(newLine);
 
     fields.forEach(elm -> {
-      sb.append(String.format("case \"%s\": target.%s((%s) value);", elm.getSimpleName().toString(),
-          getSetter(elm), getFieldType(getType(type, elm))));
+
+      try {
+        sb.append(String.format("case \"%s\": target.%s((%s) value);",
+            elm.getSimpleName().toString(), getSetter(elm), getFieldType(getType(type, elm))));
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
       sb.append(newLine);
       sb.append("break;");
       sb.append(newLine);
@@ -254,8 +270,12 @@ public class BindableProxyGenerator {
     sb.append(newLine);
 
     fields.forEach(elm -> {
-      sb.append(String.format("case \"%s\": return %s();", elm.getSimpleName().toString(),
-          getGetter(elm)));
+      try {
+        sb.append(String.format("case \"%s\": return %s();", elm.getSimpleName().toString(),
+            getGetter(elm)));
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
       sb.append(newLine);
     });
 
@@ -272,23 +292,33 @@ public class BindableProxyGenerator {
 
   private void getterAndSetter(TypeElement type, Set<VariableElement> fields, StringBuffer sb) {
     fields.forEach(elm -> {
-      sb.append(newLine);
-      sb.append(String.format("public %s %s() {", getType(type, elm), getGetter(elm)));
-      sb.append(newLine);
-      sb.append(String.format("  return target.%s();", getGetter(elm)));
-      sb.append(newLine);
-      sb.append("}");
-      sb.append(newLine);
-
-      sb.append(newLine);
-      sb.append(String.format("public void %s(%s value) {", getSetter(elm), getType(type, elm)));
-      sb.append(newLine);
-      sb.append(String.format("  changeAndFire(\"%s\", value);", elm.getSimpleName().toString()));
-      sb.append(newLine);
-      sb.append("}");
-      sb.append(newLine);
+      try {
+        getterAndSetter(type, elm, sb);
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
     });
   }
+
+  private void getterAndSetter(TypeElement type, VariableElement elm, StringBuffer sb)
+      throws UnableToCompleteException {
+    sb.append(newLine);
+    sb.append(String.format("public %s %s() {", getType(type, elm), getGetter(elm)));
+    sb.append(newLine);
+    sb.append(String.format("  return target.%s();", getGetter(elm)));
+    sb.append(newLine);
+    sb.append("}");
+    sb.append(newLine);
+
+    sb.append(newLine);
+    sb.append(String.format("public void %s(%s value) {", getSetter(elm), getType(type, elm)));
+    sb.append(newLine);
+    sb.append(String.format("  changeAndFire(\"%s\", value);", elm.getSimpleName().toString()));
+    sb.append(newLine);
+    sb.append("}");
+    sb.append(newLine);
+  }
+
 
   private TypeMirror getType(TypeElement parent, VariableElement elm) {
     if (elm.asType().getKind().equals(TypeKind.TYPEVAR)) {
@@ -326,31 +356,13 @@ public class BindableProxyGenerator {
     sb.append(String.format("  final %s t = unwrap();", type.getSimpleName()));
     sb.append(newLine);
 
+    Set<UnableToCompleteException> errors = new HashSet<>();
+
     fields.forEach(elm -> {
-      if (!isBindableType(elm)) {
-        sb.append("  ");
-        sb.append(String.format("clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
-        sb.append(newLine);
-      } else {
-        sb.append(String.format("if (t.%s() instanceof BindableProxy) {", getGetter(elm),
-            type.getSimpleName()));
-        sb.append(newLine);
-        sb.append(String.format("  clone.%s((%s) ((BindableProxy) %s()).deepUnwrap());",
-            getSetter(elm), elm.asType(), getGetter(elm)));
-        sb.append(newLine);
-        sb.append(String.format("} else if (BindableProxyFactory.isBindableType(t.%s())) {",
-            getGetter(elm)));
-        sb.append(newLine);
-        sb.append(String.format(
-            "  clone.%s((%s) ((BindableProxy) BindableProxyFactory.getBindableProxy(t.%s())).deepUnwrap());",
-            getSetter(elm), elm.asType(), getGetter(elm)));
-        sb.append(newLine);
-        sb.append("} else {");
-        sb.append(newLine);
-        sb.append(String.format("  clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
-        sb.append(newLine);
-        sb.append("}");
-        sb.append(newLine);
+      try {
+        deepUnwrap(elm, sb);
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
       }
     });
 
@@ -358,6 +370,38 @@ public class BindableProxyGenerator {
     sb.append(newLine);
     sb.append("}");
     sb.append(newLine);
+
+  }
+
+  private void deepUnwrap(VariableElement elm, StringBuffer sb) throws UnableToCompleteException {
+    if (!isBindableType(elm)) {
+      sb.append("  ");
+      sb.append(String.format("clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
+      sb.append(newLine);
+    } else {
+      sb.append(String.format("if (t.%s() instanceof BindableProxy) {", getGetter(elm),
+          type.getSimpleName()));
+      sb.append(newLine);
+      sb.append(String.format("  clone.%s((%s) ((BindableProxy) %s()).deepUnwrap());",
+          getSetter(elm), elm.asType(), getGetter(elm)));
+      sb.append(newLine);
+      sb.append(String.format("} else if (BindableProxyFactory.isBindableType(t.%s())) {",
+          getGetter(elm)));
+      sb.append(newLine);
+      sb.append(String.format(
+          "  clone.%s((%s) ((BindableProxy) BindableProxyFactory.getBindableProxy(t.%s())).deepUnwrap());",
+          getSetter(elm), elm.asType(), getGetter(elm)));
+      sb.append(newLine);
+      sb.append("} else {");
+      sb.append(newLine);
+      sb.append(String.format("  clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
+      sb.append(newLine);
+      sb.append("}");
+      sb.append(newLine);
+    }
+
+
+
   }
 
   private boolean isBindableType(VariableElement elm) {
@@ -372,13 +416,14 @@ public class BindableProxyGenerator {
     return MoreTypes.asElement(elm.asType()).getAnnotation(Bindable.class) != null;
   }
 
-  private String getGetter(VariableElement variable) {
+  private String getGetter(VariableElement variable) throws UnableToCompleteException {
     String method = compileGetterMethodName(variable);
     return Utils.getAllMethodsIn(elements, type).stream()
         .filter(e -> e.getKind().equals(ElementKind.METHOD))
         .filter(e -> e.toString().equals(method))
         .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
-        .map(e -> e.getSimpleName().toString()).orElseThrow(() -> new Error(String
+        .map(e -> e.getSimpleName().toString())
+        .orElseThrow(() -> new UnableToCompleteException(String
             .format("Unable to find getter [%s] in [%s]", method, variable.getEnclosingElement())));
   }
 
@@ -401,13 +446,14 @@ public class BindableProxyGenerator {
     return sb.toString();
   }
 
-  private String getSetter(VariableElement variable) {
+  private String getSetter(VariableElement variable) throws UnableToCompleteException {
     String method = compileSetterMethodName(variable);
     return Utils.getAllMethodsIn(elements, type).stream()
         .filter(e -> e.getKind().equals(ElementKind.METHOD))
         .filter(e -> e.toString().equals(method))
         .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
-        .map(e -> e.getSimpleName().toString()).orElseThrow(() -> new Error(String
+        .map(e -> e.getSimpleName().toString())
+        .orElseThrow(() -> new UnableToCompleteException(String
             .format("Unable to find setter [%s] in [%s]", method, variable.getEnclosingElement())));
   }
 
