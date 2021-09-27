@@ -32,6 +32,8 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
@@ -51,9 +53,12 @@ import io.crysknife.ui.databinding.client.api.DefaultConverter;
 import javax.inject.Inject;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -86,7 +91,8 @@ public class BindableGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition)
+      throws GenerationException {
     clazz.getClassCompilationUnit().addImport((beanDefinition).getType().toString());
 
     clazz.getClassCompilationUnit().addImport(DataBinder.class);
@@ -106,10 +112,21 @@ public class BindableGenerator extends ScopedBeanGenerator {
     MethodDeclaration methodDeclaration =
         clazz.addMethod("loadBindableProxies", Modifier.Keyword.PRIVATE);
 
+    Set<UnableToCompleteException> errors = new HashSet<>();
+
     iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName()).forEach(c -> {
       clazz.getClassCompilationUnit().addImport(c.toString());
-      generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
+      try {
+        generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
     });
+
+    if (!errors.isEmpty()) {
+      printErrors(errors);
+      throw new GenerationException(getClass().getCanonicalName() + ".generate");
+    }
 
     maybeAddDefaultConverters(clazz, methodDeclaration);
     generateFactoryCreateMethod(clazz, beanDefinition);
@@ -183,11 +200,25 @@ public class BindableGenerator extends ScopedBeanGenerator {
         new MethodCallExpr(new NameExpr("DataBinder"), "forType").addArgument("modelType")));
   }
 
-  private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type) {
+  private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type)
+      throws UnableToCompleteException {
     new BindableProxyGenerator(
         iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils(),
         iocContext.getGenerationContext().getProcessingEnvironment().getTypeUtils(),
         methodDeclaration, type).generate();
+  }
+
+  private void printErrors(Set<UnableToCompleteException> errors) {
+
+    errors.forEach(error -> {
+      if (error.errors != null) {
+        printErrors(error.errors);
+      } else if (error.getMessage() != null) {
+        System.out.println("Error: " + error.getMessage());
+        iocContext.getGenerationContext().getProcessingEnvironment().getMessager()
+            .printMessage(Diagnostic.Kind.ERROR, error.getMessage());
+      }
+    });
   }
 
 }
