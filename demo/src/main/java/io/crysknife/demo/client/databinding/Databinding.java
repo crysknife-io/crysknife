@@ -19,9 +19,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLBRElement;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
+import io.crysknife.demo.client.databinding.listcomponent.KeyValueRow;
+import io.crysknife.demo.client.databinding.listcomponent.RolesEditorWidgetView;
 import io.crysknife.ui.databinding.client.api.AutoBound;
 import io.crysknife.ui.databinding.client.api.Bound;
 import io.crysknife.ui.databinding.client.api.DataBinder;
@@ -29,11 +32,15 @@ import io.crysknife.ui.databinding.client.api.StateSync;
 import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeHandler;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import org.gwtproject.event.dom.client.ClickEvent;
+import org.gwtproject.user.client.ui.CheckBox;
 import org.gwtproject.user.client.ui.TextBox;
 import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.navigation.client.local.Page;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -55,6 +62,12 @@ public class Databinding implements IsElement<HTMLDivElement> {
     @Inject
     @Bound(property= "name")
     protected TextBox nameBox;
+
+    @DataField
+    @Inject
+    @Bound
+    protected CheckBox active;
+
     @DataField
     @Inject
     @Bound(property= "address.city")
@@ -85,9 +98,19 @@ public class Databinding implements IsElement<HTMLDivElement> {
 
     private Customer customer;
 
+    @Inject
+    @DataField("rolesEditorWidgetView")
+    RolesEditorWidgetView rolesEditorWidgetView;
+
     @PostConstruct
     public void init() {
-        DomGlobal.console.log(getClass().getCanonicalName()+"INIT");
+
+        Customer customer = new Customer();
+        customer.setName("AAAAAAAAA");
+        dataBinder.setModel(customer);
+
+
+
 /*        customer = dataBinder
                 .bind(nameBox, "name")
                 .bind(cityBox, "address.city")
@@ -99,6 +122,18 @@ public class Databinding implements IsElement<HTMLDivElement> {
             DomGlobal.console.log("new value " + event.toString());
             onPropertyChange(event.toString());
         });
+
+        List<KeyValueRow> list = new ArrayList<>();
+
+
+        list.add(new KeyValueRow("AAA","AAA"));
+        list.add(new KeyValueRow("BBB","BBB"));
+        list.add(new KeyValueRow("CCC","CCC"));
+        list.add(new KeyValueRow("DDD","DDD"));
+
+        HTMLBRElement br = (HTMLBRElement) DomGlobal.document.createElement("br");
+
+        rolesEditorWidgetView.setRows(list);
 
     }
 
@@ -113,7 +148,7 @@ public class Databinding implements IsElement<HTMLDivElement> {
 
     @EventHandler("cityBox")
     void onCityClick(final ClickEvent e) {
-        DomGlobal.console.log("cityBox click");
+
     }
 
     @EventHandler("modelBtn")

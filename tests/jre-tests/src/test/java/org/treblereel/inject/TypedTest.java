@@ -36,7 +36,6 @@ public class TypedTest extends AbstractTest {
     assertEquals(ApplicationCommandManager.class, sessionCommandManager.getClass());
 
     assertEquals(RegistryAwareCommandManager.class,
-        ((ApplicationCommandManager) sessionCommandManager).commandManagerInstances.get()
-            .getClass());
+        ((ApplicationCommandManager) sessionCommandManager).commandManagerInstances.getClass());
   }
 }

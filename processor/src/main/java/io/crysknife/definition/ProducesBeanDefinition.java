@@ -15,11 +15,14 @@
 package io.crysknife.definition;
 
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.inject.Singleton;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import java.lang.annotation.Annotation;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/6/21
@@ -44,5 +47,24 @@ public class ProducesBeanDefinition extends BeanDefinition {
   public boolean isSingleton() {
     return method.getAnnotation(Singleton.class) != null
         || method.getAnnotation(ApplicationScoped.class) != null;
+  }
+
+  @Override
+  public Annotation getScope() {
+    if (method.getAnnotation(Singleton.class) != null) {
+      return method.getAnnotation(Singleton.class);
+    }
+
+    if (method.getAnnotation(ApplicationScoped.class) != null) {
+      return method.getAnnotation(ApplicationScoped.class);
+    }
+
+    return new Dependent() {
+
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        return Dependent.class;
+      }
+    };
   }
 }

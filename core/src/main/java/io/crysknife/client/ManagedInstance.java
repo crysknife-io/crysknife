@@ -37,7 +37,7 @@ import javax.inject.Provider;
  * 
  * @author Max Barkley <mbarkley@redhat.com>
  */
-public interface ManagedInstance<T> extends Provider<T>, Iterable<T>, Instance<T> {
+public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
 
   /**
    * <p>

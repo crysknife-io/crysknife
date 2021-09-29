@@ -84,7 +84,7 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
 
     @PostConstruct
     public void init(){
-        DomGlobal.console.log("CREATED ");
+
     }
 
     @Override

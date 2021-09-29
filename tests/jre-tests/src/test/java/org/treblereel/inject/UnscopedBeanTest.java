@@ -29,11 +29,11 @@ public class UnscopedBeanTest extends AbstractTest {
   @Test
   public void unscopedBeanTest() {
     assertEquals("MyBean",
-        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).get())
+        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).getInstance())
             .getMyBean().getId());
 
     assertEquals("MyBean2",
-        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).get())
+        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).getInstance())
             .getMyBean2().getId());
   }
 }

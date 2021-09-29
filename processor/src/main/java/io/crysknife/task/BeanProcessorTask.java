@@ -208,7 +208,7 @@ public class BeanProcessorTask implements Task {
               elements.stream().forEach(e -> {
                 TypeMirror erased = iocContext.getGenerationContext().getTypes()
                     .erasure(e.getEnclosingElement().asType());
-                BeanDefinition bean = iocContext.getBeans().get(erased);
+                BeanDefinition bean = iocContext.getBean(erased);
                 ExecutableType methodType = (ExecutableType) e.asType();
                 bean.getMethods().stream()
                     .filter(mmethod -> mmethod.getExecutableElement().equals(methodType))
@@ -269,6 +269,11 @@ public class BeanProcessorTask implements Task {
         } else {
           BeanDefinition implementation = oracle.guess(point);
           if (implementation != null) {
+
+            System.out.println("ORACLE " + point.getBeanDefinition().getType() + "."
+                + point.getVariableElement().getSimpleName() + " "
+                + implementation.getQualifiedName());
+
             point.setImplementation(implementation);
             definition.getDependencies().add(implementation);
           }

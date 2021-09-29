@@ -51,11 +51,15 @@ public class SingletonBeans implements IsElement<HTMLDivElement> {
     @DataField
     private HTMLButtonElement checkBtn;
 
-    @Inject
     private BeanOne beanOne1Instance;
 
-    @Inject
     private BeanOne beanOne2Instance;
+
+    @Inject
+    public SingletonBeans(BeanOne beanOne1Instance, BeanOne beanOne2Instance) {
+        this.beanOne1Instance = beanOne1Instance;
+        this.beanOne2Instance = beanOne2Instance;
+    }
 
     @PostConstruct
     public void init() {

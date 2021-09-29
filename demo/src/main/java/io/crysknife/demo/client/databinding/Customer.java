@@ -16,16 +16,29 @@ package io.crysknife.demo.client.databinding;
 
 import io.crysknife.ui.databinding.client.api.Bindable;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 11/18/19
  */
 @Bindable
-public class Customer {
+public class Customer extends HasId {
+
+    private long _long;
+
+    private boolean active;
 
     private String name;
 
     private Address address;
+
+    private Set<String> sets;
+
+    private List<String> lists;
+
+    private String[] arrays;
 
     private int age;
 
@@ -62,5 +75,45 @@ public class Customer {
                 ", address='" + address + '\'' +
                 ", age=" + age +
                 '}';
+    }
+
+    public Set<String> getSets() {
+        return sets;
+    }
+
+    public void setSets(Set<String> sets) {
+        this.sets = sets;
+    }
+
+    public String[] getArrays() {
+        return arrays;
+    }
+
+    public void setArrays(String[] arrays) {
+        this.arrays = arrays;
+    }
+
+    public List<String> getLists() {
+        return lists;
+    }
+
+    public void setLists(List<String> lists) {
+        this.lists = lists;
+    }
+
+    public long get_long() {
+        return _long;
+    }
+
+    public void set_long(long _long) {
+        this._long = _long;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

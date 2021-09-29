@@ -21,7 +21,7 @@ import io.crysknife.ui.databinding.client.api.Bindable;
  * Created by treblereel 11/25/19
  */
 @Bindable
-public class Address {
+public class Address extends HasId {
 
     private String city;
 

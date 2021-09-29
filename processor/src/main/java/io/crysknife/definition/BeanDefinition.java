@@ -18,8 +18,12 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.util.Utils;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import java.lang.annotation.Annotation;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -112,5 +116,23 @@ public class BeanDefinition implements Definition {
 
   public Set<IOCGenerator<BeanDefinition>> getDecorators() {
     return decorators;
+  }
+
+  public Annotation getScope() {
+    if (MoreTypes.asTypeElement(type).getAnnotation(Singleton.class) != null) {
+      return MoreTypes.asTypeElement(type).getAnnotation(Singleton.class);
+    }
+
+    if (MoreTypes.asTypeElement(type).getAnnotation(ApplicationScoped.class) != null) {
+      return MoreTypes.asTypeElement(type).getAnnotation(ApplicationScoped.class);
+    }
+
+    return new Dependent() {
+
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        return Dependent.class;
+      }
+    };
   }
 }

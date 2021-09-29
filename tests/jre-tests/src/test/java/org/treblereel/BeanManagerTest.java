@@ -68,12 +68,12 @@ public class BeanManagerTest extends AbstractTest {
       }
     };
 
-    ComponentIface componentDefault =
-        super.app.beanManager.<ComponentIface>lookupBean(ComponentIface.class, _default).get();
+    ComponentIface componentDefault = super.app.beanManager
+        .<ComponentIface>lookupBean(ComponentIface.class, _default).getInstance();
     ComponentIface componentOne = super.app.beanManager
-        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierOne).get();
+        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierOne).getInstance();
     ComponentIface componentTwo = super.app.beanManager
-        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierTwo).get();
+        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierTwo).getInstance();
 
     assertEquals("ComponentDefault", componentDefault.getComponentName());
     assertEquals("ComponentOne", componentOne.getComponentName());
@@ -89,8 +89,9 @@ public class BeanManagerTest extends AbstractTest {
             .stream(super.app.beanManager.lookupBeans(ComponentIface.class, _default).spliterator(),
                 false)
             .count());
-    ComponentIface _defInstance = super.app.beanManager
-        .<ComponentIface>lookupBeans(ComponentIface.class, _default).iterator().next().get();
+    ComponentIface _defInstance =
+        super.app.beanManager.<ComponentIface>lookupBeans(ComponentIface.class, _default).iterator()
+            .next().getInstance();
     assertEquals("ComponentDefault", _defInstance.getComponentName());
 
     assertEquals(1,
@@ -99,7 +100,7 @@ public class BeanManagerTest extends AbstractTest {
             .count());
     ComponentIface _componentQualifierOne = super.app.beanManager
         .<ComponentIface>lookupBeans(ComponentIface.class, componentQualifierOne).iterator().next()
-        .get();
+        .getInstance();
     assertEquals("ComponentOne", _componentQualifierOne.getComponentName());
 
     assertEquals(1,
@@ -108,7 +109,7 @@ public class BeanManagerTest extends AbstractTest {
             .count());
     ComponentIface _componentQualifierTwo = super.app.beanManager
         .<ComponentIface>lookupBeans(ComponentIface.class, componentQualifierTwo).iterator().next()
-        .get();
+        .getInstance();
     assertEquals("ComponentTwo", _componentQualifierTwo.getComponentName());
 
     assertEquals(0,
@@ -158,25 +159,30 @@ public class BeanManagerTest extends AbstractTest {
     };
 
     NamedBean componentDefault =
-        super.app.beanManager.<NamedBean>lookupBean(NamedBean.class, _default).get();
+        super.app.beanManager.<NamedBean>lookupBean(NamedBean.class, _default).getInstance();
     NamedBean componentOne =
-        super.app.beanManager.<NamedBean>lookupBean(NamedBean.class, named1).get();
+        super.app.beanManager.<NamedBean>lookupBean(NamedBean.class, named1).getInstance();
     NamedBean componentTwo =
-        super.app.beanManager.<NamedBean>lookupBean(NamedBean.class, named2).get();
+        super.app.beanManager.<NamedBean>lookupBean(NamedBean.class, named2).getInstance();
 
     assertEquals("org.treblereel.injection.named.NamedBeanDefault", componentDefault.say());
     assertEquals("org.treblereel.injection.named.NamedBeanOne", componentOne.say());
     assertEquals("org.treblereel.injection.named.NamedBeanTwo", componentTwo.say());
 
+    System.out.println("FUCK");
 
-    assertEquals(4, StreamSupport
+    super.app.beanManager.lookupBeans(NamedBean.class).forEach(ss -> {
+      System.out.println("SS " + ss.getName());
+    });
+
+    assertEquals(6, StreamSupport
         .stream(super.app.beanManager.lookupBeans(NamedBean.class).spliterator(), false).count());
 
     assertEquals(1, StreamSupport
         .stream(super.app.beanManager.lookupBeans(NamedBean.class, _default).spliterator(), false)
         .count());
     NamedBean _defInstance = super.app.beanManager.<NamedBean>lookupBeans(NamedBean.class, _default)
-        .iterator().next().get();
+        .iterator().next().getInstance();
     assertEquals("org.treblereel.injection.named.NamedBeanDefault", _defInstance.say());
 
     assertEquals(1,
@@ -184,7 +190,7 @@ public class BeanManagerTest extends AbstractTest {
             super.app.beanManager.<NamedBean>lookupBeans(NamedBean.class, named1).spliterator(),
             false).count());
     NamedBean _componentQualifierOne = super.app.beanManager
-        .<NamedBean>lookupBeans(NamedBean.class, named1).iterator().next().get();
+        .<NamedBean>lookupBeans(NamedBean.class, named1).iterator().next().getInstance();
     assertEquals("org.treblereel.injection.named.NamedBeanOne", _componentQualifierOne.say());
 
     assertEquals(1,
@@ -193,8 +199,8 @@ public class BeanManagerTest extends AbstractTest {
             .count());
 
 
-    NamedBean _componentQualifierTwo = super.app.beanManager
-        .<NamedBean>lookupBeans(NamedBean.class, named2).iterator().next().get();
+    NamedBean _componentQualifierTwo =
+        super.app.beanManager.lookupBeans(NamedBean.class, named2).iterator().next().getInstance();
     assertEquals("org.treblereel.injection.named.NamedBeanTwo", _componentQualifierTwo.say());
 
     assertEquals(0,

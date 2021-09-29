@@ -14,16 +14,18 @@
 
 package org.treblereel.injection.cycle;
 
+import io.crysknife.client.ManagedInstance;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
  */
 public abstract class AbstractRegistryFactory implements RegistryFactory {
 
-  public AdapterManager adapterManager;
+  public ManagedInstance<AdapterManager> adapterManager;
 
   protected AbstractRegistryFactory() {}
 
-  public AbstractRegistryFactory(final AdapterManager adapterManager) {
+  public AbstractRegistryFactory(final ManagedInstance<AdapterManager> adapterManager) {
     this.adapterManager = adapterManager;
   }
 

@@ -27,16 +27,14 @@ import javax.inject.Inject;
 @Typed(SessionCommandManager.class)
 public class ApplicationCommandManager implements SessionCommandManager<AbstractCanvasHandler> {
 
-  @Inject
-  public ManagedInstance<RegistryAwareCommandManager> commandManagerInstances;
+  public RegistryAwareCommandManager commandManagerInstances;
 
   public ApplicationCommandManager() {
 
   }
 
   @Inject
-  public ApplicationCommandManager(
-      final ManagedInstance<RegistryAwareCommandManager> commandManagerInstances) {
+  public ApplicationCommandManager(final RegistryAwareCommandManager commandManagerInstances) {
     this.commandManagerInstances = commandManagerInstances;
   }
 

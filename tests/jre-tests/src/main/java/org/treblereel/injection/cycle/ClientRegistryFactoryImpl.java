@@ -14,20 +14,22 @@
 
 package org.treblereel.injection.cycle;
 
+import io.crysknife.client.ManagedInstance;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
  */
-// @ApplicationScoped
+@ApplicationScoped
 public class ClientRegistryFactoryImpl extends AbstractRegistryFactory
     implements ClientRegistryFactory {
 
   protected ClientRegistryFactoryImpl() {}
 
-  // @Inject
-  public ClientRegistryFactoryImpl(final AdapterManager adapterManager) {
+  @Inject
+  public ClientRegistryFactoryImpl(final ManagedInstance<AdapterManager> adapterManager) {
     super(adapterManager);
   }
 }
