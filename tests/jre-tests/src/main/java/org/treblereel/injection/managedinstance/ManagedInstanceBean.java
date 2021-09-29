@@ -36,7 +36,7 @@ public class ManagedInstanceBean {
   private ManagedInstance<ComponentIface> managedInstanceBean;
 
   @Inject
-  private Instance<ComponentIface> InstanceBean;
+  private ManagedInstance<ComponentIface> InstanceBean;
 
   @Inject
   private Instance<SimpleBeanDependent> bean;
@@ -70,7 +70,7 @@ public class ManagedInstanceBean {
     return managedInstanceBean;
   }
 
-  public Instance<ComponentIface> getInstanceBean() {
+  public ManagedInstance<ComponentIface> getInstanceBean() {
     return InstanceBean;
   }
 

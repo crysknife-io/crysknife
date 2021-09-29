@@ -106,14 +106,15 @@ public class ManagedInstanceBeanTest extends AbstractTest {
     };
 
     ComponentIface componentTwo = super.app.beanManager
-        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierTwo).get();
+        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierTwo).getInstance();
 
     assertEquals("ComponentTwo", componentTwo.getComponentName());
   }
 
   @Test
   public void testInstance() {
-    Instance<ComponentIface> managedInstanceBean = app.getManagedInstanceBean().getInstanceBean();
+    ManagedInstance<ComponentIface> managedInstanceBean =
+        app.getManagedInstanceBean().getInstanceBean();
 
     assertNotNull(managedInstanceBean);
 
@@ -177,7 +178,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
     };
 
     ComponentIface componentTwo = super.app.beanManager
-        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierTwo).get();
+        .<ComponentIface>lookupBean(ComponentIface.class, componentQualifierTwo).getInstance();
     assertEquals("ComponentTwo", componentTwo.getComponentName());
   }
 

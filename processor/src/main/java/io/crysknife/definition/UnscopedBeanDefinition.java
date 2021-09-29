@@ -61,11 +61,8 @@ public class UnscopedBeanDefinition extends BeanDefinition {
 
       clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
 
-      LambdaExpr lambda = new LambdaExpr();
-      lambda.setEnclosingParameters(true);
-      lambda.setBody(new ExpressionStmt(new ObjectCreationExpr().setType(clazzName)));
-
-      return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+      return new ObjectCreationExpr().setType(InstanceImpl.class)
+          .addArgument(new ObjectCreationExpr().setType(clazzName));
 
     }
   }

@@ -15,10 +15,9 @@
 package io.crysknife.generator;
 
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.ManagedInstance;
@@ -38,31 +37,17 @@ import javax.lang.model.type.TypeMirror;
 @Generator
 public class ManagedInstanceGenerator extends BeanIOCGenerator {
 
+  private final TypeMirror instanceTypeMirror;
+  private final TypeMirror managedInstanceTypeMirror;
+
   public ManagedInstanceGenerator(IOCContext iocContext) {
     super(iocContext);
-  }
+    instanceTypeMirror = iocContext.getGenerationContext().getTypes()
+        .erasure(iocContext.getTypeMirror(Instance.class.getCanonicalName()));
+    managedInstanceTypeMirror = iocContext.getGenerationContext().getTypes()
+        .erasure(iocContext.getTypeMirror(ManagedInstance.class.getCanonicalName()));
 
-  /*
-   * @Override public Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint) {
-   * 
-   * clazz.getClassCompilationUnit().addImport(ManagedInstance.class);
-   * clazz.getClassCompilationUnit().addImport(ManagedInstanceImpl.class);
-   * clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
-   * 
-   * TypeMirror param =
-   * MoreTypes.asDeclared(fieldPoint.getField().asType()).getTypeArguments().get(0);
-   * 
-   * ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
-   * .addArgument(new NameExpr(param.toString() + ".class")) .addArgument(new
-   * NameExpr("beanManager"));
-   * 
-   * LambdaExpr lambda = new LambdaExpr(); lambda.setEnclosingParameters(true); lambda.setBody(new
-   * ExpressionStmt(instance));
-   * 
-   * return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
-   * 
-   * }
-   */
+  }
 
   @Override
   public void register() {
@@ -83,20 +68,40 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
     clazz.getClassCompilationUnit().addImport(ManagedInstanceImpl.class);
     clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
 
-    TypeMirror param =
-        MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
+    TypeMirror erased = iocContext.getGenerationContext().getTypes()
+        .erasure(fieldPoint.getVariableElement().asType());
 
-    ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
-        .addArgument(new NameExpr(
-            iocContext.getGenerationContext().getTypes().erasure(param).toString() + ".class"))
-        .addArgument(new NameExpr("beanManager"));
+    System.out.println("QQQ " + erased + " and " + instanceTypeMirror);
 
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(instance));
+    Expression result;
 
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+    if (iocContext.getGenerationContext().getTypes().isSameType(instanceTypeMirror, erased)) {
+      TypeMirror param =
+          MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
 
+      ObjectCreationExpr instance = new ObjectCreationExpr().setType(InstanceImpl.class)
+          .addArgument(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean").addArgument(
+              new NameExpr(iocContext.getGenerationContext().getTypes().erasure(param).toString()
+                  + ".class")));
+
+      result = instance;
+    } else {
+
+      TypeMirror param =
+          MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
+
+      ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
+          .addArgument(new NameExpr("beanManager")).addArgument(new NameExpr(
+              iocContext.getGenerationContext().getTypes().erasure(param).toString() + ".class"));
+
+      result = instance;
+    }
+
+
+    ObjectCreationExpr rtrn =
+        new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(result);
+
+    return rtrn;
   }
 
 }

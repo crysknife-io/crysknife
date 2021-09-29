@@ -50,11 +50,12 @@ public class SimpleBeanProducerTest extends AbstractTest {
   @Test
   public void testURLPatternMatcherTest() {
     assertNotNull(app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
-        .get().matcher);
+        .getInstance().matcher);
     assertNotNull(app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
-        .get().matcher.test());
-    assertEquals("URLPatternMatcherProvider", app.beanManager
-        .<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class).get().matcher.test());
+        .getInstance().matcher.test());
+    assertEquals("URLPatternMatcherProvider",
+        app.beanManager.<URLPatternMatcherHolder>lookupBean(URLPatternMatcherHolder.class)
+            .getInstance().matcher.test());
   }
 
   @Test
@@ -64,11 +65,11 @@ public class SimpleBeanProducerTest extends AbstractTest {
     assertEquals(MyStaticBean.class.getCanonicalName(),
         app.getSimpleBeanProducerTest().getMyStaticBean().whoami());
 
-    assertNotNull(app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).get());
-    assertTrue(app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).get().ready);
+    assertNotNull(app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).getInstance());
+    assertTrue(app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).getInstance().ready);
 
     assertEquals(MyStaticBean.class.getCanonicalName(),
-        app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).get().whoami());
+        app.beanManager.<MyStaticBean>lookupBean(MyStaticBean.class).getInstance().whoami());
 
 
   }

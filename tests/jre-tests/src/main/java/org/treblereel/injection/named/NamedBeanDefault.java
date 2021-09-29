@@ -22,7 +22,7 @@ import javax.inject.Singleton;
  */
 @Default
 @Singleton
-public class NamedBeanDefault implements NamedBean {
+public class NamedBeanDefault extends SimpleBeanTwo implements NamedBean {
 
   @Override
   public String say() {

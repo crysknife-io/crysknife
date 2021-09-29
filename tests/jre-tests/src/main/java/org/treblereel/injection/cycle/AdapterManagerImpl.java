@@ -14,6 +14,9 @@
 
 package org.treblereel.injection.cycle;
 
+import io.crysknife.client.ManagedInstance;
+
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -21,11 +24,18 @@ import javax.inject.Inject;
  */
 public class AdapterManagerImpl implements AdapterManager {
 
-  public final AdapterRegistry registry;
+  public AdapterRegistry registry;
 
-  // @Inject
-  public AdapterManagerImpl(final RegistryFactory registryFactory) {
-    this(registryFactory.newAdapterRegistry());
+  @Inject
+  public ManagedInstance<RegistryFactory> registryFactory;
+
+  public AdapterManagerImpl() {
+    // this(registryFactory.newAdapterRegistry());
+  }
+
+  @PostConstruct
+  public void init() {
+    registry = registryFactory.get().newAdapterRegistry();
   }
 
   AdapterManagerImpl(final AdapterRegistry registry) {

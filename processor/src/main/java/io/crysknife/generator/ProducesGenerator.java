@@ -55,8 +55,8 @@ public class ProducesGenerator extends ScopedBeanGenerator {
     iocContext.register(Produces.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
-  @Override
-  public void generateDependantFieldDeclaration(ClassBuilder builder, BeanDefinition definition) {
+  // @Override
+  public void generateDependantFieldDeclaration2(ClassBuilder builder, BeanDefinition definition) {
     if (definition instanceof ProducesBeanDefinition) {
       ProducesBeanDefinition producesDefinition = (ProducesBeanDefinition) definition;
 

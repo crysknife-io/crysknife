@@ -32,11 +32,11 @@ public class CycleDepsTest extends AbstractTest {
   public void test() {
     BeanManager beanManager = app.beanManager;
 
-    AbstractRegistryFactory abstractRegistryFactory =
-        beanManager.<AbstractRegistryFactory>lookupBean(AbstractRegistryFactory.class).get();
+    AbstractRegistryFactory abstractRegistryFactory = beanManager
+        .<AbstractRegistryFactory>lookupBean(AbstractRegistryFactory.class).getInstance();
 
     AdapterManager adapterManager =
-        beanManager.<AdapterManager>lookupBean(AdapterManager.class).get();
+        beanManager.<AdapterManager>lookupBean(AdapterManager.class).getInstance();
 
     assertEquals(ClientRegistryFactoryImpl.class.getCanonicalName(),
         abstractRegistryFactory.getClass().getCanonicalName());

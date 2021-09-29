@@ -14,6 +14,7 @@
 
 package org.treblereel;
 
+import io.crysknife.client.SyncBeanDef;
 import org.junit.Test;
 import org.treblereel.injection.qualifiers.QualifierBean;
 import org.treblereel.injection.qualifiers.QualifierBeanDefault;
@@ -68,15 +69,14 @@ public class QualifierTest extends AbstractTest {
   @Test
   public void testBeanManager() {
     Set<QualifierBean> beans = new HashSet<>();
-    for (Instance<QualifierBean> lookupBean : app.beanManager
-        .<QualifierBean>lookupBeans(QualifierBean.class)) {
-      beans.add(lookupBean.get());
+    for (SyncBeanDef<QualifierBean> lookupBean : app.beanManager.lookupBeans(QualifierBean.class)) {
+      beans.add(lookupBean.getInstance());
     }
 
     assertEquals(3, beans.size());
     List<String> result = new ArrayList<>();
-    for (Instance lookupBean : app.beanManager.lookupBeans(QualifierBean.class)) {
-      result.add(((QualifierBean) lookupBean.get()).say());
+    for (SyncBeanDef lookupBean : app.beanManager.lookupBeans(QualifierBean.class)) {
+      result.add(((QualifierBean) lookupBean.getInstance()).say());
     }
     assertTrue(result.contains("org.treblereel.injection.qualifiers.QualifierBeanDefault"));
     assertTrue(result.contains("org.treblereel.injection.qualifiers.QualifierBeanOne"));
@@ -97,11 +97,11 @@ public class QualifierTest extends AbstractTest {
     };
 
     assertEquals(QualifierBeanOne.class,
-        app.beanManager.lookupBean(QualifierBean.class, qualifierOne).get().getClass());
+        app.beanManager.lookupBean(QualifierBean.class, qualifierOne).getInstance().getClass());
     assertEquals(QualifierBeanTwo.class,
-        app.beanManager.lookupBean(QualifierBean.class, qualifierTwo).get().getClass());
+        app.beanManager.lookupBean(QualifierBean.class, qualifierTwo).getInstance().getClass());
     assertEquals(QualifierBeanDefault.class,
-        app.beanManager.lookupBean(QualifierBean.class).get().getClass());
+        app.beanManager.lookupBean(QualifierBean.class).getInstance().getClass());
 
 
   }

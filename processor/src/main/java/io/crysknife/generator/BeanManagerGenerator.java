@@ -22,6 +22,8 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.ArrayCreationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
@@ -41,18 +43,23 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.internal.AbstractBeanManager;
+import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.client.internal.ProducesBeanFactory;
+import io.crysknife.client.internal.QualifierUtil;
+import io.crysknife.client.internal.SyncBeanDefImpl;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.task.Task;
 import io.crysknife.util.Utils;
 
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.Specializes;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.AnnotationMirror;
@@ -61,12 +68,13 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
 
@@ -79,9 +87,13 @@ public class BeanManagerGenerator implements Task {
 
   private final BeanOracle oracle;
 
+  private final TypeMirror OBJECT;
+
   public BeanManagerGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.oracle = new BeanOracle(iocContext);
+    OBJECT = iocContext.getGenerationContext().getElements()
+        .getTypeElement(Object.class.getCanonicalName()).asType();
   }
 
   public void execute() throws UnableToCompleteException {
@@ -135,10 +147,17 @@ public class BeanManagerGenerator implements Task {
       clazz.addImport(Annotation.class);
       clazz.addImport(Instance.class);
       clazz.addImport(InstanceImpl.class);
-      clazz.addImport(AbstractBeanManager.class);
+      clazz.addImport(BeanManager.class);
+      clazz.addImport(SyncBeanDefImpl.class);
+      clazz.addImport(BeanFactory.class);
+      clazz.addImport(QualifierUtil.class);
+      clazz.addImport("io.crysknife.client.internal.QualifierUtil.DEFAULT_ANNOTATION", true, false);
+      clazz.addImport("io.crysknife.client.internal.QualifierUtil.SPECIALIZES_ANNOTATION", true,
+          false);
+      clazz.addImport("io.crysknife.client.internal.SyncBeanDefImpl.Builder", true, false);
 
       ClassOrInterfaceType factory = new ClassOrInterfaceType();
-      factory.setName("AbstractBeanManager");
+      factory.setName("BeanManager");
 
       classDeclaration.getExtendedTypes().add(factory);
     }
@@ -156,8 +175,8 @@ public class BeanManagerGenerator implements Task {
 
     private void initInitMethod() {
       init = classDeclaration.addMethod("init", Modifier.Keyword.PRIVATE);
-
       addBeanManager(init);
+
 
       Set<TypeMirror> processed = new HashSet<>();
 
@@ -167,51 +186,207 @@ public class BeanManagerGenerator implements Task {
           .forEach(bean -> {
             if (!processed.contains(bean)) {
               processed.add(bean);
+
               TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
               BeanDefinition beanDefinition = iocContext.getBean(erased);
 
               if (beanDefinition instanceof ProducesBeanDefinition) {
+
+                System.out.println("ProducesBeanDefinition " + beanDefinition.getQualifiedName());
+
                 addProducesBeanDefinition((ProducesBeanDefinition) beanDefinition);
               } else {
 
                 if (isSuitableBeanDefinition(beanDefinition)) {
-                  generateInitEntry(init, beanDefinition.getType());
-                } else {
-                  Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
-                  maybe.ifPresent(candidate -> {
-                    generateInitEntry(init, beanDefinition.getType(), candidate.getType());
-                  });
-                }
+                  Annotation scope = beanDefinition.getScope();
+                  List<TypeMirror> assignableTypes = new ArrayList<>();
+                  assignableTypes.add(erased);
 
-                beanDefinition.getSubclasses().forEach(subclass -> {
-                  if (MoreTypes.asTypeElement(subclass.getType())
-                      .getAnnotation(Named.class) != null) {
-                    Named named =
-                        MoreTypes.asTypeElement(subclass.getType()).getAnnotation(Named.class);
-                    if (!"".equals(named.value())) {
-                      if (isSuitableBeanDefinition(subclass)) {
-                        addNamedInitEntry(init, beanDefinition.getType(), subclass.getType(),
-                            named);
-                      }
-                    }
-                  } else {
-                    List<AnnotationMirror> qualifiers = Utils.getAllElementQualifierAnnotations(
-                        iocContext, MoreTypes.asTypeElement(subclass.getType()));
-                    qualifiers.forEach(qualifier -> {
-                      if (isSuitableBeanDefinition(subclass)) {
-                        addQualifierInitEntry(init, beanDefinition.getType(), subclass.getType(),
-                            qualifier);
-                      }
-                    });
+                  Utils.getSuperTypes(iocContext.getGenerationContext().getElements(),
+                      MoreTypes.asTypeElement(erased)).forEach(spr -> {
+                        if (!iocContext.getGenerationContext().getTypes().isSameType(spr.asType(),
+                            OBJECT)) {
+                          assignableTypes.add(
+                              iocContext.getGenerationContext().getTypes().erasure(spr.asType()));
+                        }
+                      });
+
+                  List<AnnotationMirror> qualifiers = new ArrayList<>();
+
+
+                  Utils.getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased))
+                      .forEach(anno -> qualifiers.add(anno));
+                  Set<Expression> qualifiersExpression = new HashSet<>();
+
+                  qualifiers
+                      .forEach(type -> qualifiersExpression.add(createQualifierExpression(type)));
+
+                  if (MoreTypes.asTypeElement(bean).getAnnotation(Named.class) != null) {
+                    qualifiersExpression
+                        .add(new MethodCallExpr(new NameExpr("QualifierUtil"), "createNamed")
+                            .addArgument(new StringLiteralExpr(
+                                MoreTypes.asTypeElement(bean).getAnnotation(Named.class).value())));
                   }
-                });
+
+                  if (MoreTypes.asTypeElement(bean).getAnnotation(Default.class) != null) {
+                    qualifiersExpression.add(new NameExpr("DEFAULT_ANNOTATION"));
+                  }
+
+                  if (MoreTypes.asTypeElement(bean).getAnnotation(Specializes.class) != null) {
+                    qualifiersExpression.add(new NameExpr("SPECIALIZES_ANNOTATION"));
+                  }
+
+
+                  ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
+                  assignableTypes.forEach(type -> withAssignableTypesValues.getValues()
+                      .add(new NameExpr(type + ".class")));
+
+                  ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
+                  withAssignableTypes.setElementType("Class[]");
+                  withAssignableTypes.setInitializer(withAssignableTypesValues);
+
+                  ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
+                  qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
+                  ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
+                  withQualifiers.setElementType("Annotation[]");
+                  withQualifiers.setInitializer(withQualifiersValues);
+
+
+                  MethodCallExpr registerCallExpr = new MethodCallExpr("register");
+
+                  Expression builderCallExpr =
+                      new ObjectCreationExpr().setType("Builder").addArgument(erased + ".class")
+                          .addArgument(scope.annotationType().getCanonicalName() + ".class");
+
+                  builderCallExpr = new MethodCallExpr(builderCallExpr, "withAssignableTypes")
+                      .addArgument(withAssignableTypes);
+
+                  if (!qualifiersExpression.isEmpty()) {
+                    builderCallExpr = new MethodCallExpr(builderCallExpr, "withQualifiers")
+                        .addArgument(withQualifiers);
+                  }
+                  builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
+                      new ObjectCreationExpr().setType(Utils.getQualifiedFactoryName(erased))
+                          .addArgument(new ThisExpr()));
+
+                  builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
+                  registerCallExpr.addArgument(builderCallExpr);
+                  init.getBody().get().addAndGetStatement(registerCallExpr);
+
+                }
               }
             }
           });
     }
 
+    private Expression createQualifierExpression(AnnotationMirror qualifier) {
+
+      ObjectCreationExpr annotation = new ObjectCreationExpr();
+      annotation
+          .setType(new ClassOrInterfaceType().setName(qualifier.getAnnotationType().toString()));
+
+      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
+
+      MethodDeclaration annotationType = new MethodDeclaration();
+      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
+      annotationType.setName("annotationType");
+      annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
+      annotationType.getBody().get().addAndGetStatement(
+          new ReturnStmt(new NameExpr(qualifier.getAnnotationType().toString() + ".class")));
+      anonymousClassBody.add(annotationType);
+
+      annotation.setAnonymousClassBody(anonymousClassBody);
+
+      return annotation;
+    }
+
+    private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
+      return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
+          && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT)
+          && beanDefinition.getIocGenerator().isPresent();
+    }
+
     private void addProducesBeanDefinition(ProducesBeanDefinition beanDefinition) {
       ProducesBeanDefinition producesBeanDefinition = beanDefinition;
+
+      TypeMirror erased =
+          iocContext.getGenerationContext().getTypes().erasure(producesBeanDefinition.getType());
+
+      Annotation scope = producesBeanDefinition.getScope();
+      List<TypeMirror> assignableTypes = new ArrayList<>();
+      assignableTypes.add(erased);
+
+      Utils.getSuperTypes(iocContext.getGenerationContext().getElements(),
+          MoreTypes.asTypeElement(erased)).forEach(spr -> {
+            if (!iocContext.getGenerationContext().getTypes().isSameType(spr.asType(), OBJECT)) {
+              assignableTypes
+                  .add(iocContext.getGenerationContext().getTypes().erasure(spr.asType()));
+            }
+          });
+
+      ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
+      assignableTypes.forEach(
+          type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
+
+      ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
+      withAssignableTypes.setElementType("Class[]");
+      withAssignableTypes.setInitializer(withAssignableTypesValues);
+
+      MethodCallExpr registerCallExpr = new MethodCallExpr("register");
+
+      Expression builderCallExpr =
+          new ObjectCreationExpr().setType("Builder").addArgument(erased + ".class")
+              .addArgument(scope.annotationType().getCanonicalName() + ".class");
+
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "withAssignableTypes")
+          .addArgument(withAssignableTypes);
+
+
+      ClassOrInterfaceType producerType = new ClassOrInterfaceType();
+      producerType.setName(ProducesBeanFactory.class.getCanonicalName())
+          .setTypeArguments(new ClassOrInterfaceType().setName(erased.toString()));
+
+      ClassOrInterfaceType supplierType =
+          new ClassOrInterfaceType().setName(Supplier.class.getCanonicalName())
+              .setTypeArguments(new ClassOrInterfaceType().setName(erased.toString()));
+
+
+      ObjectCreationExpr supplier = new ObjectCreationExpr().setType(supplierType);
+
+      NodeList<BodyDeclaration<?>> supplierClassBody = new NodeList<>();
+
+      MethodDeclaration annotationType = new MethodDeclaration();
+      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
+      annotationType.setName("get");
+      annotationType.setType(new ClassOrInterfaceType().setName(erased.toString()));
+
+      annotationType.getBody().get().addAndGetStatement(new ReturnStmt(new MethodCallExpr(
+          new MethodCallExpr(new MethodCallExpr(
+              new FieldAccessExpr(new NameExpr("BeanManagerImpl"), "this"), "lookupBean")
+                  .addArgument(producesBeanDefinition.getProducer().getQualifiedName().toString()
+                      + ".class"),
+              "getInstance"),
+          producesBeanDefinition.getMethod().getSimpleName().toString())));
+      supplierClassBody.add(annotationType);
+
+      supplier.setAnonymousClassBody(supplierClassBody);
+
+
+      ObjectCreationExpr factory = new ObjectCreationExpr().setType(producerType)
+          .addArgument(new ThisExpr()).addArgument(supplier);
+
+
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(factory);
+
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
+      registerCallExpr.addArgument(builderCallExpr);
+      init.getBody().get().addAndGetStatement(registerCallExpr);
+
+
+
+      /*
+       ****************************
+       */
 
       String qualifiedName = MoreTypes.asTypeElement(
           iocContext.getGenerationContext().getTypes().erasure(producesBeanDefinition.getType()))
@@ -274,7 +449,6 @@ public class BeanManagerGenerator implements Task {
         anonymousClassBody.add(field);
 
 
-
         get.getBody().get().addAndGetStatement(new ReturnStmt(new NameExpr("holder")));
       } else {
         get.getBody().get().addAndGetStatement(new ReturnStmt(getNewInstance));
@@ -286,123 +460,42 @@ public class BeanManagerGenerator implements Task {
           .addArgument(new FieldAccessExpr(new NameExpr(qualifiedName), "class"))
           .addArgument(newInstance);
 
-      init.getBody().ifPresent(body -> body.addAndGetStatement(call));
-    }
-
-    private void addQualifierInitEntry(MethodDeclaration init, TypeMirror type, TypeMirror factory,
-        AnnotationMirror qualifier) {
-
-      ObjectCreationExpr annotation = new ObjectCreationExpr();
-      annotation
-          .setType(new ClassOrInterfaceType().setName(qualifier.getAnnotationType().toString()));
-
-      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
-
-      MethodDeclaration annotationType = new MethodDeclaration();
-      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
-      annotationType.setName("annotationType");
-      annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
-      annotationType.getBody().get().addAndGetStatement(
-          new ReturnStmt(new NameExpr(qualifier.getAnnotationType().toString() + ".class")));
-      anonymousClassBody.add(annotationType);
-
-      annotation.setAnonymousClassBody(anonymousClassBody);
-
-      generateInitEntry(init, type, factory, annotation);
-
-    }
-
-    private void addNamedInitEntry(MethodDeclaration init, TypeMirror type, TypeMirror factory,
-        Named named) {
-
-      ObjectCreationExpr annotation = new ObjectCreationExpr();
-      annotation.setType(new ClassOrInterfaceType().setName(Named.class.getCanonicalName()));
-
-      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
-
-      MethodDeclaration annotationType = new MethodDeclaration();
-      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
-      annotationType.setName("annotationType");
-      annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
-      annotationType.getBody().get().addAndGetStatement(
-          new ReturnStmt(new NameExpr(Named.class.getCanonicalName() + ".class")));
-      anonymousClassBody.add(annotationType);
-
-      MethodDeclaration value = new MethodDeclaration();
-      value.setModifiers(Modifier.Keyword.PUBLIC);
-      value.setName("value");
-      value.setType(new ClassOrInterfaceType().setName("String"));
-      String namedValue = named.value();
-
-      value.getBody().get().addAndGetStatement(new ReturnStmt(new StringLiteralExpr(namedValue)));
-      anonymousClassBody.add(value);
-
-      annotation.setAnonymousClassBody(anonymousClassBody);
-
-      generateInitEntry(init, type, factory, annotation);
-
+      // init.getBody().ifPresent(body -> body.addAndGetStatement(call));
     }
 
     private void addBeanManager(MethodDeclaration init) {
-      MethodCallExpr theCall = new MethodCallExpr(new ThisExpr(), "register")
-          .addArgument(new NameExpr("io.crysknife.client.BeanManager.class"))
-          .addArgument(new NameExpr("() -> this"));
-      init.getBody().ifPresent(body -> body.addAndGetStatement(theCall));
-    }
+      ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
+      withAssignableTypesValues.getValues().add(new NameExpr("BeanManager.class"));
 
-    private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
-      return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
-          && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT)
-          && beanDefinition.getIocGenerator().isPresent();
-    }
+      ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
+      withAssignableTypes.setElementType("Class[]");
+      withAssignableTypes.setInitializer(withAssignableTypesValues);
 
-    private void generateInitEntry(MethodDeclaration init, TypeMirror field) {
-      generateInitEntry(init, field, field, null);
-    }
 
-    private void generateInitEntry(MethodDeclaration init, TypeMirror field, TypeMirror factory,
-        Expression annotation) {
-      String qualifiedName =
-          MoreTypes.asTypeElement(iocContext.getGenerationContext().getTypes().erasure(field))
-              .getQualifiedName().toString();
-      String factoryQualifiedName =
-          MoreTypes.asTypeElement(iocContext.getGenerationContext().getTypes().erasure(factory))
-              .getQualifiedName().toString();
+      MethodCallExpr registerCallExpr = new MethodCallExpr("register");
 
-      if (!iocContext.getBuildIn().contains(qualifiedName)) {
-        Expression factoryCreationExpr;
+      Expression builderCallExpr =
+          new ObjectCreationExpr().setType("Builder").addArgument("BeanManager.class")
+              .addArgument("javax.enterprise.context.ApplicationScoped.class");
 
-        if (iocContext.getGenerationContext().getTypes().isSubtype(field, factory)) {
-          factoryCreationExpr = new ObjectCreationExpr()
-              .setType(new ClassOrInterfaceType().setName(Utils.getQualifiedFactoryName(factory)))
-              .addArgument(new ThisExpr());
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "withAssignableTypes")
+          .addArgument(withAssignableTypes);
 
-          MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
-              .addArgument(new FieldAccessExpr(new NameExpr(qualifiedName), "class"))
-              .addArgument(factoryCreationExpr);
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "withQualifiers")
+          .addArgument(new NameExpr("new Annotation[] { DEFAULT_ANNOTATION }"));
 
-          if (annotation != null) {
-            call.addArgument(annotation);
-          }
-          init.getBody().ifPresent(body -> body.addAndGetStatement(call));
 
-        } else {
-          Expression temp =
-              new MethodCallExpr("lookupBean").addArgument(factoryQualifiedName + ".class");
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(new NameExpr(
+          "new BeanFactory<BeanManager>(this){\n" + "\n" + "                @Override\n"
+              + "                public BeanManager getInstance() {\n"
+              + "                  return BeanManagerImpl.this;\n" + "                }\n"
+              + "              }"));
 
-          MethodCallExpr call = new MethodCallExpr(new ThisExpr(), "register")
-              .addArgument(new FieldAccessExpr(new NameExpr(qualifiedName), "class"))
-              .addArgument(temp);
-          if (annotation != null) {
-            call.addArgument(annotation);
-          }
-          qualifiers.add(call);
-        }
-      }
-    }
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
+      registerCallExpr.addArgument(builderCallExpr);
 
-    private void generateInitEntry(MethodDeclaration init, TypeMirror field, TypeMirror factory) {
-      generateInitEntry(init, field, factory, null);
+
+      init.getBody().ifPresent(body -> body.addAndGetStatement(registerCallExpr));
     }
 
     private void addGetInstanceMethod() {

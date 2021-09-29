@@ -18,6 +18,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.IsElement;
+import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
 import jsinterop.base.Js;
@@ -55,8 +56,9 @@ public class ListComponentProvider implements ContextualTypeProvider<ListCompone
     final Optional<ListContainer> listContainer = getListContainer(qualifiers);
     final HTMLElement root = (HTMLElement) DomGlobal.document
         .createElement(listContainer.map(anno -> anno.value()).orElse("div"));
-    final Instance<?> beanDef = beanManager.lookupBean(typeargs[1], filteredQualifiers);
-    final Supplier<?> supplier = () -> beanDef.get();
+    final SyncBeanDef<?> beanDef =
+        (SyncBeanDef<?>) beanManager.lookupBean(typeargs[1], filteredQualifiers);
+    final Supplier<?> supplier = () -> beanDef.getInstance();
     // final Consumer<?> destroyer = (!Dependent.class.equals(beanDef.getScope()) ? c -> {} : c ->
     // IOC.getBeanManager().destroyBean(c));
     final Consumer<?> destroyer = (Consumer<Object>) o -> {
@@ -64,14 +66,15 @@ public class ListComponentProvider implements ContextualTypeProvider<ListCompone
     };
 
     final Function<?, HTMLElement> elementAccessor;
-    if (beanDef.get() instanceof IsElement) {
+    if (beanDef.getInstance() instanceof IsElement) {
       elementAccessor = (Function<Object, HTMLElement>) c -> ((IsElement) c).getElement();
-    } else if (beanDef.get() instanceof IsWidget) {
-      elementAccessor = c -> Js.uncheckedCast(((IsWidget) beanDef.get()).asWidget().getElement());
+    } else if (beanDef.getInstance() instanceof IsWidget) {
+      elementAccessor =
+          c -> Js.uncheckedCast(((IsWidget) beanDef.getInstance()).asWidget().getElement());
     } else {
-      throw new RuntimeException(
-          "Cannot create element accessor for " + beanDef.get().getClass().getCanonicalName()
-              + ". Must implement IsElement or IsWidget.");
+      throw new RuntimeException("Cannot create element accessor for "
+          + beanDef.getInstance().getClass().getCanonicalName()
+          + ". Must implement IsElement or IsWidget.");
     }
 
     return new DefaultListComponent(root, supplier, destroyer, elementAccessor);

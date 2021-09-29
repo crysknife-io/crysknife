@@ -121,7 +121,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
           .add(new MemberValuePair().setName("value").setValue(getAnnotationValue(fieldPoint)));
       methodDeclaration.addAnnotation(annotationExpr);
 
-      Expression _beanCall = null;
+      Expression _beanCall;
       if (fieldPoint.getImplementation().isPresent()
           && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
         _beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
@@ -130,14 +130,12 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
         _beanCall =
             fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
       } else {
+        String name = generationUtils.getActualQualifiedBeanName(fieldPoint);
         _beanCall = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-            .addArgument(new FieldAccessExpr(
-                new NameExpr(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
-                    .getQualifiedName().toString()),
-                "class"));
+            .addArgument(new FieldAccessExpr(new NameExpr(name), "class"));
       }
 
-      Expression beanCall = new MethodCallExpr(_beanCall, "get");
+      Expression beanCall = new MethodCallExpr(_beanCall, "getInstance");
 
       ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
           .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));

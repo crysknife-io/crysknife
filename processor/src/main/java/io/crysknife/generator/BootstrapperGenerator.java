@@ -31,8 +31,11 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
+import io.crysknife.client.SyncBeanDef;
+import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.Factory;
 import io.crysknife.client.internal.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
@@ -79,11 +82,12 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     if (!iocContext.getGenerationContext().isGwt2()) {
       clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
       clazz.getClassCompilationUnit().addImport(Reflect.class);
-      clazz.getClassCompilationUnit().addImport(Instance.class);
-      clazz.getClassCompilationUnit().addImport(Factory.class);
+      clazz.getClassCompilationUnit().addImport(SyncBeanDef.class);
+      clazz.getClassCompilationUnit().addImport(BeanFactory.class);
       clazz.getClassCompilationUnit().addImport(Supplier.class);
       clazz.getClassCompilationUnit().addImport(Provider.class);
       clazz.getClassCompilationUnit().addImport(BeanManager.class);
+      clazz.getClassCompilationUnit().addImport(InstanceFactory.class);
     }
 
     clazz.setClassName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString()
@@ -97,12 +101,17 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
 
     beanDefinition.getFields().forEach(field -> {
-      generateFactoryFieldDeclaration(clazz, field);
+      generateFactoryFieldDeclaration(clazz, beanDefinition, field, "field");
     });
 
   }
 
-  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
+  @Override
+  public void generateNewInstanceMethodBuilder(ClassBuilder classBuilder) {
+
+  }
+
+  protected void generateFactoryFieldDeclaration2(ClassBuilder classBuilder,
       InjectableVariableDefinition fieldPoint) {
 
     String varName = "_field_" + fieldPoint.getVariableElement().getSimpleName().toString();
@@ -110,7 +119,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
 
     ClassOrInterfaceType type = new ClassOrInterfaceType();
-    type.setName(Instance.class.getSimpleName());
+    type.setName(SyncBeanDef.class.getSimpleName());
     type.setTypeArguments(new ClassOrInterfaceType().setName(MoreTypes
         .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()));
     supplier.setTypeArguments(type);

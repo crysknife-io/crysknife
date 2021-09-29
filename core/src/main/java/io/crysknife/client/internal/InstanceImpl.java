@@ -13,24 +13,39 @@
  */
 package io.crysknife.client.internal;
 
+import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.SyncBeanDef;
+
 import javax.enterprise.inject.Instance;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
+ * TODO this class must be refactored
+ * 
  * @author Dmitrii Tikhomirov Created by treblereel 3/29/19
  */
-public class InstanceImpl<T> implements Instance<T> {
+public class InstanceImpl<T> implements Instance<T>, InstanceFactory<T> {
 
-  Provider<T> provider;
+  private Supplier<T> provider;
 
-  public InstanceImpl(Provider<T> provider) {
-    this.provider = provider;
+  public InstanceImpl(T provider) {
+    this.provider = () -> provider;
+  }
+
+  public InstanceImpl(SyncBeanDef<T> provider) {
+    this.provider = () -> provider.getInstance();
   }
 
   @Override
   public T get() {
+    return provider.get();
+  }
+
+  @Override
+  public T getInstance() {
     return provider.get();
   }
 
@@ -61,4 +76,5 @@ public class InstanceImpl<T> implements Instance<T> {
   public Iterator<T> iterator() {
     return null;
   }
+
 }

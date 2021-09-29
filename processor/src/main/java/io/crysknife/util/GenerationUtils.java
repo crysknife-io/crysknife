@@ -40,8 +40,12 @@ import jsinterop.base.Js;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/19/21
@@ -57,6 +61,33 @@ public class GenerationUtils {
         .getTypeElement(Qualifier.class.getCanonicalName()).asType();
 
   }
+
+  public String getActualQualifiedBeanName(InjectableVariableDefinition fieldPoint) {
+    String typeQualifiedName;
+    if (!MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getTypeParameters()
+        .isEmpty()) {
+      List<? extends TypeParameterElement> params =
+          MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getTypeParameters();
+      typeQualifiedName = fieldPoint.getVariableElement().asType().toString();
+      if (fieldPoint.getImplementation().isPresent()) {
+        if (params.get(0).getKind().equals(ElementKind.TYPE_PARAMETER)) {
+          typeQualifiedName = fieldPoint.getImplementation().get().getQualifiedName();
+        }
+      }
+    } else if (context.getGenerationContext().getTypes().isSameType(
+        fieldPoint.getVariableElement().asType(),
+        fieldPoint.getImplementation().orElse(fieldPoint.getBeanDefinition()).getType())) {
+      typeQualifiedName = fieldPoint.getVariableElement().asType().toString();
+    } else {
+      if (fieldPoint.getImplementation().isPresent()) {
+        typeQualifiedName = fieldPoint.getImplementation().get().getQualifiedName();
+      } else {
+        typeQualifiedName = fieldPoint.getVariableElement().asType().toString();
+      }
+    }
+    return typeQualifiedName;
+  }
+
 
   public MethodCallExpr getFieldAccessCallExpr(BeanDefinition beanDefinition,
       VariableElement field) {

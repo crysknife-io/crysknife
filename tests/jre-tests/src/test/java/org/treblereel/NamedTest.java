@@ -14,6 +14,7 @@
 
 package org.treblereel;
 
+import io.crysknife.client.SyncBeanDef;
 import org.junit.Test;
 import org.treblereel.injection.named.NamedBean;
 import org.treblereel.injection.named.NamedBeanDefault;
@@ -60,15 +61,16 @@ public class NamedTest extends AbstractTest {
   @Test
   public void testBeanManager() {
     Set<NamedBean> beans = new HashSet<>();
-    for (Instance<NamedBean> lookupBean : app.beanManager.<NamedBean>lookupBeans(NamedBean.class)) {
-      beans.add(lookupBean.get());
+    for (SyncBeanDef<NamedBean> lookupBean : app.beanManager
+        .<NamedBean>lookupBeans(NamedBean.class)) {
+      beans.add(lookupBean.getInstance());
     }
 
 
-    assertEquals(4, beans.size());
+    assertEquals(6, beans.size());
     List<String> result = new ArrayList<>();
-    for (Instance lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
-      result.add(((NamedBean) lookupBean.get()).say());
+    for (SyncBeanDef lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
+      result.add(((NamedBean) lookupBean.getInstance()).say());
     }
     assertTrue(result.contains(NamedBeanDefault.class.getCanonicalName()));
     assertTrue(result.contains(NamedBeanOne.class.getCanonicalName()));
@@ -97,11 +99,11 @@ public class NamedTest extends AbstractTest {
     };
 
     assertEquals(NamedBeanDefault.class,
-        app.beanManager.lookupBean(NamedBean.class).get().getClass());
+        app.beanManager.lookupBean(NamedBean.class).getInstance().getClass());
     assertEquals(NamedBeanOne.class,
-        app.beanManager.lookupBean(NamedBean.class, namedBeanOne).get().getClass());
+        app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getInstance().getClass());
     assertEquals(NamedBeanTwo.class,
-        app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).get().getClass());
+        app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getInstance().getClass());
 
   }
 }

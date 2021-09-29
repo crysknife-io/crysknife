@@ -25,6 +25,10 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
 import io.crysknife.util.GenerationUtils;
 
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeParameterElement;
+import java.util.List;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
@@ -45,11 +49,9 @@ public abstract class IOCGenerator<T extends Definition> {
 
   public Expression generateBeanLookupCall(ClassBuilder clazz,
       InjectableVariableDefinition fieldPoint) {
+    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
     MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
-            .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),
-            "class"));
-    generationUtils.maybeAddQualifiers(iocContext, callForProducer, fieldPoint);
+        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
     return callForProducer;
   }
 

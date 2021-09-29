@@ -42,9 +42,6 @@ public class DependentGenerator extends ScopedBeanGenerator {
   public void generateInstanceGetMethodBuilder(ClassBuilder builder,
       BeanDefinition beanDefinition) {
     super.generateInstanceGetMethodBuilder(builder, beanDefinition);
-    builder.addField(Utils.getSimpleClassName(beanDefinition.getType()), "instance",
-        Modifier.Keyword.PRIVATE);
-
     builder.getGetMethodDeclaration().getBody().get()
         .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
   }

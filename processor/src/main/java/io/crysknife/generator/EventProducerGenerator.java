@@ -65,13 +65,10 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class.getCanonicalName());
     MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments();
 
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(new NameExpr("Event_Factory.get().get("
-        + MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0)
-        + ".class)")));
-
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+    return new ObjectCreationExpr().setType(InstanceImpl.class)
+        .addArgument(new NameExpr("Event_Factory.get().get(" + MoreTypes
+            .asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0)
+            + ".class)"));
   }
 
   @Override
