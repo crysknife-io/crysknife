@@ -47,13 +47,4 @@ public class PostConstructGenerator extends IOCGenerator<MethodDefinition> {
     clazz.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
 
   }
-
-  /*
-   * public void generate(ClassBuilder builder, Definition definition) { if (definition instanceof
-   * ExecutableDefinition) { ExecutableDefinition postConstract = (ExecutableDefinition) definition;
-   * FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance"); MethodCallExpr
-   * method = new MethodCallExpr(instance,
-   * postConstract.getExecutableElement().getSimpleName().toString());
-   * builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(method); } }
-   */
 }

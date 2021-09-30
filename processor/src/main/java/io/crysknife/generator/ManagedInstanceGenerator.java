@@ -70,9 +70,6 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
 
     TypeMirror erased = iocContext.getGenerationContext().getTypes()
         .erasure(fieldPoint.getVariableElement().asType());
-
-    System.out.println("QQQ " + erased + " and " + instanceTypeMirror);
-
     Expression result;
 
     if (iocContext.getGenerationContext().getTypes().isSameType(instanceTypeMirror, erased)) {

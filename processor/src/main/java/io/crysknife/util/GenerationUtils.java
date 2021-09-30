@@ -180,6 +180,6 @@ public class GenerationUtils {
     lambda.setEnclosingParameters(true);
     lambda.setBody(new ExpressionStmt(call));
 
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(call);
   }
 }

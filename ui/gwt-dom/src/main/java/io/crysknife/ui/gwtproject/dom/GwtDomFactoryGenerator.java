@@ -478,10 +478,8 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
           "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
               .getQualifiedName().toString() + " " + e.getMessage());
     }
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(HTML_ELEMENTS.get(clazz).apply(fieldPoint)));
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+    return new ObjectCreationExpr().setType(InstanceImpl.class)
+        .addArgument(HTML_ELEMENTS.get(clazz).apply(fieldPoint));
   }
 
 }

@@ -478,7 +478,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
       expressionStmt.setExpression(variableDeclarationExpr);
 
-      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(expressionStmt);
+      builder.getInitInstanceMethod().getBody().get().addAndGetStatement(expressionStmt);
 
       widgets.forEach(widget -> {
         Expression instance =
@@ -487,7 +487,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
         MethodCallExpr methodCallExpr =
             new MethodCallExpr(new NameExpr("widgets"), "add").addArgument(instance);
-        builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(methodCallExpr);
+        builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
       });
 
       DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
@@ -509,7 +509,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .addArgument("widgets");
       }
 
-      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(doInit);
+      builder.getInitInstanceMethod().getBody().get().addAndGetStatement(doInit);
     }
   }
 
@@ -649,7 +649,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         }
 
         // TODO Temporary workaround, till gwt-dom StyleInjector ll be fixed
-        builder.getGetMethodDeclaration().getBody().get()
+        builder.getInitInstanceMethod().getBody().get()
             .addStatement(new MethodCallExpr(new MethodCallExpr(
                 new ClassOrInterfaceType().setName("StyleInjector").getNameAsExpression(),
                 "fromString").addArgument(new StringLiteralExpr(escape(css))), "inject"));
@@ -659,7 +659,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
               IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
           Less.compile(null, less, false);
           final String compiledCss = Less.compile(null, less, false);
-          builder.getGetMethodDeclaration().getBody().get()
+          builder.getInitInstanceMethod().getBody().get()
               .addStatement(new MethodCallExpr(
                   new MethodCallExpr(
                       new ClassOrInterfaceType().setName("StyleInjector").getNameAsExpression(),
@@ -674,7 +674,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private void addInitTemplateCallMethod(ClassBuilder builder) {
-    builder.getGetMethodDeclaration().getBody().get()
+    builder.addField(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString(),
+        "instance", com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
+
+    builder.getInitInstanceMethod().getBody().get()
         .addAndGetStatement(new MethodCallExpr(new NameExpr("instance"), "_setAndInitTemplate"));
   }
 
@@ -736,7 +739,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
           "replaceElement").addArgument(instance)
               .addArgument(new StringLiteralExpr(element.getSelector()))
               .addArgument(getInstanceByElementKind(element, fieldAccessCallExpr))));
-      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(ifStmt);
+      builder.getInitInstanceMethod().getBody().get().addAndGetStatement(ifStmt);
     });
   }
 
@@ -833,7 +836,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                     .addArgument(new NameExpr("e -> this.instance." + event.getMethodName()
                         + "(jsinterop.base.Js.uncheckedCast(e))"));
 
-        builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(methodCallExpr);
+        builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
       }
     });
   }

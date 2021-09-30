@@ -168,13 +168,6 @@ public class BeanManagerTest extends AbstractTest {
     assertEquals("org.treblereel.injection.named.NamedBeanDefault", componentDefault.say());
     assertEquals("org.treblereel.injection.named.NamedBeanOne", componentOne.say());
     assertEquals("org.treblereel.injection.named.NamedBeanTwo", componentTwo.say());
-
-    System.out.println("FUCK");
-
-    super.app.beanManager.lookupBeans(NamedBean.class).forEach(ss -> {
-      System.out.println("SS " + ss.getName());
-    });
-
     assertEquals(6, StreamSupport
         .stream(super.app.beanManager.lookupBeans(NamedBean.class).spliterator(), false).count());
 

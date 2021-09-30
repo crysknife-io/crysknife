@@ -330,7 +330,7 @@ public class NavigationGraphGenerator {
 
         new MethodCallExpr(new NameExpr("callback"), "callback").addArgument(
             new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                .addArgument(page.getQualifiedName() + ".class"), "get")));
+                .addArgument(page.getQualifiedName() + ".class"), "getInstance")));
 
     anonymousClassBody.add(method);
   }

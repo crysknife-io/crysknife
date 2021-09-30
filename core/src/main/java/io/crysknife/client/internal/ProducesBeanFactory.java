@@ -50,4 +50,8 @@ public class ProducesBeanFactory<T> extends BeanFactory<T> {
     return createInstance();
   }
 
+  @Override
+  public void initInstance() {
+
+  }
 }
