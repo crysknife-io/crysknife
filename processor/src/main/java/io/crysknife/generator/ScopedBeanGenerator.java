@@ -188,6 +188,14 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     constructorDeclaration.getBody()
         .addAndGetStatement(new MethodCallExpr("super").addArgument("beanManager"));
 
+    if (!iocContext.getGenerationContext().isJre()) {
+      beanDefinition.getFields().forEach(fieldPoint -> {
+        Expression expr =
+            getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field");
+        classBuilder.getGetMethodDeclaration().getBody().get().addStatement(expr);
+      });
+    }
+
     beanDefinition.getDecorators().stream()
         .sorted(
             Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
