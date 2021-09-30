@@ -46,6 +46,8 @@ public abstract class BeanFactory<T> {
 
   public abstract <T> T getInstance();
 
+  public void initInstance() {}
+
   public <T> T createInstance() {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");

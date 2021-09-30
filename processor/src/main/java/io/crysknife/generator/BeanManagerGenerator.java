@@ -184,16 +184,13 @@ public class BeanManagerGenerator implements Task {
           .filter(
               field -> (MoreTypes.asTypeElement(field).getAnnotation(Application.class) == null))
           .forEach(bean -> {
-            if (!processed.contains(bean)) {
-              processed.add(bean);
+            TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
 
-              TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
+            if (!processed.contains(bean) && !iocContext.getBuildIn().contains(erased.toString())) {
+              processed.add(bean);
               BeanDefinition beanDefinition = iocContext.getBean(erased);
 
               if (beanDefinition instanceof ProducesBeanDefinition) {
-
-                System.out.println("ProducesBeanDefinition " + beanDefinition.getQualifiedName());
-
                 addProducesBeanDefinition((ProducesBeanDefinition) beanDefinition);
               } else {
 

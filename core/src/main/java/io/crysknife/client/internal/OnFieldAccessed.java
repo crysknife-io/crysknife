@@ -17,6 +17,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import elemental2.core.Reflect;
+import io.crysknife.client.InstanceFactory;
 
 import javax.enterprise.inject.Instance;
 
@@ -25,16 +26,16 @@ import javax.enterprise.inject.Instance;
  */
 public final class OnFieldAccessed implements BiFunction<Object, String, Object> {
 
-  private final Supplier<Instance> supplier;
+  private final Supplier<InstanceFactory> supplier;
 
-  public OnFieldAccessed(Supplier<Instance> supplier) {
+  public OnFieldAccessed(Supplier<InstanceFactory> supplier) {
     this.supplier = supplier;
   }
 
   @Override
   public Object apply(Object o, String propertyKey) {
     if (Reflect.get(o, propertyKey) == null) {
-      Reflect.set(o, propertyKey, supplier.get().get());
+      Reflect.set(o, propertyKey, supplier.get().getInstance());
     }
     return Reflect.get(o, propertyKey);
   }

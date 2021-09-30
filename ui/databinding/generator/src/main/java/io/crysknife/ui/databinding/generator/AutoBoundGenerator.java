@@ -109,7 +109,7 @@ public class AutoBoundGenerator extends IOCGenerator<InjectableVariableDefinitio
     }
 
     // bounds
-    classBuilder.getGetMethodDeclaration().getBody().ifPresent(
+    classBuilder.getInitInstanceMethod().getBody().ifPresent(
         body -> autoBound.stream().forEach(dataBinderVariableElement -> bounds.forEach(bound -> {
           Expression fieldAccessExpr = generationUtils
               .getFieldAccessCallExpr(field.getBeanDefinition(), dataBinderVariableElement);

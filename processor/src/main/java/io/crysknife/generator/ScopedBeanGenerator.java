@@ -87,14 +87,19 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     initClassBuilder(clazz, beanDefinition);
     generateInterceptorFieldDeclaration(clazz);
     generateNewInstanceMethodBuilder(clazz);
+    generateInitInstanceMethodBuilder(clazz, beanDefinition);
     generateInstanceGetMethodBuilder(clazz, beanDefinition);
     generateDependantFieldDeclaration(clazz, beanDefinition);
     generateInstanceGetFieldDecorators(clazz, beanDefinition);
     generateInstanceGetMethodDecorators(clazz, beanDefinition);
-    processPostConstructAnnotation(clazz, beanDefinition);
     generateInstanceGetMethodReturn(clazz, beanDefinition);
-
+    processPostConstructAnnotation(clazz, beanDefinition);
     write(clazz, beanDefinition, iocContext.getGenerationContext());
+  }
+
+  protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    classBuilder.addInitInstanceMethod();
   }
 
   public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
@@ -162,19 +167,13 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
       body.addAndGetStatement(ifStmt);
       BlockStmt blockStmt = new BlockStmt();
 
-      IfStmt getIncompleteInstanceNotNull =
-          new IfStmt().setCondition(new BinaryExpr(new MethodCallExpr("getIncompleteInstance"),
-              new NullLiteralExpr(), BinaryExpr.Operator.NOT_EQUALS));
-
-      getIncompleteInstanceNotNull
-          .setThenStmt(new ReturnStmt(new MethodCallExpr("getIncompleteInstance")));
-
-      getIncompleteInstanceNotNull.setElseStmt(
+      blockStmt.addAndGetStatement(
           new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"), new NullLiteralExpr(),
               BinaryExpr.Operator.NOT_EQUALS)).setThenStmt(new ReturnStmt("instance")));
-      blockStmt.addAndGetStatement(getIncompleteInstanceNotNull);
       ifStmt.setThenStmt(blockStmt);
-      body.addAndGetStatement(new ReturnStmt(new MethodCallExpr("createInstance")));
+      body.addAndGetStatement(new MethodCallExpr("createInstance"));
+      body.addAndGetStatement(new MethodCallExpr("initInstance"));
+      body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
     });
   }
 
@@ -238,7 +237,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
   }
 
   // TODO add validation
-  private void processPostConstructAnnotation(ClassBuilder clazz, BeanDefinition beanDefinition) {
+  private void processPostConstructAnnotation(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
     LinkedList<ExecutableElement> postConstructs = Utils
         .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
             MoreTypes.asTypeElement(beanDefinition.getType()))
@@ -249,14 +249,12 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     while (elm.hasNext()) {
       FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
       MethodCallExpr method = new MethodCallExpr(instance, elm.next().getSimpleName().toString());
-      clazz.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
+      classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(method);
     }
   }
 
   protected Expression generateInstanceInitializer(ClassBuilder classBuilder,
       BeanDefinition definition) {
-    System.out.println("bean " + definition.getQualifiedName());
-
     instance = new FieldAccessExpr(new ThisExpr(), "instance");
     ObjectCreationExpr newInstance = generateNewInstanceCreationExpr(definition);
     Set<InjectionParameterDefinition> params = definition.getConstructorParams();

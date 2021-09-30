@@ -269,11 +269,6 @@ public class BeanProcessorTask implements Task {
         } else {
           BeanDefinition implementation = oracle.guess(point);
           if (implementation != null) {
-
-            System.out.println("ORACLE " + point.getBeanDefinition().getType() + "."
-                + point.getVariableElement().getSimpleName() + " "
-                + implementation.getQualifiedName());
-
             point.setImplementation(implementation);
             definition.getDependencies().add(implementation);
           }

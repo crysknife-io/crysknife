@@ -65,17 +65,14 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
     clazz.getClassCompilationUnit().addImport(Navigation.class);
     clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
 
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda
-        .setBody(new ExpressionStmt(new ObjectCreationExpr().setType(TransitionTo.class)
+    return new ObjectCreationExpr().setType(InstanceImpl.class)
+        .addArgument(new ObjectCreationExpr().setType(TransitionTo.class)
             .addArgument(MoreTypes.asDeclared(fieldPoint.getVariableElement().asType())
                 .getTypeArguments().get(0).toString() + ".class")
             .addArgument(
                 new CastExpr(new ClassOrInterfaceType().setName(Navigation.class.getSimpleName()),
                     new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                        .addArgument(Navigation.class.getSimpleName() + ".class"), "get")))));
-
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(lambda);
+                        .addArgument(Navigation.class.getSimpleName() + ".class"),
+                        "getInstance"))));
   }
 }

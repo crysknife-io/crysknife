@@ -41,6 +41,7 @@ public class ClassBuilder {
   private CompilationUnit clazz = new CompilationUnit();
   private ClassOrInterfaceDeclaration classDeclaration;
   private MethodDeclaration getGetMethodDeclaration;
+  private MethodDeclaration initMethodDeclaration;
   private ConstructorDeclaration constructorDeclaration;
   private HashMap<String, FieldDeclaration> fields = new HashMap<>();
 
@@ -79,7 +80,7 @@ public class ClassBuilder {
     }
     FieldDeclaration fieldDeclaration = null;
     if (getClassDeclaration() != null) {
-      fieldDeclaration = getClassDeclaration().addField(type, name, modifiers);
+      fieldDeclaration = classDeclaration.addField(type, name, modifiers);
       fields.put(name, fieldDeclaration);
     }
     return fieldDeclaration;
@@ -150,5 +151,14 @@ public class ClassBuilder {
         getClassDeclaration().addFieldWithInitializer(type, name, initializer, modifiers);
     fields.put(name, fieldDeclaration);
     return fieldDeclaration;
+  }
+
+  public MethodDeclaration addInitInstanceMethod() {
+    initMethodDeclaration = classDeclaration.addMethod("initInstance", Modifier.Keyword.PUBLIC);
+    return initMethodDeclaration;
+  }
+
+  public MethodDeclaration getInitInstanceMethod() {
+    return initMethodDeclaration;
   }
 }

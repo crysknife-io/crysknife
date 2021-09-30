@@ -86,7 +86,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     variableDeclarationExpr.getVariables().add(variableDeclarator);
     expressionStmt.setExpression(variableDeclarationExpr);
 
-    classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(expressionStmt);
+    classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(expressionStmt);
 
     EnclosedExpr castToAbstractEventHandler = new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName("io.crysknife.client.internal.AbstractEventHandler"),
@@ -95,7 +95,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     MethodCallExpr addSubscriber = new MethodCallExpr(castToAbstractEventHandler, "addSubscriber")
         .addArgument(parameter.getEnclosingElement().getSimpleName().toString());
 
-    classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(addSubscriber);
+    classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(addSubscriber);
   }
 
 }

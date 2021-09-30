@@ -160,9 +160,9 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
     EnclosedExpr castToAbstractEventHandler =
         new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("MutationObserver"),
             new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                .addArgument("MutationObserver.class"), "get")));
+                .addArgument("MutationObserver.class"), "getInstance")));
 
-    builder.getGetMethodDeclaration().getBody().get()
+    builder.getInitInstanceMethod().getBody().get()
         .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
             .addArgument("this.instance." + fieldName)
             .addArgument("(ObserverCallback) m -> this.instance."

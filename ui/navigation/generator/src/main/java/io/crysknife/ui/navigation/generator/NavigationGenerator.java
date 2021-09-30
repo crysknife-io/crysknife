@@ -74,7 +74,7 @@ public class NavigationGenerator extends SingletonGenerator {
     newInstance.setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph");
     newInstance.addArgument("beanManager");
     newInstance.addArgument(
-        new MethodCallExpr(new MethodCallExpr(new NameExpr("_field_event"), "get"), "get"));
+        new MethodCallExpr(new MethodCallExpr(new NameExpr("_field_event"), "get"), "getInstance"));
     return newInstance;
   }
 

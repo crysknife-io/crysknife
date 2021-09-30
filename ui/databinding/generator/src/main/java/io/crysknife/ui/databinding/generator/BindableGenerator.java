@@ -30,6 +30,7 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.BeanManager;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
@@ -49,6 +50,7 @@ import io.crysknife.ui.databinding.client.api.Convert;
 import io.crysknife.ui.databinding.client.api.Converter;
 import io.crysknife.ui.databinding.client.api.DataBinder;
 import io.crysknife.ui.databinding.client.api.DefaultConverter;
+import io.crysknife.util.Utils;
 
 import javax.inject.Inject;
 import javax.lang.model.element.TypeElement;
@@ -131,6 +133,19 @@ public class BindableGenerator extends ScopedBeanGenerator {
     maybeAddDefaultConverters(clazz, methodDeclaration);
     generateFactoryCreateMethod(clazz, beanDefinition);
     generateFactoryForTypeMethod(clazz, beanDefinition);
+    // TODO
+    clazz.addConstructorDeclaration()
+        .addParameter(new ClassOrInterfaceType().setName(BeanManager.class.getCanonicalName()),
+            "beanManager")
+        .getBody().addAndGetStatement(new MethodCallExpr("super").addArgument("beanManager"));
+
+    MethodDeclaration getMethodDeclaration =
+        clazz.addMethod("getInstance", Modifier.Keyword.PUBLIC);
+
+    getMethodDeclaration.addAnnotation(Override.class);
+    getMethodDeclaration.setType(Utils.getSimpleClassName(clazz.beanDefinition.getType()));
+    getMethodDeclaration.getBody().get().addAndGetStatement(new ReturnStmt(new NullLiteralExpr()));
+
     write(clazz, beanDefinition, iocContext.getGenerationContext());
   }
 
@@ -176,6 +191,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
         new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
     newInstance.setType(new ClassOrInterfaceType().setName("DataBinder_Factory"));
+    newInstance.addArgument(new NullLiteralExpr());
 
     BlockStmt initialization = new BlockStmt();
     initialization.addAndGetStatement(

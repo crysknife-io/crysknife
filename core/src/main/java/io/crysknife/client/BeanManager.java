@@ -56,42 +56,29 @@ public abstract class BeanManager {
     return beans.get(type);
   }
 
-  public <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type) {
-    return lookupBeans(type, QualifierUtil.DEFAULT_ANNOTATION);
-  }
-
   public <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type, Annotation... qualifiers) {
-    if (Arrays.stream(qualifiers).count() == 0) {
-      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
-    }
-
-    System.out.println("lookupBeans " + type + " " + Arrays.stream(qualifiers).count());
-
-    for (Annotation qualifier : qualifiers) {
-      System.out.println("qualifier " + qualifier.annotationType().getCanonicalName());
-    }
+    List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
 
     Set<SyncBeanDef<T>> result = new HashSet<>();
     if (beans.get(type).beanDefinition != null) {
-      System.out.println("!= null ");
-
-      for (Annotation qualifier : (Collection<Annotation>) beans.get(type).beanDefinition
-          .getQualifiers()) {
-        System.out.println(" in " + qualifier.annotationType().getCanonicalName());
-
-      }
 
       if (beans.get(type).beanDefinition
           .matches(Arrays.stream(qualifiers).collect(Collectors.toSet()))) {
         result.add(beans.get(type).beanDefinition);
       }
     }
-    List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
-    beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-        .filter(f -> QualifierUtil.matches(asList,
-            (Collection<Annotation>) f.beanDefinition.getQualifiers()))
-        .forEach(bean -> result.add(bean.beanDefinition));
 
+    if (asList.isEmpty()) {
+      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
+          .filter(f -> QualifierUtil.matches(asList,
+              (Collection<Annotation>) f.beanDefinition.getQualifiers()))
+          .forEach(bean -> result.add(bean.beanDefinition));
+    } else {
+      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
+          .filter(f -> QualifierUtil.matches(asList,
+              (Collection<Annotation>) f.beanDefinition.getActualQualifiers()))
+          .forEach(bean -> result.add(bean.beanDefinition));
+    }
     return result;
   }
 
@@ -100,31 +87,24 @@ public abstract class BeanManager {
   }
 
   public <T> SyncBeanDef<T> lookupBean(final Class<T> type, final Annotation... qualifiers) {
-
-    System.out.println("lookupBean " + type + " " + BeanManagerUtil.qualifiersToString(qualifiers));
-
     if (!beans.containsKey(type)) {
       throw BeanManagerUtil.unsatisfiedResolutionException(type, qualifiers);
     }
 
+    List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
     Collection<IOCBeanDef<T>> candidates = new HashSet<>();
     if (beans.get(type).beanDefinition != null) {
-      candidates.add(beans.get(type).beanDefinition);
+      SyncBeanDefImpl def = beans.get(type).beanDefinition;
+      if (QualifierUtil.matches(asList, (Collection<Annotation>) def.getActualQualifiers())) {
+        return def;
+      }
+      candidates.add(def);
     }
-
-    List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
-
 
     beans.get(type).subTypes.stream().filter(bean -> bean.beanDefinition != null)
         .filter(f -> QualifierUtil.matches(asList,
             (Collection<Annotation>) f.beanDefinition.getActualQualifiers()))
         .forEach(bean -> candidates.add(bean.beanDefinition));
-
-
-
-    for (IOCBeanDef<T> candidate : candidates) {
-      System.out.println("candidate " + candidate.getType());
-    }
 
     if (candidates.size() > 1) {
       throw BeanManagerUtil.ambiguousResolutionException(type, candidates, qualifiers);
@@ -134,6 +114,11 @@ public abstract class BeanManager {
       return (SyncBeanDef<T>) candidates.iterator().next();
     }
   }
+
+  public void destroyBean(Object ref) {
+    // DO NOTHING ATM
+  }
+
 
   private static class BeanDefinitionHolder {
 
