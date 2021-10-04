@@ -12,18 +12,10 @@
  * the License.
  */
 
-package io.crysknife.client;
+package org.treblereel.produces.typed;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
-public interface InstanceFactory<T> {
-
-  /**
-   * Returns an instance of the bean within the active scope.
-   *
-   * @return The bean instance.
-   */
-  T getInstance();
-
+public class Popover extends JQueryProducer.JQueryElement {
 }

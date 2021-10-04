@@ -12,18 +12,24 @@
  * the License.
  */
 
-package io.crysknife.client;
+package org.treblereel.produces.typed;
+
+import org.junit.Test;
+import org.treblereel.AbstractTest;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
-public interface InstanceFactory<T> {
+public class TypedProducesTest extends AbstractTest {
 
-  /**
-   * Returns an instance of the bean within the active scope.
-   *
-   * @return The bean instance.
-   */
-  T getInstance();
 
+  @Test
+  public void test() {
+    TypedProducesTestHolder holder =
+        app.beanManager.lookupBean(TypedProducesTestHolder.class).getInstance();
+    assertNotNull(holder);
+    assertNotNull(holder.jQueryPopover);
+  }
 }

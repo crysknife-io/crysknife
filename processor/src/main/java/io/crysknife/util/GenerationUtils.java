@@ -68,7 +68,10 @@ public class GenerationUtils {
         .isEmpty()) {
       List<? extends TypeParameterElement> params =
           MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getTypeParameters();
-      typeQualifiedName = fieldPoint.getVariableElement().asType().toString();
+
+
+      typeQualifiedName = context.getGenerationContext().getTypes()
+          .erasure(fieldPoint.getVariableElement().asType()).toString();
       if (fieldPoint.getImplementation().isPresent()) {
         if (params.get(0).getKind().equals(ElementKind.TYPE_PARAMETER)) {
           typeQualifiedName = fieldPoint.getImplementation().get().getQualifiedName();

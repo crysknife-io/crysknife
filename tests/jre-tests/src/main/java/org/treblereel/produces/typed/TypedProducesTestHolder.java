@@ -12,18 +12,18 @@
  * the License.
  */
 
-package io.crysknife.client;
+package org.treblereel.produces.typed;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
-public interface InstanceFactory<T> {
+@ApplicationScoped
+public class TypedProducesTestHolder {
 
-  /**
-   * Returns an instance of the bean within the active scope.
-   *
-   * @return The bean instance.
-   */
-  T getInstance();
+  @Inject
+  public JQueryProducer.JQuery<Popover> jQueryPopover;
 
 }
