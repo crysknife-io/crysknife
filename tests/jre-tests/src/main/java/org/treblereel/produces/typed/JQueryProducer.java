@@ -12,18 +12,34 @@
  * the License.
  */
 
-package io.crysknife.client;
+package org.treblereel.produces.typed;
+
+import elemental2.dom.Element;
+import elemental2.dom.HTMLElement;
+
+import javax.enterprise.inject.Produces;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
-public interface InstanceFactory<T> {
+public class JQueryProducer {
 
-  /**
-   * Returns an instance of the bean within the active scope.
-   *
-   * @return The bean instance.
-   */
-  T getInstance();
+  @Produces
+  public static JQuery get() {
+    return new JQuery() {
 
+      @Override
+      public JQueryElement wrap(Element element) {
+        return null;
+      }
+    };
+  }
+
+  public interface JQuery<T extends JQueryElement> {
+
+    T wrap(Element element);
+  }
+
+  public static abstract class JQueryElement extends HTMLElement {
+  }
 }
