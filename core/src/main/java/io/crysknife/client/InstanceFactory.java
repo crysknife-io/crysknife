@@ -15,6 +15,7 @@
 package io.crysknife.client;
 
 import javax.enterprise.inject.Instance;
+import java.util.Optional;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/27/21

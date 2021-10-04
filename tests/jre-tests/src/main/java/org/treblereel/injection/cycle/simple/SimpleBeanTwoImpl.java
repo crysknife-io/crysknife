@@ -12,38 +12,49 @@
  * the License.
  */
 
-package org.treblereel.injection.cycle;
+package org.treblereel.injection.cycle.simple;
 
 import io.crysknife.annotation.CircularDependency;
-import io.crysknife.client.ManagedInstance;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
+ * @author Dmitrii Tikhomirov Created by treblereel 9/26/21
  */
+@Singleton
 @CircularDependency
-@ApplicationScoped
-public class AdapterManagerImpl implements AdapterManager {
+public class SimpleBeanTwoImpl implements SimpleBeanTwo {
 
-  public AdapterRegistry registry;
+  private SimpleBeanOneImpl simpleBeanOne;
 
-  @Inject
-  public RegistryFactory registryFactory;
+  public String postConstruct;
 
   @Inject
-  public AdapterManagerImpl(RegistryFactory registryFactory) {
-    this(new AdapterRegistryImpl());
+  public FieldInjectBean fieldInjectBean;
+
+  @Inject
+  public SimpleBeanTwoImpl(SimpleBeanOneImpl simpleBeanOne) {
+    this.simpleBeanOne = simpleBeanOne;
   }
 
-  AdapterManagerImpl(final AdapterRegistry registry) {
-    this.registry = registry;
+  @PostConstruct
+  public void init() {
+    postConstruct = getClass().getSimpleName() + ".init";
   }
 
   @Override
-  public AdapterRegistry registry() {
-    return registry;
+  public String whoAmI() {
+    return getClass().getSimpleName();
+  }
+
+  public String whoIsDep() {
+    return simpleBeanOne.whoAmI();
+  }
+
+  @Override
+  public String getPostConstruct() {
+    return postConstruct;
   }
 }

@@ -91,6 +91,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   }
 
   @Override
+  public Optional<BeanFactory<T>> getFactory() {
+    return factory;
+  }
+
+  @Override
   public boolean matches(Set<Annotation> annotations) {
     return QualifierUtil.matches(annotations, getQualifiers());
   }

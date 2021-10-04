@@ -12,27 +12,17 @@
  * the License.
  */
 
-package io.crysknife.client;
+package org.treblereel.injection.cycle.simple;
 
-import io.crysknife.client.internal.BeanFactory;
-
-import java.util.Optional;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
- * Represents a bean definition within the bean manager.
- *
- * @author Max Barkley <mbarkley@redhat.com>
+ * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
-public interface SyncBeanDef<T> extends InstanceFactory<T>, IOCBeanDef<T> {
+@ApplicationScoped
+public class FieldInjectBean {
 
-  /**
-   * Returns a new instance of the bean. Calling this method overrides the underlying scope and
-   * instantiates a new instance of the bean.
-   *
-   * @return a new instance of the bean.
-   */
-  T newInstance();
-
-  Optional<BeanFactory<T>> getFactory();
-
+  public String hello() {
+    return getClass().getSimpleName();
+  }
 }

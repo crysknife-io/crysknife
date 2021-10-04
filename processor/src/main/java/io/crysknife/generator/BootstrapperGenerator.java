@@ -100,10 +100,6 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
         new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get"),
         Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
 
-    beanDefinition.getFields().forEach(field -> {
-      generateFactoryFieldDeclaration(clazz, beanDefinition, field, "field");
-    });
-
   }
 
   @Override
@@ -139,7 +135,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
       }
     }
 
-    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("initInstance"));
+    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doInitInstance"));
   }
 
   @Override

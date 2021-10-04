@@ -17,6 +17,7 @@ package io.crysknife.client.internal;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.SyncBeanDef;
 
+import javax.enterprise.context.Dependent;
 import java.lang.annotation.Annotation;
 
 /**
@@ -27,10 +28,9 @@ public abstract class BeanFactory<T> {
   protected BeanManager beanManager;
 
   protected SyncBeanDef beanDef;
-
-  private T incompleteInstance;
-
   protected T instance;
+  private T incompleteInstance;
+  private boolean initialized = false;
 
   protected BeanFactory(BeanManager beanManager) {
     this.beanManager = beanManager;
@@ -46,9 +46,23 @@ public abstract class BeanFactory<T> {
 
   public abstract <T> T getInstance();
 
-  public void initInstance() {}
+  public void initInstance() {
+    if (beanDef.getScope().equals(Dependent.class) || !initialized) {
+      doInitInstance();
+      initialized = true;
+    }
+  }
 
-  public <T> T createInstance() {
+  protected void doInitInstance() {}
+
+  public <T> T createNewInstance() {
+    if (instance != null) {
+      createInstance();
+    }
+    return (T) instance;
+  }
+
+  protected <T> T createInstance() {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");
   }

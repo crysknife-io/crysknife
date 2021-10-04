@@ -14,12 +14,18 @@
 
 package org.treblereel.inject;
 
+import io.crysknife.annotation.CircularDependency;
 import io.crysknife.client.BeanManager;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.injection.cycle.AbstractRegistryFactory;
 import org.treblereel.injection.cycle.AdapterManager;
 import org.treblereel.injection.cycle.ClientRegistryFactoryImpl;
+import org.treblereel.injection.cycle.simple.SimpleBeanOne;
+import org.treblereel.injection.cycle.simple.SimpleBeanOneImpl;
+import org.treblereel.injection.cycle.simple.SimpleBeanOneImpl_Factory;
+import org.treblereel.injection.cycle.simple.SimpleBeanTwo;
+import org.treblereel.injection.cycle.simple.SimpleBeanTwoImpl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,7 +34,37 @@ import static org.junit.Assert.assertEquals;
  */
 public class CycleDepsTest extends AbstractTest {
 
-  // @Test
+  @Test
+  public void testSimple() {
+    BeanManager beanManager = app.beanManager;
+    SimpleBeanOne simpleBeanOne = beanManager.lookupBean(SimpleBeanOne.class).getInstance();
+    SimpleBeanTwo simpleBeanTwo = beanManager.lookupBean(SimpleBeanTwo.class).getInstance();
+
+    SimpleBeanOneImpl simpleBeanOne1 = (SimpleBeanOneImpl) simpleBeanOne;
+    SimpleBeanTwoImpl simpleBeanTwo2 = (SimpleBeanTwoImpl) simpleBeanTwo;
+
+    assertEquals(
+        "org.treblereel.injection.cycle.simple.SimpleBeanOneImpl_Factory.ProxySimpleBeanOneImpl",
+        simpleBeanOne1.getClass().getCanonicalName());
+
+    assertEquals("SimpleBeanOneImpl", simpleBeanOne.whoAmI());
+    assertEquals("SimpleBeanTwoImpl", simpleBeanOne.whoIsDep());
+    assertEquals("SimpleBeanOneImpl.init", simpleBeanOne.getPostConstruct());
+
+    assertEquals(
+        "org.treblereel.injection.cycle.simple.SimpleBeanTwoImpl_Factory.ProxySimpleBeanTwoImpl",
+        simpleBeanTwo.getClass().getCanonicalName());
+
+    assertEquals("SimpleBeanTwoImpl", simpleBeanTwo.whoAmI());
+    assertEquals("SimpleBeanOneImpl", simpleBeanTwo.whoIsDep());
+    assertEquals("SimpleBeanTwoImpl.init", simpleBeanTwo.getPostConstruct());
+
+    assertEquals("FieldInjectBean", simpleBeanOne1.fieldInjectBean.hello());
+    assertEquals("FieldInjectBean", simpleBeanTwo2.fieldInjectBean.hello());
+
+  }
+
+  @Test
   public void test() {
     BeanManager beanManager = app.beanManager;
 
@@ -38,10 +74,12 @@ public class CycleDepsTest extends AbstractTest {
     AdapterManager adapterManager =
         beanManager.<AdapterManager>lookupBean(AdapterManager.class).getInstance();
 
-    assertEquals(ClientRegistryFactoryImpl.class.getCanonicalName(),
+    assertEquals(
+        "org.treblereel.injection.cycle.ClientRegistryFactoryImpl_Factory.ProxyClientRegistryFactoryImpl",
         abstractRegistryFactory.getClass().getCanonicalName());
 
-    assertEquals(AdapterManager.class.getCanonicalName(),
+    assertEquals(
+        "org.treblereel.injection.cycle.AdapterManagerImpl_Factory.ProxyAdapterManagerImpl",
         adapterManager.getClass().getCanonicalName());
   }
 }

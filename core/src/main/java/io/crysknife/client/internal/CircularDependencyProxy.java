@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright (C) 2021
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,25 +12,14 @@
  * the License.
  */
 
-package org.treblereel.injection.cycle;
+package io.crysknife.client.internal;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/3/21
  */
-public abstract class AbstractRegistryFactory implements RegistryFactory {
+public interface CircularDependencyProxy<T> {
 
-  public AdapterManager adapterManager;
+  void setInstance(T instance);
 
-  protected AbstractRegistryFactory() {}
-
-  public AbstractRegistryFactory(final AdapterManager adapterManager) {
-    this.adapterManager = adapterManager;
-  }
-
-  @Override
-  public AdapterRegistry newAdapterRegistry() {
-    return new AdapterRegistryImpl();
-  }
-
-
+  T unwrap();
 }

@@ -12,27 +12,16 @@
  * the License.
  */
 
-package io.crysknife.client;
-
-import io.crysknife.client.internal.BeanFactory;
-
-import java.util.Optional;
+package org.treblereel.injection.cycle.simple;
 
 /**
- * Represents a bean definition within the bean manager.
- *
- * @author Max Barkley <mbarkley@redhat.com>
+ * @author Dmitrii Tikhomirov Created by treblereel 9/26/21
  */
-public interface SyncBeanDef<T> extends InstanceFactory<T>, IOCBeanDef<T> {
+public interface SimpleBeanTwo {
 
-  /**
-   * Returns a new instance of the bean. Calling this method overrides the underlying scope and
-   * instantiates a new instance of the bean.
-   *
-   * @return a new instance of the bean.
-   */
-  T newInstance();
+  String whoAmI();
 
-  Optional<BeanFactory<T>> getFactory();
+  String whoIsDep();
 
+  String getPostConstruct();
 }

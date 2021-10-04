@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright © 2020 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,25 +12,18 @@
  * the License.
  */
 
-package org.treblereel.injection.cycle;
+package io.crysknife.client.internal;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
-public abstract class AbstractRegistryFactory implements RegistryFactory {
+public class Pair<K, V> {
+  public final K a;
+  public final V b;
 
-  public AdapterManager adapterManager;
-
-  protected AbstractRegistryFactory() {}
-
-  public AbstractRegistryFactory(final AdapterManager adapterManager) {
-    this.adapterManager = adapterManager;
+  public Pair(K a, V b) {
+    this.a = a;
+    this.b = b;
   }
-
-  @Override
-  public AdapterRegistry newAdapterRegistry() {
-    return new AdapterRegistryImpl();
-  }
-
 
 }
