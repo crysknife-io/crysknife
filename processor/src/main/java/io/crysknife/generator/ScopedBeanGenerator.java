@@ -85,6 +85,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
   @Override
   public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
     initClassBuilder(clazz, beanDefinition);
+    generateDependantFields(clazz, beanDefinition);
     generateInterceptorFieldDeclaration(clazz);
     generateNewInstanceMethodBuilder(clazz);
     generateInitInstanceMethodBuilder(clazz, beanDefinition);
@@ -95,6 +96,19 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     generateInstanceGetMethodReturn(clazz, beanDefinition);
     processPostConstructAnnotation(clazz, beanDefinition);
     write(clazz, beanDefinition, iocContext.getGenerationContext());
+  }
+
+  private void generateDependantFields(ClassBuilder classBuilder, BeanDefinition definition) {
+    Set<InjectionParameterDefinition> params = definition.getConstructorParams();
+    Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
+    while (injectionPointDefinitionIterator.hasNext()) {
+      InjectableVariableDefinition argument = injectionPointDefinitionIterator.next();
+      generateFactoryFieldDeclaration(classBuilder, definition, argument, "constructor");
+    }
+
+    definition.getFields().forEach(
+        field -> generateFactoryFieldDeclaration(classBuilder, definition, field, "field"));
+
   }
 
   protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
@@ -129,7 +143,9 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     clazz.setClassName(classFactoryName);
 
     ClassOrInterfaceType factory = new ClassOrInterfaceType();
-    factory.setName("BeanFactory<" + Utils.getSimpleClassName(beanDefinition.getType()) + ">");
+    factory.setName(BeanFactory.class.getSimpleName());
+    factory.setTypeArguments(
+        new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())));
     clazz.getExtendedTypes().add(factory);
   }
 
@@ -264,18 +280,21 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
   protected Expression generateInstanceInitializer(ClassBuilder classBuilder,
       BeanDefinition definition) {
     instance = new FieldAccessExpr(new ThisExpr(), "instance");
+    Expression instanceFieldAssignExpr =
+        generateInstanceInitializerNewObjectExpr(classBuilder, definition);
+    return new AssignExpr().setTarget(instance).setValue(instanceFieldAssignExpr);
+  }
+
+  protected Expression generateInstanceInitializerNewObjectExpr(ClassBuilder classBuilder,
+      BeanDefinition definition) {
     ObjectCreationExpr newInstance = generateNewInstanceCreationExpr(definition);
     Set<InjectionParameterDefinition> params = definition.getConstructorParams();
     Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
     while (injectionPointDefinitionIterator.hasNext()) {
       InjectableVariableDefinition argument = injectionPointDefinitionIterator.next();
-      generateFactoryFieldDeclaration(classBuilder, definition, argument, "constructor");
       newInstance.addArgument(
           getFieldAccessorExpression(classBuilder, definition, argument, "constructor"));
     }
-
-    definition.getFields().forEach(
-        field -> generateFactoryFieldDeclaration(classBuilder, definition, field, "field"));
 
     Expression instanceFieldAssignExpr;
 
@@ -292,8 +311,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
           new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
       instanceFieldAssignExpr = new MethodCallExpr(interceptor, "getProxy");
     }
-
-    return new AssignExpr().setTarget(instance).setValue(instanceFieldAssignExpr);
+    return instanceFieldAssignExpr;
   }
 
   protected Expression getFieldAccessorExpression(ClassBuilder classBuilder,

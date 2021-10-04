@@ -130,6 +130,7 @@ public class ClassBuilder {
   }
 
   public MethodDeclaration addMethod(String methodName, Modifier.Keyword... modifiers) {
+
     return getClassDeclaration().addMethod(methodName, modifiers);
   }
 
@@ -154,7 +155,7 @@ public class ClassBuilder {
   }
 
   public MethodDeclaration addInitInstanceMethod() {
-    initMethodDeclaration = classDeclaration.addMethod("initInstance", Modifier.Keyword.PUBLIC);
+    initMethodDeclaration = classDeclaration.addMethod("doInitInstance", Modifier.Keyword.PUBLIC);
     return initMethodDeclaration;
   }
 

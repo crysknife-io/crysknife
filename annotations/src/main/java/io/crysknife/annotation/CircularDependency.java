@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright (C) 2021
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,25 +12,18 @@
  * the License.
  */
 
-package org.treblereel.injection.cycle;
+package io.crysknife.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
+ * @author Dmitrii Tikhomirov Created by treblereel 9/30/21 TODO
  */
-public abstract class AbstractRegistryFactory implements RegistryFactory {
-
-  public AdapterManager adapterManager;
-
-  protected AbstractRegistryFactory() {}
-
-  public AbstractRegistryFactory(final AdapterManager adapterManager) {
-    this.adapterManager = adapterManager;
-  }
-
-  @Override
-  public AdapterRegistry newAdapterRegistry() {
-    return new AdapterRegistryImpl();
-  }
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface CircularDependency {
 
 }

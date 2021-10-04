@@ -12,26 +12,49 @@
  * the License.
  */
 
-package org.treblereel.injection.cycle;
+package org.treblereel.injection.cycle.simple;
 
 import io.crysknife.annotation.CircularDependency;
-import io.crysknife.client.ManagedInstance;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
+ * @author Dmitrii Tikhomirov Created by treblereel 9/26/21
  */
 @ApplicationScoped
 @CircularDependency
-public class ClientRegistryFactoryImpl extends AbstractRegistryFactory
-    implements ClientRegistryFactory {
+public class SimpleBeanOneImpl implements SimpleBeanOne {
 
-  protected ClientRegistryFactoryImpl() {}
+  private SimpleBeanTwoImpl simpleBeanTwo;
 
   @Inject
-  public ClientRegistryFactoryImpl(final AdapterManager adapterManager) {
-    super(adapterManager);
+  public FieldInjectBean fieldInjectBean;
+
+  public String postConstruct;
+
+  @Inject
+  public SimpleBeanOneImpl(SimpleBeanTwoImpl simpleBeanTwo) {
+    this.simpleBeanTwo = simpleBeanTwo;
+  }
+
+  @PostConstruct
+  public void init() {
+    postConstruct = getClass().getSimpleName() + ".init";
+  }
+
+  @Override
+  public String whoAmI() {
+    return getClass().getSimpleName();
+  }
+
+  public String whoIsDep() {
+    return simpleBeanTwo.whoAmI();
+  }
+
+  @Override
+  public String getPostConstruct() {
+    return postConstruct;
   }
 }

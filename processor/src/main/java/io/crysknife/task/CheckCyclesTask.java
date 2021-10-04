@@ -65,7 +65,7 @@ public class CheckCyclesTask implements Task {
     }
 
     if (graph.hasCycle()) {
-      throw new GenerationException("Graph contains cyclic deps ["
+      System.out.println("Graph contains cyclic deps ["
           + graph.pair.get().getKey().beanDefinition.getQualifiedName() + " <-> "
           + graph.pair.get().getValue().beanDefinition.getQualifiedName() + "]");
     }

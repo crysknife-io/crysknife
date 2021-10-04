@@ -27,6 +27,8 @@ import io.crysknife.util.GenerationUtils;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.util.List;
 
 /**
@@ -38,9 +40,15 @@ public abstract class IOCGenerator<T extends Definition> {
 
   protected final GenerationUtils generationUtils;
 
+  protected final Types types;
+  protected final Elements elements;
+
   public IOCGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.generationUtils = new GenerationUtils(iocContext);
+
+    types = iocContext.getGenerationContext().getTypes();
+    elements = iocContext.getGenerationContext().getElements();
   }
 
   public abstract void register();

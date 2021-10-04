@@ -15,6 +15,7 @@
 package io.crysknife.definition;
 
 import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.CircularDependency;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.util.Utils;
 
@@ -84,6 +85,10 @@ public class BeanDefinition implements Definition {
 
   public void setIocGenerator(IOCGenerator<BeanDefinition> iocGenerator) {
     this.iocGenerator = Optional.of(iocGenerator);
+  }
+
+  public boolean isProxy() {
+    return MoreTypes.asTypeElement(type).getAnnotation(CircularDependency.class) != null;
   }
 
   @Override
