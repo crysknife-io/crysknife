@@ -16,20 +16,24 @@ package org.jboss.gwt.elemento.processor.context;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.jsoup.nodes.Attribute;
 
 public class RootElementInfo {
 
   private final String tag;
+  private final java.util.Optional<Attribute> dataField;
   private final String member;
   private final List<Attribute> attributes;
   private final String innerHtml;
   private final Map<String, String> expressions;
 
-  public RootElementInfo(final String tag, final String member, final List<Attribute> attributes,
-      final String innerHtml, final Map<String, String> expressions) {
+  public RootElementInfo(final String tag, final java.util.Optional<Attribute> dataField,
+      final String member, final List<Attribute> attributes, final String innerHtml,
+      final Map<String, String> expressions) {
     this.tag = tag;
+    this.dataField = dataField;
     this.member = member;
     this.attributes = attributes;
     this.innerHtml = innerHtml;
@@ -38,7 +42,9 @@ public class RootElementInfo {
 
   @Override
   public String toString() {
-    return "<" + tag + ">" + member + ":" + attributes;
+    return "RootElementInfo{" + "tag='" + tag + '\'' + ", member='" + member + '\''
+        + ", attributes=" + attributes + ", innerHtml='" + innerHtml + '\'' + ", expressions="
+        + expressions + '}';
   }
 
   public List<Attribute> getAttributes() {
@@ -59,5 +65,9 @@ public class RootElementInfo {
 
   public Map<String, String> getExpressions() {
     return expressions;
+  }
+
+  public Optional<Attribute> getDataField() {
+    return dataField;
   }
 }

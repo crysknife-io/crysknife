@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
@@ -40,7 +41,7 @@ public class MutationObserver {
 
   private final Map<HTMLElement, ObserverCallback> detach = new HashMap<>();
 
-  MutationObserver() {
+  public MutationObserver() {
     mutationObserverInit = MutationObserverInit.create();
     mutationObserverInit.setChildList(true);
     mutationObserverInit.setSubtree(true);

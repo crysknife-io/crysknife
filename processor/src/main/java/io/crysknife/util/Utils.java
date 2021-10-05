@@ -15,19 +15,39 @@
 package io.crysknife.util;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.enterprise.inject.Default;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.generator.context.IOCContext;
 import jsinterop.annotations.JsProperty;
 import io.crysknife.exception.GenerationException;
 
@@ -40,6 +60,10 @@ public class Utils {
 
   }
 
+  public static String getQualifiedFactoryName(TypeMirror bean) {
+    return getQualifiedFactoryName(MoreTypes.asTypeElement(bean));
+  }
+
   public static String getQualifiedFactoryName(TypeElement bean) {
     return getPackageName(bean) + "." + getFactoryClassName(bean);
   }
@@ -49,7 +73,18 @@ public class Utils {
   }
 
   public static String getFactoryClassName(TypeElement bean) {
-    return bean.getSimpleName().toString() + "_Factory";
+    return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
+        : (bean.getEnclosingElement().getSimpleName() + "_")) + bean.getSimpleName().toString()
+        + "_Factory";
+  }
+
+  public static String getSimpleClassName(TypeMirror bean) {
+    return getSimpleClassName(MoreTypes.asTypeElement(bean));
+  }
+
+  public static String getSimpleClassName(TypeElement bean) {
+    return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
+        : (bean.getEnclosingElement().getSimpleName() + ".")) + bean.getSimpleName().toString();
   }
 
   public static String getJsFieldName(VariableElement field) {
@@ -102,4 +137,176 @@ public class Utils {
     }
     throw new GenerationException("Unable to process bean " + elm.toString());
   }
+
+  public static List<AnnotationMirror> getAllElementQualifierAnnotations(IOCContext context,
+      Element element) {
+    List<AnnotationMirror> result = new ArrayList<>();
+    for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
+      if (isAnnotationMirrorOfType(annotationMirror, javax.inject.Named.class.getCanonicalName())) {
+        continue;
+      }
+      if (isAnnotationMirrorOfType(annotationMirror, Default.class.getCanonicalName())) {
+        continue;
+      }
+      for (AnnotationMirror allAnnotationMirror : context.getGenerationContext().getElements()
+          .getAllAnnotationMirrors(annotationMirror.getAnnotationType().asElement())) {
+        if (isAnnotationMirrorOfType(allAnnotationMirror,
+            javax.inject.Qualifier.class.getCanonicalName())) {
+          result.add(annotationMirror);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * see: typetools/checker-framework Return all methods declared in the given type or any
+   * superclass/interface. Note that no constructors will be returned. TODO: should this use
+   * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
+   */
+  public static Collection<VariableElement> getAllFieldsIn(Elements elements, TypeElement type) {
+    Map<String, VariableElement> fields = new LinkedHashMap<>();
+    ElementFilter.fieldsIn(type.getEnclosedElements())
+        .forEach(field -> fields.put(field.getSimpleName().toString(), field));
+
+    List<TypeElement> alltypes = getSuperTypes(elements, type);
+    for (TypeElement atype : alltypes) {
+      ElementFilter.fieldsIn(atype.getEnclosedElements()).stream()
+          .filter(field -> !fields.containsKey(field.getSimpleName().toString()))
+          .forEach(field -> fields.put(field.getSimpleName().toString(), field));
+    }
+    return fields.values();
+  }
+
+  public static Collection<ExecutableType> getAllTypedMethodsIn(Elements elements, Types types,
+      TypeMirror type) {
+    return getAllMethodsIn(elements, MoreTypes.asTypeElement(type)).stream()
+        .map(e -> types.asMemberOf(MoreTypes.asDeclared(type), e)).map(e -> (ExecutableType) e)
+        .collect(Collectors.toSet());
+  }
+
+  public static Collection<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
+    Map<String, ExecutableElement> methods = new LinkedHashMap<>();
+    ElementFilter.methodsIn(type.getEnclosedElements())
+        .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+
+    List<TypeElement> alltypes = getSuperTypes(elements, type);
+    for (TypeElement atype : alltypes) {
+      ElementFilter.methodsIn(atype.getEnclosedElements()).stream()
+          .filter(method -> !methods.containsKey(method.getSimpleName().toString()))
+          .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+    }
+    return methods.values();
+  }
+
+  /**
+   * see: typetools/checker-framework Determine all type elements for the classes and interfaces
+   * referenced in the extends/implements clauses of the given type element. TODO: can we learn from
+   * the implementation of com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+   */
+  public static List<TypeElement> getSuperTypes(Elements elements, TypeElement type) {
+
+    List<TypeElement> superelems = new ArrayList<>();
+    if (type == null) {
+      return superelems;
+    }
+
+    // Set up a stack containing type, which is our starting point.
+    Deque<TypeElement> stack = new ArrayDeque<>();
+    stack.push(type);
+
+    while (!stack.isEmpty()) {
+      TypeElement current = stack.pop();
+
+      // For each direct supertype of the current type element, if it
+      // hasn't already been visited, push it onto the stack and
+      // add it to our superelems set.
+      TypeMirror supertypecls = current.getSuperclass();
+      if (supertypecls.getKind() != TypeKind.NONE) {
+        TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
+        if (!superelems.contains(supercls)) {
+          stack.push(supercls);
+          superelems.add(supercls);
+        }
+      }
+      for (TypeMirror supertypeitf : current.getInterfaces()) {
+        TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
+        if (!superelems.contains(superitf)) {
+          stack.push(superitf);
+          superelems.add(superitf);
+        }
+      }
+    }
+
+    // Include java.lang.Object as implicit superclass for all classes and interfaces.
+    TypeElement jlobject = elements.getTypeElement(Object.class.getCanonicalName());
+    if (!superelems.contains(jlobject)) {
+      superelems.add(jlobject);
+    }
+
+    return Collections.unmodifiableList(superelems);
+  }
+
+
+  /**
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   */
+  public static boolean containsAnnotation(Element element, String... annotations) {
+    assert element != null;
+    assert annotations != null;
+
+    List<String> annotationClassNames = new ArrayList<>();
+    Collections.addAll(annotationClassNames, annotations);
+
+    List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+    for (AnnotationMirror mirror : annotationMirrors) {
+      if (annotationClassNames.contains(mirror.getAnnotationType().toString())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   *
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   *
+   *      Returns {@code true} if the provided annotation type is of the same type as the provided
+   *      class, {@code false} otherwise. This method uses the string class names for comparison.
+   *      See also <a href=
+   *      "http://www.retep.org/2009/02/getting-class-values-from-annotations.html">getting-class-values-from-annotations</a>.
+   *
+   * @param annotationMirror The annotation mirror
+   * @param fqcn the fully qualified class name to check against
+   *
+   * @return {@code true} if the provided annotation type is of the same type as the provided class,
+   *         {@code false} otherwise.
+   */
+  public static boolean isAnnotationMirrorOfType(AnnotationMirror annotationMirror, String fqcn) {
+    assert annotationMirror != null;
+    assert fqcn != null;
+    String annotationClassName = annotationMirror.getAnnotationType().toString();
+
+    return annotationClassName.equals(fqcn);
+  }
+
+  /**
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   */
+  public static Object getAnnotationValue(AnnotationMirror annotationMirror,
+      String parameterValue) {
+    assert annotationMirror != null;
+    assert parameterValue != null;
+
+    Object returnValue = null;
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror
+        .getElementValues().entrySet()) {
+      if (parameterValue.equals(entry.getKey().getSimpleName().toString())) {
+        returnValue = entry.getValue().getValue();
+        break;
+      }
+    }
+    return returnValue;
+  }
+
 }

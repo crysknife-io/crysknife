@@ -14,15 +14,15 @@
 
 package io.crysknife.ui.databinding.client;
 
+import io.crysknife.ui.databinding.client.api.DataBinder;
+import io.crysknife.ui.databinding.client.api.StateSync;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import io.crysknife.ui.databinding.client.api.DataBinder;
-import io.crysknife.ui.databinding.client.api.StateSync;
 
 /**
  * A custom {@link BindableProxy} allowing data-binding to a {@link Map}. This allows data-binding
@@ -41,6 +41,11 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
         .filter(entry -> entry.getValue() instanceof MapPropertyType)
         .forEach(entry -> agent.binders.put(entry.getKey(),
             DataBinder.forMap(((MapPropertyType) entry.getValue()).getPropertyTypes())));
+  }
+
+  @Override
+  public Object unwrap() {
+    return agent.target;
   }
 
   @Override
@@ -148,7 +153,7 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
 
   @Override
   public Object remove(final Object key) {
-    throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " remove");
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -158,7 +163,7 @@ public class MapBindableProxy implements Map<String, Object>, BindableProxy<Map<
 
   @Override
   public void clear() {
-    throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " clear");
+    throw new UnsupportedOperationException();
   }
 
   @Override

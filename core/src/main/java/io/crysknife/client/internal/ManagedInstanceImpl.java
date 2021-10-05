@@ -17,11 +17,10 @@ package io.crysknife.client.internal;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.Instance;
 import io.crysknife.client.ManagedInstance;
+import io.crysknife.client.SyncBeanDef;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -32,15 +31,23 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   private final Class<T> type;
 
-  private final Set<Instance<T>> beans;
+  private final Collection<SyncBeanDef<T>> beans;
 
-  public ManagedInstanceImpl(Class<T> type, BeanManager beanManager) {
+  private Annotation[] qualifiers;
+
+  public ManagedInstanceImpl(BeanManager beanManager, Class<T> type) {
+    this(beanManager, type, new Annotation[] {});
+  }
+
+  public ManagedInstanceImpl(BeanManager beanManager, Class<T> type, Annotation... qualifiers) {
     this.type = type;
     this.beanManager = beanManager;
+    this.qualifiers = qualifiers;
     this.beans = beanManager.lookupBeans(type);
   }
 
-  public ManagedInstanceImpl(Class<T> type, BeanManager beanManager, Set<Instance<T>> beans) {
+  public ManagedInstanceImpl(Class<T> type, BeanManager beanManager,
+      Collection<SyncBeanDef<T>> beans) {
     this.type = type;
     this.beanManager = beanManager;
     this.beans = beans;
@@ -62,7 +69,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
   }
 
   @Override
-  public void destroy(Object instance) {
+  public void destroy(T instance) {
 
   }
 
@@ -73,19 +80,19 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public Iterator<T> iterator() {
-    return new ManagedInstanceImplIterator(beans);
+    return new ManagedInstanceImplIterator<T>(beans);
   }
 
   @Override
   public T get() {
-    return beanManager.lookupBean(type).get();
+    return beanManager.<T>lookupBean(type, qualifiers).getInstance();
   }
 
   private static class ManagedInstanceImplIterator<T> implements Iterator<T> {
 
-    private final Iterator<Instance<T>> delegate;
+    private final Iterator<SyncBeanDef<T>> delegate;
 
-    public ManagedInstanceImplIterator(final Collection<Instance<T>> beans) {
+    public ManagedInstanceImplIterator(final Collection<SyncBeanDef<T>> beans) {
       this.delegate = beans.iterator();
     }
 
@@ -96,8 +103,8 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
     @Override
     public T next() {
-      final Instance<T> bean = delegate.next();
-      final T instance = bean.get();
+      final SyncBeanDef<T> bean = delegate.next();
+      final T instance = bean.getInstance();
       return instance;
     }
   }

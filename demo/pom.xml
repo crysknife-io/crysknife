@@ -12,7 +12,7 @@
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <elemental2.version>1.1.0</elemental2.version>
-    <j2cl.maven.plugin.version>0.16-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.17-SNAPSHOT</j2cl.maven.plugin.version>
     <maven.jetty.plugin.version>9.4.31.v20200723</maven.jetty.plugin.version>
     <maven.tomcat.plugin.version>2.2</maven.tomcat.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
@@ -70,23 +70,57 @@
       <artifactId>navigation-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.gwtproject.user.window</groupId>
-      <artifactId>gwt-window</artifactId>
-      <version>1.0.0-RC2</version>
-    </dependency>
-
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>navigation-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-   </dependencies>
+
+    <dependency>
+      <groupId>org.gwtproject.user.window</groupId>
+      <artifactId>gwt-window</artifactId>
+      <version>HEAD-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>databinding-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>databinding-generator</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>gwt-dom-generator</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.gwtproject.dom</groupId>
+      <artifactId>gwt-dom</artifactId>
+      <version>HEAD-SNAPSHOT</version>
+    </dependency>
+
+  </dependencies>
 
   <build>
     <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.java</include>
+          <include>**/*.html</include>
+          <include>**/*.css</include>
+          <include>**/*.less</include>
+        </includes>
+      </resource>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
@@ -118,6 +152,7 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
@@ -128,11 +163,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-          <configuration>
+        <version>3.3.1</version>
+        <configuration>
             <packagingExcludes>WEB-INF/classes/**</packagingExcludes>
           </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.0.1</version>
         <executions>
@@ -160,7 +197,7 @@
         </executions>
         <configuration>
           <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</defaultWebappDirectory>
-          <compilationLevel>ADVANCED</compilationLevel>
+          <compilationLevel>BUNDLE</compilationLevel>
         </configuration>
       </plugin>
       <plugin>
@@ -198,6 +235,20 @@
   </pluginRepositories>
 
   <repositories>
+
+    <repository>
+      <id>treblereel-snapshots</id>
+      <name>treblereel hosted artifacts-snapshots</name>
+      <url>https://repo.treblereel.org/snapshots</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </snapshots>
+    </repository>
+
     <repository>
       <id>vertispan-releases</id>
       <name>Vertispan hosted artifacts-releases</name>
@@ -211,7 +262,7 @@
       </snapshots>
     </repository>
 
-    <repository>
+<!--    <repository>
       <id>vertispan-snapshots</id>
       <name>Vertispan Snapshots</name>
       <url>https://repo.vertispan.com/gwt-snapshot/</url>
@@ -220,7 +271,7 @@
         <updatePolicy>daily</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
-    </repository>
+    </repository>-->
     <repository>
       <id>sonatype-snapshots-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>

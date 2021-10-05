@@ -17,6 +17,7 @@ package io.crysknife.client;
 import java.lang.annotation.Annotation;
 
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Instance;
 import javax.inject.Provider;
 
 /**

@@ -14,22 +14,21 @@
 
 package io.crysknife.generator;
 
-import javax.annotation.PostConstruct;
-
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.MethodDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.definition.ExecutableDefinition;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
-@Generator(priority = 100000)
-public class PostConstructGenerator extends IOCGenerator {
+@Generator(priority = Integer.MAX_VALUE)
+public class PostConstructGenerator extends IOCGenerator<MethodDefinition> {
 
   public PostConstructGenerator(IOCContext iocContext) {
     super(iocContext);
@@ -40,13 +39,12 @@ public class PostConstructGenerator extends IOCGenerator {
     iocContext.register(PostConstruct.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
-  public void generateBeanFactory(ClassBuilder builder, Definition definition) {
-    if (definition instanceof ExecutableDefinition) {
-      ExecutableDefinition postConstract = (ExecutableDefinition) definition;
-      FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-      MethodCallExpr method = new MethodCallExpr(instance,
-          postConstract.getExecutableElement().getSimpleName().toString());
-      builder.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
-    }
+  @Override
+  public void generate(ClassBuilder clazz, MethodDefinition postConstract) {
+    FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
+    MethodCallExpr method = new MethodCallExpr(instance,
+        postConstract.getExecutableElement().getSimpleName().toString());
+    clazz.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
+
   }
 }

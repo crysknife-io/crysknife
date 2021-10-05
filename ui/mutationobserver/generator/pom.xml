@@ -37,17 +37,14 @@
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>mutationobserver-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
-      <version>${javaparser.core.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -61,15 +58,25 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.plugin.version}</version>
+        <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
-            <id>attach-sources</id>
             <phase>package</phase>
             <goals>
-              <goal>jar</goal>
+              <goal>shade</goal>
             </goals>
+            <configuration>
+              <minimizeJar>true</minimizeJar>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>**/*.java</exclude>
+                    <exclude>jsinterop/base/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
           </execution>
         </executions>
       </plugin>

@@ -14,48 +14,29 @@
 
 package io.crysknife.generator;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.annotation.processing.FilerException;
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
-
-import com.github.javaparser.ast.expr.Expression;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
-import io.crysknife.generator.definition.Definition;
-import io.crysknife.generator.point.FieldPoint;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.util.Utils;
+
+import javax.annotation.processing.FilerException;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/4/19
  */
-public abstract class BeanIOCGenerator extends IOCGenerator {
+public abstract class BeanIOCGenerator<T extends BeanDefinition> extends IOCGenerator<T> {
 
   public BeanIOCGenerator(IOCContext iocContext) {
     super(iocContext);
   }
 
-  /**
-   * @param clazz
-   * @param fieldPoint
-   * @param beanDefinition
-   * 
-   * @return Expression, how to call instance of this bean ?
-   */
-  public abstract Expression generateBeanCall(ClassBuilder clazz, FieldPoint fieldPoint,
-      BeanDefinition beanDefinition);
-
-  @Override
-  public void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition) {
-
-  }
-
-  public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
+  public void write(ClassBuilder clazz, T beanDefinition, GenerationContext context) {
     try {
       String fileName = Utils.getQualifiedFactoryName(beanDefinition.getType());
       String source = clazz.toSourceCode();

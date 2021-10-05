@@ -14,14 +14,14 @@
 
 package io.crysknife.demo.client.databinding;
 
-//import io.crysknife.databinding.client.api.Bindable;
+import io.crysknife.ui.databinding.client.api.Bindable;
 
 /**
  * @author Dmitrii Tikhomirov
  * Created by treblereel 11/25/19
  */
-//@Bindable
-public class Address {
+@Bindable
+public class Address extends HasId {
 
     private String city;
 

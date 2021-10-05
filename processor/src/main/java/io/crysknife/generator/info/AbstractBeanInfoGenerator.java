@@ -17,7 +17,7 @@ package io.crysknife.generator.info;
 import java.io.IOException;
 
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20

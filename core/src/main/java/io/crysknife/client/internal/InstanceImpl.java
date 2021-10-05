@@ -13,19 +13,30 @@
  */
 package io.crysknife.client.internal;
 
-import javax.inject.Provider;
+import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.SyncBeanDef;
 
-import io.crysknife.client.Instance;
+import javax.enterprise.inject.Instance;
+import javax.inject.Provider;
+import java.lang.annotation.Annotation;
+import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
+ * TODO this class must be refactored
+ * 
  * @author Dmitrii Tikhomirov Created by treblereel 3/29/19
  */
-public class InstanceImpl<T> implements Instance<T> {
+public class InstanceImpl<T> implements Instance<T>, InstanceFactory<T> {
 
-  Provider<T> provider;
+  private Supplier<T> provider;
 
-  public InstanceImpl(Provider<T> provider) {
-    this.provider = provider;
+  public InstanceImpl(T provider) {
+    this.provider = () -> provider;
+  }
+
+  public InstanceImpl(SyncBeanDef<T> provider) {
+    this.provider = () -> provider.getInstance();
   }
 
   @Override
@@ -34,10 +45,36 @@ public class InstanceImpl<T> implements Instance<T> {
   }
 
   @Override
+  public T getInstance() {
+    return provider.get();
+  }
+
+  @Override
+  public Instance<T> select(Annotation... var1) {
+    return null;
+  }
+
+  @Override
+  public <U extends T> Instance<U> select(Class<U> var1, Annotation... var2) {
+    return null;
+  }
+
+  @Override
+  public boolean isUnsatisfied() {
+    return false;
+  }
+
+  @Override
+  public boolean isAmbiguous() {
+    return false;
+  }
+
+  @Override
   public void destroy(T var1) {}
 
   @Override
-  public void destroyAll() {
-
+  public Iterator<T> iterator() {
+    return null;
   }
+
 }

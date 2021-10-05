@@ -59,8 +59,8 @@
       <artifactId>jsoup</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.lesscss</groupId>
-      <artifactId>lesscss</artifactId>
+      <groupId>de.inetsoftware</groupId>
+      <artifactId>jlessc</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -69,17 +69,24 @@
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>templates-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.bak</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>

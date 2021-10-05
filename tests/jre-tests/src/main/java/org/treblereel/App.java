@@ -22,12 +22,18 @@ import io.crysknife.client.BeanManager;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
+import org.treblereel.injection.inheritance.InheritanceBean;
 import org.treblereel.injection.managedinstance.ManagedInstanceBean;
 import org.treblereel.injection.named.NamedTestBean;
 import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierFieldInjection;
+import org.treblereel.injection.qualifiers.controls.NodeBuilderControl;
+import org.treblereel.injection.qualifiers.specializes.SpecializesBeanHolder;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
+import org.treblereel.postconstruct.Child;
+import org.treblereel.postconstruct.ChildTwo;
+import org.treblereel.postconstruct.PostConstructs;
 import org.treblereel.produces.SimpleBeanProducerTest;
 import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
 
@@ -65,7 +71,19 @@ public class App {
   private ManagedInstanceBean managedInstanceBean;
 
   @Inject
-  protected BeanManager beanManager;
+  public BeanManager beanManager;
+
+  @Inject
+  protected PostConstructs postConstructs;
+
+  @Inject
+  public InheritanceBean inheritanceBean;
+
+  @Inject
+  public NodeBuilderControl nodeBuilderControl;
+
+  @Inject
+  public SpecializesBeanHolder specializesBeanHolder;
 
   public void onModuleLoad() {
     new AppBootstrap(this).initialize();

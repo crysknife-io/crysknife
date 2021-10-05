@@ -14,11 +14,30 @@
 
 package io.crysknife;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import com.google.auto.service.AutoService;
+import io.crysknife.annotation.Application;
+import io.crysknife.annotation.Generator;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.BeanManagerGenerator;
+import io.crysknife.generator.FactoryGenerator;
+import io.crysknife.generator.IOCGenerator;
+import io.crysknife.generator.context.GenerationContext;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.info.BeanInfoGenerator;
+import io.crysknife.logger.PrintWriterTreeLogger;
+import io.crysknife.logger.TreeLogger;
+import io.crysknife.task.BeanProcessorTask;
+import io.crysknife.task.CheckCyclesTask;
+import io.crysknife.task.FireAfterTask;
+import io.crysknife.task.FireBeforeTask;
+import io.crysknife.task.ProcessComponentScanAnnotationTask;
+import io.crysknife.task.ProcessGraphTask;
+import io.crysknife.task.ProcessSubClassesTask;
+import io.crysknife.task.TaskGroup;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
@@ -28,26 +47,10 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
-
-import com.google.auto.common.MoreElements;
-import com.google.auto.service.AutoService;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
-import io.crysknife.annotation.Application;
-import io.crysknife.annotation.Generator;
-import io.crysknife.annotation.ComponentScan;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.context.GenerationContext;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.graph.Graph;
-import io.crysknife.generator.info.BeanInfoGenerator;
-import io.crysknife.generator.scanner.ComponentInjectionResolverScanner;
-import io.crysknife.generator.scanner.ComponentScanner;
-import io.crysknife.generator.scanner.ProducersScan;
-import io.crysknife.generator.scanner.QualifiersScan;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.Set;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -69,25 +72,32 @@ public class ApplicationProcessor extends AbstractProcessor {
     context = new GenerationContext(roundEnvironment, processingEnv);
     iocContext = new IOCContext(context);
 
+    TreeLogger logger = new PrintWriterTreeLogger();
+
     Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
     if (!maybeApplication.isPresent()) {
       return true;
     }
     this.application = maybeApplication.get();
 
-    processComponentScanAnnotation();
     initAndRegisterGenerators();
 
-    processQualifiersScan();
-    processComponentScan();
-    processInjectionScan();
-    processProducersScan();
-    fireIOCGeneratorBefore();
-    processGraph();
-    new FactoryGenerator(iocContext).generate();
-    new BeanInfoGenerator(iocContext).generate();
-    new BeanManagerGenerator(iocContext, context).generate();
-    fireIOCGeneratorAfter();
+    TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
+    // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
+    taskGroup.addTask(new FireBeforeTask(iocContext, logger));
+
+    taskGroup.addTask(new ProcessComponentScanAnnotationTask(iocContext, logger, application));
+    taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
+    taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
+    // taskGroup.addTask(new FireBeforeTask(iocContext, logger));
+    taskGroup.addTask(new ProcessGraphTask(iocContext, logger, application));
+    taskGroup.addTask(new CheckCyclesTask(iocContext, logger));
+
+    taskGroup.addTask(new FactoryGenerator(iocContext));
+    taskGroup.addTask(new BeanInfoGenerator(iocContext));
+    taskGroup.addTask(new BeanManagerGenerator(iocContext));
+    taskGroup.addTask(new FireAfterTask(iocContext, logger));
+    taskGroup.execute();
 
     return false;
   }
@@ -110,21 +120,6 @@ public class ApplicationProcessor extends AbstractProcessor {
     return applications.stream().findFirst();
   }
 
-  private void processComponentScanAnnotation() {
-    packages = new HashSet<>();
-    context.getRoundEnvironment().getElementsAnnotatedWith(ComponentScan.class)
-        .forEach(componentScan -> {
-          String[] values = componentScan.getAnnotation(ComponentScan.class).value();
-          for (String aPackage : values) {
-            packages.add(aPackage);
-          }
-        });
-
-    if (packages.isEmpty()) {
-      packages.add(MoreElements.getPackage(application).getQualifiedName().toString());
-    }
-  }
-
   private void initAndRegisterGenerators() {
     try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
       ClassInfoList routeClassInfoList =
@@ -139,33 +134,5 @@ public class ApplicationProcessor extends AbstractProcessor {
         }
       }
     }
-  }
-
-  private void processQualifiersScan() {
-    new QualifiersScan(iocContext).process();
-  }
-
-  private void processComponentScan() {
-    new ComponentScanner(iocContext, context).scan();
-  }
-
-  private void processInjectionScan() {
-    new ComponentInjectionResolverScanner(iocContext).scan();
-  }
-
-  private void processProducersScan() {
-    new ProducersScan(iocContext).scan();
-  }
-
-  private void fireIOCGeneratorBefore() {
-    iocContext.getGenerators().forEach((meta, generator) -> generator.before());
-  }
-
-  private void processGraph() {
-    new Graph(iocContext).process(application);
-  }
-
-  private void fireIOCGeneratorAfter() {
-    iocContext.getGenerators().forEach((meta, generator) -> generator.after());
   }
 }

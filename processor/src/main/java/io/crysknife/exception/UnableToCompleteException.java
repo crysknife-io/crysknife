@@ -13,6 +13,12 @@
  */
 package io.crysknife.exception;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.util.Objects;
+import java.util.Set;
+
 /**
  * Used to indicate that some part of a multi-step process failed. Typically, operation can continue
  * after this exception is caught.
@@ -57,6 +63,9 @@ package io.crysknife.exception;
  * </pre>
  */
 public class UnableToCompleteException extends Exception {
+
+  public Set<UnableToCompleteException> errors;
+
   public UnableToCompleteException(String msg, Exception e) {
     super(msg, e);
   }
@@ -69,5 +78,27 @@ public class UnableToCompleteException extends Exception {
     super(e);
   }
 
+  public UnableToCompleteException(Set<UnableToCompleteException> e) {
+    this.errors = e;
+  }
+
   public UnableToCompleteException() {}
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+
+    if (!(o instanceof UnableToCompleteException))
+      return false;
+
+    UnableToCompleteException that = (UnableToCompleteException) o;
+
+    return new EqualsBuilder().append(getMessage(), that.getMessage()).isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(getMessage()).toHashCode();
+  }
 }

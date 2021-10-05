@@ -14,6 +14,11 @@
 
 package io.crysknife.ui.navigation.client.local.spi;
 
+import io.crysknife.client.BeanManager;
+import io.crysknife.ui.navigation.client.shared.NavigationEvent;
+
+import javax.enterprise.event.Event;
+
 /**
  * Fake implementation, ll be excluded on package/install
  *
@@ -21,4 +26,7 @@ package io.crysknife.ui.navigation.client.local.spi;
  */
 public class NavigationGraphImpl extends NavigationGraph {
 
+  public NavigationGraphImpl(BeanManager beanManager, Event<NavigationEvent> event) {
+    super(beanManager, event);
+  }
 }

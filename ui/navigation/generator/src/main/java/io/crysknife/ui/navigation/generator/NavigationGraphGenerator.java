@@ -124,6 +124,9 @@ public class NavigationGraphGenerator {
     constructorDeclaration.addParameter(BeanManager.class.getSimpleName(), "beanManager");
     constructorDeclaration.addParameter("Event<NavigationEvent>", "event");
 
+    MethodCallExpr superExpr =
+        new MethodCallExpr("super").addArgument("beanManager").addArgument("event");
+    constructorDeclaration.getBody().addAndGetStatement(superExpr);
     generatePages(constructorDeclaration);
 
     try {
@@ -159,9 +162,10 @@ public class NavigationGraphGenerator {
   }
 
   private void generatePage(TypeElement page, ConstructorDeclaration ctor) {
-    if (!isAssignable(page.asType(), IsElement.class)) {
-      throw new GenerationException(
-          "Class " + page + " is annotated with @Page, so it must implement IsElement");
+    if (!(isAssignable(page.asType(), IsElement.class)
+        || isAssignable(page.asType(), io.crysknife.client.IsElement.class))) {
+      throw new GenerationException("Class " + page
+          + " is annotated with @Page, so it must implement org.jboss.elemento.IsElement or io.crysknife.client.IsElement");
     }
     compilationUnit.addImport(page.getQualifiedName().toString());
     Page annotation = page.getAnnotation(Page.class);
@@ -326,7 +330,7 @@ public class NavigationGraphGenerator {
 
         new MethodCallExpr(new NameExpr("callback"), "callback").addArgument(
             new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                .addArgument(page.getQualifiedName() + ".class"), "get")));
+                .addArgument(page.getQualifiedName() + ".class"), "getInstance")));
 
     anonymousClassBody.add(method);
   }

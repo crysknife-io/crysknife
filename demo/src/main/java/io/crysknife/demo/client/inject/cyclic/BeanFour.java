@@ -36,7 +36,7 @@ public class BeanFour {
 
     @PostConstruct
     public void init() {
-        beanOne = beanManager.lookupBean(BeanOne.class).get();
+        beanOne = beanManager.<BeanOne>lookupBean(BeanOne.class).getInstance();
         beanOne.say();
     }
 }

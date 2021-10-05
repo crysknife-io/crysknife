@@ -20,10 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.gwtproject.event.dom.client.KeyUpEvent;
-import org.gwtproject.event.logical.shared.ValueChangeEvent;
-import org.gwtproject.user.client.ui.HasValue;
-import org.gwtproject.user.client.ui.Widget;
 import io.crysknife.client.internal.Assert;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.databinding.client.BindableProxy;
@@ -41,6 +37,10 @@ import io.crysknife.ui.databinding.client.PropertyChangeUnsubscribeHandle;
 import io.crysknife.ui.databinding.client.PropertyType;
 import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeEvent;
 import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeHandler;
+import org.gwtproject.event.dom.client.KeyUpEvent;
+import org.gwtproject.event.logical.shared.ValueChangeEvent;
+import org.gwtproject.user.client.ui.HasValue;
+import org.gwtproject.user.client.ui.Widget;
 
 /**
  * Provides an API to programmatically bind properties of a data model instance (any POJO annotated
@@ -132,9 +132,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    * @param property The name of the model property that should be used for the binding, following
    *        Java bean conventions. Chained (nested) properties are supported and must be dot (.)
    *        delimited (e.g. customer.address.street). Must not be null.
-   * 
    * @return the same {@link DataBinder} instance to support call chaining.
-   * 
    * @throws NonExistingPropertyException If the {@code model} does not have a property with the
    *         given name.
    * @throws InvalidPropertyExpressionException If the provided property chain expression is
@@ -158,9 +156,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    * @param converter The converter to use for the binding, null if default conversion should be
    *        used (see {@link Convert#getConverter(Class, Class)} or
    *        {@link Convert#identityConverter(Class)} for possible arguments).
-   * 
    * @return the same {@link DataBinder} instance to support call chaining.
-   * 
    * @throws NonExistingPropertyException If the {@code model} does not have a property with the
    *         given name.
    * @throws InvalidPropertyExpressionException If the provided property chain expression is
@@ -188,9 +184,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    *        {@link Convert#identityConverter(Class)} for possible arguments).
    * @param initialState Specifies the origin of the initial state of both model and UI component.
    *        Null if no initial state synchronization should be carried out.
-   * 
    * @return the same {@link DataBinder} instance to support call chaining.
-   * 
    * @throws NonExistingPropertyException If the {@code model} does not have a property with the
    *         given name.
    * @throws InvalidPropertyExpressionException If the provided property chain expression is
@@ -220,9 +214,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    *        Null if no initial state synchronization should be carried out.
    * @param bindOnKeyUp A boolean value that allows models bound to text-based components to be
    *        updated on a {@link KeyUpEvent} as well as the default {@link ValueChangeEvent}
-   * 
    * @return the same {@link DataBinder} instance to support call chaining.
-   * 
    * @throws NonExistingPropertyException If the {@code model} does not have a property with the
    *         given name.
    * @throws InvalidPropertyExpressionException If the provided property chain expression is
@@ -255,7 +247,6 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    * @param property The name of the property (or a property chain) to unbind, Must not be null.
    *
    * @return the same {@link DataBinder} instance to support call chaining.
-   * 
    * @throws InvalidPropertyExpressionException If the provided property chain expression is
    *         invalid.
    */
@@ -271,6 +262,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
       // BindableProxyFactory#removeCachedProxyForModel). We throw away the
       // reference to the proxy to force a new lookup in case this data binder
       // will be reused.
+      unwrapProxy();
     }
     return this;
   }
@@ -300,6 +292,7 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
     // BindableProxyFactory#removeCachedProxyForModel). We throw away the
     // reference to the proxy to force a new lookup in case this data binder
     // will be reused.
+    unwrapProxy();
     return this;
   }
 
@@ -340,7 +333,6 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    * be resumed if they are currently paused.
    *
    * @param model The instance of a {@link Bindable} type, must not be null.
-   * 
    * @return The model instance which has to be used in place of the provided model (see
    *         {@link #forModel(Object)} and {@link #forType(Class)}) if changes should be
    *         automatically synchronized with the UI (also accessible using {@link #getModel()}).
@@ -356,7 +348,6 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    *
    * @param model The instance of a {@link Bindable} type, must not be null.
    * @param initialState Specifies the origin of the initial state of both model and UI widget.
-   * 
    * @return The model instance which has to be used in place of the provided model (see
    *         {@link #forModel(Object)} and {@link #forType(Class)}) if changes should be
    *         automatically synchronized with the UI (also accessible using {@link #getModel()}).
@@ -374,7 +365,6 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    * @param initialState Specifies the origin of the initial state of both model and UI widget.
    * @param fireChangeEvents Specifies whether or not {@link PropertyChangeEvent}s should be fired
    *        as a consequence of the model change.
-   * 
    * @return The model instance which has to be used in place of the provided model (see
    *         {@link #forModel(Object)} and {@link #forType(Class)}) if changes should be
    *         automatically synchronized with the UI (also accessible using {@link #getModel()}).
@@ -423,7 +413,6 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
    * {@link #bind(Widget, String)}).
    *
    * @param property The name of the property (or a property chain). Must not be null.
-   * 
    * @return the list of widgets currently bound to the provided property or an empty list if no
    *         widget was bound to the property.
    */
@@ -519,6 +508,13 @@ public class DataBinder<T> implements HasPropertyChangeHandlers {
   private BindableProxyAgent<T> getAgent() {
     ensureProxied();
     return ((BindableProxy<T>) this.proxy).getBindableProxyAgent();
+  }
+
+  @SuppressWarnings("unchecked")
+  private void unwrapProxy() {
+    if (proxy instanceof BindableProxy<?>) {
+      proxy = (T) ((BindableProxy<T>) proxy).unwrap();
+    }
   }
 
   private void ensureProxied() {

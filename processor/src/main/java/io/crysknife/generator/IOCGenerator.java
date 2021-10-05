@@ -14,24 +14,54 @@
 
 package io.crysknife.generator;
 
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.Definition;
+import io.crysknife.definition.Definition;
+import io.crysknife.util.GenerationUtils;
+
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-public abstract class IOCGenerator {
+public abstract class IOCGenerator<T extends Definition> {
 
   protected final IOCContext iocContext;
 
+  protected final GenerationUtils generationUtils;
+
+  protected final Types types;
+  protected final Elements elements;
+
   public IOCGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
+    this.generationUtils = new GenerationUtils(iocContext);
+
+    types = iocContext.getGenerationContext().getTypes();
+    elements = iocContext.getGenerationContext().getElements();
   }
 
   public abstract void register();
 
-  public abstract void generateBeanFactory(ClassBuilder clazz, Definition beanDefinition);
+  public abstract void generate(ClassBuilder clazz, T beanDefinition);
+
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectableVariableDefinition fieldPoint) {
+    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
+    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
+    return callForProducer;
+  }
 
   public void before() {
 

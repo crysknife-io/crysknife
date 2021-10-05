@@ -35,6 +35,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>crysknife-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.elemental2</groupId>
       <artifactId>elemental2-dom</artifactId>
     </dependency>
@@ -49,12 +53,12 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.dom</groupId>
-      <artifactId>gwt-dom</artifactId>
+      <groupId>org.gwtproject.event</groupId>
+      <artifactId>gwt-event-dom</artifactId>
     </dependency>
     <dependency>
       <groupId>org.gwtproject.event</groupId>
-      <artifactId>gwt-event-dom</artifactId>
+      <artifactId>gwt-event</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jsoup</groupId>

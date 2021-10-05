@@ -35,21 +35,29 @@ import org.jboss.elemento.IsElement;
 @SuppressWarnings("UnnecessaryLocalVariable")
 public final class TemplateUtil {
 
-  private static SelectorFunction DATA_ELEMENT =
-      (context, identifier) -> context.querySelector("[data-field=" + identifier + "]");
+  private static SelectorFunction DATA_ELEMENT = (context, identifier) -> {
+    Element result = context.querySelector("[data-field=" + identifier + "]");
+    if (result == null) {
+      result = context.querySelector("#" + identifier);
+    }
+    if (result == null) {
+      result = context.querySelector("." + identifier);
+    }
+
+    return result;
+  };
 
   private TemplateUtil() {}
-
-  // ------------------------------------------------------ HTMLElement methods
-  public static <E> E resolveElement(HTMLElement context, String identifier) {
-    Element element = DATA_ELEMENT.select(context, identifier);
-    return Js.cast(element);
-  }
 
   public static <E extends HTMLElement> E resolveElementAs(HTMLElement context, String identifier) {
     Element element = DATA_ELEMENT.select(context, identifier);
     E htmlElement = Js.cast(element);
     return htmlElement;
+  }
+
+  public static void replaceIsElement(HTMLElement context, String identifier,
+      IsElement newElement) {
+    replaceElement(context, identifier, newElement.element());
   }
 
   // ------------------------------------------------------ IsElement / (Is)Widget methods
@@ -78,9 +86,15 @@ public final class TemplateUtil {
 
   // ------------------------------------------------------ custom elements
 
+  // ------------------------------------------------------ HTMLElement methods
+  public static <E> E resolveElement(HTMLElement context, String identifier) {
+    Element element = DATA_ELEMENT.select(context, identifier);
+    return Js.cast(element);
+  }
+
   public static void replaceIsElement(HTMLElement context, String identifier,
-      IsElement newElement) {
-    replaceElement(context, identifier, newElement.element());
+      io.crysknife.client.IsElement newElement) {
+    replaceElement(context, identifier, newElement.getElement());
   }
 
   public static <E> E resolveCustomElement(HTMLElement context, String identifier) {

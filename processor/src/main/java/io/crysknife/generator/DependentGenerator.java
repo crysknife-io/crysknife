@@ -20,12 +20,13 @@ import com.github.javaparser.ast.Modifier;
 import io.crysknife.annotation.Generator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.definition.BeanDefinition;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-@Generator(priority = 2)
+@Generator(priority = 1)
 public class DependentGenerator extends ScopedBeanGenerator {
 
   public DependentGenerator(IOCContext iocContext) {
@@ -41,8 +42,6 @@ public class DependentGenerator extends ScopedBeanGenerator {
   public void generateInstanceGetMethodBuilder(ClassBuilder builder,
       BeanDefinition beanDefinition) {
     super.generateInstanceGetMethodBuilder(builder, beanDefinition);
-    builder.addField(beanDefinition.getClassName(), "instance", Modifier.Keyword.PRIVATE);
-
     builder.getGetMethodDeclaration().getBody().get()
         .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
   }
