@@ -48,7 +48,9 @@ public class TemplateWidget extends FocusPanel {
             if (!(child instanceof TemplateWidget) && child.getParent() instanceof TemplateWidget) {
                 child = child.getParent();
             }
-            child.removeFromParent();
+            if(child.getParent() instanceof HasWidgets) {
+                child.removeFromParent();
+            }
             adopt(child);
             //if (!child.isAttached()) {
             //    child.onAttach();
@@ -108,3 +110,4 @@ public class TemplateWidget extends FocusPanel {
         return children.remove(child);
     }
 }
+

@@ -453,10 +453,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
 
   private void maybeInitWidgets(ClassBuilder builder, TemplateContext templateContext) {
+    DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
+
     List<DataElementInfo> widgets = templateContext.getDataElements().stream()
         .filter(elm -> elm.getKind().equals(DataElementInfo.Kind.IsWidget))
         .collect(Collectors.toList());
-    if (!widgets.isEmpty()) {
+    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
       builder.getClassCompilationUnit().addImport(List.class);
       builder.getClassCompilationUnit().addImport(ArrayList.class);
 
@@ -490,7 +492,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
       });
 
-      DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
       Expression instance = getInstanceMethodName(kind);
 
       MethodCallExpr doInit;
