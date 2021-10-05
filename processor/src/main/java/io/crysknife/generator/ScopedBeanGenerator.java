@@ -309,6 +309,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
       classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(
           new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
+
+
       instanceFieldAssignExpr = new MethodCallExpr(interceptor, "getProxy");
     }
     return instanceFieldAssignExpr;

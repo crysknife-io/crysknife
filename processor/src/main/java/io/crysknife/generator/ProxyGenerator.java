@@ -19,7 +19,6 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -27,6 +26,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -42,16 +42,21 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.CircularDependency;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.Interceptor;
 import io.crysknife.client.internal.CircularDependencyProxy;
 import io.crysknife.client.internal.ProxyBeanFactory;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +71,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
       add("finalize");
     }
   };
+  private MethodDeclaration initDelegate;
 
   public ProxyGenerator(IOCContext iocContext) {
     super(iocContext);
@@ -88,8 +94,6 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
     generateProxy(builder, beanDefinition);
   }
 
-  private MethodDeclaration initDelegate;
-
   private void initDelegate(ClassBuilder builder, BeanDefinition beanDefinition) {
     initDelegate = builder.addMethod("initDelegate", Modifier.Keyword.PRIVATE);
 
@@ -111,28 +115,60 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
   }
 
   private void createInstance(ClassBuilder builder, BeanDefinition beanDefinition) {
+
+    initDelegate.getBody().ifPresent(body -> {
+
+      if (!(iocContext.getGenerationContext().isGwt2()
+          || iocContext.getGenerationContext().isJre())) {
+        ObjectCreationExpr newInstance = generateNewInstanceCreationExpr(beanDefinition);
+        Set<InjectionParameterDefinition> params = beanDefinition.getConstructorParams();
+        Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
+        while (injectionPointDefinitionIterator.hasNext()) {
+          InjectableVariableDefinition argument = injectionPointDefinitionIterator.next();
+          newInstance.addArgument(
+              getFieldAccessorExpression(builder, beanDefinition, argument, "constructor"));
+        }
+        FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");
+
+        ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
+        interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
+        interceptorCreationExpr.addArgument(newInstance);
+
+        body.addAndGetStatement(
+            new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
+      }
+
+
+
+      body.addAndGetStatement(new VariableDeclarationExpr(new VariableDeclarator()
+          .setType(Utils.getSimpleClassName(beanDefinition.getType())).setName("delegate")
+          .setInitializer(generateInstanceInitializerNewObjectExpr(builder, beanDefinition))));
+
+      body.addAndGetStatement(new MethodCallExpr(new EnclosedExpr(new CastExpr(
+          new ClassOrInterfaceType()
+              .setName("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())),
+          new NameExpr("instance"))), "setInstance").addArgument("delegate"));
+
+      body.addAndGetStatement(new MethodCallExpr("doInitInstance"));
+      if (!iocContext.getGenerationContext().isJre()) {
+        beanDefinition.getFields().forEach(fieldPoint -> {
+          Expression expr =
+              getFieldAccessorExpression(builder, beanDefinition, fieldPoint, "field");
+          body.addStatement(expr);
+        });
+      }
+    });
+
     BlockStmt body = new BlockStmt();
+
     FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
     AssignExpr assignExpr = new AssignExpr().setTarget(instance);
     assignExpr.setValue(new ObjectCreationExpr()
         .setType("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())));
+
     body.addAndGetStatement(assignExpr);
     MethodDeclaration existingCreateInstance =
         builder.getClassDeclaration().getMethodsByName("createInstance").get(0);
-    BlockStmt existingBodyCreateInstance = new BlockStmt();
-
-    existingBodyCreateInstance
-        .addAndGetStatement(new VariableDeclarationExpr(new VariableDeclarator()
-            .setType(Utils.getSimpleClassName(beanDefinition.getType())).setName("delegate")
-            .setInitializer(generateInstanceInitializerNewObjectExpr(builder, beanDefinition))));
-    existingBodyCreateInstance.addAndGetStatement(new MethodCallExpr(new EnclosedExpr(new CastExpr(
-        new ClassOrInterfaceType()
-            .setName("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())),
-        new NameExpr("instance"))), "setInstance").addArgument("delegate"));
-    existingBodyCreateInstance.addAndGetStatement(new MethodCallExpr("doInitInstance"));
-
-    initDelegate.setBody(existingBodyCreateInstance);
-
     existingCreateInstance.setBody(body);
   }
 
