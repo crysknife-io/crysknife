@@ -60,8 +60,11 @@ public abstract class BeanManager {
     List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
 
     Set<SyncBeanDef<T>> result = new HashSet<>();
-    if (beans.get(type).beanDefinition != null) {
+    if (!beans.containsKey(type)) {
+      throw BeanManagerUtil.unsatisfiedResolutionException(type, qualifiers);
+    }
 
+    if (beans.get(type).beanDefinition != null) {
       if (beans.get(type).beanDefinition
           .matches(Arrays.stream(qualifiers).collect(Collectors.toSet()))) {
         result.add(beans.get(type).beanDefinition);
