@@ -115,27 +115,43 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
     classBuilder.setGetMethodDeclaration(getMethodDeclaration);
 
+    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("runOnStartup"));
+    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doProxyInstance"));
+    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doInitInstance"));
+
+    setDoProxyInstance(classBuilder, beanDefinition);
+    setRunOnStartup(classBuilder);
+  }
+
+  private void setRunOnStartup(ClassBuilder classBuilder) {
+    MethodDeclaration runOnStartup =
+        classBuilder.addMethod("runOnStartup", Modifier.Keyword.PRIVATE);
+    new StartupGenerator(iocContext).generate(runOnStartup);
+  }
+
+  private void setDoProxyInstance(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+    MethodDeclaration doProxyInstance =
+        classBuilder.addMethod("doProxyInstance", Modifier.Keyword.PRIVATE);
+
     if (!iocContext.getGenerationContext().isGwt2() && !iocContext.getGenerationContext().isJre()) {
       ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
       interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
       interceptorCreationExpr.addArgument(new NameExpr("instance"));
 
-      classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(new AssignExpr()
+      doProxyInstance.getBody().get().addAndGetStatement(new AssignExpr()
           .setTarget(new NameExpr("interceptor")).setValue(interceptorCreationExpr));
 
-      classBuilder.getGetMethodDeclaration().getBody().get()
+      doProxyInstance.getBody().get()
           .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
               .setValue(new MethodCallExpr(new NameExpr("interceptor"), "getProxy")));
     }
 
     if (!iocContext.getGenerationContext().isJre()) {
       for (InjectableVariableDefinition fieldPoint : beanDefinition.getFields()) {
-        classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+        doProxyInstance.getBody().get().addStatement(
             getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field"));
       }
     }
-
-    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doInitInstance"));
   }
 
   @Override
