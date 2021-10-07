@@ -34,6 +34,7 @@ import javax.lang.model.util.Types;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -470,7 +471,8 @@ public class BindableProxyGenerator {
   private void generatePropertyType(TypeElement type, StringBuffer sb, VariableElement field) {
     boolean isList = types.isSubtype(listTypeMirror, types.erasure(field.asType()));
     sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, %b));",
-        field.getSimpleName(), getFieldType(getType(type, field)), isBindableType(field), isList));
+        field.getSimpleName().toString().toLowerCase(Locale.ROOT),
+        getFieldType(getType(type, field)), isBindableType(field), isList));
     sb.append(newLine);
   }
 }
