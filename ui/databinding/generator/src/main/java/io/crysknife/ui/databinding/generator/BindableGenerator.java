@@ -127,7 +127,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
     if (!errors.isEmpty()) {
       printErrors(errors);
-      throw new GenerationException(getClass().getCanonicalName() + ".generate");
+      throw new GenerationException("at " + beanDefinition.getType() + " during Databining generation");
     }
 
     maybeAddDefaultConverters(clazz, methodDeclaration);
