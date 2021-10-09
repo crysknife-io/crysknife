@@ -12,23 +12,22 @@
  * the License.
  */
 
-package org.treblereel.startup;
+package org.treblereel.injection.managedinstance.select;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Qualifier;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 10/6/21
+ * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
  */
-@ApplicationScoped
-public class OnStartupDetector {
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Qualifier
+public @interface ComponentQualifierOne {
 
-  private String result;
-
-  public String getResult() {
-    return result;
-  }
-
-  public void setResult(String result) {
-    this.result = result;
-  }
 }

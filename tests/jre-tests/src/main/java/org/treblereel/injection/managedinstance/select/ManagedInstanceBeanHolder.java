@@ -12,23 +12,19 @@
  * the License.
  */
 
-package org.treblereel.startup;
+package org.treblereel.injection.managedinstance.select;
+
+import io.crysknife.client.ManagedInstance;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 10/6/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/8/21
  */
 @ApplicationScoped
-public class OnStartupDetector {
+public class ManagedInstanceBeanHolder {
 
-  private String result;
-
-  public String getResult() {
-    return result;
-  }
-
-  public void setResult(String result) {
-    this.result = result;
-  }
+  @Inject
+  public ManagedInstance<SimpleInterface> instance;
 }

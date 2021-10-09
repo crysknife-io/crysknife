@@ -12,23 +12,11 @@
  * the License.
  */
 
-package org.treblereel.startup;
 
-import javax.enterprise.context.ApplicationScoped;
+package org.treblereel.injection.managedinstance.select;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 10/6/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/8/21
  */
-@ApplicationScoped
-public class OnStartupDetector {
-
-  private String result;
-
-  public String getResult() {
-    return result;
-  }
-
-  public void setResult(String result) {
-    this.result = result;
-  }
+public interface SimpleInterface {
 }

@@ -12,27 +12,20 @@
  * the License.
  */
 
-package org.treblereel.inject;
+package org.treblereel.injection;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
-import org.treblereel.injection.inheritance.factories.FactoryHolder;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/24/21
+ * @author Dmitrii Tikhomirov Created by treblereel 8/18/21
  */
-public class FactoryHolderTest extends AbstractTest {
+public class NodeBuilderControlTest extends AbstractTest {
 
-
-  // @Test
-  public void beanManagertest() {
-    FactoryHolder factoryHolder =
-        (FactoryHolder) app.beanManager.lookupBean(FactoryHolder.class).getInstance();
-
-
-
-    assertEquals(FactoryHolder.class, factoryHolder.getClass());
+  @Test
+  public void testQualifierFieldInjectionBean() {
+    assertEquals("LienzoCanvasCommandFactory", app.nodeBuilderControl.get().hey());
   }
 }

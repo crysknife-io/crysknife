@@ -30,30 +30,31 @@ import java.util.stream.Collectors;
  */
 public class StartupGenerator {
 
-    private final IOCContext context;
+  private final IOCContext context;
 
-    StartupGenerator(IOCContext context) {
-        this.context = context;
-    }
+  StartupGenerator(IOCContext context) {
+    this.context = context;
+  }
 
-    void generate(MethodDeclaration methodDeclaration) {
-        methodDeclaration.getBody().ifPresent(body -> {
-            context.getTypeElementsByAnnotation(Startup.class.getCanonicalName())
-                    .stream()
-                    .collect(Collectors.toSet())
-                    .forEach(type -> {
-                        if (isDependent(context.getBean(type.asType()))) {
-                            throw new GenerationException("Bean, annotated with @Startup, must be @Singleton or @ApplicationScoped : " + type);
-                        }
-                        body.addAndGetStatement(new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                                .addArgument(type.asType() + ".class"), "getInstance"));
-                    });
-        });
-    }
+  void generate(MethodDeclaration methodDeclaration) {
+    methodDeclaration.getBody().ifPresent(body -> {
+      context.getTypeElementsByAnnotation(Startup.class.getCanonicalName()).stream()
+          .collect(Collectors.toSet()).forEach(type -> {
+            if (isDependent(context.getBean(type.asType()))) {
+              throw new GenerationException(
+                  "Bean, annotated with @Startup, must be @Singleton or @ApplicationScoped : "
+                      + type);
+            }
+            body.addAndGetStatement(
+                new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                    .addArgument(type.asType() + ".class"), "getInstance"));
+          });
+    });
+  }
 
-    private boolean isDependent(BeanDefinition beanDefinition) {
-        String annotation = beanDefinition.getScope().annotationType().getCanonicalName();
-        String dependent = Dependent.class.getCanonicalName();
-        return annotation.equals(dependent);
-    }
+  private boolean isDependent(BeanDefinition beanDefinition) {
+    String annotation = beanDefinition.getScope().annotationType().getCanonicalName();
+    String dependent = Dependent.class.getCanonicalName();
+    return annotation.equals(dependent);
+  }
 }

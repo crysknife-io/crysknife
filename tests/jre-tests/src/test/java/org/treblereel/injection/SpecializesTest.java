@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.treblereel.inject;
+package org.treblereel.injection;
 
 import org.junit.Before;
 import org.junit.Test;

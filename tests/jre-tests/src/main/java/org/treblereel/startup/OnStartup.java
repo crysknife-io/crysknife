@@ -26,11 +26,11 @@ import javax.inject.Inject;
 @Startup
 public class OnStartup {
 
-    @Inject
-    private OnStartupDetector onStartupDetector;
+  @Inject
+  private OnStartupDetector onStartupDetector;
 
-    @PostConstruct
-    public void init() {
-        onStartupDetector.setResult(getClass().getCanonicalName());
-    }
+  @PostConstruct
+  public void init() {
+    onStartupDetector.setResult(getClass().getCanonicalName());
+  }
 }

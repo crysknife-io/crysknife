@@ -18,16 +18,12 @@ import io.crysknife.client.internal.QualifierUtil;
 import io.crysknife.client.internal.SyncBeanDefImpl;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
@@ -57,57 +53,96 @@ public abstract class BeanManager {
   }
 
   public <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type, Annotation... qualifiers) {
-    List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
-
     Set<SyncBeanDef<T>> result = new HashSet<>();
     if (!beans.containsKey(type)) {
-      throw BeanManagerUtil.unsatisfiedResolutionException(type, qualifiers);
+      return result;
+    }
+
+    if (qualifiers.length == 0) {
+      if (beans.get(type).beanDefinition != null) {
+        result.add(beans.get(type).beanDefinition);
+      }
+      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
+          .forEach(bean -> result.add(bean.beanDefinition));
+      return result;
     }
 
     if (beans.get(type).beanDefinition != null) {
-      if (beans.get(type).beanDefinition
-          .matches(Arrays.stream(qualifiers).collect(Collectors.toSet()))) {
+      if (compareAnnotations(beans.get(type).beanDefinition.getActualQualifiers(), qualifiers)) {
         result.add(beans.get(type).beanDefinition);
       }
     }
+    beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
+        .filter(f -> compareAnnotations(f.beanDefinition.getActualQualifiers(), qualifiers))
+        .forEach(bean -> result.add(bean.beanDefinition));
 
-    if (asList.isEmpty()) {
-      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-          .filter(f -> QualifierUtil.matches(asList,
-              (Collection<Annotation>) f.beanDefinition.getQualifiers()))
-          .forEach(bean -> result.add(bean.beanDefinition));
-    } else {
-      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-          .filter(f -> QualifierUtil.matches(asList,
-              (Collection<Annotation>) f.beanDefinition.getActualQualifiers()))
-          .forEach(bean -> result.add(bean.beanDefinition));
-    }
     return result;
+  }
+
+  private boolean compareAnnotations(Collection<Annotation> all, Annotation... in) {
+    Annotation[] _all = all.toArray(new Annotation[all.size()]);
+    return QualifierUtil.matches(in, _all);
   }
 
   public <T> SyncBeanDef<T> lookupBean(final Class<T> type) {
     return lookupBean(type, QualifierUtil.DEFAULT_ANNOTATION);
   }
 
-  public <T> SyncBeanDef<T> lookupBean(final Class<T> type, final Annotation... qualifiers) {
+  public <T> SyncBeanDef<T> lookupBean(final Class<T> type, Annotation... qualifiers) {
     if (!beans.containsKey(type)) {
       throw BeanManagerUtil.unsatisfiedResolutionException(type, qualifiers);
     }
-
-    List<Annotation> asList = Arrays.stream(qualifiers).collect(Collectors.toList());
-    Collection<IOCBeanDef<T>> candidates = new HashSet<>();
-    if (beans.get(type).beanDefinition != null) {
-      SyncBeanDefImpl def = beans.get(type).beanDefinition;
-      if (QualifierUtil.matches(asList, (Collection<Annotation>) def.getActualQualifiers())) {
-        return def;
-      }
-      candidates.add(def);
+    if (qualifiers == null || qualifiers.length == 0) {
+      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
     }
 
-    beans.get(type).subTypes.stream().filter(bean -> bean.beanDefinition != null)
-        .filter(f -> QualifierUtil.matches(asList,
-            (Collection<Annotation>) f.beanDefinition.getActualQualifiers()))
-        .forEach(bean -> candidates.add(bean.beanDefinition));
+    Collection<IOCBeanDef<T>> candidates = new HashSet<>();
+    if (beans.get(type).beanDefinition != null) {
+      if (compareAnnotations(beans.get(type).beanDefinition.getQualifiers(), qualifiers)) {
+        candidates.add(beans.get(type).beanDefinition);
+      }
+    }
+    Annotation[] a1 = new Annotation[] {qualifiers[0]};
+    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+
+    if (qualifiers.length == 1 && !beans.get(type).subTypes.isEmpty()
+        && compareAnnotations(a1, a2)) {
+      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
+        if (subType.beanDefinition != null) {
+          if (!subType.beanDefinition.getActualQualifiers().isEmpty() && compareAnnotations(
+              subType.beanDefinition.getActualQualifiers(), QualifierUtil.SPECIALIZES_ANNOTATION)) {
+            return subType.beanDefinition;
+          }
+        }
+      }
+      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
+        if (subType.beanDefinition != null) {
+          if (!subType.beanDefinition.getActualQualifiers().isEmpty() && compareAnnotations(
+              subType.beanDefinition.getActualQualifiers(), QualifierUtil.DEFAULT_ANNOTATION)) {
+            return subType.beanDefinition;
+          }
+        }
+      }
+      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
+        Set<Annotation> annotations = new HashSet<>();
+        annotations.add(QualifierUtil.DEFAULT_ANNOTATION);
+        if (compareAnnotations(subType.beanDefinition.getActualQualifiers(), qualifiers)) {
+          candidates.add(subType.beanDefinition);
+        }
+      }
+    } else {
+      Set<Annotation> _qual = new HashSet<>();
+      Collections.addAll(_qual, qualifiers);
+      Collections.addAll(_qual, QualifierUtil.DEFAULT_QUALIFIERS);
+      _qual.toArray(new Annotation[_qual.size()]);
+
+      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
+        if (compareAnnotations(subType.beanDefinition.getQualifiers(),
+            _qual.toArray(new Annotation[_qual.size()]))) {
+          candidates.add(subType.beanDefinition);
+        }
+      }
+    }
 
     if (candidates.size() > 1) {
       throw BeanManagerUtil.ambiguousResolutionException(type, candidates, qualifiers);
@@ -116,6 +151,10 @@ public abstract class BeanManager {
     } else {
       return (SyncBeanDef<T>) candidates.iterator().next();
     }
+  }
+
+  private boolean compareAnnotations(Annotation[] all, Annotation[] in) {
+    return QualifierUtil.matches(in, all);
   }
 
   public void destroyBean(Object ref) {

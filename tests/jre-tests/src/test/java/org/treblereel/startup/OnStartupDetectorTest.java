@@ -20,14 +20,14 @@ import org.treblereel.AbstractTest;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Dmitrii Tikhomirov
- * Created by treblereel 10/6/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/6/21
  */
 public class OnStartupDetectorTest extends AbstractTest {
 
 
-    @Test
-    public void test() {
-        assertEquals(OnStartup.class.getCanonicalName(), app.beanManager.lookupBean(OnStartupDetector.class).getInstance().getResult());
-    }
+  @Test
+  public void test() {
+    assertEquals(OnStartup.class.getCanonicalName(),
+        app.beanManager.lookupBean(OnStartupDetector.class).getInstance().getResult());
+  }
 }
