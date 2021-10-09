@@ -14,6 +14,8 @@
 
 package io.crysknife.client.internal;
 
+import io.crysknife.client.BeanManager;
+
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Specializes;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A utility class for testing the equality of qualifiers at runtime.
@@ -81,6 +84,14 @@ public class QualifierUtil {
 
   public static boolean isSameType(final Annotation a1, final Annotation a2) {
     return !(a1 == null || a2 == null) && a1.annotationType().equals(a2.annotationType());
+  }
+
+  public static boolean matches(final Annotation[] allOf, final Annotation[] in) {
+    if (in.length == 0) {
+      return true;
+    } else {
+      return contains(Arrays.asList(allOf), Arrays.asList(in));
+    }
   }
 
   /**
@@ -148,6 +159,16 @@ public class QualifierUtil {
         return name;
       }
     };
+  }
+
+  public static String print(Annotation[] annotations) {
+    return Arrays.stream(annotations).map(e -> e.annotationType().getSimpleName())
+        .collect(Collectors.joining(","));
+  }
+
+  public static String print(Collection<Annotation> annotations) {
+    return annotations.stream().map(e -> e.annotationType().getSimpleName())
+        .collect(Collectors.joining(","));
   }
 
 }

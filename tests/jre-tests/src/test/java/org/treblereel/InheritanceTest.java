@@ -15,8 +15,10 @@
 package org.treblereel;
 
 import org.junit.Test;
-import org.treblereel.injection.inheritance.BeanChild;
 import org.treblereel.injection.inheritance.Target;
+import org.treblereel.postconstruct.ChildFour;
+import org.treblereel.postconstruct.ChildThree;
+import org.treblereel.postconstruct.ChildTwo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -50,14 +52,20 @@ public class InheritanceTest extends AbstractTest {
   public void testChildPostConstructCalled() {
     assertEquals(1, app.postConstructs.child.calls.size());
     assertEquals("Parent", app.postConstructs.child.calls.get(0));
-    assertEquals(2, app.postConstructs.childTwo.calls.size());
-    assertEquals("Parent", app.postConstructs.childTwo.calls.get(0));
-    assertEquals("ChildTwo", app.postConstructs.childTwo.calls.get(1));
-    assertEquals(2, app.postConstructs.childThree.calls.size());
-    assertEquals(3, app.postConstructs.childFour.calls.size());
-    assertEquals("Parent", app.postConstructs.childTwo.calls.get(0));
-    assertEquals("ChildTwo", app.postConstructs.childTwo.calls.get(1));
-    assertEquals("ChildFour", app.postConstructs.childFour.calls.get(2));
+
+    app.beanManager.lookupBeans(ChildTwo.class).forEach(bean -> {
+      if (bean.getName().equals(ChildTwo.class.getCanonicalName())) {
+        assertEquals(ChildTwo.class, bean.getInstance().getClass());
+        assertEquals(2, bean.getInstance().calls.size());
+        assertEquals("Parent", bean.getInstance().calls.get(0));
+        assertEquals("ChildTwo", bean.getInstance().calls.get(1));
+      } else if (bean.getName().equals(ChildThree.class.getCanonicalName())) {
+        assertEquals(2, bean.getInstance().calls.size());
+      } else if (bean.getName().equals(ChildFour.class.getCanonicalName())) {
+        assertEquals(3, bean.getInstance().calls.size());
+        assertEquals("ChildFour", bean.getInstance().calls.get(2));
+      }
+    });
   }
 
   @Test

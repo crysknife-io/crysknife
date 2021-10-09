@@ -12,28 +12,22 @@
  * the License.
  */
 
-package org.treblereel.inject;
+package org.treblereel.startup;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
-import org.treblereel.injection.unscopedbean.UnscopedBeanHolder;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/9/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/6/21
  */
-public class UnscopedBeanTest extends AbstractTest {
+public class OnStartupDetectorTest extends AbstractTest {
 
 
   @Test
-  public void unscopedBeanTest() {
-    assertEquals("MyBean",
-        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).getInstance())
-            .getMyBean().getId());
-
-    assertEquals("MyBean2",
-        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).getInstance())
-            .getMyBean2().getId());
+  public void test() {
+    assertEquals(OnStartup.class.getCanonicalName(),
+        app.beanManager.lookupBean(OnStartupDetector.class).getInstance().getResult());
   }
 }

@@ -65,6 +65,33 @@ public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
 
   /**
    * <p>
+   * Obtains a child <tt>Instance</tt> for the given required type and additional required
+   * qualifiers.
+   * </p>
+   * <p>
+   * For {@link Dependent} beans that are created by a child <tt>ManagedInstance</tt> they will be
+   * destroyed when:
+   * </p>
+   * <ul>
+   * <li>{@link #destroyAll()} is called on the child <tt>ManagedInstance</tt>
+   * <li>{@link #destroyAll()} is called on the parent <tt>ManagedInstance</tt>
+   * </ul>
+   * <p>
+   * Calling {@link #destroyAll()} on a child <tt>ManagedInstance</tt> does <b>not</b> destroy
+   * instances created by the parent.
+   * </p>
+   *
+   * @param <U> the required type
+   * @param subtype a {@link java.lang.Class} representing the required type
+   * @param qualifiers the additional required qualifiers
+   * @return the child <tt>Instance</tt>
+   * @throws IllegalArgumentException if passed two instances of the same qualifier type, or an
+   *         instance of an annotation that is not a qualifier type
+   */
+  public <U extends T> ManagedInstance<U> select(Class<U> subtype, Annotation... qualifiers);
+
+  /**
+   * <p>
    * Determines if there is no bean that matches the required type and qualifiers and is eligible
    * for injection into the class into which the parent <tt>Instance</tt> was injected.
    * </p>

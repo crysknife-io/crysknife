@@ -17,13 +17,13 @@ package io.crysknife.ui.databinding.generator;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
-import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -34,6 +34,8 @@ import javax.lang.model.util.Types;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,15 +44,14 @@ import java.util.stream.Collectors;
  */
 public class BindableProxyGenerator {
 
+  private final TypeMirror listTypeMirror;
+  private final TypeMirror objectTypeMirror;
+  private final Set<UnableToCompleteException> errors = new HashSet<>();
   private MethodDeclaration methodDeclaration;
   private TypeElement type;
   private String newLine = System.lineSeparator();
   private Types types;
   private Elements elements;
-
-  private final TypeMirror listTypeMirror;
-  private final TypeMirror objectTypeMirror;
-  private final Set<UnableToCompleteException> errors = new HashSet<>();
 
 
   BindableProxyGenerator(Elements elements, Types types, MethodDeclaration methodDeclaration,
@@ -67,15 +68,54 @@ public class BindableProxyGenerator {
   }
 
   void generate() throws UnableToCompleteException {
+    Set<UnableToCompleteException> errors = new HashSet<>();
     String clazzName = type.getQualifiedName().toString().replaceAll("\\.", "_") + "Proxy";
 
     StringBuffer sb = new StringBuffer();
 
-    Set<VariableElement> fields =
-        Utils.getAllFieldsIn(elements, type).stream().filter(elm -> elm.getKind().isField())
-            .filter(e -> !e.getModifiers().contains(Modifier.FINAL))
-            .filter(e -> !e.getModifiers().contains(Modifier.STATIC))
-            .map(e -> MoreElements.asVariable(e)).collect(Collectors.toSet());
+    Set<VariableElement> properties = Utils.getAllFieldsIn(elements, type).stream()
+        .filter(e -> !e.getModifiers().contains(Modifier.FINAL))
+        .filter(e -> !e.getModifiers().contains(Modifier.STATIC))
+        .map(e -> MoreElements.asVariable(e)).collect(Collectors.toSet());
+
+    Set<PropertyHolder> fields = new HashSet<>();
+
+    for (VariableElement field : properties) {
+      try {
+        boolean isFinal = field.getModifiers().contains(Modifier.FINAL);
+        String setter = isFinal ? null : getSetter(field);
+
+        PropertyHolder propertyHolder = new PropertyHolder();
+        propertyHolder.field = field;
+        propertyHolder.name = field.getSimpleName().toString();
+        propertyHolder.isFinal = isFinal;
+        propertyHolder.getter = getGetter(field);
+        propertyHolder.setter = setter;
+        propertyHolder.type = field.asType();
+        fields.add(propertyHolder);
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
+    }
+
+    Utils.getAllMethodsIn(elements, type).stream()
+        .filter(method -> !method.getSimpleName().toString().equals("getClass"))
+        .filter(method -> method.getSimpleName().toString().startsWith("get")).forEach(method -> {
+          String name = method.getSimpleName().toString();
+          if (!fields.stream().filter(f -> f.getter.equals(name)).findFirst().isPresent()) {
+            String variableName = name.replaceFirst("get", "");
+            variableName =
+                variableName.substring(0, 1).toLowerCase(Locale.ROOT) + variableName.substring(1);
+            PropertyHolder propertyHolder = new PropertyHolder();
+            propertyHolder.name = variableName;
+            propertyHolder.isFinal = true;
+            propertyHolder.getter = name;
+            propertyHolder.type = method.getReturnType();
+            propertyHolder.getMethod = method;
+            fields.add(propertyHolder);
+          }
+        });
+
 
     sb.append(String.format("class %s extends %s implements BindableProxy { ", clazzName,
         type.getSimpleName()));
@@ -102,7 +142,7 @@ public class BindableProxyGenerator {
     sb.append("  final Map<String, PropertyType> p = agent.propertyTypes;");
     sb.append(newLine);
 
-    generatePropertyType(sb, type);
+    generatePropertyType(sb, fields, type);
 
     sb.append(String.format("  p.put(\"this\", new PropertyType(%s.class, true, false));",
         type.getSimpleName()));
@@ -216,53 +256,38 @@ public class BindableProxyGenerator {
     sb.append(newLine);
   }
 
-  private void set(TypeElement type, Set<VariableElement> fields, StringBuffer sb) {
+  private void set(TypeElement type, Set<PropertyHolder> fields, StringBuffer sb) {
     sb.append("public void set(String property, Object value) {");
     sb.append(newLine);
     sb.append("  switch (property) {");
     sb.append(newLine);
 
     fields.forEach(elm -> {
-
-      try {
-        sb.append(String.format("case \"%s\": target.%s((%s) value);",
-            elm.getSimpleName().toString(), getSetter(elm), getFieldType(getType(type, elm))));
-      } catch (UnableToCompleteException e) {
-        errors.add(e);
+      if (!elm.isFinal) {
+        sb.append(String.format("    case \"%s\": target.%s((%s) value);", elm.name, elm.setter,
+            getFieldType(getType(type, elm))));
+        sb.append(newLine);
+        sb.append("    break;");
+        sb.append(newLine);
       }
-      sb.append(newLine);
-      sb.append("break;");
-      sb.append(newLine);
     });
 
-    sb.append(String.format("  case \"this\": target = (%s) value;", type));
+    sb.append(String.format("    case \"this\": target = (%s) value;", type));
     sb.append(newLine);
-    sb.append("agent.target = target;");
+    sb.append("    agent.target = target;");
     sb.append(newLine);
-    sb.append("break;");
+    sb.append("    break;");
     sb.append(newLine);
-    sb.append(
-        String.format("default: throw new NonExistingPropertyException(\"%s\", property);", type));
+    sb.append(String
+        .format("    default: throw new NonExistingPropertyException(\"%s\", property);", type));
     sb.append(newLine);
-    sb.append("}");
+    sb.append("  }");
     sb.append(newLine);
     sb.append("}");
     sb.append(newLine);
   }
 
-  private String getFieldType(TypeMirror mirror) {
-    TypeMirror collection = elements.getTypeElement(Collection.class.getCanonicalName()).asType();
-
-    if (types.isSubtype(mirror, collection)) {
-      return types.erasure(mirror).toString();
-    }
-    if (mirror.getKind().isPrimitive()) {
-      return types.boxedClass(MoreTypes.asPrimitiveType(mirror)).toString();
-    }
-    return types.erasure(mirror).toString();
-  }
-
-  private void get(Set<VariableElement> fields, StringBuffer sb) {
+  private void get(Set<PropertyHolder> fields, StringBuffer sb) {
     sb.append(newLine);
     sb.append("public Object get(String property) {");
     sb.append(newLine);
@@ -270,27 +295,22 @@ public class BindableProxyGenerator {
     sb.append(newLine);
 
     fields.forEach(elm -> {
-      try {
-        sb.append(String.format("case \"%s\": return %s();", elm.getSimpleName().toString(),
-            getGetter(elm)));
-      } catch (UnableToCompleteException e) {
-        errors.add(e);
-      }
+      sb.append(String.format("    case \"%s\": return %s();", elm.name, elm.getter));
       sb.append(newLine);
     });
 
-    sb.append("  case \"this\": return target;");
+    sb.append("    case \"this\": return target;");
     sb.append(newLine);
-    sb.append(
-        String.format("default: throw new NonExistingPropertyException(\"%s\", property);", type));
+    sb.append(String
+        .format("    default: throw new NonExistingPropertyException(\"%s\", property);", type));
     sb.append(newLine);
-    sb.append("}");
+    sb.append("  }");
     sb.append(newLine);
     sb.append("}");
     sb.append(newLine);
   }
 
-  private void getterAndSetter(TypeElement type, Set<VariableElement> fields, StringBuffer sb) {
+  private void getterAndSetter(TypeElement type, Set<PropertyHolder> fields, StringBuffer sb) {
     fields.forEach(elm -> {
       try {
         getterAndSetter(type, elm, sb);
@@ -300,35 +320,25 @@ public class BindableProxyGenerator {
     });
   }
 
-  private void getterAndSetter(TypeElement type, VariableElement elm, StringBuffer sb)
+  private void getterAndSetter(TypeElement type, PropertyHolder elm, StringBuffer sb)
       throws UnableToCompleteException {
     sb.append(newLine);
-    sb.append(String.format("public %s %s() {", getType(type, elm), getGetter(elm)));
+    sb.append(String.format("public %s %s() {", getType(type, elm), elm.getter));
     sb.append(newLine);
-    sb.append(String.format("  return target.%s();", getGetter(elm)));
-    sb.append(newLine);
-    sb.append("}");
-    sb.append(newLine);
-
-    sb.append(newLine);
-    sb.append(String.format("public void %s(%s value) {", getSetter(elm), getType(type, elm)));
-    sb.append(newLine);
-    sb.append(String.format("  changeAndFire(\"%s\", value);", elm.getSimpleName().toString()));
+    sb.append(String.format("  return target.%s();", elm.getter));
     sb.append(newLine);
     sb.append("}");
     sb.append(newLine);
-  }
 
-
-  private TypeMirror getType(TypeElement parent, VariableElement elm) {
-    if (elm.asType().getKind().equals(TypeKind.TYPEVAR)) {
-      TypeMirror typeMirror = types.asMemberOf(MoreTypes.asDeclared(parent.asType()), elm);
-      if (typeMirror.getKind().equals(TypeKind.TYPEVAR)) {
-        return objectTypeMirror;
-      }
-      return typeMirror;
+    if (!elm.isFinal) {
+      sb.append(newLine);
+      sb.append(String.format("public void %s(%s value) {", elm.setter, getType(type, elm)));
+      sb.append(newLine);
+      sb.append(String.format("  changeAndFire(\"%s\", value);", elm.name));
+      sb.append(newLine);
+      sb.append("}");
+      sb.append(newLine);
     }
-    return elm.asType();
   }
 
   private void equals(String clazzName, StringBuffer sb) {
@@ -346,7 +356,7 @@ public class BindableProxyGenerator {
     sb.append("}");
   }
 
-  private void deepUnwrap(Set<VariableElement> fields, StringBuffer sb) {
+  private void deepUnwrap(Set<PropertyHolder> fields, StringBuffer sb) {
     sb.append(newLine);
     sb.append(String.format("public %s deepUnwrap() {", type.getSimpleName()));
     sb.append(newLine);
@@ -373,63 +383,93 @@ public class BindableProxyGenerator {
 
   }
 
-  private void deepUnwrap(VariableElement elm, StringBuffer sb) throws UnableToCompleteException {
-    if (!isBindableType(elm)) {
+  private void deepUnwrap(PropertyHolder elm, StringBuffer sb) throws UnableToCompleteException {
+    if (elm.isFinal) {
+      return;
+    }
+
+    if (!isBindableType(elm.type)) {
       sb.append("  ");
-      sb.append(String.format("clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
+      sb.append(String.format("clone.%s(t.%s());", elm.setter, elm.getter));
       sb.append(newLine);
     } else {
-      sb.append(String.format("if (t.%s() instanceof BindableProxy) {", getGetter(elm),
+      sb.append(String.format("if (t.%s() instanceof BindableProxy) {", elm.getter,
           type.getSimpleName()));
       sb.append(newLine);
-      sb.append(String.format("  clone.%s((%s) ((BindableProxy) %s()).deepUnwrap());",
-          getSetter(elm), elm.asType(), getGetter(elm)));
+      sb.append(String.format("  clone.%s((%s) ((BindableProxy) %s()).deepUnwrap());", elm.setter,
+          elm.type, elm.getter));
       sb.append(newLine);
-      sb.append(String.format("} else if (BindableProxyFactory.isBindableType(t.%s())) {",
-          getGetter(elm)));
+      sb.append(
+          String.format("} else if (BindableProxyFactory.isBindableType(t.%s())) {", elm.getter));
       sb.append(newLine);
       sb.append(String.format(
           "  clone.%s((%s) ((BindableProxy) BindableProxyFactory.getBindableProxy(t.%s())).deepUnwrap());",
-          getSetter(elm), elm.asType(), getGetter(elm)));
+          elm.setter, elm.type, elm.getter));
       sb.append(newLine);
       sb.append("} else {");
       sb.append(newLine);
-      sb.append(String.format("  clone.%s(t.%s());", getSetter(elm), getGetter(elm)));
+      sb.append(String.format("  clone.%s(t.%s());", elm.setter, elm.getter));
       sb.append(newLine);
       sb.append("}");
       sb.append(newLine);
     }
 
 
-
-  }
-
-  private boolean isBindableType(VariableElement elm) {
-    if (elm.asType().getKind().isPrimitive()) {
-      return false;
-    }
-
-    if (elm.asType().getKind().equals(TypeKind.ARRAY)) {
-      return false;
-    }
-
-    return MoreTypes.asElement(elm.asType()).getAnnotation(Bindable.class) != null;
   }
 
   private String getGetter(VariableElement variable) throws UnableToCompleteException {
+    if (isBoolean(variable)) {
+      return getBooleanGetter(variable);
+    }
+
     String method = compileGetterMethodName(variable);
-    return Utils.getAllMethodsIn(elements, type).stream()
-        .filter(e -> e.getKind().equals(ElementKind.METHOD))
-        .filter(e -> e.toString().equals(method))
+    return Utils.getAllMethodsIn(elements, type).stream().filter(e -> e.toString().equals(method))
         .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
         .map(e -> e.getSimpleName().toString())
         .orElseThrow(() -> new UnableToCompleteException(String
             .format("Unable to find getter [%s] in [%s]", method, variable.getEnclosingElement())));
   }
 
+  private String getBooleanGetter(VariableElement variable) throws UnableToCompleteException {
+    String varName = variable.getSimpleName().toString();
+    String is = "is" + StringUtils.capitalize(varName) + "()";
+    String get = "get" + StringUtils.capitalize(varName) + "()";
+
+    Optional<ExecutableElement> maybeIsGetter =
+        Utils.getAllMethodsIn(elements, type).stream().filter(e -> e.toString().equals(is))
+            .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst();
+    if (maybeIsGetter.isPresent()) {
+      return maybeIsGetter.get().getSimpleName().toString();
+    }
+    Optional<ExecutableElement> maybeGetGetter =
+        Utils.getAllMethodsIn(elements, type).stream().filter(e -> e.toString().equals(get))
+            .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst();
+    if (maybeGetGetter.isPresent()) {
+      return maybeGetGetter.get().getSimpleName().toString();
+    }
+    throw new UnableToCompleteException(String.format("Unable to find getter [%s]/[%s] in [%s]", is,
+        get, variable.getEnclosingElement()));
+  }
+
   private String compileGetterMethodName(VariableElement variable) {
     String varName = variable.getSimpleName().toString();
-    return (isBoolean(variable) ? "is" : "get") + StringUtils.capitalize(varName) + "()";
+    return "get" + StringUtils.capitalize(varName) + "()";
+  }
+
+  private boolean isBoolean(VariableElement variable) {
+    return variable.asType().getKind().equals(TypeKind.BOOLEAN)
+        || variable.asType().toString().equals(Boolean.class.getCanonicalName());
+  }
+
+  private String getSetter(VariableElement variable) throws UnableToCompleteException {
+    String method = compileSetterMethodName(variable);
+    return Utils.getAllMethodsIn(elements, type).stream()
+        .filter(e -> e.getKind().equals(ElementKind.METHOD))
+        .filter(e -> e.toString().equals(method))
+        .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
+        .map(e -> e.getSimpleName().toString())
+        .orElseThrow(() -> new UnableToCompleteException(String
+            .format("Unable to find setter [%s] in [%s]", method, variable.getEnclosingElement())));
   }
 
   private String compileSetterMethodName(VariableElement variable) {
@@ -446,31 +486,69 @@ public class BindableProxyGenerator {
     return sb.toString();
   }
 
-  private String getSetter(VariableElement variable) throws UnableToCompleteException {
-    String method = compileSetterMethodName(variable);
-    return Utils.getAllMethodsIn(elements, type).stream()
-        .filter(e -> e.getKind().equals(ElementKind.METHOD))
-        .filter(e -> e.toString().equals(method))
-        .filter(e -> e.getModifiers().contains(Modifier.PUBLIC)).findFirst()
-        .map(e -> e.getSimpleName().toString())
-        .orElseThrow(() -> new UnableToCompleteException(String
-            .format("Unable to find setter [%s] in [%s]", method, variable.getEnclosingElement())));
+  private void generatePropertyType(StringBuffer sb, Set<PropertyHolder> fields, TypeElement type) {
+    fields.stream().forEach(field -> generatePropertyType(type, sb, field));
   }
 
-  private boolean isBoolean(VariableElement variable) {
-    return variable.asType().getKind().equals(TypeKind.BOOLEAN)
-        || variable.asType().toString().equals(Boolean.class.getCanonicalName());
-  }
-
-  private void generatePropertyType(StringBuffer sb, TypeElement type) {
-    Utils.getAllFieldsIn(elements, type).stream()
-        .forEach(field -> generatePropertyType(type, sb, field));
-  }
-
-  private void generatePropertyType(TypeElement type, StringBuffer sb, VariableElement field) {
-    boolean isList = types.isSubtype(listTypeMirror, types.erasure(field.asType()));
-    sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, %b));",
-        field.getSimpleName(), getFieldType(getType(type, field)), isBindableType(field), isList));
+  private void generatePropertyType(TypeElement type, StringBuffer sb, PropertyHolder field) {
+    boolean isList = types.isSubtype(listTypeMirror, types.erasure(field.type));
+    sb.append(String.format("  p.put(\"%s\", new PropertyType(%s.class, %s, %b));", field.name,
+        getFieldType(getType(type, field)), isBindableType(field.type), isList));
     sb.append(newLine);
+  }
+
+  private String getFieldType(TypeMirror mirror) {
+    TypeMirror collection = elements.getTypeElement(Collection.class.getCanonicalName()).asType();
+
+    if (types.isSubtype(mirror, collection)) {
+      return types.erasure(mirror).toString();
+    }
+    if (mirror.getKind().isPrimitive()) {
+      return types.boxedClass(MoreTypes.asPrimitiveType(mirror)).toString();
+    }
+    return types.erasure(mirror).toString();
+  }
+
+  private TypeMirror getType(TypeElement parent, PropertyHolder elm) {
+    if (elm.type.getKind().equals(TypeKind.TYPEVAR)) {
+      TypeMirror typeMirror = types.asMemberOf(MoreTypes.asDeclared(parent.asType()), elm.field);
+      if (typeMirror.getKind().equals(TypeKind.TYPEVAR)) {
+        return objectTypeMirror;
+      }
+      return typeMirror;
+    }
+    return elm.type;
+  }
+
+  private boolean isBindableType(TypeMirror elm) {
+    if (elm == null) {
+      return false;
+    }
+
+    if (elm.getKind().isPrimitive()) {
+      return false;
+    }
+
+    if (elm.getKind().equals(TypeKind.ARRAY)) {
+      return false;
+    }
+
+    return MoreTypes.asElement(elm).getAnnotation(Bindable.class) != null;
+  }
+
+  private static class PropertyHolder {
+    VariableElement field;
+    TypeMirror type;
+    String name;
+    boolean isFinal;
+    String getter;
+    String setter;
+    ExecutableElement getMethod;
+
+    @Override
+    public String toString() {
+      return "PropertyHolder{" + "type=" + type + ", name='" + name + '\'' + ", isFinal=" + isFinal
+          + ", getter='" + getter + '\'' + ", setter='" + setter + '\'' + '}';
+    }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,27 +12,28 @@
  * the License.
  */
 
-package org.treblereel.inject;
+package org.treblereel.injection;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
-import org.treblereel.injection.inheritance.factories.FactoryHolder;
+import org.treblereel.injection.unscopedbean.UnscopedBeanHolder;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/24/21
+ * @author Dmitrii Tikhomirov Created by treblereel 9/9/21
  */
-public class FactoryHolderTest extends AbstractTest {
+public class UnscopedBeanTest extends AbstractTest {
 
 
-  // @Test
-  public void beanManagertest() {
-    FactoryHolder factoryHolder =
-        (FactoryHolder) app.beanManager.lookupBean(FactoryHolder.class).getInstance();
+  @Test
+  public void unscopedBeanTest() {
+    assertEquals("MyBean",
+        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).getInstance())
+            .getMyBean().getId());
 
-
-
-    assertEquals(FactoryHolder.class, factoryHolder.getClass());
+    assertEquals("MyBean2",
+        ((UnscopedBeanHolder) app.beanManager.lookupBean(UnscopedBeanHolder.class).getInstance())
+            .getMyBean2().getId());
   }
 }

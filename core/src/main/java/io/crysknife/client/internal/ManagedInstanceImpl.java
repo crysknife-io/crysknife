@@ -14,13 +14,14 @@
 
 package io.crysknife.client.internal;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Iterator;
-
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.function.Consumer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -30,8 +31,6 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
   private final BeanManager beanManager;
 
   private final Class<T> type;
-
-  private final Collection<SyncBeanDef<T>> beans;
 
   private Annotation[] qualifiers;
 
@@ -43,19 +42,16 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
     this.type = type;
     this.beanManager = beanManager;
     this.qualifiers = qualifiers;
-    this.beans = beanManager.lookupBeans(type);
-  }
-
-  public ManagedInstanceImpl(Class<T> type, BeanManager beanManager,
-      Collection<SyncBeanDef<T>> beans) {
-    this.type = type;
-    this.beanManager = beanManager;
-    this.beans = beans;
   }
 
   @Override
-  public ManagedInstance<T> select(Annotation... qualifiers) {
-    return new ManagedInstanceImpl<>(type, beanManager, beanManager.lookupBeans(type, qualifiers));
+  public ManagedInstance<T> select(Annotation... annotations) {
+    return new ManagedInstanceImpl<>(beanManager, type, annotations);
+  }
+
+  @Override
+  public <U extends T> ManagedInstance<U> select(Class<U> subtype, Annotation... qualifiers) {
+    return new ManagedInstanceImpl(beanManager, subtype, qualifiers);
   }
 
   @Override
@@ -65,7 +61,14 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public boolean isAmbiguous() {
+    try {
+      beanManager.lookupBean(type, qualifiers);
+    } catch (IOCResolutionException e) {
+      return true;
+    }
     return false;
+
+
   }
 
   @Override
@@ -80,12 +83,15 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public Iterator<T> iterator() {
-    return new ManagedInstanceImplIterator<T>(beans);
+    return new ManagedInstanceImplIterator<>(beanManager.lookupBeans(type, qualifiers));
   }
 
   @Override
   public T get() {
-    return beanManager.<T>lookupBean(type, qualifiers).getInstance();
+    if (qualifiers.length == 0) {
+      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+    }
+    return beanManager.lookupBean(type, qualifiers).getInstance();
   }
 
   private static class ManagedInstanceImplIterator<T> implements Iterator<T> {

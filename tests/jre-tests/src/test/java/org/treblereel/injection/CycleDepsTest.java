@@ -12,20 +12,21 @@
  * the License.
  */
 
-package org.treblereel.inject;
+package org.treblereel.injection;
 
-import io.crysknife.annotation.CircularDependency;
 import io.crysknife.client.BeanManager;
+import org.junit.Before;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.injection.cycle.AbstractRegistryFactory;
 import org.treblereel.injection.cycle.AdapterManager;
-import org.treblereel.injection.cycle.ClientRegistryFactoryImpl;
 import org.treblereel.injection.cycle.simple.SimpleBeanOne;
 import org.treblereel.injection.cycle.simple.SimpleBeanOneImpl;
-import org.treblereel.injection.cycle.simple.SimpleBeanOneImpl_Factory;
 import org.treblereel.injection.cycle.simple.SimpleBeanTwo;
 import org.treblereel.injection.cycle.simple.SimpleBeanTwoImpl;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,6 +34,14 @@ import static org.junit.Assert.assertEquals;
  * @author Dmitrii Tikhomirov Created by treblereel 9/15/21
  */
 public class CycleDepsTest extends AbstractTest {
+
+  private final PrintStream standardOut = System.out;
+  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+  @Before
+  public void setUp() {
+    System.setOut(new PrintStream(outputStreamCaptor));
+  }
 
   @Test
   public void testSimple() {
