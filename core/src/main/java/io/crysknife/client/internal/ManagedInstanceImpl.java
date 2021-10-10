@@ -15,6 +15,7 @@
 package io.crysknife.client.internal;
 
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.IOCBeanDef;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
 
@@ -56,19 +57,18 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public boolean isUnsatisfied() {
-    return false;
+    if (qualifiers == null || qualifiers.length == 0) {
+      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+    }
+
+    Collection<IOCBeanDef<T>> result =
+        ((AbstractBeanManager) beanManager).doLookupBean(type, qualifiers);
+    return result.size() != 1;
   }
 
   @Override
   public boolean isAmbiguous() {
-    try {
-      beanManager.lookupBean(type, qualifiers);
-    } catch (IOCResolutionException e) {
-      return true;
-    }
-    return false;
-
-
+    return beanManager.lookupBeans(type, qualifiers).stream().count() > 1;
   }
 
   @Override

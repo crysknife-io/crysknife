@@ -43,6 +43,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.internal.AbstractBeanManager;
 import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.internal.ProducesBeanFactory;
@@ -150,7 +151,7 @@ public class BeanManagerGenerator implements Task {
       clazz.addImport(Annotation.class);
       clazz.addImport(Instance.class);
       clazz.addImport(InstanceImpl.class);
-      clazz.addImport(BeanManager.class);
+      clazz.addImport(AbstractBeanManager.class);
       clazz.addImport(SyncBeanDefImpl.class);
       clazz.addImport(BeanFactory.class);
       clazz.addImport(QualifierUtil.class);
@@ -160,7 +161,7 @@ public class BeanManagerGenerator implements Task {
       clazz.addImport("io.crysknife.client.internal.SyncBeanDefImpl.Builder", true, false);
 
       ClassOrInterfaceType factory = new ClassOrInterfaceType();
-      factory.setName("BeanManager");
+      factory.setName("AbstractBeanManager");
 
       classDeclaration.getExtendedTypes().add(factory);
     }
