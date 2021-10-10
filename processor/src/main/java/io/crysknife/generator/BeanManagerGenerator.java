@@ -60,9 +60,12 @@ import io.crysknife.util.Utils;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Specializes;
+import javax.enterprise.inject.Typed;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -262,6 +265,23 @@ public class BeanManagerGenerator implements Task {
                     builderCallExpr = new MethodCallExpr(builderCallExpr, "withQualifiers")
                         .addArgument(withQualifiers);
                   }
+
+                  if (MoreTypes.asTypeElement(bean).getAnnotation(Typed.class) != null) {
+                    Typed typed = MoreTypes.asTypeElement(bean).getAnnotation(Typed.class);
+                    MethodCallExpr createTyped =
+                        new MethodCallExpr(new NameExpr("QualifierUtil"), "createTyped");
+                    try {
+                      typed.value();
+                    } catch (MirroredTypesException types) {
+                      List<DeclaredType> mirrors = (List<DeclaredType>) types.getTypeMirrors();
+                      mirrors
+                          .forEach(mirror -> createTyped.addArgument(mirror.toString() + ".class"));
+
+                      builderCallExpr =
+                          new MethodCallExpr(builderCallExpr, "withTyped").addArgument(createTyped);
+                    }
+                  }
+
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
                       new ObjectCreationExpr().setType(Utils.getQualifiedFactoryName(erased))
                           .addArgument(new ThisExpr()));
@@ -269,7 +289,6 @@ public class BeanManagerGenerator implements Task {
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
                   registerCallExpr.addArgument(builderCallExpr);
                   init.getBody().get().addAndGetStatement(registerCallExpr);
-
                 }
               }
             }

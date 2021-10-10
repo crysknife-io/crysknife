@@ -17,6 +17,7 @@ package io.crysknife.client.internal;
 import io.crysknife.client.SyncBeanDef;
 
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Typed;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +40,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   private List<Annotation> qualifiers;
   private List<Class<?>> assignableTypes;
   private Optional<BeanFactory<T>> factory = Optional.empty();
+  private Optional<Typed> typed = Optional.empty();
 
   protected SyncBeanDefImpl(final Class<T> actualType) {
     this.actualType = actualType;
@@ -135,6 +137,10 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     return factory.get().createInstance();
   }
 
+  public Optional<Typed> getTyped() {
+    return typed;
+  }
+
   public static class Builder {
 
     private final Class<?> actualType;
@@ -142,6 +148,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     private List<Annotation> qualifiers;
     private List<Class<?>> assignableTypes;
     private BeanFactory factory;
+    private Annotation typed;
 
     public Builder(final Class<?> actualType, final Class<? extends Annotation> scope) {
       this.actualType = actualType;
@@ -150,6 +157,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
     public Builder withQualifiers(final Annotation[] qualifiers) {
       this.qualifiers = Arrays.asList(qualifiers);
+      return this;
+    }
+
+    public Builder withTyped(final Annotation typed) {
+      this.typed = typed;
       return this;
     }
 
@@ -176,6 +188,10 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       if (factory != null) {
         factory.beanDef = definition;
         definition.factory = Optional.of(factory);
+      }
+
+      if (typed != null) {
+        definition.typed = Optional.of(typed);
       }
 
       return definition;

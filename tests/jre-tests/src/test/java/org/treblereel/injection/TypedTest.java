@@ -20,6 +20,8 @@ import org.treblereel.injection.qualifiers.typed.AbstractCanvasHandler;
 import org.treblereel.injection.qualifiers.typed.ApplicationCommandManager;
 import org.treblereel.injection.qualifiers.typed.RegistryAwareCommandManager;
 import org.treblereel.injection.qualifiers.typed.SessionCommandManager;
+import org.treblereel.injection.typed.DefaultDefinitionsCacheRegistry;
+import org.treblereel.injection.typed.DefinitionUtils;
 
 import static org.junit.Assert.assertEquals;
 
@@ -38,4 +40,14 @@ public class TypedTest extends AbstractTest {
     assertEquals(RegistryAwareCommandManager.class,
         ((ApplicationCommandManager) sessionCommandManager).commandManagerInstances.getClass());
   }
+
+  @Test
+  public void testDefaultDefinitionsCacheRegistry() {
+
+    System.out.println("testDefaultDefinitionsCacheRegistry");
+    assertEquals(DefaultDefinitionsCacheRegistry.class,
+        app.beanManager.lookupBean(DefinitionUtils.class).getInstance().definitionsRegistry
+            .getClass());
+  }
+
 }

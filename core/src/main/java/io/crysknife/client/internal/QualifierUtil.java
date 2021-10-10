@@ -19,6 +19,7 @@ import io.crysknife.client.BeanManager;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Specializes;
+import javax.enterprise.inject.Typed;
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -157,6 +158,21 @@ public class QualifierUtil {
       @Override
       public String value() {
         return name;
+      }
+    };
+  }
+
+  public static Typed createTyped(Class... classes) {
+    return new Typed() {
+
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        return Typed.class;
+      }
+
+      @Override
+      public Class[] value() {
+        return classes;
       }
     };
   }

@@ -17,7 +17,9 @@ import io.crysknife.client.internal.BeanManagerUtil;
 import io.crysknife.client.internal.QualifierUtil;
 import io.crysknife.client.internal.SyncBeanDefImpl;
 
+import javax.enterprise.inject.Typed;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -102,11 +104,8 @@ public abstract class BeanManager {
         candidates.add(beans.get(type).beanDefinition);
       }
     }
-    Annotation[] a1 = new Annotation[] {qualifiers[0]};
-    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
 
-    if (qualifiers.length == 1 && !beans.get(type).subTypes.isEmpty()
-        && compareAnnotations(a1, a2)) {
+    if (qualifiers.length == 1 && !beans.get(type).subTypes.isEmpty() && isDefault(qualifiers)) {
       for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
         if (subType.beanDefinition != null) {
           if (!subType.beanDefinition.getActualQualifiers().isEmpty() && compareAnnotations(
@@ -127,7 +126,14 @@ public abstract class BeanManager {
         Set<Annotation> annotations = new HashSet<>();
         annotations.add(QualifierUtil.DEFAULT_ANNOTATION);
         if (compareAnnotations(subType.beanDefinition.getActualQualifiers(), qualifiers)) {
-          candidates.add(subType.beanDefinition);
+          if (subType.beanDefinition.getTyped().isPresent()) {
+            subType.beanDefinition.getTyped().ifPresent(typed -> {
+              if (Arrays.stream(((Typed) typed).value()).anyMatch(any -> any.equals(type))) {
+                candidates.add(subType.beanDefinition);
+              }
+            });
+          } else if (subType.beanDefinition.getFactory().isPresent())
+            candidates.add(subType.beanDefinition);
         }
       }
     } else {
@@ -139,7 +145,14 @@ public abstract class BeanManager {
       for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
         if (compareAnnotations(subType.beanDefinition.getQualifiers(),
             _qual.toArray(new Annotation[_qual.size()]))) {
-          candidates.add(subType.beanDefinition);
+          if (subType.beanDefinition.getTyped().isPresent()) {
+            subType.beanDefinition.getTyped().ifPresent(typed -> {
+              if (Arrays.stream(((Typed) typed).value()).anyMatch(any -> any.equals(type))) {
+                candidates.add(subType.beanDefinition);
+              }
+            });
+          } else
+            candidates.add(subType.beanDefinition);
         }
       }
     }
@@ -151,6 +164,12 @@ public abstract class BeanManager {
     } else {
       return (SyncBeanDef<T>) candidates.iterator().next();
     }
+  }
+
+  private boolean isDefault(Annotation[] qualifiers) {
+    Annotation[] a1 = new Annotation[] {qualifiers[0]};
+    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+    return QualifierUtil.matches(a1, a2);
   }
 
   private boolean compareAnnotations(Annotation[] all, Annotation[] in) {
