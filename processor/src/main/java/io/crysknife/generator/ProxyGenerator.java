@@ -53,6 +53,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -269,7 +270,10 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
 
     elm.getParameters().forEach(param -> {
       Parameter parameter = new Parameter();
-      parameter.setType(param.asType().toString());
+      String type =
+          param.asType().getKind().equals(TypeKind.TYPEVAR) ? "Object" : param.asType().toString();
+
+      parameter.setType(type);
       parameter.setName(param.getSimpleName().toString());
 
       methodDeclaration.addParameter(parameter);
