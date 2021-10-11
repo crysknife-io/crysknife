@@ -222,6 +222,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
         Modifier.Keyword.PRIVATE);
 
     Utils.getAllMethodsIn(elements, MoreTypes.asTypeElement(beanDefinition.getType())).stream()
+        .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.STATIC))
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE))
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.ABSTRACT))
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.NATIVE))
