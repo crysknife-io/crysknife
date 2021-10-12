@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Default;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -47,6 +48,7 @@ import javax.lang.model.util.Types;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.context.IOCContext;
 import jsinterop.annotations.JsProperty;
 import io.crysknife.exception.GenerationException;
@@ -307,6 +309,12 @@ public class Utils {
       }
     }
     return returnValue;
+  }
+
+  public static boolean isDependent(BeanDefinition beanDefinition) {
+    String annotation = beanDefinition.getScope().annotationType().getCanonicalName();
+    String dependent = Dependent.class.getCanonicalName();
+    return annotation.equals(dependent);
   }
 
 }
