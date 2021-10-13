@@ -78,8 +78,14 @@ public final class TemplateUtil {
         }
       }
 
-      if (newElement.innerHTML.isEmpty() && !oldElement.innerHTML.isEmpty()) {
-        newElement.innerHTML = oldElement.innerHTML;
+      if (!oldElement.innerHTML.isEmpty()) {
+        if (newElement.innerHTML.isEmpty()) {
+          newElement.innerHTML = oldElement.innerHTML;
+        } else {
+          while (oldElement.hasChildNodes()) {
+            newElement.appendChild(oldElement.firstChild);
+          }
+        }
       }
     }
   }
