@@ -17,7 +17,6 @@ import io.crysknife.client.BeanManager;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import javax.enterprise.event.Event;
 

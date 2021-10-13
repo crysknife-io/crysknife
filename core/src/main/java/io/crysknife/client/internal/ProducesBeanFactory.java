@@ -17,8 +17,6 @@ package io.crysknife.client.internal;
 import io.crysknife.client.BeanManager;
 
 import javax.enterprise.context.Dependent;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -41,13 +39,14 @@ public class ProducesBeanFactory<T> extends BeanFactory<T> {
 
   @Override()
   public T getInstance() {
-    if (!beanDef.getScope().equals(Dependent.class)) {
-      if (getIncompleteInstance() != null)
-        return getIncompleteInstance();
-      else if (instance != null)
-        return instance;
+    if (beanDef.getScope().equals(Dependent.class)) {
+      return producer.get();
+    } else {
+      if (instance == null) {
+        instance = producer.get();
+      }
+      return instance;
     }
-    return createInstance();
   }
 
   @Override

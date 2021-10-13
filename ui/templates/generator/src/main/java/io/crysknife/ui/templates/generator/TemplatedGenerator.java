@@ -104,6 +104,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
@@ -717,12 +718,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       }
 
       MethodCallExpr fieldSetCallExpr = null;
-      if (iocContext.getGenerationContext().isGwt2()) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
         fieldSetCallExpr = new MethodCallExpr(
             new NameExpr(
                 MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
             element.getName()).addArgument("instance");
-      } else if (!iocContext.getGenerationContext().isJre()) {
+      } else if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
         fieldSetCallExpr = new MethodCallExpr(
             new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
                 .addArgument("instance"),
@@ -775,7 +776,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
-    if (iocContext.getGenerationContext().isGwt2()) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(
           new NameExpr(
               MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
@@ -993,8 +994,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
           if (parameter.getAnnotation(ForEvent.class) == null
               && !EVENTS.containsKey(declaredType.toString())) {
             abortWithError(method,
-                "@%s's method must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
-                method.getEnclosingElement(), forEvent, domEvent);
+                "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
+                method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent);
           }
 
           if ((parameter.getAnnotation(ForEvent.class) != null

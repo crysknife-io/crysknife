@@ -49,6 +49,7 @@ import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
@@ -150,7 +151,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
   }
 
   private void generateInterceptorFieldDeclaration(ClassBuilder clazz) {
-    if (!iocContext.getGenerationContext().isGwt2() && !iocContext.getGenerationContext().isJre()) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
       clazz.getClassCompilationUnit().addImport(Interceptor.class);
       clazz.addField(Interceptor.class.getSimpleName(), "interceptor", Modifier.Keyword.PRIVATE);
     }
@@ -204,7 +205,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     constructorDeclaration.getBody()
         .addAndGetStatement(new MethodCallExpr("super").addArgument("beanManager"));
 
-    if (!iocContext.getGenerationContext().isJre()) {
+    if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
       beanDefinition.getFields().forEach(fieldPoint -> {
         Expression expr =
             getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field");
@@ -298,9 +299,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
     Expression instanceFieldAssignExpr;
 
-    if (iocContext.getGenerationContext().isGwt2() || iocContext.getGenerationContext().isJre()) {
-      instanceFieldAssignExpr = newInstance;
-    } else {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
       FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");
 
       ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
@@ -310,8 +309,9 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
       classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(
           new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
 
-
       instanceFieldAssignExpr = new MethodCallExpr(interceptor, "getProxy");
+    } else {
+      instanceFieldAssignExpr = newInstance;
     }
     return instanceFieldAssignExpr;
   }
@@ -332,7 +332,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     }
 
 
-    if (iocContext.getGenerationContext().isGwt2()) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
           + "Info." + fieldPoint.getVariableElement().getSimpleName())
               .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))

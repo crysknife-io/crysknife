@@ -55,49 +55,6 @@ public class ProducesGenerator extends ScopedBeanGenerator {
     iocContext.register(Produces.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
-  // @Override
-  public void generateDependantFieldDeclaration2(ClassBuilder builder, BeanDefinition definition) {
-    if (definition instanceof ProducesBeanDefinition) {
-      ProducesBeanDefinition producesDefinition = (ProducesBeanDefinition) definition;
-
-      builder.getClassCompilationUnit().addImport(Instance.class);
-      builder.getClassCompilationUnit().addImport(Supplier.class);
-      builder.getClassCompilationUnit()
-          .addImport(MoreElements.asType(producesDefinition.getMethod().getEnclosingElement())
-              .getQualifiedName().toString());
-      builder.getClassCompilationUnit()
-          .addImport(producesDefinition.getMethod().getReturnType().toString());
-
-
-      builder.addField(BeanManager.class.getSimpleName(), "beanManager", Modifier.Keyword.PRIVATE,
-          Modifier.Keyword.FINAL);
-
-      ConstructorDeclaration constructorDeclaration =
-          builder.addConstructorDeclaration(Modifier.Keyword.PUBLIC);
-      constructorDeclaration.addAndGetParameter(BeanManager.class, "beanManager");
-
-      constructorDeclaration.getBody().addAndGetStatement(
-          new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "beanManager"))
-              .setValue(new NameExpr("beanManager")));
-
-      TypeElement instance =
-          MoreElements.asType(producesDefinition.getMethod().getEnclosingElement());
-
-      Expression call = getBeanManagerCallExpr(instance);
-
-      ClassOrInterfaceType supplier =
-          new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
-
-      ClassOrInterfaceType type = new ClassOrInterfaceType();
-      type.setName(Instance.class.getSimpleName());
-      type.setTypeArguments(new ClassOrInterfaceType().setName(instance.toString()));
-      supplier.setTypeArguments(type);
-
-      builder.addFieldWithInitializer(supplier, "producer", call, Modifier.Keyword.PRIVATE,
-          Modifier.Keyword.FINAL);
-    }
-  }
-
   private Expression getBeanManagerCallExpr(TypeElement instance) {
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);

@@ -49,11 +49,15 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -119,8 +123,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
 
     initDelegate.getBody().ifPresent(body -> {
 
-      if (!(iocContext.getGenerationContext().isGwt2()
-          || iocContext.getGenerationContext().isJre())) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
         ObjectCreationExpr newInstance = generateNewInstanceCreationExpr(beanDefinition);
         Set<InjectionParameterDefinition> params = beanDefinition.getConstructorParams();
         Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
@@ -151,7 +154,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
           new NameExpr("instance"))), "setInstance").addArgument("delegate"));
 
       body.addAndGetStatement(new MethodCallExpr("doInitInstance"));
-      if (!iocContext.getGenerationContext().isJre()) {
+      if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
         beanDefinition.getFields().forEach(fieldPoint -> {
           Expression expr =
               getFieldAccessorExpression(builder, beanDefinition, fieldPoint, "field");
@@ -266,10 +269,27 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
 
     methodDeclaration.setType(elm.getReturnType().toString());
     MethodCallExpr methodCallExpr =
-        new MethodCallExpr(new NameExpr("instance"), elm.getSimpleName().toString());
+        new MethodCallExpr(new NameExpr("this.instance"), elm.getSimpleName().toString());
+
+
 
     elm.getParameters().forEach(param -> {
       Parameter parameter = new Parameter();
+
+      /*      DeclaredType typeDeclared =
+          MoreTypes.asDeclared(param.getEnclosingElement().getEnclosingElement().asType());
+      System.out.println("DeclaredType " + typeDeclared);
+      
+      if (param.asType().getKind().equals(TypeKind.TYPEVAR)) {
+      
+        TypeMirror typeMirror =
+            iocContext.getGenerationContext().getTypes().asMemberOf(typeDeclared, param);
+      
+        System.out.println(" P1 " + typeMirror);
+      
+      }*/
+
+
       String type =
           param.asType().getKind().equals(TypeKind.TYPEVAR) ? "Object" : param.asType().toString();
 

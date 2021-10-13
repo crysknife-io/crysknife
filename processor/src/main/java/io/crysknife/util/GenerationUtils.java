@@ -33,6 +33,7 @@ import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import jsinterop.base.Js;
@@ -94,7 +95,7 @@ public class GenerationUtils {
 
   public MethodCallExpr getFieldAccessCallExpr(BeanDefinition beanDefinition,
       VariableElement field) {
-    if (context.getGenerationContext().isGwt2()) {
+    if (context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(new NameExpr(beanDefinition.getType() + "Info"),
           field.getSimpleName().toString()).addArgument("instance");
     }

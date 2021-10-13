@@ -42,6 +42,7 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
@@ -79,7 +80,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     clazz.getClassCompilationUnit().setPackageDeclaration(pkg);
 
-    if (!iocContext.getGenerationContext().isGwt2()) {
+    if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
       clazz.getClassCompilationUnit().addImport(Reflect.class);
       clazz.getClassCompilationUnit().addImport(SyncBeanDef.class);
@@ -133,7 +134,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     MethodDeclaration doProxyInstance =
         classBuilder.addMethod("doProxyInstance", Modifier.Keyword.PRIVATE);
 
-    if (!iocContext.getGenerationContext().isGwt2() && !iocContext.getGenerationContext().isJre()) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
       ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
       interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
       interceptorCreationExpr.addArgument(new NameExpr("instance"));
@@ -146,7 +147,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
               .setValue(new MethodCallExpr(new NameExpr("interceptor"), "getProxy")));
     }
 
-    if (!iocContext.getGenerationContext().isJre()) {
+    if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
       for (InjectableVariableDefinition fieldPoint : beanDefinition.getFields()) {
         doProxyInstance.getBody().get().addStatement(
             getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field"));
