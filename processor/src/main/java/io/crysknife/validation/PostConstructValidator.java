@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -21,14 +21,13 @@ import io.crysknife.generator.context.IOCContext;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/6/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/13/21
  */
-public class ProducesValidator {
+public class PostConstructValidator {
 
   private final IOCContext context;
 
@@ -38,7 +37,7 @@ public class ProducesValidator {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
           if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
-            log(variableElement, "@Produces method must not be abstract");
+            log(variableElement, "@PostConstruct method must not be abstract");
           }
         }
       });
@@ -46,8 +45,8 @@ public class ProducesValidator {
       add(new Check<ExecutableElement>() {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (!variableElement.getModifiers().contains(Modifier.PUBLIC)) {
-            log(variableElement, "@Produces method must be public");
+          if (variableElement.getModifiers().contains(Modifier.STATIC)) {
+            log(variableElement, "@PostConstruct method must be non-static");
           }
         }
       });
@@ -56,30 +55,21 @@ public class ProducesValidator {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
           if (!variableElement.getParameters().isEmpty()) {
-            log(variableElement, "@Produces method must have no args");
+            log(variableElement, "@PostConstruct method must have no args");
           }
         }
       });
     }
   };
 
-  public ProducesValidator(IOCContext context) {
+
+  public PostConstructValidator(IOCContext context) {
     this.context = context;
   }
 
-  public void validate(Element element) throws UnableToCompleteException {
-    if (element.getKind().isField()) {
-      VariableElement field = MoreElements.asVariable(element);
-      StringBuffer sb = new StringBuffer();
-      sb.append("Error at ").append(field.getEnclosingElement()).append(".")
-          .append(field.getSimpleName()).append(" : ")
-          .append(" Only method can be annotated with @Produces");
-      throw new UnableToCompleteException(sb.toString());
-    }
-
+  public void validate(ExecutableElement method) throws UnableToCompleteException {
     for (Check check : checks) {
-      check.check(MoreElements.asExecutable(element));
+      check.check(MoreElements.asExecutable(method));
     }
   }
-
 }

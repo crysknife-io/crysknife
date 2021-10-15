@@ -17,6 +17,7 @@ package io.crysknife.ui.templates.generator;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -24,6 +25,7 @@ import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -35,6 +37,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -831,13 +834,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     templateContext.getEvents().forEach(event -> {
       for (String eventEvent : event.getEvents()) {
         MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(event.getInfo().getName());
-
+        Statement theCall =
+            generationUtils.generateMethodCall(event.getMethod(), new NameExpr("e"));
         MethodCallExpr methodCallExpr =
             new MethodCallExpr(getInstanceByElementKind(event.getInfo(), fieldAccessCallExpr),
                 "addEventListener").addArgument(new StringLiteralExpr(eventEvent))
-                    .addArgument(new NameExpr("e -> this.instance." + event.getMethodName()
-                        + "(jsinterop.base.Js.uncheckedCast(e))"));
-
+                    .addArgument("e -> { " + theCall + " }");
         builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
       }
     });
@@ -974,10 +976,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         .forEach(method -> {
 
           // verify the field
-          if (method.getModifiers().contains(Modifier.PRIVATE)) {
-            abortWithError(method, "@%s method must not be private",
-                EventHandler.class.getSimpleName());
-          }
           if (method.getModifiers().contains(Modifier.STATIC)) {
             abortWithError(method, "@%s method must not be static",
                 EventHandler.class.getSimpleName());
@@ -1027,8 +1025,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .filter(elm -> elm.getSelector().equals(data)).findFirst();
             if (result.isPresent()) {
               DataElementInfo info = result.get();
-              eventHandlerElements.add(new EventHandlerInfo(info, events,
-                  method.getSimpleName().toString(), declaredType.toString()));
+              eventHandlerElements
+                  .add(new EventHandlerInfo(info, events, method, declaredType.toString()));
             } else {
               abortWithError(method,
                   "Unable to find DataField element with name or alias " + data + " from ");

@@ -14,37 +14,35 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
-import io.crysknife.annotation.Generator;
-import io.crysknife.definition.MethodDefinition;
-import io.crysknife.generator.api.ClassBuilder;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.util.GenerationUtils;
+import io.crysknife.validation.PostConstructValidator;
 
-import javax.annotation.PostConstruct;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
-@Generator(priority = Integer.MAX_VALUE)
-public class PostConstructGenerator extends IOCGenerator<MethodDefinition> {
+public class PostConstructGenerator {
+
+  private PostConstructValidator validator;
+  private GenerationUtils utils;
 
   public PostConstructGenerator(IOCContext iocContext) {
-    super(iocContext);
+    this.validator = new PostConstructValidator(iocContext);
+    this.utils = new GenerationUtils(iocContext);
   }
 
-  @Override
-  public void register() {
-    iocContext.register(PostConstruct.class, WiringElementType.METHOD_DECORATOR, this);
+  public void generate(BlockStmt body, ExecutableElement postConstruct) {
+    try {
+      validator.validate(postConstruct);
+    } catch (UnableToCompleteException e) {
+      throw new GenerationException(e);
+    }
+    body.addAndGetStatement(utils.generateMethodCall(postConstruct));
   }
 
-  @Override
-  public void generate(ClassBuilder clazz, MethodDefinition postConstract) {
-    FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-    MethodCallExpr method = new MethodCallExpr(instance,
-        postConstract.getExecutableElement().getSimpleName().toString());
-    clazz.getGetMethodDeclaration().getBody().get().addAndGetStatement(method);
-
-  }
 }

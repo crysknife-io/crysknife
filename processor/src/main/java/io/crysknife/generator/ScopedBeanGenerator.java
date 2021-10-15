@@ -79,6 +79,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   protected FieldAccessExpr instance;
 
+  private PostConstructGenerator postConstructGenerator = new PostConstructGenerator(iocContext);
+
   public ScopedBeanGenerator(IOCContext iocContext) {
     super(iocContext);
   }
@@ -236,17 +238,12 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
   private void generateInstanceGetMethodDecorators(ClassBuilder clazz,
       BeanDefinition beanDefinition) {
 
-    Set<IOCGenerator> postConstruct = new LinkedHashSet<>();
-
     beanDefinition.getMethods().stream().forEach(method -> {
       method.getDecorators().stream()
           .sorted(
               Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
           .forEach(decorator -> {
-            // TODO PostConstruct hack
-            if (decorator instanceof PostConstructGenerator) {
-              postConstruct.add(decorator);
-            } else if (decorator instanceof ProducesGenerator) {
+            if (decorator instanceof ProducesGenerator) {
               // TODO Produces
             } else {
               decorator.generate(clazz, method);
@@ -261,7 +258,6 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
         .addStatement(new ReturnStmt(new NameExpr("instance")));
   }
 
-  // TODO add validation
   private void processPostConstructAnnotation(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     LinkedList<ExecutableElement> postConstructs = Utils
@@ -272,9 +268,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
     Iterator<ExecutableElement> elm = postConstructs.descendingIterator();
     while (elm.hasNext()) {
-      FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-      MethodCallExpr method = new MethodCallExpr(instance, elm.next().getSimpleName().toString());
-      classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(method);
+      postConstructGenerator.generate(classBuilder.getInitInstanceMethod().getBody().get(),
+          elm.next());
     }
   }
 
