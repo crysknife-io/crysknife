@@ -462,7 +462,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     List<DataElementInfo> widgets = templateContext.getDataElements().stream()
         .filter(elm -> elm.getKind().equals(DataElementInfo.Kind.IsWidget))
         .collect(Collectors.toList());
-    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+    if (kind.equals(DataElementInfo.Kind.IsWidget) || !widgets.isEmpty()) {
       builder.getClassCompilationUnit().addImport(List.class);
       builder.getClassCompilationUnit().addImport(ArrayList.class);
 

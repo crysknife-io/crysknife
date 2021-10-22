@@ -14,29 +14,16 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
 import io.crysknife.annotation.Generator;
-import io.crysknife.client.BeanManager;
-import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.ProducesBeanDefinition;
 
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.lang.model.element.TypeElement;
-import java.util.function.Supplier;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/4/19

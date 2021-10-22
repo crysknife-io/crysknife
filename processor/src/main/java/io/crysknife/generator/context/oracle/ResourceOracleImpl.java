@@ -90,7 +90,7 @@ public class ResourceOracleImpl implements ResourceOracle {
       return resource;
 
     String packageName = "";
-    String relativeName = path.toString();
+    String relativeName = path;
 
     int index = relativeName.lastIndexOf('/');
     if (index >= 0) {

@@ -54,10 +54,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -141,7 +138,6 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
         body.addAndGetStatement(
             new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
       }
-
 
 
       body.addAndGetStatement(new VariableDeclarationExpr(new VariableDeclarator()
@@ -272,24 +268,8 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
         new MethodCallExpr(new NameExpr("this.instance"), elm.getSimpleName().toString());
 
 
-
     elm.getParameters().forEach(param -> {
       Parameter parameter = new Parameter();
-
-      /*      DeclaredType typeDeclared =
-          MoreTypes.asDeclared(param.getEnclosingElement().getEnclosingElement().asType());
-      System.out.println("DeclaredType " + typeDeclared);
-      
-      if (param.asType().getKind().equals(TypeKind.TYPEVAR)) {
-      
-        TypeMirror typeMirror =
-            iocContext.getGenerationContext().getTypes().asMemberOf(typeDeclared, param);
-      
-        System.out.println(" P1 " + typeMirror);
-      
-      }*/
-
-
       String type =
           param.asType().getKind().equals(TypeKind.TYPEVAR) ? "Object" : param.asType().toString();
 

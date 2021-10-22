@@ -22,6 +22,7 @@ import io.crysknife.util.GenerationUtils;
 import io.crysknife.validation.PostConstructValidator;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
@@ -36,13 +37,13 @@ public class PostConstructGenerator {
     this.utils = new GenerationUtils(iocContext);
   }
 
-  public void generate(BlockStmt body, ExecutableElement postConstruct) {
+  public void generate(TypeMirror parent, BlockStmt body, ExecutableElement postConstruct) {
     try {
       validator.validate(postConstruct);
     } catch (UnableToCompleteException e) {
       throw new GenerationException(e);
     }
-    body.addAndGetStatement(utils.generateMethodCall(postConstruct));
+    body.addAndGetStatement(utils.generateMethodCall(parent, postConstruct));
   }
 
 }

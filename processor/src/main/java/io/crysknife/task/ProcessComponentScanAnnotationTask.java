@@ -21,6 +21,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
 import javax.lang.model.element.TypeElement;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,9 +49,7 @@ public class ProcessComponentScanAnnotationTask implements Task {
     context.getGenerationContext().getRoundEnvironment()
         .getElementsAnnotatedWith(ComponentScan.class).forEach(componentScan -> {
           String[] values = componentScan.getAnnotation(ComponentScan.class).value();
-          for (String aPackage : values) {
-            packages.add(aPackage);
-          }
+          packages.addAll(Arrays.asList(values));
         });
 
     if (packages.isEmpty()) {

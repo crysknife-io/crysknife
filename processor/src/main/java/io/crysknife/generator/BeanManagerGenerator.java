@@ -212,11 +212,9 @@ public class BeanManagerGenerator implements Task {
                         }
                       });
 
-                  List<AnnotationMirror> qualifiers = new ArrayList<>();
 
-
-                  Utils.getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased))
-                      .forEach(anno -> qualifiers.add(anno));
+                  List<AnnotationMirror> qualifiers = new ArrayList<>(Utils
+                      .getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased)));
                   Set<Expression> qualifiersExpression = new HashSet<>();
 
                   qualifiers

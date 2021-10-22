@@ -180,8 +180,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
   }
 
   private boolean isLocal(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {
-    return bean.getType()
-        .equals(MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()));
+    return bean.getType().equals(fieldPoint.getVariableElement().getEnclosingElement().asType());
   }
 
   private StringLiteralExpr getAnnotationValue(InjectableVariableDefinition fieldPoint) {

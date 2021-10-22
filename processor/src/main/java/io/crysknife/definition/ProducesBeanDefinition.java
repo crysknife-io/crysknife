@@ -15,7 +15,6 @@
 package io.crysknife.definition;
 
 import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;

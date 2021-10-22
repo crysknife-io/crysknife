@@ -20,8 +20,6 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
@@ -106,13 +104,17 @@ public class GenerationUtils {
   }
 
 
-  public MethodCallExpr getFieldAccessCallExpr(BeanDefinition beanDefinition,
-      VariableElement field) {
+  public Expression getFieldAccessCallExpr(BeanDefinition beanDefinition, VariableElement field) {
     if (context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(new NameExpr(beanDefinition.getType() + "Info"),
           field.getSimpleName().toString()).addArgument("instance");
     }
 
+    if (!field.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
+      if (isTheSame(beanDefinition.getType(), field.getEnclosingElement().asType())) {
+        return new FieldAccessExpr(new NameExpr("instance"), field.getSimpleName().toString());
+      }
+    }
     return new MethodCallExpr(
         new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
             .addArgument("instance"),
@@ -120,6 +122,12 @@ public class GenerationUtils {
             new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
                 .addArgument(new StringLiteralExpr(Utils.getJsFieldName(field)))
                 .addArgument("instance"));
+  }
+
+  private boolean isTheSame(TypeMirror parent, TypeMirror child) {
+    parent = context.getGenerationContext().getTypes().erasure(parent);
+    child = context.getGenerationContext().getTypes().erasure(child);
+    return context.getGenerationContext().getTypes().isSameType(parent, child);
   }
 
   public Expression beanManagerLookupBeanCall(InjectableVariableDefinition fieldPoint) {
@@ -200,7 +208,8 @@ public class GenerationUtils {
     return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(call);
   }
 
-  public Statement generateMethodCall(ExecutableElement method, Expression... args) {
+  public Statement generateMethodCall(TypeMirror parent, ExecutableElement method,
+      Expression... args) {
     if (method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
       if (context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
         return generatePrivateJREMethodCall(method, args);
@@ -212,20 +221,48 @@ public class GenerationUtils {
 
       throw new Error("Private method calls aren't supported for GWT2");
     } else {
-      FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-      MethodCallExpr result = new MethodCallExpr(instance, method.getSimpleName().toString());
-      for (Expression arg : args) {
-        result.addArgument(
-            new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
-                .addArgument(arg));
+      if (isTheSame(parent, method.getEnclosingElement().asType())
+          || context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
+        FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
+        MethodCallExpr result = new MethodCallExpr(instance, method.getSimpleName().toString());
+        for (Expression arg : args) {
+          result.addArgument(
+              new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
+                  .addArgument(arg));
+        }
+        return new ExpressionStmt(result);
+      } else {
+        MethodCallExpr call =
+            new MethodCallExpr(new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
+                "<elemental2.core.Function>uncheckedCast").addArgument(
+
+                    new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get")
+                        .addArgument("instance")
+                        .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()),
+                            "objectProperty")
+                                .addArgument(new StringLiteralExpr(Utils.getJsMethodName(method)))
+                                .addArgument("instance"))),
+                "bind").addArgument("instance");
+
+        for (Expression arg : args) {
+          call.addArgument(arg);
+        }
+        return new ExpressionStmt(new MethodCallExpr(call, "call"));
+
+
       }
-      return new ExpressionStmt(result);
     }
   }
 
-  private Statement generatePrivateJ2CLMethodCall(ExecutableElement method, Expression[] args) {
-    String valueName = Utils.getJsMethodName(method);
 
+  // Closure aggressively inline methods, so if method is private and never called, most likely it
+  // ll be removed
+  private Statement generatePrivateJ2CLMethodCall(ExecutableElement method, Expression[] args) {
+    throw new Error("Private method calls aren't supported for J2CL : "
+        + method.getEnclosingElement() + "." + method.getSimpleName());
+
+    /*    String valueName = Utils.getJsMethodName(method);
+    
     MethodCallExpr bind = new MethodCallExpr(new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName("elemental2.core.Function"),
         new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get").addArgument("instance")
@@ -233,12 +270,12 @@ public class GenerationUtils {
                 new MethodCallExpr(new NameExpr("io.crysknife.client.Reflect"), "objectProperty")
                     .addArgument(new StringLiteralExpr(valueName)).addArgument("instance")))),
         "bind").addArgument("instance");
-
+    
     for (Expression arg : args) {
       bind.addArgument(arg);
     }
-
-    return new ExpressionStmt(new MethodCallExpr(bind, "call"));
+    
+    return new ExpressionStmt(new MethodCallExpr(bind, "call"));*/
   }
 
   private TryStmt generatePrivateJREMethodCall(ExecutableElement method, Expression[] args) {

@@ -26,6 +26,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -56,16 +57,12 @@ import io.crysknife.util.Utils;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
 import javax.inject.Provider;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -112,6 +109,40 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     definition.getFields().forEach(
         field -> generateFactoryFieldDeclaration(classBuilder, definition, field, "field"));
 
+  }
+
+  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
+      BeanDefinition definition, InjectableVariableDefinition fieldPoint, String kind) {
+    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
+    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
+    ClassOrInterfaceType supplier =
+        new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
+
+    ClassOrInterfaceType type = new ClassOrInterfaceType();
+    type.setName(InstanceFactory.class.getSimpleName());
+    type.setTypeArguments(new ClassOrInterfaceType().setName(typeQualifiedName));
+    supplier.setTypeArguments(type);
+
+
+    Expression beanCall;
+    if (fieldPoint.getImplementation().isPresent()
+        && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
+      beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
+          .generateBeanLookupCall(classBuilder, fieldPoint);
+    } else if (fieldPoint.getGenerator().isPresent()) {
+      beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
+    } else {
+      beanCall = generateBeanLookupCall(classBuilder, fieldPoint);
+    }
+
+    if (beanCall == null) {
+      throw new GenerationException();
+    }
+
+    LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(beanCall));
+
+    classBuilder.addFieldWithInitializer(supplier, varName, lambda, Modifier.Keyword.PRIVATE);
   }
 
   protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
@@ -196,7 +227,6 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     });
   }
 
-
   public void generateDependantFieldDeclaration(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
 
@@ -219,6 +249,49 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
         .sorted(
             Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
         .forEach(gen -> gen.generate(classBuilder, beanDefinition));
+  }
+
+  protected Expression getFieldAccessorExpression(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition, InjectableVariableDefinition fieldPoint, String kind) {
+
+    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
+
+    if (fieldPoint.getBeanDefinition() instanceof ProducesBeanDefinition) {
+      throw new Error(fieldPoint.getVariableElement().getSimpleName().toString());
+    }
+
+
+    if (kind.equals("constructor")) {
+      return new MethodCallExpr(
+          new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
+    }
+
+
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
+      return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
+          + "Info." + fieldPoint.getVariableElement().getSimpleName())
+              .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
+              .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"));
+    }
+
+    FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
+    MethodCallExpr reflect =
+        new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+            .addArgument(
+                new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getVariableElement())))
+            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(
+        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
+
+    ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
+    onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
+    onFieldAccessedCreationExpr.addArgument(lambda);
+
+    return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
+        .addArgument(onFieldAccessedCreationExpr);
   }
 
   private void generateInstanceGetFieldDecorators(ClassBuilder clazz,
@@ -268,8 +341,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
     Iterator<ExecutableElement> elm = postConstructs.descendingIterator();
     while (elm.hasNext()) {
-      postConstructGenerator.generate(classBuilder.getInitInstanceMethod().getBody().get(),
-          elm.next());
+      postConstructGenerator.generate(beanDefinition.getType(),
+          classBuilder.getInitInstanceMethod().getBody().get(), elm.next());
     }
   }
 
@@ -311,87 +384,9 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     return instanceFieldAssignExpr;
   }
 
-  protected Expression getFieldAccessorExpression(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition, InjectableVariableDefinition fieldPoint, String kind) {
-
-    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
-
-    if (fieldPoint.getBeanDefinition() instanceof ProducesBeanDefinition) {
-      throw new Error(fieldPoint.getVariableElement().getSimpleName().toString());
-    }
-
-
-    if (kind.equals("constructor")) {
-      return new MethodCallExpr(
-          new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
-    }
-
-
-    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-      return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
-          + "Info." + fieldPoint.getVariableElement().getSimpleName())
-              .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
-              .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"));
-    }
-
-    FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
-    String clazzName = MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString();
-
-    MethodCallExpr reflect =
-        new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-            .addArgument(clazzName + "Info." + fieldPoint.getVariableElement().getSimpleName())
-            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
-
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(
-        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
-
-    ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
-    onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
-    onFieldAccessedCreationExpr.addArgument(lambda);
-
-    return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
-        .addArgument(onFieldAccessedCreationExpr);
-  }
-
   protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
     return newInstance.setType(Utils.getSimpleClassName(definition.getType()));
-  }
-
-  protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
-      BeanDefinition definition, InjectableVariableDefinition fieldPoint, String kind) {
-    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
-    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
-    ClassOrInterfaceType supplier =
-        new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
-
-    ClassOrInterfaceType type = new ClassOrInterfaceType();
-    type.setName(InstanceFactory.class.getSimpleName());
-    type.setTypeArguments(new ClassOrInterfaceType().setName(typeQualifiedName));
-    supplier.setTypeArguments(type);
-
-
-    Expression beanCall;
-    if (fieldPoint.getImplementation().isPresent()
-        && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
-      beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
-          .generateBeanLookupCall(classBuilder, fieldPoint);
-    } else if (fieldPoint.getGenerator().isPresent()) {
-      beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
-    } else {
-      beanCall = generateBeanLookupCall(classBuilder, fieldPoint);
-    }
-
-    if (beanCall == null) {
-      throw new GenerationException();
-    }
-
-    LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(beanCall));
-
-    classBuilder.addFieldWithInitializer(supplier, varName, lambda, Modifier.Keyword.PRIVATE);
   }
 
 

@@ -15,9 +15,7 @@
 package io.crysknife.definition;
 
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.generator.IOCGenerator;

@@ -148,7 +148,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     private List<Annotation> qualifiers;
     private List<Class<?>> assignableTypes;
     private BeanFactory factory;
-    private Annotation typed;
+    private Typed typed;
 
     public Builder(final Class<?> actualType, final Class<? extends Annotation> scope) {
       this.actualType = actualType;
@@ -160,7 +160,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       return this;
     }
 
-    public Builder withTyped(final Annotation typed) {
+    public Builder withTyped(final Typed typed) {
       this.typed = typed;
       return this;
     }
@@ -175,8 +175,8 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       return this;
     }
 
-    public SyncBeanDefImpl build() {
-      SyncBeanDefImpl definition = new SyncBeanDefImpl(actualType, scope);
+    public <T> SyncBeanDefImpl<T> build() {
+      SyncBeanDefImpl<T> definition = new SyncBeanDefImpl(actualType, scope);
       if (qualifiers != null) {
         definition.qualifiers = qualifiers;
       }

@@ -16,7 +16,6 @@ package io.crysknife.validation;
 
 import io.crysknife.exception.UnableToCompleteException;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 
 /**

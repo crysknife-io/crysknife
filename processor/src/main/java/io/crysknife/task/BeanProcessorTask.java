@@ -158,9 +158,9 @@ public class BeanProcessorTask implements Task {
             Set<ExecutableElement> elements = iocContext.getGenerationContext()
                 .getRoundEnvironment().getElementsAnnotatedWith(annotation).stream()
                 .filter(elm -> elm.getKind().equals(ElementKind.PARAMETER))
-                .map(elm -> MoreElements.asVariable(elm))
+                .map(MoreElements::asVariable)
                 .map(elm -> MoreElements.asExecutable(elm.getEnclosingElement()))
-                .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toSet());
+                .map(MoreElements::asExecutable).collect(Collectors.toSet());
 
             elements.stream().forEach(e -> {
               TypeMirror erased = iocContext.getGenerationContext().getTypes()
@@ -168,8 +168,9 @@ public class BeanProcessorTask implements Task {
               BeanDefinition bean = iocContext.getBeans().get(erased);
               ExecutableType methodType = (ExecutableType) e.asType();
               bean.getMethods().stream()
-                  .filter(mmethod -> mmethod.getExecutableElement().equals(methodType)).findFirst()
-                  .orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
+                  .filter(mmethod -> MoreTypes.asExecutable(mmethod.getExecutableElement().asType())
+                      .equals(methodType))
+                  .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
                   .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
                       .map(em -> (IOCGenerator<MethodDefinition>) em).collect(Collectors.toSet()));
             });
@@ -211,7 +212,8 @@ public class BeanProcessorTask implements Task {
                 BeanDefinition bean = iocContext.getBean(erased);
                 ExecutableType methodType = (ExecutableType) e.asType();
                 bean.getMethods().stream()
-                    .filter(mmethod -> mmethod.getExecutableElement().equals(methodType))
+                    .filter(mmethod -> MoreTypes
+                        .asExecutable(mmethod.getExecutableElement().asType()).equals(methodType))
                     .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
                     .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
                         .map(em -> (IOCGenerator<MethodDefinition>) em)
