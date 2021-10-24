@@ -201,8 +201,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -323,7 +321,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   private TypeElement GWT3_Dom_Event;
 
 
-
   public TemplatedGenerator(IOCContext iocContext) {
     super(iocContext);
 
@@ -400,8 +397,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       String path = MoreElements.getPackage(type).toString().replaceAll("\\.", "/");
       for (String postfix : postfixes) {
         String beanName = type.getSimpleName().toString() + postfix;
-        URL file =
-            iocContext.getGenerationContext().getResourceOracle().findResource(path, beanName);
+        URL file = iocContext.getGenerationContext().getResourceOracle()
+            .findResource(path + "/" + beanName);
         if (file != null) {
           return new StyleSheet(type.getSimpleName() + postfix, file);
         }
@@ -864,6 +861,9 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                   MoreTypes.asTypeElement(field.asType()))
               .stream().filter(method -> method.getSimpleName().toString().equals(handler)).count();
           if (methods == 0) {
+            System.out.println("Error: at " + event.getMethod().getEnclosingElement() + "."
+                + event.getMethod().getSimpleName()
+                + " : method event type must be supported by the target");
             abortWithError(event.getMethod(),
                 "@%s method event type must be supported by the target",
                 EventHandler.class.getSimpleName());
@@ -1048,6 +1048,9 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
           if (!isGWT3_Shared_Event && !EVENTS.containsKey(declaredType.toString())) {
             if (parameter.getAnnotation(ForEvent.class) == null) {
+              System.out.println("Error: " + String.format(
+                  "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
+                  method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent));
               abortWithError(method,
                   "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
                   method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent);
@@ -1326,8 +1329,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
    * Issue a compilation error and abandon the processing of this template. This does not prevent
    * the processing of other templates.
    */
-  private void abortWithError(Element element, String msg, Object... args)
-      throws AbortProcessingException {
+  private void abortWithError(Element element, String msg, Object... args) {
     error(element, msg, args);
     throw new AbortProcessingException();
   }
