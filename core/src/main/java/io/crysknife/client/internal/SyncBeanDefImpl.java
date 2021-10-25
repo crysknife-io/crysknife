@@ -18,6 +18,7 @@ import io.crysknife.client.SyncBeanDef;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Typed;
+import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -104,6 +105,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
   @Override
   public String getName() {
+    for (Annotation annotation : getActualQualifiers()) {
+      if (annotation.annotationType().equals(Named.class)) {
+        return ((Named) annotation).value();
+      }
+    }
     return actualType.getCanonicalName();
   }
 
