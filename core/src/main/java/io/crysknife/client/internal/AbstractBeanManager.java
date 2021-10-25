@@ -102,12 +102,6 @@ public abstract class AbstractBeanManager implements BeanManager {
     }
   }
 
-  private boolean isDefault(Annotation[] qualifiers) {
-    Annotation[] a1 = new Annotation[] {qualifiers[0]};
-    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
-    return QualifierUtil.matches(a1, a2);
-  }
-
   public void destroyBean(Object ref) {
     // DO NOTHING ATM
   }
@@ -121,8 +115,18 @@ public abstract class AbstractBeanManager implements BeanManager {
       }
 
       if (beans.get(type).beanDefinition != null) {
+        if (beans.get(type).beanDefinition.getTyped().isPresent())
+          if (Arrays.stream(((Typed) beans.get(type).beanDefinition.getTyped().get()).value())
+              .anyMatch(any -> any.equals(type))) {
+            Set<IOCBeanDef<T>> result = new HashSet<>();
+            result.add(beans.get(type).beanDefinition);
+            return result;
+          }
+
         if (compareAnnotations(beans.get(type).beanDefinition.getQualifiers(), qualifiers)) {
-          candidates.add(beans.get(type).beanDefinition);
+          if (beans.get(type).beanDefinition.getFactory().isPresent()) {
+            candidates.add(beans.get(type).beanDefinition);
+          }
         }
       }
 
@@ -153,11 +157,7 @@ public abstract class AbstractBeanManager implements BeanManager {
           annotations.add(QualifierUtil.DEFAULT_ANNOTATION);
           if (compareAnnotations(subType.beanDefinition.getActualQualifiers(), qualifiers)) {
             if (subType.beanDefinition.getTyped().isPresent()) {
-              subType.beanDefinition.getTyped().ifPresent(typed -> {
-                if (Arrays.stream(((Typed) typed).value()).anyMatch(any -> any.equals(type))) {
-                  candidates.add(subType.beanDefinition);
-                }
-              });
+              continue;
             } else if (subType.beanDefinition.getFactory().isPresent())
               candidates.add(subType.beanDefinition);
           }
@@ -172,18 +172,20 @@ public abstract class AbstractBeanManager implements BeanManager {
           if (compareAnnotations(subType.beanDefinition.getQualifiers(),
               _qual.toArray(new Annotation[_qual.size()]))) {
             if (subType.beanDefinition.getTyped().isPresent()) {
-              subType.beanDefinition.getTyped().ifPresent(typed -> {
-                if (Arrays.stream(((Typed) typed).value()).anyMatch(any -> any.equals(type))) {
-                  candidates.add(subType.beanDefinition);
-                }
-              });
-            } else
+              continue;
+            } else if (subType.beanDefinition.getFactory().isPresent())
               candidates.add(subType.beanDefinition);
           }
         }
       }
     }
     return candidates;
+  }
+
+  private boolean isDefault(Annotation[] qualifiers) {
+    Annotation[] a1 = new Annotation[] {qualifiers[0]};
+    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+    return QualifierUtil.matches(a1, a2);
   }
 
   private boolean compareAnnotations(Annotation[] all, Annotation[] in) {
