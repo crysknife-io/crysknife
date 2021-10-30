@@ -155,7 +155,7 @@ public class ClassBuilder {
   }
 
   public MethodDeclaration addInitInstanceMethod() {
-    initMethodDeclaration = classDeclaration.addMethod("doInitInstance", Modifier.Keyword.PUBLIC);
+    initMethodDeclaration = classDeclaration.addMethod("initInstance", Modifier.Keyword.PUBLIC);
     return initMethodDeclaration;
   }
 

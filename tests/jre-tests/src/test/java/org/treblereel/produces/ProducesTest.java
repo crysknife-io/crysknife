@@ -16,9 +16,12 @@ package org.treblereel.produces;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
-
-import org.treblereel.produces.registry.Registry;
+import org.treblereel.injection.typed.ClientDefinitionsCacheRegistry;
+import org.treblereel.produces.dependent.Definition;
+import org.treblereel.produces.dependent.DefinitionImpl;
+import org.treblereel.produces.dependent.DefinitionProducer;
 import org.treblereel.produces.registry.DefaultRegistryImpl;
+import org.treblereel.produces.registry.Registry;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,4 +37,18 @@ public class ProducesTest extends AbstractTest {
         app.beanManager.lookupBean(Registry.class).getInstance().getClass());
 
   }
+
+  @Test
+  public void testDefinition() {
+    for (int i = 0; i < 10; i++) {
+      assertEquals(DefinitionProducer.class.getCanonicalName(),
+          ((DefinitionImpl) app.beanManager.lookupBean(Definition.class).getInstance()).getId());
+
+      assertEquals(DefinitionProducer.class.getCanonicalName(), ((DefinitionImpl) (app.beanManager
+          .lookupBean(DefinitionProducer.class).getInstance().getDefinition())).getId());
+    }
+
+
+  }
+
 }

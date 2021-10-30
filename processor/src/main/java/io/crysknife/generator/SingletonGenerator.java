@@ -22,9 +22,11 @@ import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Generator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
@@ -47,19 +49,4 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     iocContext.register(ApplicationScoped.class, WiringElementType.BEAN, this);
   }
 
-  @Override
-  public void generateInstanceGetMethodBuilder(ClassBuilder builder,
-      BeanDefinition beanDefinition) {
-    super.generateInstanceGetMethodBuilder(builder, beanDefinition);
-    BlockStmt body = builder.getGetMethodDeclaration().getBody().get();
-
-    FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-    IfStmt ifStmt = new IfStmt().setCondition(
-        new BinaryExpr(instance, new NullLiteralExpr(), BinaryExpr.Operator.NOT_EQUALS));
-    ifStmt.setThenStmt(new ReturnStmt(instance));
-    body.addAndGetStatement(ifStmt);
-    body.addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
-    builder.addField(Utils.getSimpleClassName(beanDefinition.getType()), "instance",
-        Modifier.Keyword.PRIVATE);
-  }
 }

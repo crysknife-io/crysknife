@@ -281,6 +281,10 @@ public class BeanManagerGenerator implements Task {
                     }
                   }
 
+                  if (beanDefinition.isProxy()) {
+                    builderCallExpr = new MethodCallExpr(builderCallExpr, "withProxy");
+                  }
+
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
                       new ObjectCreationExpr().setType(Utils.getQualifiedFactoryName(erased))
                           .addArgument(new ThisExpr()));
@@ -373,6 +377,7 @@ public class BeanManagerGenerator implements Task {
       MethodDeclaration annotationType = new MethodDeclaration();
       annotationType.setModifiers(Modifier.Keyword.PUBLIC);
       annotationType.setName("get");
+      annotationType.addAnnotation(Override.class);
       annotationType.setType(new ClassOrInterfaceType().setName(erased.toString()));
 
       annotationType.getBody().get().addAndGetStatement(new ReturnStmt(new MethodCallExpr(
@@ -390,18 +395,15 @@ public class BeanManagerGenerator implements Task {
       ObjectCreationExpr factory = new ObjectCreationExpr().setType(producerType)
           .addArgument(new ThisExpr()).addArgument(supplier);
 
+      if (beanDefinition.isProxy()) {
+        builderCallExpr = new MethodCallExpr(builderCallExpr, "withProxy");
+      }
 
       builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(factory);
 
       builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
       registerCallExpr.addArgument(builderCallExpr);
       init.getBody().get().addAndGetStatement(registerCallExpr);
-
-
-
-      /*
-       ****************************
-       */
 
       String qualifiedName = MoreTypes.asTypeElement(
           iocContext.getGenerationContext().getTypes().erasure(producesBeanDefinition.getType()))
@@ -500,11 +502,13 @@ public class BeanManagerGenerator implements Task {
           .addArgument(new NameExpr("new Annotation[] { DEFAULT_ANNOTATION }"));
 
 
-      builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(new NameExpr(
-          "new BeanFactory<BeanManager>(this){\n" + "\n" + "                @Override\n"
-              + "                public BeanManager getInstance() {\n"
+      builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
+          new NameExpr("new BeanFactory<BeanManager>(this){\n" + "\n" + "                "
+              + "              @Override\n" + "                public BeanManager getInstance() {\n"
               + "                  return BeanManagerImpl.this;\n" + "                }\n"
-              + "              }"));
+              + "                @Override \n"
+              + "                public void initInstance(BeanManager instance) { \n"
+              + "                } \n" + "              }"));
 
       builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
       registerCallExpr.addArgument(builderCallExpr);

@@ -176,10 +176,7 @@ public class GenerationUtils {
       }
 
       annotation.setAnonymousClassBody(anonymousClassBody);
-
       call.addArgument(annotation);
-
-
     }
   }
 
@@ -223,8 +220,8 @@ public class GenerationUtils {
     } else {
       if (isTheSame(parent, method.getEnclosingElement().asType())
           || context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
-        FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-        MethodCallExpr result = new MethodCallExpr(instance, method.getSimpleName().toString());
+        MethodCallExpr result =
+            new MethodCallExpr(new NameExpr("instance"), method.getSimpleName().toString());
         for (Expression arg : args) {
           result.addArgument(
               new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,28 +12,21 @@
  * the License.
  */
 
-package io.crysknife.generator;
-
-import io.crysknife.annotation.Generator;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.IOCContext;
+package org.treblereel.injection.managedinstance;
 
 import javax.enterprise.context.Dependent;
+import java.util.Random;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
+ * @author Dmitrii Tikhomirov Created by treblereel 10/27/21
  */
-@Generator(priority = 1)
-public class DependentGenerator extends ScopedBeanGenerator {
+@Dependent
+public class SimpleDependentBean {
 
-  public DependentGenerator(IOCContext iocContext) {
-    super(iocContext);
-  }
+  public int id;
 
-  @Override
-  public void register() {
-    iocContext.register(Dependent.class, WiringElementType.BEAN, this);
+  public SimpleDependentBean() {
+    id = new Random().nextInt();
   }
 
 }

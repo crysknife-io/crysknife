@@ -36,77 +36,77 @@ import static org.junit.Assert.assertTrue;
  */
 public class NamedTest extends AbstractTest {
 
-    @Test
-    public void testNamedConstructorInjection() {
-        assertEquals(NamedBeanDefault.class.getSimpleName(),
-                app.getNamedTestBean().namedConstructorInjection.def.getClass().getSimpleName());
-        assertEquals(NamedBeanOne.class.getSimpleName(),
-                app.getNamedTestBean().namedConstructorInjection.one.getClass().getSimpleName());
-        assertEquals(NamedBeanTwo.class.getSimpleName(),
-                app.getNamedTestBean().namedConstructorInjection.two.getClass().getSimpleName());
+  @Test
+  public void testNamedConstructorInjection() {
+    assertEquals(NamedBeanDefault.class.getSimpleName(),
+        app.getNamedTestBean().namedConstructorInjection.def.getClass().getSimpleName());
+    assertEquals(NamedBeanOne.class.getSimpleName(),
+        app.getNamedTestBean().namedConstructorInjection.one.getClass().getSimpleName());
+    assertEquals(NamedBeanTwo.class.getSimpleName(),
+        app.getNamedTestBean().namedConstructorInjection.two.getClass().getSimpleName());
+  }
+
+  @Test
+  public void testNamedFieldInjection() {
+    assertEquals(NamedBeanDefault.class.getSimpleName(),
+        app.getNamedTestBean().namedFieldInjection.def.getClass().getSimpleName());
+    assertEquals(NamedBeanOne.class.getSimpleName(),
+        app.getNamedTestBean().namedFieldInjection.one.getClass().getSimpleName());
+    assertEquals(NamedBeanTwo.class.getSimpleName(),
+        app.getNamedTestBean().namedFieldInjection.two.getClass().getSimpleName());
+  }
+
+  @Test
+  public void testBeanManager() {
+    Set<NamedBean> beans = new HashSet<>();
+    for (SyncBeanDef<NamedBean> lookupBean : app.beanManager
+        .<NamedBean>lookupBeans(NamedBean.class)) {
+      beans.add(lookupBean.getInstance());
     }
 
-    @Test
-    public void testNamedFieldInjection() {
-        assertEquals(NamedBeanDefault.class.getSimpleName(),
-                app.getNamedTestBean().namedFieldInjection.def.getClass().getSimpleName());
-        assertEquals(NamedBeanOne.class.getSimpleName(),
-                app.getNamedTestBean().namedFieldInjection.one.getClass().getSimpleName());
-        assertEquals(NamedBeanTwo.class.getSimpleName(),
-                app.getNamedTestBean().namedFieldInjection.two.getClass().getSimpleName());
+
+    assertEquals(6, beans.size());
+    List<String> result = new ArrayList<>();
+    for (SyncBeanDef lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
+      result.add(((NamedBean) lookupBean.getInstance()).say());
     }
+    assertTrue(result.contains(NamedBeanDefault.class.getCanonicalName()));
+    assertTrue(result.contains(NamedBeanOne.class.getCanonicalName()));
+    assertTrue(result.contains(NamedBeanTwo.class.getCanonicalName()));
 
-    @Test
-    public void testBeanManager() {
-        Set<NamedBean> beans = new HashSet<>();
-        for (SyncBeanDef<NamedBean> lookupBean : app.beanManager
-                .<NamedBean>lookupBeans(NamedBean.class)) {
-            beans.add(lookupBean.getInstance());
-        }
+    Named namedBeanOne = new Named() {
 
+      public Class<? extends Annotation> annotationType() {
+        return javax.inject.Named.class;
+      }
 
-        assertEquals(6, beans.size());
-        List<String> result = new ArrayList<>();
-        for (SyncBeanDef lookupBean : app.beanManager.lookupBeans(NamedBean.class)) {
-            result.add(((NamedBean) lookupBean.getInstance()).say());
-        }
-        assertTrue(result.contains(NamedBeanDefault.class.getCanonicalName()));
-        assertTrue(result.contains(NamedBeanOne.class.getCanonicalName()));
-        assertTrue(result.contains(NamedBeanTwo.class.getCanonicalName()));
+      public String value() {
+        return "NamedBeanOne";
+      }
+    };
 
-        Named namedBeanOne = new Named() {
+    Named namedBeanTwo = new Named() {
 
-            public Class<? extends Annotation> annotationType() {
-                return javax.inject.Named.class;
-            }
+      public Class<? extends Annotation> annotationType() {
+        return javax.inject.Named.class;
+      }
 
-            public String value() {
-                return "NamedBeanOne";
-            }
-        };
+      public String value() {
+        return "NamedBeanTwo";
+      }
+    };
 
-        Named namedBeanTwo = new Named() {
-
-            public Class<? extends Annotation> annotationType() {
-                return javax.inject.Named.class;
-            }
-
-            public String value() {
-                return "NamedBeanTwo";
-            }
-        };
-
-        assertEquals(NamedBeanDefault.class,
-                app.beanManager.lookupBean(NamedBean.class).getInstance().getClass());
-        assertEquals(NamedBeanDefault.class.getCanonicalName(),
-                app.beanManager.lookupBean(NamedBean.class).getName());
-        assertEquals(NamedBeanOne.class,
-                app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getInstance().getClass());
-        assertEquals(NamedBeanOne.class.getSimpleName(),
-                app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getName());
-        assertEquals(NamedBeanTwo.class,
-                app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getInstance().getClass());
-        assertEquals(NamedBeanTwo.class.getSimpleName(),
-                app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getName());
-    }
+    assertEquals(NamedBeanDefault.class,
+        app.beanManager.lookupBean(NamedBean.class).getInstance().getClass());
+    assertEquals(NamedBeanDefault.class.getCanonicalName(),
+        app.beanManager.lookupBean(NamedBean.class).getName());
+    assertEquals(NamedBeanOne.class,
+        app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getInstance().getClass());
+    assertEquals(NamedBeanOne.class.getSimpleName(),
+        app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getName());
+    assertEquals(NamedBeanTwo.class,
+        app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getInstance().getClass());
+    assertEquals(NamedBeanTwo.class.getSimpleName(),
+        app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getName());
+  }
 }

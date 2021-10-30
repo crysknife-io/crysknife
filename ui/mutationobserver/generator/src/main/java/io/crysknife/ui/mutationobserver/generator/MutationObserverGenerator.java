@@ -164,8 +164,7 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
     builder.getInitInstanceMethod().getBody().get()
         .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
-            .addArgument("this.instance." + fieldName)
-            .addArgument("(ObserverCallback) m -> this.instance."
+            .addArgument("instance." + fieldName).addArgument("(ObserverCallback) m -> instance."
                 + definition.getExecutableElement().getSimpleName().toString() + "(m)"));
   }
 }

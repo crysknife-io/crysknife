@@ -31,8 +31,6 @@ import org.treblereel.injection.qualifiers.controls.NodeBuilderControl;
 import org.treblereel.injection.qualifiers.specializes.SpecializesBeanHolder;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
-import org.treblereel.postconstruct.Child;
-import org.treblereel.postconstruct.ChildTwo;
 import org.treblereel.postconstruct.PostConstructs;
 import org.treblereel.produces.SimpleBeanProducerTest;
 import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
@@ -91,7 +89,7 @@ public class App {
 
   @PostConstruct
   public void init() {
-    this.testPostConstruct = "PostConstruct";
+    this.testPostConstruct = "PostConstructChild";
   }
 
   public String getTestPostConstruct() {

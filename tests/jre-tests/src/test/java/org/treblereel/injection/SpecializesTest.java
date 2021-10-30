@@ -30,14 +30,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class SpecializesTest extends AbstractTest {
 
-  private final PrintStream standardOut = System.out;
-  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
-
-  @Before
-  public void setUp() {
-    System.setOut(new PrintStream(outputStreamCaptor));
-  }
-
   @Test
   public void testSpecializesBean() {
     assertEquals(SpecializesBeanImpl.class, app.specializesBeanHolder.bean.getClass());

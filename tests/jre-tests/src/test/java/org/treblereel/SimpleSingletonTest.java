@@ -15,6 +15,7 @@
 package org.treblereel;
 
 import org.junit.Test;
+import org.treblereel.scopes.ApplicationScopedBean;
 
 import static org.junit.Assert.assertEquals;
 
@@ -32,5 +33,12 @@ public class SimpleSingletonTest extends AbstractTest {
 
     assertEquals(fieldOne, fieldTwo);
     assertEquals(constrOne, constrTwo);
+
+    ApplicationScopedBean applicationScopedBean1 =
+        app.beanManager.lookupBean(ApplicationScopedBean.class).getInstance();
+    ApplicationScopedBean applicationScopedBean2 =
+        app.beanManager.lookupBean(ApplicationScopedBean.class).getInstance();
+    assertEquals(applicationScopedBean1.getValue(), applicationScopedBean2.getValue());
+
   }
 }

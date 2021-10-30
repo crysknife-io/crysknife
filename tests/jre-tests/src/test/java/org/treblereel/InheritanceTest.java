@@ -19,6 +19,12 @@ import org.treblereel.injection.inheritance.Target;
 import org.treblereel.postconstruct.ChildFour;
 import org.treblereel.postconstruct.ChildThree;
 import org.treblereel.postconstruct.ChildTwo;
+import org.treblereel.postconstruct.PostConstructChild;
+import org.treblereel.postconstruct.PostConstructParent;
+
+import javax.inject.Named;
+
+import java.lang.annotation.Annotation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -30,7 +36,7 @@ public class InheritanceTest extends AbstractTest {
 
   @Test
   public void testPostConstructAppBootstrap() {
-    assertEquals("PostConstruct", app.testPostConstruct);
+    assertEquals("PostConstructChild", app.testPostConstruct);
   }
 
   @Test
@@ -52,6 +58,44 @@ public class InheritanceTest extends AbstractTest {
   public void testChildPostConstructCalled() {
     assertEquals(1, app.postConstructs.child.calls.size());
     assertEquals("Parent", app.postConstructs.child.calls.get(0));
+
+    app.beanManager.lookupBeans(ChildTwo.class).forEach(bean -> {
+      if (bean.getName().equals(ChildTwo.class.getCanonicalName())) {
+        assertEquals(ChildTwo.class, bean.getInstance().getClass());
+        assertEquals(2, bean.getInstance().calls.size());
+        assertEquals("Parent", bean.getInstance().calls.get(0));
+        assertEquals("ChildTwo", bean.getInstance().calls.get(1));
+      } else if (bean.getName().equals(ChildThree.class.getCanonicalName())) {
+        assertEquals(2, bean.getInstance().calls.size());
+      } else if (bean.getName().equals(ChildFour.class.getCanonicalName())) {
+        assertEquals(3, bean.getInstance().calls.size());
+        assertEquals("ChildFour", bean.getInstance().calls.get(2));
+      }
+    });
+  }
+
+  @Test
+  public void testPrivatePostConstructCalled() {
+    PostConstructParent postConstructParent =
+        app.beanManager.lookupBean(PostConstructParent.class, new Named() {
+          @Override
+          public Class<? extends Annotation> annotationType() {
+            return Named.class;
+          }
+
+          @Override
+          public String value() {
+            return "PostConstructParent";
+          }
+        }).getInstance();
+    PostConstructChild postConstructChild =
+        app.beanManager.lookupBean(PostConstructChild.class).getInstance();
+
+
+    assertEquals(PostConstructParent.class.getSimpleName(),
+        postConstructParent.postConstructParent);
+    assertEquals(PostConstructChild.class.getSimpleName(), postConstructChild.postConstructChild);
+    assertEquals(PostConstructParent.class.getSimpleName(), postConstructChild.postConstructParent);
 
     app.beanManager.lookupBeans(ChildTwo.class).forEach(bean -> {
       if (bean.getName().equals(ChildTwo.class.getCanonicalName())) {

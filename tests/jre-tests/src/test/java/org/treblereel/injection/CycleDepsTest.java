@@ -35,14 +35,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class CycleDepsTest extends AbstractTest {
 
-  private final PrintStream standardOut = System.out;
-  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
-
-  @Before
-  public void setUp() {
-    System.setOut(new PrintStream(outputStreamCaptor));
-  }
-
   @Test
   public void testSimple() {
     BeanManager beanManager = app.beanManager;

@@ -33,24 +33,17 @@ public class ProducesBeanFactory<T> extends BeanFactory<T> {
 
   @Override()
   public T createInstance() {
-    this.instance = producer.get();
-    return instance;
+    return producer.get();
   }
 
   @Override()
   public T getInstance() {
-    if (beanDef.getScope().equals(Dependent.class)) {
-      return producer.get();
-    } else {
-      if (instance == null) {
-        instance = producer.get();
-      }
-      return instance;
-    }
+    return createInstance();
   }
 
   @Override
-  public void initInstance() {
+  public void initInstance(T instance) {
 
   }
+
 }

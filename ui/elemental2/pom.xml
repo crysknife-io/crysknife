@@ -58,6 +58,10 @@
       <artifactId>javaparser-core</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.auto</groupId>
+      <artifactId>auto-common</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

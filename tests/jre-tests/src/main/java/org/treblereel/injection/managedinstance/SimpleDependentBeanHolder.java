@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,28 +12,27 @@
  * the License.
  */
 
-package org.treblereel;
+package org.treblereel.injection.managedinstance;
 
-import org.junit.Before;
+import io.crysknife.client.ManagedInstance;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
+ * @author Dmitrii Tikhomirov Created by treblereel 10/27/21
  */
-public abstract class AbstractTest {
+@Singleton
+public class SimpleDependentBeanHolder {
 
-  protected App app = new App();
+  ManagedInstance<SimpleDependentBean> bean1;
+  ManagedInstance<SimpleDependentBean> bean2;
 
-  private final PrintStream standardOut = System.out;
-  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+  @Inject
+  SimpleDependentBeanHolder(ManagedInstance<SimpleDependentBean> bean1,
+      ManagedInstance<SimpleDependentBean> bean2) {
+    this.bean1 = bean1;
+    this.bean2 = bean2;
 
-  @Before
-  public void init() {
-    System.setOut(new PrintStream(outputStreamCaptor));
-
-    new AppBootstrap(app).initialize();
   }
-
 }

@@ -97,9 +97,8 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
   }
 
   private void initDelegate(ClassBuilder builder, BeanDefinition beanDefinition) {
-    initDelegate = builder.addMethod("initDelegate", Modifier.Keyword.PRIVATE);
-
-
+    initDelegate = builder.addMethod("initDelegate", Modifier.Keyword.PUBLIC);
+    initDelegate.addParameter(Utils.getSimpleClassName(beanDefinition.getType()), "instance");
   }
 
   private void getInstance(ClassBuilder builder, BeanDefinition beanDefinition) {
@@ -113,7 +112,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
     body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
 
 
-    builder.getClassDeclaration().getMethodsByName("getInstance").get(0).setBody(body);
+    // builder.getClassDeclaration().getMethodsByName("getInstance").get(0).setBody(body);
   }
 
   private void createInstance(ClassBuilder builder, BeanDefinition beanDefinition) {
@@ -129,7 +128,8 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
           newInstance.addArgument(
               getFieldAccessorExpression(builder, beanDefinition, argument, "constructor"));
         }
-        FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");
+        VariableDeclarationExpr interceptor = new VariableDeclarationExpr(
+            new ClassOrInterfaceType().setName(Interceptor.class.getSimpleName()), "interceptor");
 
         ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
         interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
@@ -149,7 +149,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
               .setName("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())),
           new NameExpr("instance"))), "setInstance").addArgument("delegate"));
 
-      body.addAndGetStatement(new MethodCallExpr("doInitInstance"));
+      body.addAndGetStatement(new MethodCallExpr("initInstance").addArgument("delegate"));
       if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
         beanDefinition.getFields().forEach(fieldPoint -> {
           Expression expr =
@@ -159,12 +159,13 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
       }
     });
 
+    String proxyName = "Proxy" + Utils.getSimpleClassName(beanDefinition.getType());
+
     BlockStmt body = new BlockStmt();
 
-    FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
-    AssignExpr assignExpr = new AssignExpr().setTarget(instance);
-    assignExpr.setValue(new ObjectCreationExpr()
-        .setType("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())));
+    AssignExpr assignExpr = new AssignExpr().setTarget(
+        new VariableDeclarationExpr(new ClassOrInterfaceType().setName(proxyName), "instance"));
+    assignExpr.setValue(new ObjectCreationExpr().setType(proxyName));
 
     body.addAndGetStatement(assignExpr);
     MethodDeclaration existingCreateInstance =
@@ -206,6 +207,10 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
 
     wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
 
+    wrapper.addField(
+        new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())),
+        "instance", Modifier.Keyword.PRIVATE);
+
     ConstructorDeclaration constructor = wrapper.addConstructor(Modifier.Keyword.PRIVATE);
     MethodCallExpr _super = new MethodCallExpr("super");
     beanDefinition.getConstructorParams().forEach(param -> {
@@ -217,9 +222,6 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
     constructor.getBody().addAndGetStatement(_super);
 
     builder.getClassDeclaration().addMember(wrapper);
-
-    wrapper.addField(Utils.getSimpleClassName(beanDefinition.getType()), "instance",
-        Modifier.Keyword.PRIVATE);
 
     Utils.getAllMethodsIn(elements, MoreTypes.asTypeElement(beanDefinition.getType())).stream()
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.STATIC))

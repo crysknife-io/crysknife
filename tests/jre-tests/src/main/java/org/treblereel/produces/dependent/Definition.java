@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,20 +12,10 @@
  * the License.
  */
 
-package io.crysknife.client.internal;
-
-import io.crysknife.client.BeanManager;
+package org.treblereel.produces.dependent;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/30/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/10/21
  */
-public abstract class ProxyBeanFactory<T> extends BeanFactory<T> {
-
-  protected ProxyBeanFactory(BeanManager beanManager) {
-    super(beanManager);
-  }
-
-  public abstract void dependantBeanReady(Class clazz);
-
-  public abstract void initDelegate(T instance);
+public interface Definition {
 }

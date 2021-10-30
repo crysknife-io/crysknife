@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,20 +12,27 @@
  * the License.
  */
 
-package io.crysknife.client.internal;
+package org.treblereel.scopes;
 
-import io.crysknife.client.BeanManager;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import java.util.Random;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 9/30/21
+ * @author Dmitrii Tikhomirov Created by treblereel 10/10/21
  */
-public abstract class ProxyBeanFactory<T> extends BeanFactory<T> {
+@ApplicationScoped
+public class ApplicationScopedBean {
 
-  protected ProxyBeanFactory(BeanManager beanManager) {
-    super(beanManager);
+  private int value;
+
+  public int getValue() {
+    return value;
   }
 
-  public abstract void dependantBeanReady(Class clazz);
 
-  public abstract void initDelegate(T instance);
+  @PostConstruct
+  public void init() {
+    value = new Random().nextInt();
+  }
 }

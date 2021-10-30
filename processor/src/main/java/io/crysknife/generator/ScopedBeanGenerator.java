@@ -29,6 +29,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -147,7 +148,9 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    classBuilder.addInitInstanceMethod();
+    MethodDeclaration initMethodDeclaration = classBuilder.addInitInstanceMethod();
+    initMethodDeclaration.addAnnotation(Override.class);
+    initMethodDeclaration.addParameter(beanDefinition.getType().toString(), "instance");
   }
 
   public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
@@ -186,7 +189,6 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
   private void generateInterceptorFieldDeclaration(ClassBuilder clazz) {
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
       clazz.getClassCompilationUnit().addImport(Interceptor.class);
-      clazz.addField(Interceptor.class.getSimpleName(), "interceptor", Modifier.Keyword.PRIVATE);
     }
   }
 
@@ -199,32 +201,10 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     classBuilder.setGetMethodDeclaration(getMethodDeclaration);
   }
 
-  public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder,
+  public void generateInstanceGetMethodBuilder(ClassBuilder builder,
       BeanDefinition beanDefinition) {
-    MethodDeclaration getMethodDeclaration =
-        classBuilder.addMethod("getInstance", Modifier.Keyword.PUBLIC);
-
-    getMethodDeclaration.addAnnotation(Override.class);
-    getMethodDeclaration.setType(Utils.getSimpleClassName(classBuilder.beanDefinition.getType()));
-
-    getMethodDeclaration.getBody().ifPresent(body -> {
-
-      IfStmt ifStmt = new IfStmt().setCondition(new UnaryExpr(
-          new MethodCallExpr(new MethodCallExpr(new NameExpr("beanDef"), "getScope"), "equals")
-              .addArgument(new FieldAccessExpr(new NameExpr("Dependent"), "class")),
-          LOGICAL_COMPLEMENT));
-
-      body.addAndGetStatement(ifStmt);
-      BlockStmt blockStmt = new BlockStmt();
-
-      blockStmt.addAndGetStatement(
-          new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"), new NullLiteralExpr(),
-              BinaryExpr.Operator.NOT_EQUALS)).setThenStmt(new ReturnStmt("instance")));
-      ifStmt.setThenStmt(blockStmt);
-      body.addAndGetStatement(new MethodCallExpr("createInstance"));
-      body.addAndGetStatement(new MethodCallExpr("initInstance"));
-      body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
-    });
+    builder.getGetMethodDeclaration().getBody().get()
+        .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
   }
 
   public void generateDependantFieldDeclaration(ClassBuilder classBuilder,
@@ -269,17 +249,15 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
-          + "Info." + fieldPoint.getVariableElement().getSimpleName())
-              .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
+          + "Info." + fieldPoint.getVariableElement().getSimpleName()).addArgument("instance")
               .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"));
     }
 
-    FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
     MethodCallExpr reflect =
         new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
             .addArgument(
                 new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getVariableElement())))
-            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
+            .addArgument("instance");
 
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);
@@ -290,8 +268,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
     onFieldAccessedCreationExpr.addArgument(lambda);
 
-    return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
-        .addArgument(onFieldAccessedCreationExpr);
+    return new MethodCallExpr(new NameExpr("interceptor"), "addGetPropertyInterceptor")
+        .addArgument(reflect).addArgument(onFieldAccessedCreationExpr);
   }
 
   private void generateInstanceGetFieldDecorators(ClassBuilder clazz,
@@ -348,10 +326,14 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   protected Expression generateInstanceInitializer(ClassBuilder classBuilder,
       BeanDefinition definition) {
-    instance = new FieldAccessExpr(new ThisExpr(), "instance");
+
+    VariableDeclarationExpr expr = new VariableDeclarationExpr(
+        new ClassOrInterfaceType().setName(Utils.getSimpleClassName(definition.getType())),
+        "instance");
+
     Expression instanceFieldAssignExpr =
         generateInstanceInitializerNewObjectExpr(classBuilder, definition);
-    return new AssignExpr().setTarget(instance).setValue(instanceFieldAssignExpr);
+    return new AssignExpr().setTarget(expr).setValue(instanceFieldAssignExpr);
   }
 
   protected Expression generateInstanceInitializerNewObjectExpr(ClassBuilder classBuilder,
@@ -368,16 +350,16 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     Expression instanceFieldAssignExpr;
 
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
-      FieldAccessExpr interceptor = new FieldAccessExpr(new ThisExpr(), "interceptor");
-
       ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
       interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
       interceptorCreationExpr.addArgument(newInstance);
 
-      classBuilder.getGetMethodDeclaration().getBody().get().addAndGetStatement(
-          new AssignExpr().setTarget(interceptor).setValue(interceptorCreationExpr));
+      classBuilder.getGetMethodDeclaration().getBody().get()
+          .addAndGetStatement(new AssignExpr().setTarget(new VariableDeclarationExpr(
+              new ClassOrInterfaceType().setName(Interceptor.class.getSimpleName()), "interceptor"))
+              .setValue(interceptorCreationExpr));
 
-      instanceFieldAssignExpr = new MethodCallExpr(interceptor, "getProxy");
+      instanceFieldAssignExpr = new MethodCallExpr(new NameExpr("interceptor"), "getProxy");
     } else {
       instanceFieldAssignExpr = newInstance;
     }

@@ -205,6 +205,8 @@
                         <exclude>eclipse-java-google-style.xml</exclude>
                         <exclude>docs/**</exclude>
                         <exclude>**/*.less</exclude>
+                        <exclude>**/*.html</exclude>
+                        <exclude>**/*.css</exclude>
                         <exclude>**/.factorypath</exclude>
                     </excludes>
                     <properties>
@@ -326,12 +328,12 @@
         <repository>
             <id>treblereel-snapshots</id>
             <name>Vertispan hosted artifacts-releases</name>
-            <url>https://repo.treblereel.org/snapshots</url>
+            <url>https://maven.pkg.github.com/treblereel/gwtproject</url>
         </repository>
         <repository>
             <id>vertispan</id>
             <name>vertispan</name>
-            <url>https://repo.vertispan.com/gwt-snapshot/</url>
+            <url>https://maven.pkg.github.com/treblereel/gwtproject</url>
         </repository>
         <repository>
             <id>vertispan-releases</id>

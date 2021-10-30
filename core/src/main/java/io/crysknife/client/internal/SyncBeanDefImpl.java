@@ -23,8 +23,10 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +45,9 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   private List<Class<?>> assignableTypes;
   private Optional<BeanFactory<T>> factory = Optional.empty();
   private Optional<Typed> typed = Optional.empty();
+  private Optional<T> instance = Optional.empty();
+  private boolean isProxy = false;
+  private T incompleteInstance = null;
 
   protected SyncBeanDefImpl(final Class<T> actualType) {
     this.actualType = actualType;
@@ -132,7 +137,29 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       BeanManagerUtil.noFactoryResolutionException(actualType,
           qualifiers.toArray(new Annotation[qualifiers.size()]));
     }
-    return factory.get().getInstance();
+
+    if (scope.equals(Dependent.class)) {
+      return factory.get().getInstance();
+    }
+
+    if (!instance.isPresent()) {
+      BeanFactory<T> _factory = factory.get();
+      if (isProxy) {
+        // init Proxy
+        if (incompleteInstance == null) {
+          incompleteInstance = factory.get().createInstance();
+          ((ProxyBeanFactory) factory.get()).initDelegate(incompleteInstance);
+          instance = Optional.of(incompleteInstance);
+          incompleteInstance = null;
+          return instance.get();
+        } else {
+          return incompleteInstance;
+        }
+      }
+      instance = Optional.of(_factory.getInstance());
+    }
+
+    return instance.get();
   }
 
   @Override
@@ -171,6 +198,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     private List<Class<?>> assignableTypes;
     private BeanFactory factory;
     private Typed typed;
+    private boolean isProxy;
 
     public Builder(final Class<?> actualType, final Class<? extends Annotation> scope) {
       this.actualType = actualType;
@@ -197,6 +225,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       return this;
     }
 
+    public Builder withProxy() {
+      this.isProxy = true;
+      return this;
+    }
+
     public <T> SyncBeanDefImpl<T> build() {
       SyncBeanDefImpl<T> definition = new SyncBeanDefImpl(actualType, scope);
       if (qualifiers != null) {
@@ -214,6 +247,10 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
       if (typed != null) {
         definition.typed = Optional.of(typed);
+      }
+
+      if (isProxy) {
+        definition.isProxy = true;
       }
 
       return definition;

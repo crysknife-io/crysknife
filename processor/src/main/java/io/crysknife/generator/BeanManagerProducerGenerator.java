@@ -48,4 +48,7 @@ public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
     classBuilder.getGetMethodDeclaration().getBody().get()
         .addAndGetStatement(new ReturnStmt(methodCallExpr));
   }
+
+  public void generateInstanceGetMethodBuilder(ClassBuilder builder,
+      BeanDefinition beanDefinition) {}
 }

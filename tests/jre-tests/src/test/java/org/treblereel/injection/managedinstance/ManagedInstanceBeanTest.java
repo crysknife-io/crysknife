@@ -35,6 +35,7 @@ import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -370,5 +371,18 @@ public class ManagedInstanceBeanTest extends AbstractTest {
     assertEquals(DefaultPreferencesRegistry.class,
         app.beanManager.lookupBean(StunnerPreferencesRegistryLoader.class)
             .getInstance().preferencesHolders.get().getClass());
+  }
+
+  @Test
+  public void testDependent() {
+    assertNotEquals(
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get(),
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get());
+    assertNotEquals(
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get(),
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean2.get());
+    assertNotEquals(
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get().id,
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean2.get().id);
   }
 }
