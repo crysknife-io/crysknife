@@ -46,6 +46,10 @@ public class App {
 
     @PostConstruct
     public void init() {
+
+        DomGlobal.console.log("binit 1" + (main != null));
+        DomGlobal.console.log("binit 2" + (main.element() != null));
+
         DomGlobal.document.body.appendChild(main.element());
         initToast();
         navigation.goToWithRole(DefaultPage.class);

@@ -17,18 +17,8 @@ package io.crysknife.generator;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -44,15 +34,13 @@ import io.crysknife.client.Reflect;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.OnFieldAccessed;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.definition.InjectionParameterDefinition;
-import io.crysknife.definition.ProducesBeanDefinition;
+import io.crysknife.definition.*;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.Dependent;
@@ -147,7 +135,10 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    classBuilder.addInitInstanceMethod();
+    classBuilder.addInitInstanceMethod().getParameters()
+        .add(new Parameter(
+            new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())),
+            "instance"));
   }
 
   public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
@@ -221,8 +212,13 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
           new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"), new NullLiteralExpr(),
               BinaryExpr.Operator.NOT_EQUALS)).setThenStmt(new ReturnStmt("instance")));
       ifStmt.setThenStmt(blockStmt);
-      body.addAndGetStatement(new MethodCallExpr("createInstance"));
-      body.addAndGetStatement(new MethodCallExpr("initInstance"));
+
+      body.addAndGetStatement(new AssignExpr()
+          .setTarget(new VariableDeclarationExpr(new ClassOrInterfaceType().setName(
+              Utils.getSimpleClassName(classBuilder.beanDefinition.getType())), "instance"))
+          .setValue(new MethodCallExpr("createInstance")));
+
+      body.addAndGetStatement(new MethodCallExpr("initInstance").addArgument("instance"));
       body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
     });
   }

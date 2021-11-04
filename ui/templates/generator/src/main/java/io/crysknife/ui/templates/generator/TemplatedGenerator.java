@@ -559,7 +559,21 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     addElementMethod(wrapper, templateContext, dataElementInfo);
     addInitMethod(wrapper, templateContext, dataElementInfo);
 
+    addInitMethodCaller(builder);
+
     builder.getClassDeclaration().addMember(wrapper);
+  }
+
+  private void addInitMethodCaller(ClassBuilder builder) {
+    MethodDeclaration doInitInstance =
+        builder.addMethod("doInitInstance", com.github.javaparser.ast.Modifier.Keyword.PROTECTED);
+    doInitInstance.addAnnotation(Override.class);
+    doInitInstance.addParameter(new Parameter(
+        new ClassOrInterfaceType().setName(beanDefinition.getType().toString()), "instance"));
+    doInitInstance.getBody().get().addAndGetStatement(
+        new MethodCallExpr("doInitInstance").addArgument(new EnclosedExpr(new CastExpr(
+            new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())),
+            new NameExpr("instance")))));
   }
 
   private void addElementMethod(ClassOrInterfaceDeclaration wrapper,
@@ -614,6 +628,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     setAttributes(method.getBody().get(), templateContext);
     setInnerHTML(method.getBody().get(), templateContext);
+
 
 
   }
@@ -760,8 +775,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private Expression getInstanceMethodName(DataElementInfo.Kind kind) {
-    MethodCallExpr expr =
-        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), "instance"), getMethodName(kind));
+    MethodCallExpr expr = new MethodCallExpr(new NameExpr("instance"), getMethodName(kind));
     if (kind.equals(DataElementInfo.Kind.IsWidget)) {
       uncheckedCastCall(expr, isWidget.toString());
     }

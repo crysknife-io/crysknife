@@ -46,14 +46,16 @@ public abstract class BeanFactory<T> {
 
   public abstract <T> T getInstance();
 
-  public void initInstance() {
+  public void initInstance(T instance) {
     if (beanDef.getScope().equals(Dependent.class) || !initialized) {
-      doInitInstance();
+      doInitInstance(instance);
       initialized = true;
     }
   }
 
-  protected void doInitInstance() {}
+  protected void doInitInstance(T instance) {
+
+  }
 
   public <T> T createNewInstance() {
     if (instance != null) {

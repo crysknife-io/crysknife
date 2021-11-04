@@ -111,7 +111,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("runOnStartup"));
     getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doProxyInstance"));
-    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doInitInstance"));
+    getMethodDeclaration.getBody().get()
+        .addAndGetStatement(new MethodCallExpr("doInitInstance").addArgument("instance"));
 
     setDoProxyInstance(classBuilder, beanDefinition);
     setRunOnStartup(classBuilder);

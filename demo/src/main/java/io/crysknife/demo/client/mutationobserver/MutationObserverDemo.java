@@ -18,11 +18,8 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLInputElement;
-import elemental2.dom.MutationRecord;
+import elemental2.dom.*;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
 import org.gwtproject.event.dom.client.ClickEvent;
 //import org.gwtproject.user.client.ui.Button;
 import org.jboss.elemento.IsElement;
@@ -79,7 +76,7 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("checkBtn")
-    void onCityClick(final ClickEvent e) {
+    void onCityClick(@ForEvent("click") final MouseEvent e) {
         if (test.parentNode == null) {
             container.appendChild(test);
         } else {
@@ -88,14 +85,14 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("reset")
-    void reset(final ClickEvent e) {
+    void reset(@ForEvent("click") final MouseEvent e) {
         observer.addOnAttachListener(test, m -> onAttach(m));
         observer.addOnDetachListener(test, m -> onDetach(m));
         textBox.textContent = "";
     }
 
     @EventHandler("disconnect")
-    void disconnect(final ClickEvent e) {
+    void disconnect(@ForEvent("click") final MouseEvent e) {
         observer.disconnect();
         removeAttach.disabled = true;
         removeDetach.disabled = true;
@@ -105,13 +102,13 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("removeAttach")
-    void removeOnAttachListener(final ClickEvent e) {
+    void removeOnAttachListener(@ForEvent("click") final MouseEvent e) {
         observer.removeOnAttachListener(test);
         textBox.value = "";
     }
 
     @EventHandler("removeDetach")
-    void removeOnDetachListener(final ClickEvent e) {
+    void removeOnDetachListener(@ForEvent("click") final MouseEvent e) {
         observer.removeOnDetachListener(test);
         textBox.value = "";
     }

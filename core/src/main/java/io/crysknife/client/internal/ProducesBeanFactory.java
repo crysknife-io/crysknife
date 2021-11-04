@@ -50,7 +50,12 @@ public class ProducesBeanFactory<T> extends BeanFactory<T> {
   }
 
   @Override
-  public void initInstance() {
+  public void initInstance(T instance) {
+
+  }
+
+  @Override
+  protected void doInitInstance(T instance) {
 
   }
 }

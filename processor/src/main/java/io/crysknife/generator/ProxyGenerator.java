@@ -149,7 +149,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
               .setName("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())),
           new NameExpr("instance"))), "setInstance").addArgument("delegate"));
 
-      body.addAndGetStatement(new MethodCallExpr("doInitInstance"));
+      body.addAndGetStatement(new MethodCallExpr("doInitInstance").addArgument("instance"));
       if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
         beanDefinition.getFields().forEach(fieldPoint -> {
           Expression expr =

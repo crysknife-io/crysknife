@@ -18,11 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLBRElement;
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLInputElement;
+import elemental2.dom.*;
 import io.crysknife.demo.client.databinding.listcomponent.KeyValueRow;
 import io.crysknife.demo.client.databinding.listcomponent.RolesEditorWidgetView;
 import io.crysknife.ui.databinding.client.api.AutoBound;
@@ -31,6 +27,7 @@ import io.crysknife.ui.databinding.client.api.DataBinder;
 import io.crysknife.ui.databinding.client.api.StateSync;
 import io.crysknife.ui.databinding.client.api.handler.property.PropertyChangeHandler;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.gwtproject.user.client.ui.CheckBox;
 import org.gwtproject.user.client.ui.TextBox;
@@ -152,22 +149,22 @@ public class Databinding implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("modelBtn")
-    void getModel(final ClickEvent e) {
+    void getModel(@ForEvent("click") final MouseEvent e) {
         onPropertyChange(dataBinder.getModel().toString());
     }
 
     @EventHandler("workingModelBtn")
-    void getWorkingModel(final ClickEvent e) {
+    void getWorkingModel(@ForEvent("click")final MouseEvent e) {
         onPropertyChange(dataBinder.getWorkingModel().toString());
     }
 
     @EventHandler("pauseBtn")
-    void onPause(final ClickEvent e) {
+    void onPause(@ForEvent("click")final MouseEvent e) {
         dataBinder.pause();
     }
 
     @EventHandler("resumeBtn")
-    void onResume(final ClickEvent e) {
+    void onResume(@ForEvent("click")final MouseEvent e) {
        dataBinder.resume(StateSync.FROM_UI);
     }
 }

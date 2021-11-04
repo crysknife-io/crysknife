@@ -14,18 +14,22 @@
 
 package io.crysknife.demo.client.template;
 
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.MouseEvent;
+import io.crysknife.ui.navigation.client.local.Page;
+import io.crysknife.ui.templates.client.annotation.DataField;
+import io.crysknife.ui.templates.client.annotation.EventHandler;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
+import io.crysknife.ui.templates.client.annotation.Templated;
+import org.gwtproject.event.dom.client.ClickEvent;
+import org.gwtproject.user.client.ui.Button;
+import org.jboss.elemento.IsElement;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.HTMLDivElement;
-import org.gwtproject.event.dom.client.ClickEvent;
-import org.jboss.elemento.IsElement;
-import io.crysknife.ui.templates.client.annotation.DataField;
-import io.crysknife.ui.templates.client.annotation.EventHandler;
-import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.Page;
 
 @Singleton
 @Page
@@ -42,16 +46,21 @@ public class TemplatedBean implements IsElement<HTMLDivElement> {
 
     @Inject
     @DataField
-    private HTMLButtonElement button1;
+    private Button button1;
 
     @PostConstruct
     public void init() {
-        button1.textContent = " PressMe";
+
     }
 
     @EventHandler("button")
-    public void onClick(final ClickEvent e) {
+    public void onClick(@ForEvent("click") final MouseEvent e) {
+        DomGlobal.alert("HTMLButtonElement pressed");
+    }
 
+    @EventHandler("button1")
+    public void onButton1(ClickEvent handler) {
+        DomGlobal.alert("GWT Button->ClickEvent pressed");
     }
 
     public HTMLDivElement element() {
