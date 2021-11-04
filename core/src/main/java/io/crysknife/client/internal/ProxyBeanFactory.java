@@ -26,6 +26,4 @@ public abstract class ProxyBeanFactory<T> extends BeanFactory<T> {
   }
 
   public abstract void dependantBeanReady(Class clazz);
-
-  public abstract void initDelegate(T instance);
 }

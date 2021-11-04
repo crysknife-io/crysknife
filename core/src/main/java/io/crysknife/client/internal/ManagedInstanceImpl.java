@@ -19,12 +19,9 @@ import io.crysknife.client.IOCBeanDef;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
 
-import javax.enterprise.context.Dependent;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.function.Consumer;
 
 /**

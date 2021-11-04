@@ -28,22 +28,48 @@ public abstract class BeanFactory<T> {
   protected BeanManager beanManager;
 
   protected SyncBeanDef beanDef;
+  protected T instance;
+  private T incompleteInstance;
+  private boolean initialized = false;
 
   protected BeanFactory(BeanManager beanManager) {
     this.beanManager = beanManager;
   }
 
-  public T getInstance() {
-    T instance = createInstance();
-    initInstance(instance);
-    return instance;
+  public T getIncompleteInstance() {
+    return incompleteInstance;
   }
 
-  public abstract void initInstance(T instance);
+  protected void setIncompleteInstance(final T instance) {
+    incompleteInstance = instance;
+  }
 
-  protected T createInstance() {
+  public abstract <T> T getInstance();
+
+  public void initInstance() {
+    if (beanDef.getScope().equals(Dependent.class) || !initialized) {
+      doInitInstance();
+      initialized = true;
+    }
+  }
+
+  protected void doInitInstance() {}
+
+  public <T> T createNewInstance() {
+    if (instance != null) {
+      createInstance();
+    }
+    return (T) instance;
+  }
+
+  protected <T> T createInstance() {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");
+  }
+
+  public T createContextualInstance(final Class<?>[] typeArgs, final Annotation[] qualifiers) {
+    throw new UnsupportedOperationException(
+        "The factory, " + getClass().getSimpleName() + ", does not support contextual instances.");
   }
 
 }

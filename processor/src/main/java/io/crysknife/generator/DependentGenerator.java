@@ -36,4 +36,11 @@ public class DependentGenerator extends ScopedBeanGenerator {
     iocContext.register(Dependent.class, WiringElementType.BEAN, this);
   }
 
+  @Override
+  public void generateInstanceGetMethodBuilder(ClassBuilder builder,
+      BeanDefinition beanDefinition) {
+    super.generateInstanceGetMethodBuilder(builder, beanDefinition);
+    builder.getGetMethodDeclaration().getBody().get()
+        .addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
+  }
 }

@@ -204,9 +204,6 @@ public class BindableGenerator extends ScopedBeanGenerator {
     body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
     classBuilder.addField("DataBinder_Factory", "instance", Modifier.Keyword.PRIVATE,
         Modifier.Keyword.STATIC);
-
-    classBuilder.addMethod("initInstance", Modifier.Keyword.PUBLIC)
-        .addParameter("DataBinder", "fake").addAnnotation(Override.class);
   }
 
   public void generateFactoryForTypeMethod(ClassBuilder classBuilder,

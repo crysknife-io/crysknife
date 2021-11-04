@@ -23,8 +23,6 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
@@ -104,13 +102,6 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    MethodDeclaration initMethodDeclaration = classBuilder.addInitInstanceMethod();
-    initMethodDeclaration.addParameter(beanDefinition.getType().toString(), "instance");
-  }
-
-  @Override
   public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     classBuilder.addConstructorDeclaration();
@@ -120,8 +111,7 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
     getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("runOnStartup"));
     getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doProxyInstance"));
-    getMethodDeclaration.getBody().get()
-        .addAndGetStatement(new MethodCallExpr("initInstance").addArgument("instance"));
+    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doInitInstance"));
 
     setDoProxyInstance(classBuilder, beanDefinition);
     setRunOnStartup(classBuilder);
@@ -142,12 +132,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
       interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
       interceptorCreationExpr.addArgument(new NameExpr("instance"));
 
-      doProxyInstance.getBody().get()
-          .addAndGetStatement(new AssignExpr().setTarget(new VariableDeclarationExpr(
-              new ClassOrInterfaceType().setName(Interceptor.class.getSimpleName()), "interceptor"))
-              .setValue(interceptorCreationExpr));
-
-
+      doProxyInstance.getBody().get().addAndGetStatement(new AssignExpr()
+          .setTarget(new NameExpr("interceptor")).setValue(interceptorCreationExpr));
 
       doProxyInstance.getBody().get()
           .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
@@ -179,7 +165,9 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   @Override
   public void generateInstanceGetMethodReturn(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {}
+      BeanDefinition beanDefinition) {
+
+  }
 
   @Override
   public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
