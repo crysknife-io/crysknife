@@ -309,31 +309,30 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
 
     <!-- Specify that we will push snapshots and releases to sonatype's repos -->
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>treblereel</id>
+            <url>https://repo.treblereel.org/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>treblereel</id>
+            <url>https://repo.treblereel.org/releases</url>
         </repository>
     </distributionManagement>
 
     <repositories>
         <repository>
             <id>treblereel-snapshots</id>
-            <name>Vertispan hosted artifacts-releases</name>
-            <url>https://maven.pkg.github.com/treblereel/gwtproject</url>
+            <name>treblereel hosted artifacts-snapshots</name>
+            <url>https://repo.treblereel.org/snapshots</url>
         </repository>
         <repository>
-            <id>vertispan</id>
-            <name>vertispan</name>
-            <url>https://maven.pkg.github.com/treblereel/gwtproject</url>
+            <id>treblereel-releases</id>
+            <name>treblereel hosted artifacts-releases</name>
+            <url>https://repo.treblereel.org/releases</url>
         </repository>
         <repository>
             <id>vertispan-releases</id>
@@ -344,16 +343,6 @@
             </releases>
             <snapshots>
                 <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>vertispan-snapshots</id>
-            <name>Vertispan Snapshots</name>
-            <url>https://repo.vertispan.com/gwt-snapshot/</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
             </snapshots>
         </repository>
     </repositories>

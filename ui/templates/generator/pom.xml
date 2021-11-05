@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>templates-parent</artifactId>
+    <groupId>io.crysknife.ui.templates</groupId>
+    <artifactId>parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>templates-generator</artifactId>
+  <artifactId>generator</artifactId>
   <description>templates generator</description>
   <packaging>jar</packaging>
 
@@ -71,8 +71,8 @@
       <artifactId>crysknife-processor</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>templates-api</artifactId>
+      <groupId>io.crysknife.ui.templates</groupId>
+      <artifactId>api</artifactId>
     </dependency>
   </dependencies>
   <build>

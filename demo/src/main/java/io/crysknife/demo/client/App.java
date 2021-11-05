@@ -23,12 +23,10 @@ import elemental2.dom.HTMLDivElement;
 import io.crysknife.demo.client.events.Address;
 import io.crysknife.demo.client.events.User;
 import io.crysknife.annotation.Application;
-import io.crysknife.annotation.ComponentScan;
 import io.crysknife.ui.navigation.client.local.DefaultPage;
 import io.crysknife.ui.navigation.client.local.Navigation;
 
 @Application
-@ComponentScan("io.crysknife.demo.client")
 public class App {
 
     @Inject

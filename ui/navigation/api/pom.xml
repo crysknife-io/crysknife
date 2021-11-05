@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>navigation-parent</artifactId>
+    <groupId>io.crysknife.ui.navigation</groupId>
+    <artifactId>parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>navigation-api</artifactId>
+  <artifactId>api</artifactId>
   <description>navigation api</description>
   <packaging>jar</packaging>
 

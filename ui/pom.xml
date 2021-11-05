@@ -9,6 +9,7 @@
   </parent>
 
   <artifactId>ui-parent</artifactId>
+  <groupId>io.crysknife.ui</groupId>
   <description>UI parent</description>
   <packaging>pom</packaging>
 

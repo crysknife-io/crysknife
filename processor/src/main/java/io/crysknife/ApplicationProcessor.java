@@ -30,7 +30,6 @@ import io.crysknife.task.BeanProcessorTask;
 import io.crysknife.task.CheckCyclesTask;
 import io.crysknife.task.FireAfterTask;
 import io.crysknife.task.FireBeforeTask;
-import io.crysknife.task.ProcessComponentScanAnnotationTask;
 import io.crysknife.task.ProcessGraphTask;
 import io.crysknife.task.ProcessSubClassesTask;
 import io.crysknife.task.TaskGroup;
@@ -86,7 +85,6 @@ public class ApplicationProcessor extends AbstractProcessor {
     // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
     taskGroup.addTask(new FireBeforeTask(iocContext, logger));
 
-    taskGroup.addTask(new ProcessComponentScanAnnotationTask(iocContext, logger, application));
     taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
     taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
     // taskGroup.addTask(new FireBeforeTask(iocContext, logger));

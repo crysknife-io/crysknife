@@ -3,12 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
+    <groupId>io.crysknife.ui</groupId>
     <artifactId>ui-parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>mutationobserver-parent</artifactId>
+  <artifactId>parent</artifactId>
+  <groupId>io.crysknife.ui.mutationobserver</groupId>
+
   <description>mutationobserver parent</description>
   <packaging>pom</packaging>
 

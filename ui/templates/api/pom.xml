@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>templates-parent</artifactId>
+    <groupId>io.crysknife.ui.templates</groupId>
+    <artifactId>parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>templates-api</artifactId>
+  <artifactId>api</artifactId>
   <description>templates api</description>
   <packaging>jar</packaging>
 

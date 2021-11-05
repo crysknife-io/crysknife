@@ -175,6 +175,17 @@
         </dependencies>
     </dependencyManagement>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>treblereel</id>
+            <url>https://repo.treblereel.org/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>treblereel</id>
+            <url>https://repo.treblereel.org/releases</url>
+        </repository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>treblereel-snapshots</id>

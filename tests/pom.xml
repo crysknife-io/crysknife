@@ -8,7 +8,8 @@
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>tests</artifactId>
+  <artifactId>parent</artifactId>
+  <groupId>io.crysknife.tests</groupId>
   <version>0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -16,5 +17,16 @@
     <module>jre-tests</module>
   </modules>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   
 </project>
