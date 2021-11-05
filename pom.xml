@@ -8,7 +8,7 @@
     <version>0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>crysknife-parent</name>
+    <name>crysknife parent</name>
     <description>POC DI for GWT 3 or j2cl</description>
     <url>https://github.com/treblereel</url>
 

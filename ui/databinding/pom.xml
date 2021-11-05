@@ -14,8 +14,8 @@
   <packaging>pom</packaging>
 
 
-  <name>databinding-parent</name>
-  <description>databinding</description>
+  <name>UI databinding parent</name>
+  <description>UI databinding parent</description>
   <url>https://github.com/treblereel</url>
 
   <developers>

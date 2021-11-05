@@ -9,8 +9,10 @@
   </parent>
 
   <artifactId>api</artifactId>
-  <description>navigation api</description>
   <packaging>jar</packaging>
+
+  <name>UI navigation api</name>
+  <description>UI navigation api</description>
 
   <developers>
     <developer>

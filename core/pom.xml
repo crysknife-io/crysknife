@@ -10,7 +10,7 @@
   <artifactId>crysknife-core</artifactId>
   <packaging>jar</packaging>
 
-  <name>crysknife-core</name>
+  <name>crysknife core</name>
   <description>This artifact contains core components for crysknife</description>
   <url>https://github.com/treblereel</url>
 

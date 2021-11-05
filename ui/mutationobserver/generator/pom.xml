@@ -9,8 +9,10 @@
   </parent>
 
   <artifactId>generator</artifactId>
-  <description>mutationobserver generator</description>
   <packaging>jar</packaging>
+
+  <name>UI mutationobserver generator</name>
+  <description>UI mutationobserver generator</description>
 
   <developers>
     <developer>

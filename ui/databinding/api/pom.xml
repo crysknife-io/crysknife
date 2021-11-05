@@ -10,8 +10,10 @@
 
   <artifactId>api</artifactId>
   <groupId>io.crysknife.ui.databinding</groupId>
-  <description>databinding api</description>
   <packaging>jar</packaging>
+
+  <name>UI databinding api</name>
+  <description>UI databinding api</description>
 
   <developers>
     <developer>

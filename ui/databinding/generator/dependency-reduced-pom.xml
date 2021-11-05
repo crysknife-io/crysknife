@@ -7,7 +7,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>generator</artifactId>
-  <description>databinding generator</description>
+  <name>UI databinding generator</name>
+  <description>UI databinding generator</description>
   <developers>
     <developer>
       <id>treblereel</id>

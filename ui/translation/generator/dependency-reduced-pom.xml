@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <artifactId>ui-parent</artifactId>
-    <groupId>io.crysknife.ui</groupId>
+    <artifactId>parent</artifactId>
+    <groupId>io.crysknife.ui.translation</groupId>
     <version>0.3-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>elemental2-generator</artifactId>
-  <name>UI elemental2 factories generator</name>
-  <description>UI elemental2 factories generator</description>
+  <artifactId>generator</artifactId>
+  <name>UI translation generator</name>
+  <description>UI translation generator</description>
   <developers>
     <developer>
       <id>treblereel</id>
@@ -28,11 +28,6 @@
     <url>https://github.com/treblereel</url>
   </organization>
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
@@ -59,30 +54,4 @@
       </plugin>
     </plugins>
   </build>
-  <dependencies>
-    <dependency>
-      <groupId>com.google.elemental2</groupId>
-      <artifactId>elemental2-dom</artifactId>
-      <version>1.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>crysknife-annotations</artifactId>
-      <version>0.3-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>crysknife-processor</artifactId>
-      <version>0.3-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.javaparser</groupId>
-      <artifactId>javaparser-core</artifactId>
-      <version>3.15.18</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
 </project>

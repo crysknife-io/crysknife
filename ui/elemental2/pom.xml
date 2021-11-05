@@ -9,7 +9,8 @@
   </parent>
 
   <artifactId>elemental2-generator</artifactId>
-  <description>elemental2 factories generator</description>
+  <name>UI elemental2 factories generator</name>
+  <description>UI elemental2 factories generator</description>
   <packaging>jar</packaging>
 
   <developers>

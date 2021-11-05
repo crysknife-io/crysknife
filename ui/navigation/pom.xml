@@ -14,8 +14,8 @@
   <packaging>pom</packaging>
 
 
-  <name>navigation-parent</name>
-  <description>Navigation parent</description>
+  <name>UI navigation parent</name>
+  <description>UI navigation parent</description>
   <url>https://github.com/treblereel</url>
 
   <developers>

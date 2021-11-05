@@ -9,8 +9,10 @@
   </parent>
 
   <artifactId>generator</artifactId>
-  <description>databinding generator</description>
   <packaging>jar</packaging>
+
+  <name>UI databinding generator</name>
+  <description>UI databinding generator</description>
 
   <developers>
     <developer>

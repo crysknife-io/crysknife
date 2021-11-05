@@ -13,9 +13,8 @@
 
   <packaging>pom</packaging>
 
-
-  <name>templates-parent</name>
-  <description>Templates parent</description>
+  <name>UI templates parent</name>
+  <description>UI templates parent</description>
   <url>https://github.com/treblereel</url>
 
   <developers>

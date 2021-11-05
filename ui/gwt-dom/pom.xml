@@ -9,7 +9,8 @@
     </parent>
 
     <artifactId>gwt-dom-generator</artifactId>
-    <description>gwt-dom factories generator</description>
+    <name>UI gwt-dom factories generator</name>
+    <description>UI gwt-dom factories generator</description>
     <packaging>jar</packaging>
 
     <developers>

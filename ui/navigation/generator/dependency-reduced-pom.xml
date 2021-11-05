@@ -7,7 +7,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>generator</artifactId>
-  <description>navigation generator</description>
+  <name>UI navigation generator</name>
+  <description>UI navigation generator</description>
   <developers>
     <developer>
       <id>treblereel</id>

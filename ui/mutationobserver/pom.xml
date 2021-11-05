@@ -11,7 +11,8 @@
   <artifactId>parent</artifactId>
   <groupId>io.crysknife.ui.mutationobserver</groupId>
 
-  <description>mutationobserver parent</description>
+  <name>UI mutationobserver parent</name>
+  <description>UI mutationobserver parent</description>
   <packaging>pom</packaging>
 
   <developers>

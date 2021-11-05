@@ -10,6 +10,7 @@
 
   <artifactId>ui-parent</artifactId>
   <groupId>io.crysknife.ui</groupId>
+  <name>UI parent</name>
   <description>UI parent</description>
   <packaging>pom</packaging>
 
@@ -31,6 +32,7 @@
     <module>databinding</module>
     <module>mutationobserver</module>
     <module>navigation</module>
+    <module>translation</module>
   </modules>
 
   <licenses>

@@ -9,8 +9,10 @@
   </parent>
 
   <artifactId>api</artifactId>
-  <description>mutationobserver api</description>
   <packaging>jar</packaging>
+
+  <name>UI mutationobserver api</name>
+  <description>UI mutationobserver api</description>
 
   <developers>
     <developer>

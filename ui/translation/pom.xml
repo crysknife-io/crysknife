@@ -12,6 +12,9 @@
     <artifactId>parent</artifactId>
     <groupId>io.crysknife.ui.translation</groupId>
     <packaging>pom</packaging>
+    <name>UI translation parent</name>
+    <description>UI translation parent</description>
+
     <developers>
         <developer>
             <id>treblereel</id>

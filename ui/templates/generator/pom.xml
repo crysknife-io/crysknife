@@ -9,7 +9,8 @@
   </parent>
 
   <artifactId>generator</artifactId>
-  <description>templates generator</description>
+  <name>UI templates generator</name>
+  <description>UI templates generator</description>
   <packaging>jar</packaging>
 
   <developers>
