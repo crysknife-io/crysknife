@@ -318,7 +318,8 @@ public class BeanManagerGenerator implements Task {
     private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
       return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
           && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT)
-          && beanDefinition.getIocGenerator().isPresent();
+          && beanDefinition.getIocGenerator().isPresent()
+              && beanDefinition.hasFactory();
     }
 
     private void addProducesBeanDefinition(ProducesBeanDefinition beanDefinition) {

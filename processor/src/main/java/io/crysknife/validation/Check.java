@@ -17,6 +17,7 @@ package io.crysknife.validation;
 import io.crysknife.exception.UnableToCompleteException;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/13/21
@@ -31,4 +32,11 @@ public interface Check<T> {
         .append(variableElement.getSimpleName()).append(" : ").append(msg);
     throw new UnableToCompleteException(sb.toString());
   }
+
+  default void log(TypeElement element, String msg) throws UnableToCompleteException {
+    StringBuffer sb = new StringBuffer();
+    sb.append("Error at ").append(element.toString()).append(" : ").append(msg);
+    throw new UnableToCompleteException(sb.toString());
+  }
+
 }

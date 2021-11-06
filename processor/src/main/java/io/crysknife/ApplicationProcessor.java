@@ -30,6 +30,7 @@ import io.crysknife.task.BeanProcessorTask;
 import io.crysknife.task.CheckCyclesTask;
 import io.crysknife.task.FireAfterTask;
 import io.crysknife.task.FireBeforeTask;
+import io.crysknife.task.IOCProviderTask;
 import io.crysknife.task.ProcessGraphTask;
 import io.crysknife.task.ProcessSubClassesTask;
 import io.crysknife.task.TaskGroup;
@@ -84,7 +85,7 @@ public class ApplicationProcessor extends AbstractProcessor {
     TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
     // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
     taskGroup.addTask(new FireBeforeTask(iocContext, logger));
-
+    taskGroup.addTask(new IOCProviderTask(iocContext, logger));
     taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
     taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
     // taskGroup.addTask(new FireBeforeTask(iocContext, logger));
