@@ -34,6 +34,7 @@ public class TranslationServiceTest extends AbstractTest {
     TranslationService service =
         app.beanManager.lookupBean(TranslationBeanHolder.class).getInstance().translationService;
     assertEquals("newLabel", service.getTranslation(Constants.ASSIGNEE_NEW));
+    assertEquals("BBB", service.getTranslation("AAA"));
     assertNull(service.getTranslation("test1"));
     assertEquals("Forms generation failed for [OLOLO]",
         service.format(Constants.FormsGenerationFailure, "OLOLO"));

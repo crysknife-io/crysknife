@@ -32,13 +32,8 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.translation.api.spi.TranslationService;
-import org.gwtproject.resources.apt.ClientBundleAnnotationProcessor;
-import org.gwtproject.resources.client.Resource;
 
 import javax.inject.Inject;
-import javax.lang.model.element.TypeElement;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
@@ -60,7 +55,7 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
 
     new TranslationServiceImplGenerator(iocContext).generate();
 
-    Set<TypeElement> annotations = new HashSet<>();
+    /*    Set<TypeElement> annotations = new HashSet<>();
     TypeElement resource = iocContext.getGenerationContext().getElements()
         .getTypeElement(Resource.class.getCanonicalName());
     annotations.add(resource);
@@ -69,7 +64,7 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
     clientBundleAnnotationProcessor
         .init(iocContext.getGenerationContext().getProcessingEnvironment());
     clientBundleAnnotationProcessor.process(annotations,
-        iocContext.getGenerationContext().getRoundEnvironment());
+        iocContext.getGenerationContext().getRoundEnvironment());*/
   }
 
   @Override

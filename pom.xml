@@ -208,6 +208,7 @@
                         <exclude>**/*.html</exclude>
                         <exclude>**/*.css</exclude>
                         <exclude>**/.factorypath</exclude>
+                        <exclude>**/*.properties</exclude>
                     </excludes>
                     <properties>
                         <year>${project.inceptionYear}</year>
