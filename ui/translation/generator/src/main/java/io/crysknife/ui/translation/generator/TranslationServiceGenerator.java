@@ -14,15 +14,31 @@
 
 package io.crysknife.ui.translation.generator;
 
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.InstanceFactory;
 import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.translation.api.spi.TranslationService;
+import org.gwtproject.resources.apt.ClientBundleAnnotationProcessor;
+import org.gwtproject.resources.client.Resource;
 
 import javax.inject.Inject;
+import javax.lang.model.element.TypeElement;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
@@ -42,5 +58,44 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
   @Override
   public void generate(ClassBuilder clazz, Definition beanDefinition) {
 
+    new TranslationServiceImplGenerator(iocContext).generate();
+
+    Set<TypeElement> annotations = new HashSet<>();
+    TypeElement resource = iocContext.getGenerationContext().getElements()
+        .getTypeElement(Resource.class.getCanonicalName());
+    annotations.add(resource);
+    ClientBundleAnnotationProcessor clientBundleAnnotationProcessor =
+        new ClientBundleAnnotationProcessor();
+    clientBundleAnnotationProcessor
+        .init(iocContext.getGenerationContext().getProcessingEnvironment());
+    clientBundleAnnotationProcessor.process(annotations,
+        iocContext.getGenerationContext().getRoundEnvironment());
+  }
+
+  @Override
+  public Expression generateBeanLookupCall(ClassBuilder clazz,
+      InjectableVariableDefinition fieldPoint) {
+    ClassOrInterfaceType type = new ClassOrInterfaceType();
+    type.setName(InstanceFactory.class.getCanonicalName());
+    type.setTypeArguments(
+        new ClassOrInterfaceType().setName(TranslationService.class.getCanonicalName()));
+
+    ObjectCreationExpr factory = new ObjectCreationExpr().setType(type);
+    NodeList<BodyDeclaration<?>> supplierClassBody = new NodeList<>();
+
+    MethodDeclaration getInstance = new MethodDeclaration();
+    getInstance.setModifiers(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+    getInstance.setName("getInstance");
+    getInstance.addAnnotation(Override.class);
+    getInstance
+        .setType(new ClassOrInterfaceType().setName(TranslationService.class.getCanonicalName()));
+
+    getInstance.getBody().get().addAndGetStatement(new ReturnStmt(new FieldAccessExpr(
+        new NameExpr(TranslationService.class.getCanonicalName() + "Impl"), "INSTANCE")));
+    supplierClassBody.add(getInstance);
+
+    factory.setAnonymousClassBody(supplierClassBody);
+
+    return factory;
   }
 }

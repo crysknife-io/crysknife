@@ -50,6 +50,14 @@
             <artifactId>crysknife-processor</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.gwtproject.resources</groupId>
+            <artifactId>gwt-resources-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gwtproject.resources</groupId>
+            <artifactId>gwt-resources-processor</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

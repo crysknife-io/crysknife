@@ -124,14 +124,14 @@ public abstract class TranslationService {
           @Override
           public void callback(final Composite beanInstance) {
             *//*
-                   * Only translate parent-less widgets to avoid re-translating a single widget multiple
-                   * times (the call to revisit will traverse the whole subtree rooted at this widget).
-                   *//*
-                           if (beanInstance.getParent() == null)
-                             DomVisit.revisit(new ElementWrapper(beanInstance.getElement()), new TranslationDomRevisitor());
-                          }
-                          });
-                          }*/
+                                                                     * Only translate parent-less widgets to avoid re-translating a single widget multiple
+                                                                     * times (the call to revisit will traverse the whole subtree rooted at this widget).
+                                                                     *//*
+                                                                                                                               if (beanInstance.getParent() == null)
+                                                                                                                                 DomVisit.revisit(new ElementWrapper(beanInstance.getElement()), new TranslationDomRevisitor());
+                                                                                                                              }
+                                                                                                                              });
+                                                                                                                              }*/
   }
 
   /**
