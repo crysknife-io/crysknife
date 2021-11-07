@@ -19,6 +19,7 @@ import javax.inject.Inject;
 
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
+import io.crysknife.ui.translation.api.annotations.Bundle;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
@@ -39,6 +40,7 @@ import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
  * @author Dmitrii Tikhomirov Created by treblereel 3/21/20
  */
 @Application
+@Bundle("i18n/simple/i18n.properties")
 public class App {
 
   public String testPostConstruct;

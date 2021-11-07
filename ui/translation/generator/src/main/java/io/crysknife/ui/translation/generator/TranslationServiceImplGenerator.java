@@ -15,8 +15,10 @@
 package io.crysknife.ui.translation.generator;
 
 import com.google.auto.common.MoreElements;
+import io.crysknife.client.internal.Pair;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.ui.translation.api.annotations.Bundle;
 import io.crysknife.ui.translation.api.annotations.TranslationKey;
 import io.crysknife.util.Utils;
 import org.apache.commons.io.IOUtils;
@@ -39,6 +41,10 @@ public class TranslationServiceImplGenerator {
   private final String newLine = System.lineSeparator();
   private final String IMPL = "io.crysknife.ui.translation.api.spi.TranslationServiceImpl";
   private final Set<VariableElement> fields;
+  private int counter = 0;
+  private final static String PROPERTIES = ".properties";
+  private final static String JSON = ".json";
+  private final static String ESC_NEW_LINE = "\\\\\\\\n";
 
   TranslationServiceImplGenerator(IOCContext context) {
     this.context = context;
@@ -75,24 +81,35 @@ public class TranslationServiceImplGenerator {
   }
 
   private void maybeGenerateContentHolders(Set<VariableElement> fields, StringBuffer source) {
-    Set<TypeElement> holders = fields.stream().map(field -> field.getEnclosingElement())
-        .map(element -> MoreElements.asType(element)).filter(holder -> {
+    fields.stream().map(field -> field.getEnclosingElement())
+        .map(element -> MoreElements.asType(element)).forEach(holder -> {
           String lookup = holder.toString().replaceAll("\\.", "/") + ".properties";
           URL url = context.getGenerationContext().getResourceOracle().findResource(lookup);
-          return url != null;
-        }).collect(Collectors.toSet());
+          if (url != null) {
+            generateResource(url, source);
+          }
+        });
 
-    holders.forEach(holder -> {
-      generateResource(holder, source);
+    context.getTypeElementsByAnnotation(Bundle.class.getCanonicalName()).forEach(type -> {
+      Bundle bundle = type.getAnnotation(Bundle.class);
+      String path = bundle.value();
+      if (path.endsWith(JSON)) {
+        throw new GenerationException(JSON + " bundle is not supported atm : " + type);
+      } else if (path.endsWith(PROPERTIES)) {
+        String fullPath = Utils.getPackageName(type).replaceAll("\\.", "/") + "/" + path;
+        URL url = context.getGenerationContext().getResourceOracle().findResource(fullPath);
+        if (url != null) {
+          generateResource(url, source);
+        }
+      } else {
+        throw new GenerationException("Unknown bundle type : " + type);
+      }
     });
   }
 
-  private void generateResource(TypeElement holder, StringBuffer parent) {
-    String lookup = holder.toString().replaceAll("\\.", "/") + ".properties";
-    URL url = context.getGenerationContext().getResourceOracle().findResource(lookup);
-    String clazz = Utils.getPackageName(holder).replaceAll("\\.", "_") + "_"
-        + holder.getSimpleName() + "property";
-
+  private void generateResource(URL url, StringBuffer parent) {
+    String clazz = "_bundle" + counter;
+    counter++;
     parent.append("    ").append("registerPropertiesBundle(").append(clazz).append(".getContent()")
         .append(", null);").append(newLine);
 
@@ -101,7 +118,7 @@ public class TranslationServiceImplGenerator {
     source.append("package io.crysknife.ui.translation.api.spi;").append(newLine);
     source.append(newLine);
     source.append(newLine);
-    source.append("public class ").append(clazz).append(" {").append(newLine);
+    source.append("class ").append(clazz).append(" {").append(newLine);
     source.append(newLine);
     source.append("  private ").append(clazz).append("() {").append(newLine);
     source.append("  }").append(newLine);
@@ -110,13 +127,13 @@ public class TranslationServiceImplGenerator {
 
     source.append("    return ").append("\"");
 
-
     try {
       Properties properties = new Properties();
       properties.load(new InputStreamReader(url.openStream()));
       String rez = properties.entrySet().stream()
-          .map(e -> e.getKey() + "=" + e.getValue().toString().replaceAll("\"", "\\\\\""))
-          .collect(Collectors.joining("\\r\\n"));
+          .map(e -> e.getKey() + "="
+              + e.getValue().toString().replaceAll("\"", "\\\\\"").replaceAll("\\n", ESC_NEW_LINE))
+          .collect(Collectors.joining("\\n"));
       source.append(rez);
     } catch (IOException e) {
       throw new GenerationException(e);

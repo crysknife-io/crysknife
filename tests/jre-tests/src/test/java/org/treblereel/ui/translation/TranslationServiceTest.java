@@ -38,6 +38,10 @@ public class TranslationServiceTest extends AbstractTest {
     assertNull(service.getTranslation("test1"));
     assertEquals("Forms generation failed for [OLOLO]",
         service.format(Constants.FormsGenerationFailure, "OLOLO"));
+    assertEquals("BUNDLE", service.getTranslation("PROPERTIES"));
+    assertEquals("element2", service.getTranslation("element2"));
 
+    assertEquals("[{0}]\n {1}", service.getTranslation("element"));
+    assertEquals("[A]\n B", service.format("element", "A", "B"));
   }
 }
