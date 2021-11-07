@@ -249,7 +249,7 @@ public class IOCContext {
         .collect(Collectors.toSet());
 
     ClassInfoList routeClassInfoList =
-        generationContext.getScanResult().getClassesWithMethodAnnotation(annotation);
+        generationContext.getScanResult().getClassesWithFieldAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredFieldInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());

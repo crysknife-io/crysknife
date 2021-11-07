@@ -24,11 +24,10 @@ import org.apache.commons.io.IOUtils;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +65,7 @@ public class TranslationServiceImplGenerator {
           .append(newLine);
     });
 
-    maybeGenerateContantHolders(fields, sb);
+    maybeGenerateContentHolders(fields, sb);
 
     sb.append("  }").append(newLine);
     sb.append("}").append(newLine);
@@ -75,7 +74,7 @@ public class TranslationServiceImplGenerator {
     generate(sb.toString(), IMPL);
   }
 
-  private void maybeGenerateContantHolders(Set<VariableElement> fields, StringBuffer source) {
+  private void maybeGenerateContentHolders(Set<VariableElement> fields, StringBuffer source) {
     Set<TypeElement> holders = fields.stream().map(field -> field.getEnclosingElement())
         .map(element -> MoreElements.asType(element)).filter(holder -> {
           String lookup = holder.toString().replaceAll("\\.", "/") + ".properties";
@@ -110,10 +109,17 @@ public class TranslationServiceImplGenerator {
     source.append("  static String getContent() {").append(newLine);
 
     source.append("    return ").append("\"");
+
+
     try {
-      source.append(IOUtils.toString(url, Charset.defaultCharset()));
+      Properties properties = new Properties();
+      properties.load(new InputStreamReader(url.openStream()));
+      String rez = properties.entrySet().stream()
+          .map(e -> e.getKey() + "=" + e.getValue().toString().replaceAll("\"", "\\\\\""))
+          .collect(Collectors.joining("\\r\\n"));
+      source.append(rez);
     } catch (IOException e) {
-      new GenerationException(e);
+      throw new GenerationException(e);
     }
     source.append("\";").append(newLine);
     source.append("  }").append(newLine);
