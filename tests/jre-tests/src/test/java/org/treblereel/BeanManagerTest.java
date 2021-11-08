@@ -28,6 +28,9 @@ import org.treblereel.injection.managedinstance.ComponentIface;
 import org.treblereel.injection.managedinstance.ComponentQualifierOne;
 import org.treblereel.injection.managedinstance.ComponentQualifierTwo;
 import org.treblereel.injection.named.NamedBean;
+import org.treblereel.injection.named.NamedBeanSubThree;
+import org.treblereel.injection.qualifiers.QualifierBean;
+import org.treblereel.injection.qualifiers.QualifierBeanTwo;
 
 import static org.junit.Assert.assertEquals;
 
@@ -84,6 +87,10 @@ public class BeanManagerTest extends AbstractTest {
             .stream(super.app.beanManager.lookupBeans(ComponentIface.class).spliterator(), false)
             .count());
 
+    assertEquals(3, StreamSupport.stream(
+        super.app.beanManager.lookupBeans(ComponentIface.class.getCanonicalName()).spliterator(),
+        false).count());
+
     assertEquals(1,
         StreamSupport
             .stream(super.app.beanManager.lookupBeans(ComponentIface.class, _default).spliterator(),
@@ -118,6 +125,17 @@ public class BeanManagerTest extends AbstractTest {
             .spliterator(), false).count());
 
 
+  }
+
+  @Test
+  public void testLookupBeansByName() {
+    assertEquals(NamedBeanSubThree.class,
+        app.beanManager.lookupBeans("NamedBeanSubThree").iterator().next().getType());
+    assertEquals(QualifierBeanTwo.class, app.beanManager
+        .lookupBeans(QualifierBeanTwo.class.getCanonicalName()).iterator().next().getType());
+    assertEquals(QualifierBeanTwo.class.getCanonicalName(), app.beanManager
+        .lookupBeans(QualifierBeanTwo.class.getCanonicalName()).iterator().next().getName());
+    assertEquals(3, app.beanManager.lookupBeans(QualifierBean.class.getCanonicalName()).size());
   }
 
   @Test
@@ -170,10 +188,26 @@ public class BeanManagerTest extends AbstractTest {
     assertEquals("org.treblereel.injection.named.NamedBeanTwo", componentTwo.say());
     assertEquals(6, StreamSupport
         .stream(super.app.beanManager.lookupBeans(NamedBean.class).spliterator(), false).count());
+    assertEquals(6,
+        StreamSupport.stream(
+            super.app.beanManager.lookupBeans(NamedBean.class.getCanonicalName()).spliterator(),
+            false).count());
 
     assertEquals(1, StreamSupport
         .stream(super.app.beanManager.lookupBeans(NamedBean.class, _default).spliterator(), false)
         .count());
+
+
+    assertEquals(1,
+        StreamSupport
+            .stream(super.app.beanManager.lookupBeans("NamedBeanSubThree").spliterator(), false)
+            .count());
+    assertEquals("NamedBeanSubThree",
+        app.beanManager.lookupBeans("NamedBeanSubThree").iterator().next().getName());
+    assertEquals(NamedBeanSubThree.class,
+        app.beanManager.lookupBeans("NamedBeanSubThree").iterator().next().getType());
+
+
     NamedBean _defInstance = super.app.beanManager.<NamedBean>lookupBeans(NamedBean.class, _default)
         .iterator().next().getInstance();
     assertEquals("org.treblereel.injection.named.NamedBeanDefault", _defInstance.say());

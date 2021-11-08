@@ -33,6 +33,7 @@ import java.util.Set;
 public abstract class AbstractBeanManager implements BeanManager {
 
   private final Map<Class, BeanDefinitionHolder> beans = new HashMap<>();
+  private final Map<String, Class> beansByBeanName = new HashMap<>();
 
   protected AbstractBeanManager() {
 
@@ -43,7 +44,10 @@ public abstract class AbstractBeanManager implements BeanManager {
     holder.beanDefinition = beanDefinition;
     beanDefinition.getAssignableTypes().forEach(superType -> {
       get((Class<?>) superType).subTypes.add(holder);
+      beansByBeanName.put(((Class<?>) superType).getCanonicalName(), (Class<?>) superType);
+
     });
+    beansByBeanName.put(beanDefinition.getName(), beanDefinition.getType());
   }
 
   private BeanDefinitionHolder get(Class<?> type) {
@@ -52,6 +56,16 @@ public abstract class AbstractBeanManager implements BeanManager {
       beans.put(type, holder);
     }
     return beans.get(type);
+  }
+
+  @Override
+  public Collection<SyncBeanDef> lookupBeans(String name) {
+    if (beansByBeanName.containsKey(name)) {
+      return lookupBeans(beansByBeanName.get(name));
+    }
+
+
+    return Collections.EMPTY_SET;
   }
 
   public <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type, Annotation... qualifiers) {
