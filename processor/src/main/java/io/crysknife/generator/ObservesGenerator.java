@@ -25,10 +25,12 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.util.Utils;
 
 import javax.enterprise.event.Observes;
 import javax.lang.model.element.ExecutableElement;
@@ -53,6 +55,11 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
   @Override
   public void generate(ClassBuilder classBuilder, MethodDefinition methodDefinition) {
     ExecutableElement method = methodDefinition.getExecutableElement();
+    BeanDefinition parent = iocContext.getBean(method.getEnclosingElement().asType());
+    if (!Utils.isDependent(parent)) {
+      return;
+    }
+
     if (method.getParameters().size() > 1) {
       throw new GenerationException("Method annotated with @Observes must contains only one param "
           + method.getEnclosingElement() + " " + method);

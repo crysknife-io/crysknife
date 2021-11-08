@@ -44,6 +44,7 @@ public class BeanDefinition implements Definition {
   private Set<BeanDefinition> dependencies = new LinkedHashSet<>();
   private Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
   private Optional<IOCGenerator<BeanDefinition>> iocGenerator = Optional.empty();
+  private boolean hasFactory = true;
 
   private Set<BeanDefinition> subclasses = new LinkedHashSet<>();
 
@@ -111,10 +112,6 @@ public class BeanDefinition implements Definition {
     return Utils.getPackageName(MoreTypes.asTypeElement(type));
   }
 
-  public String getClassFactoryName() {
-    return Utils.getQualifiedFactoryName(type);
-  }
-
   public String getQualifiedName() {
     return MoreTypes.asTypeElement(type).getQualifiedName().toString();
   }
@@ -139,5 +136,13 @@ public class BeanDefinition implements Definition {
         return Dependent.class;
       }
     };
+  }
+
+  public boolean hasFactory() {
+    return hasFactory;
+  }
+
+  public void setHasFactory(boolean hasFactory) {
+    this.hasFactory = hasFactory;
   }
 }

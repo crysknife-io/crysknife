@@ -16,7 +16,6 @@ package io.crysknife.exception;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -85,6 +84,11 @@ public class UnableToCompleteException extends Exception {
   public UnableToCompleteException() {}
 
   @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37).append(getMessage()).toHashCode();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -95,10 +99,5 @@ public class UnableToCompleteException extends Exception {
     UnableToCompleteException that = (UnableToCompleteException) o;
 
     return new EqualsBuilder().append(getMessage(), that.getMessage()).isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37).append(getMessage()).toHashCode();
   }
 }

@@ -13,159 +13,74 @@
  */
 package io.crysknife.client;
 
-import io.crysknife.client.internal.BeanManagerUtil;
-import io.crysknife.client.internal.QualifierUtil;
+import io.crysknife.client.internal.IOCResolutionException;
 import io.crysknife.client.internal.SyncBeanDefImpl;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
  */
-public abstract class BeanManager {
+public interface BeanManager {
 
-  private final Map<Class, BeanDefinitionHolder> beans = new HashMap<>();
+  /**
+   * Register a bean with the bean manager. The registered bean will be available for lookup, by
+   * type and by name if applicable.
+   *
+   * @param beanDefinition The bean def to register.
+   */
+  void register(SyncBeanDefImpl beanDefinition);
 
-  BeanManager() {
+  /**
+   * Looks up all beans by name. The name is either the fully qualified type name of an assignable
+   * type or a given name as specified by {@link javax.inject.Named}.
+   *
+   * @param name the fqcn of an assignable type, or a given name specified by
+   *        {@link javax.inject.Named}, must not be null.
+   * @return and unmodifiable list of all beans with the specified name.
+   */
+  @SuppressWarnings("rawtypes")
+  Collection<SyncBeanDef> lookupBeans(String name);
 
-  }
+  /**
+   * Looks up a bean reference based on type and qualifiers.s
+   *
+   * @param type The type of the bean
+   * @param qualifiers qualifiers to match
+   * @return An unmodifiable list of all beans which match the specified type and qualifiers.
+   *         Returns an empty list if no beans match.
+   */
+  <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type, Annotation... qualifiers);
 
-  void register(SyncBeanDefImpl beanDefinition) {
-    BeanDefinitionHolder holder = get(beanDefinition.getType());
-    holder.beanDefinition = beanDefinition;
-    beanDefinition.getAssignableTypes().forEach(superType -> {
-      get((Class<?>) superType).subTypes.add(holder);
-    });
-  }
+  /**
+   * Looks up a bean reference based on type and qualifiers.
+   *
+   * @param type The type of the bean
+   * @param <T> The type of the bean
+   * @return An instance of the {@link SyncBeanDef} for the matching type and qualifiers. Throws an
+   *         {@link IOCResolutionException} if there is a matching type but none of the qualifiers
+   *         match or if more than one bean matches.
+   */
+  <T> SyncBeanDef<T> lookupBean(final Class<T> type);
 
-  private BeanDefinitionHolder get(Class<?> type) {
-    if (!beans.containsKey(type)) {
-      BeanDefinitionHolder holder = new BeanDefinitionHolder();
-      beans.put(type, holder);
-    }
-    return beans.get(type);
-  }
+  /**
+   * Looks up a bean reference based on type and qualifiers.
+   *
+   * @param type The type of the bean
+   * @param qualifiers qualifiers to match
+   * @param <T> The type of the bean
+   * @return An instance of the {@link SyncBeanDef} for the matching type and qualifiers. Throws an
+   *         {@link IOCResolutionException} if there is a matching type but none of the qualifiers
+   *         match or if more than one bean matches.
+   */
+  <T> SyncBeanDef<T> lookupBean(final Class<T> type, Annotation... qualifiers);
 
-  public <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type, Annotation... qualifiers) {
-    Set<SyncBeanDef<T>> result = new HashSet<>();
-    if (!beans.containsKey(type)) {
-      return result;
-    }
-
-    if (qualifiers.length == 0) {
-      if (beans.get(type).beanDefinition != null) {
-        result.add(beans.get(type).beanDefinition);
-      }
-      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-          .forEach(bean -> result.add(bean.beanDefinition));
-      return result;
-    }
-
-    if (beans.get(type).beanDefinition != null) {
-      if (compareAnnotations(beans.get(type).beanDefinition.getActualQualifiers(), qualifiers)) {
-        result.add(beans.get(type).beanDefinition);
-      }
-    }
-    beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-        .filter(f -> compareAnnotations(f.beanDefinition.getActualQualifiers(), qualifiers))
-        .forEach(bean -> result.add(bean.beanDefinition));
-
-    return result;
-  }
-
-  private boolean compareAnnotations(Collection<Annotation> all, Annotation... in) {
-    Annotation[] _all = all.toArray(new Annotation[all.size()]);
-    return QualifierUtil.matches(in, _all);
-  }
-
-  public <T> SyncBeanDef<T> lookupBean(final Class<T> type) {
-    return lookupBean(type, QualifierUtil.DEFAULT_ANNOTATION);
-  }
-
-  public <T> SyncBeanDef<T> lookupBean(final Class<T> type, Annotation... qualifiers) {
-    if (!beans.containsKey(type)) {
-      throw BeanManagerUtil.unsatisfiedResolutionException(type, qualifiers);
-    }
-    if (qualifiers == null || qualifiers.length == 0) {
-      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
-    }
-
-    Collection<IOCBeanDef<T>> candidates = new HashSet<>();
-    if (beans.get(type).beanDefinition != null) {
-      if (compareAnnotations(beans.get(type).beanDefinition.getQualifiers(), qualifiers)) {
-        candidates.add(beans.get(type).beanDefinition);
-      }
-    }
-    Annotation[] a1 = new Annotation[] {qualifiers[0]};
-    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
-
-    if (qualifiers.length == 1 && !beans.get(type).subTypes.isEmpty()
-        && compareAnnotations(a1, a2)) {
-      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-        if (subType.beanDefinition != null) {
-          if (!subType.beanDefinition.getActualQualifiers().isEmpty() && compareAnnotations(
-              subType.beanDefinition.getActualQualifiers(), QualifierUtil.SPECIALIZES_ANNOTATION)) {
-            return subType.beanDefinition;
-          }
-        }
-      }
-      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-        if (subType.beanDefinition != null) {
-          if (!subType.beanDefinition.getActualQualifiers().isEmpty() && compareAnnotations(
-              subType.beanDefinition.getActualQualifiers(), QualifierUtil.DEFAULT_ANNOTATION)) {
-            return subType.beanDefinition;
-          }
-        }
-      }
-      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-        Set<Annotation> annotations = new HashSet<>();
-        annotations.add(QualifierUtil.DEFAULT_ANNOTATION);
-        if (compareAnnotations(subType.beanDefinition.getActualQualifiers(), qualifiers)) {
-          candidates.add(subType.beanDefinition);
-        }
-      }
-    } else {
-      Set<Annotation> _qual = new HashSet<>();
-      Collections.addAll(_qual, qualifiers);
-      Collections.addAll(_qual, QualifierUtil.DEFAULT_QUALIFIERS);
-      _qual.toArray(new Annotation[_qual.size()]);
-
-      for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-        if (compareAnnotations(subType.beanDefinition.getQualifiers(),
-            _qual.toArray(new Annotation[_qual.size()]))) {
-          candidates.add(subType.beanDefinition);
-        }
-      }
-    }
-
-    if (candidates.size() > 1) {
-      throw BeanManagerUtil.ambiguousResolutionException(type, candidates, qualifiers);
-    } else if (candidates.isEmpty()) {
-      throw BeanManagerUtil.unsatisfiedResolutionException(type, qualifiers);
-    } else {
-      return (SyncBeanDef<T>) candidates.iterator().next();
-    }
-  }
-
-  private boolean compareAnnotations(Annotation[] all, Annotation[] in) {
-    return QualifierUtil.matches(in, all);
-  }
-
-  public void destroyBean(Object ref) {
-    // DO NOTHING ATM
-  }
-
-
-  private static class BeanDefinitionHolder {
-
-    SyncBeanDefImpl beanDefinition;
-    Set<BeanDefinitionHolder> subTypes = new HashSet<>();
-  }
+  /**
+   * Destroy a bean and all other dependent scoped dependencies of this bean in the bean manager.
+   *
+   * @param ref The instance reference of the bean.
+   */
+  void destroyBean(Object ref);
 }
 

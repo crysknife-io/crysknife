@@ -19,8 +19,6 @@ import java.util.function.Supplier;
 import elemental2.core.Reflect;
 import io.crysknife.client.InstanceFactory;
 
-import javax.enterprise.inject.Instance;
-
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 1/1/20
  */

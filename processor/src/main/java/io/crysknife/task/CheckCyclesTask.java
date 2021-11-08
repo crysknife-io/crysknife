@@ -15,7 +15,6 @@
 package io.crysknife.task;
 
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -75,9 +74,8 @@ public class CheckCyclesTask implements Task {
 
   private static class Graph {
 
-    private List<Vertex> vertices;
-
     public Optional<Pair<Vertex, Vertex>> pair = Optional.empty();
+    private List<Vertex> vertices;
 
     public Graph() {
       this.vertices = new ArrayList<>();

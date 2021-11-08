@@ -16,6 +16,9 @@ package org.treblereel;
 
 import org.junit.Before;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
@@ -23,8 +26,13 @@ public abstract class AbstractTest {
 
   protected App app = new App();
 
+  private final PrintStream standardOut = System.out;
+  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
   @Before
   public void init() {
+    System.setOut(new PrintStream(outputStreamCaptor));
+
     new AppBootstrap(app).initialize();
   }
 

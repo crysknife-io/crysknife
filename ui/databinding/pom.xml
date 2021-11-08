@@ -3,17 +3,19 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
+    <groupId>io.crysknife.ui</groupId>
     <artifactId>ui-parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>databinding-parent</artifactId>
+  <artifactId>parent</artifactId>
+  <groupId>io.crysknife.ui.databinding</groupId>
+
   <packaging>pom</packaging>
 
 
-  <name>databinding-parent</name>
-  <description>databinding</description>
+  <name>UI databinding parent</name>
+  <description>UI databinding parent</description>
   <url>https://github.com/treblereel</url>
 
   <developers>

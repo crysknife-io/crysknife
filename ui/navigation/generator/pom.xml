@@ -4,14 +4,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.crysknife</groupId>
-        <artifactId>navigation-parent</artifactId>
+        <groupId>io.crysknife.ui.navigation</groupId>
+        <artifactId>parent</artifactId>
         <version>0.3-SNAPSHOT</version>
     </parent>
 
-    <artifactId>navigation-generator</artifactId>
-    <description>navigation generator</description>
+    <artifactId>generator</artifactId>
     <packaging>jar</packaging>
+
+    <name>UI navigation generator</name>
+    <description>UI navigation generator</description>
 
     <developers>
         <developer>
@@ -52,8 +54,8 @@
             <artifactId>crysknife-processor</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.crysknife</groupId>
-            <artifactId>navigation-api</artifactId>
+            <groupId>io.crysknife.ui.navigation</groupId>
+            <artifactId>api</artifactId>
         </dependency>
     </dependencies>
 

@@ -17,6 +17,7 @@ package io.crysknife.ui.templates.generator;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -24,6 +25,7 @@ import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -35,6 +37,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -104,6 +107,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
@@ -312,6 +316,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   private BeanDefinition beanDefinition;
   private TypeElement isWidget;
   private TypeElement GWT3_Event;
+  private TypeElement GWT3_Shared_Event;
+  private TypeElement Elemental2_Event;
+  private TypeElement GWT3_Dom_Event;
+
 
   public TemplatedGenerator(IOCContext iocContext) {
     super(iocContext);
@@ -321,6 +329,13 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     GWT3_Event = iocContext.getGenerationContext().getElements()
         .getTypeElement("org.gwtproject.user.client.Event");
+    GWT3_Shared_Event = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.event.shared.Event");
+    GWT3_Dom_Event = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.event.dom.client.DomEvent");
+
+    Elemental2_Event = iocContext.getGenerationContext().getElements()
+        .getTypeElement(Event.class.getCanonicalName());
 
   }
 
@@ -382,8 +397,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       String path = MoreElements.getPackage(type).toString().replaceAll("\\.", "/");
       for (String postfix : postfixes) {
         String beanName = type.getSimpleName().toString() + postfix;
-        URL file =
-            iocContext.getGenerationContext().getResourceOracle().findResource(path, beanName);
+        URL file = iocContext.getGenerationContext().getResourceOracle()
+            .findResource(path + "/" + beanName);
         if (file != null) {
           return new StyleSheet(type.getSimpleName() + postfix, file);
         }
@@ -458,7 +473,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     List<DataElementInfo> widgets = templateContext.getDataElements().stream()
         .filter(elm -> elm.getKind().equals(DataElementInfo.Kind.IsWidget))
         .collect(Collectors.toList());
-    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+    if (kind.equals(DataElementInfo.Kind.IsWidget) || !widgets.isEmpty()) {
       builder.getClassCompilationUnit().addImport(List.class);
       builder.getClassCompilationUnit().addImport(ArrayList.class);
 
@@ -544,7 +559,21 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     addElementMethod(wrapper, templateContext, dataElementInfo);
     addInitMethod(wrapper, templateContext, dataElementInfo);
 
+    addInitMethodCaller(builder);
+
     builder.getClassDeclaration().addMember(wrapper);
+  }
+
+  private void addInitMethodCaller(ClassBuilder builder) {
+    MethodDeclaration doInitInstance =
+        builder.addMethod("doInitInstance", com.github.javaparser.ast.Modifier.Keyword.PROTECTED);
+    doInitInstance.addAnnotation(Override.class);
+    doInitInstance.addParameter(new Parameter(
+        new ClassOrInterfaceType().setName(beanDefinition.getType().toString()), "instance"));
+    doInitInstance.getBody().get().addAndGetStatement(
+        new MethodCallExpr("doInitInstance").addArgument(new EnclosedExpr(new CastExpr(
+            new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())),
+            new NameExpr("instance")))));
   }
 
   private void addElementMethod(ClassOrInterfaceDeclaration wrapper,
@@ -599,6 +628,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     setAttributes(method.getBody().get(), templateContext);
     setInnerHTML(method.getBody().get(), templateContext);
+
 
 
   }
@@ -717,12 +747,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       }
 
       MethodCallExpr fieldSetCallExpr = null;
-      if (iocContext.getGenerationContext().isGwt2()) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
         fieldSetCallExpr = new MethodCallExpr(
             new NameExpr(
                 MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
             element.getName()).addArgument("instance");
-      } else if (!iocContext.getGenerationContext().isJre()) {
+      } else if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
         fieldSetCallExpr = new MethodCallExpr(
             new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
                 .addArgument("instance"),
@@ -745,8 +775,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private Expression getInstanceMethodName(DataElementInfo.Kind kind) {
-    MethodCallExpr expr =
-        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), "instance"), getMethodName(kind));
+    MethodCallExpr expr = new MethodCallExpr(new NameExpr("instance"), getMethodName(kind));
     if (kind.equals(DataElementInfo.Kind.IsWidget)) {
       uncheckedCastCall(expr, isWidget.toString());
     }
@@ -775,7 +804,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
-    if (iocContext.getGenerationContext().isGwt2()) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(
           new NameExpr(
               MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
@@ -826,18 +855,51 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
             + MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName()));
   }
 
+  // TODO refactoring
   private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {
     templateContext.getEvents().forEach(event -> {
       for (String eventEvent : event.getEvents()) {
         MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(event.getInfo().getName());
+        if (isGWT3_Dom_Event(event.getMethod().getParameters().get(0))) {
+          VariableElement field = getVariableElement(event.getInfo().getName());
+          TypeMirror target = iocContext.getGenerationContext().getTypes().erasure(field.asType());
+          Expression result = new EnclosedExpr(
+              new CastExpr().setType(target.toString()).setExpression(fieldAccessCallExpr));
+          String eventName =
+              MoreTypes.asTypeElement(event.getMethod().getParameters().get(0).asType())
+                  .getSimpleName().toString();
+          String handler = "add" + eventName.substring(0, eventName.length() - 5) + "Handler";
 
-        MethodCallExpr methodCallExpr =
-            new MethodCallExpr(getInstanceByElementKind(event.getInfo(), fieldAccessCallExpr),
-                "addEventListener").addArgument(new StringLiteralExpr(eventEvent))
-                    .addArgument(new NameExpr("e -> this.instance." + event.getMethodName()
-                        + "(jsinterop.base.Js.uncheckedCast(e))"));
-
-        builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
+          long methods = Utils
+              .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
+                  MoreTypes.asTypeElement(field.asType()))
+              .stream().filter(method -> method.getSimpleName().toString().equals(handler)).count();
+          if (methods == 0) {
+            System.out.println("Error: at " + event.getMethod().getEnclosingElement() + "."
+                + event.getMethod().getSimpleName()
+                + " : method event type must be supported by the target");
+            abortWithError(event.getMethod(),
+                "@%s method event type must be supported by the target",
+                EventHandler.class.getSimpleName());
+          }
+          Statement theCall = generationUtils.generateMethodCall(
+              templateContext.getDataElementType(), event.getMethod(), new NameExpr("e"));
+          LambdaExpr lambda = new LambdaExpr();
+          lambda.getParameters().add(new Parameter().setName("e").setType(MoreTypes
+              .asTypeElement(event.getMethod().getParameters().get(0).asType()).toString()));
+          lambda.setEnclosingParameters(true);
+          lambda.setBody(theCall);
+          builder.getInitInstanceMethod().getBody().get()
+              .addAndGetStatement(new MethodCallExpr(result, handler).addArgument(lambda));
+        } else {
+          Statement theCall = generationUtils.generateMethodCall(builder.beanDefinition.getType(),
+              event.getMethod(), new NameExpr("e"));
+          MethodCallExpr methodCallExpr =
+              new MethodCallExpr(getInstanceByElementKind(event.getInfo(), fieldAccessCallExpr),
+                  "addEventListener").addArgument(new StringLiteralExpr(eventEvent))
+                      .addArgument("e -> { " + theCall + " }");
+          builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
+        }
       }
     });
   }
@@ -973,10 +1035,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         .forEach(method -> {
 
           // verify the field
-          if (method.getModifiers().contains(Modifier.PRIVATE)) {
-            abortWithError(method, "@%s method must not be private",
-                EventHandler.class.getSimpleName());
-          }
           if (method.getModifiers().contains(Modifier.STATIC)) {
             abortWithError(method, "@%s method must not be static",
                 EventHandler.class.getSimpleName());
@@ -987,37 +1045,47 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 EventHandler.class.getSimpleName());
           }
 
+          if (MoreTypes.asTypeElement(method.getParameters().get(0).asType()).getModifiers()
+              .contains(Modifier.ABSTRACT)) {
+            abortWithError(method, "@%s method must have one non abstract parameter",
+                EventHandler.class.getSimpleName());
+          }
+
           VariableElement parameter = method.getParameters().get(0);
           DeclaredType declaredType = MoreTypes.asDeclared(parameter.asType());
 
-          if (parameter.getAnnotation(ForEvent.class) == null
-              && !EVENTS.containsKey(declaredType.toString())) {
-            abortWithError(method,
-                "@%s's method must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
-                method.getEnclosingElement(), forEvent, domEvent);
-          }
 
-          if ((parameter.getAnnotation(ForEvent.class) != null
-              && (parameter.getAnnotation(ForEvent.class).value() == null
-                  || parameter.getAnnotation(ForEvent.class).value().length == 0))
-              && !EVENTS.containsKey(declaredType.toString())) {
-            abortWithError(method, "@%s value must not be empty ", ForEvent.class.getSimpleName());
+          boolean isGWT3_Event = isGWT3_Event(declaredType);
+          boolean isGWT3_Shared_Event = isGWT3_Shared_Event(parameter);
+          boolean isELEMENATAL2_Event = isELEMENATAL2_Event(declaredType);
+
+
+          if (!isGWT3_Shared_Event && !EVENTS.containsKey(declaredType.toString())) {
+            if (parameter.getAnnotation(ForEvent.class) == null) {
+              System.out.println("Error: " + String.format(
+                  "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
+                  method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent));
+              abortWithError(method,
+                  "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
+                  method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent);
+            }
+
+            if ((parameter.getAnnotation(ForEvent.class) != null
+                && (parameter.getAnnotation(ForEvent.class).value() == null
+                    || parameter.getAnnotation(ForEvent.class).value().length == 0))) {
+              abortWithError(method, "@%s value must not be empty ",
+                  ForEvent.class.getSimpleName());
+            }
           }
 
           String[] events = getEvents(parameter);
 
           String[] dataElements = method.getAnnotation(EventHandler.class).value();
-
-          TypeElement event = iocContext.getGenerationContext().getElements()
-              .getTypeElement(Event.class.getCanonicalName());
-
-          if (!iocContext.getGenerationContext().getTypes().isSubtype(declaredType, event.asType())
-              && !(GWT3_Event != null && iocContext.getGenerationContext().getTypes()
-                  .isSubtype(declaredType, GWT3_Event.asType()))
+          if (!isELEMENATAL2_Event && !isGWT3_Event && !isGWT3_Shared_Event
               && !EVENTS.containsKey(declaredType.toString())) {
             abortWithError(method.getEnclosingElement(),
                 "@%s method must have only one parameter and this parameter must be type or subtype of  "
-                    + event.getQualifiedName() + " or " + domEvent + ", ",
+                    + Elemental2_Event + " or " + domEvent + " or  ",
                 EventHandler.class.getSimpleName());
           }
 
@@ -1026,8 +1094,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .filter(elm -> elm.getSelector().equals(data)).findFirst();
             if (result.isPresent()) {
               DataElementInfo info = result.get();
-              eventHandlerElements.add(new EventHandlerInfo(info, events,
-                  method.getSimpleName().toString(), declaredType.toString()));
+              eventHandlerElements
+                  .add(new EventHandlerInfo(info, events, method, declaredType.toString()));
             } else {
               abortWithError(method,
                   "Unable to find DataField element with name or alias " + data + " from ");
@@ -1036,6 +1104,27 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         });
 
     return eventHandlerElements;
+  }
+
+  private boolean isELEMENATAL2_Event(DeclaredType declaredType) {
+    return iocContext.getGenerationContext().getTypes().isSubtype(declaredType,
+        Elemental2_Event.asType());
+  }
+
+  private boolean isGWT3_Event(DeclaredType declaredType) {
+    return (GWT3_Event != null && iocContext.getGenerationContext().getTypes()
+        .isSubtype(declaredType, GWT3_Event.asType()));
+  }
+
+  private boolean isGWT3_Shared_Event(VariableElement parameter) {
+    return GWT3_Shared_Event != null && iocContext.getGenerationContext().getTypes()
+        .isSubtype(parameter.asType(), GWT3_Shared_Event.asType());
+  }
+
+  private boolean isGWT3_Dom_Event(VariableElement parameter) {
+    return GWT3_Dom_Event != null
+        && iocContext.getGenerationContext().getTypes().isSubtype(parameter.asType(),
+            iocContext.getGenerationContext().getTypes().erasure(GWT3_Dom_Event.asType()));
   }
 
   private String[] getEvents(VariableElement parameter) {
@@ -1254,8 +1343,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
    * Issue a compilation error and abandon the processing of this template. This does not prevent
    * the processing of other templates.
    */
-  private void abortWithError(Element element, String msg, Object... args)
-      throws AbortProcessingException {
+  private void abortWithError(Element element, String msg, Object... args) {
     error(element, msg, args);
     throw new AbortProcessingException();
   }
@@ -1280,7 +1368,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   public void error(Element element, String msg, Object... args) {
-    System.out.println("Error " + String.format(msg, args) + " " + element.toString());
     this.messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
   }
 

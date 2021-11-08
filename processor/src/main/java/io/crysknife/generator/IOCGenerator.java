@@ -18,18 +18,14 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.Definition;
 import io.crysknife.util.GenerationUtils;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19

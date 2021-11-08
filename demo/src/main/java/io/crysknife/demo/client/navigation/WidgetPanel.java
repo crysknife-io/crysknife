@@ -20,10 +20,11 @@ import javax.inject.Singleton;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
-import org.gwtproject.event.dom.client.ClickEvent;
+import elemental2.dom.MouseEvent;
 import io.crysknife.demo.client.about.About;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.Page;
@@ -53,7 +54,7 @@ public class WidgetPanel implements io.crysknife.client.IsElement<HTMLDivElement
     private HTMLButtonElement button;
 
     @EventHandler("button")
-    public void onClick(final ClickEvent e) {
+    public void onClick(@ForEvent("click")final MouseEvent e) {
         toAboutPage.go();
     }
 

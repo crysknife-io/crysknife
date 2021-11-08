@@ -17,12 +17,15 @@ package io.crysknife.client.internal;
 import io.crysknife.client.SyncBeanDef;
 
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Typed;
+import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +42,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   private List<Annotation> qualifiers;
   private List<Class<?>> assignableTypes;
   private Optional<BeanFactory<T>> factory = Optional.empty();
+  private Optional<Typed> typed = Optional.empty();
 
   protected SyncBeanDefImpl(final Class<T> actualType) {
     this.actualType = actualType;
@@ -102,6 +106,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
   @Override
   public String getName() {
+    for (Annotation annotation : getActualQualifiers()) {
+      if (annotation.annotationType().equals(Named.class)) {
+        return ((Named) annotation).value();
+      }
+    }
     return actualType.getCanonicalName();
   }
 
@@ -135,6 +144,25 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     return factory.get().createInstance();
   }
 
+  public Optional<Typed> getTyped() {
+    return typed;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (!(o instanceof SyncBeanDefImpl))
+      return false;
+    SyncBeanDefImpl<?> that = (SyncBeanDefImpl<?>) o;
+    return Objects.equals(actualType, that.actualType);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(actualType);
+  }
+
   public static class Builder {
 
     private final Class<?> actualType;
@@ -142,6 +170,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     private List<Annotation> qualifiers;
     private List<Class<?>> assignableTypes;
     private BeanFactory factory;
+    private Typed typed;
 
     public Builder(final Class<?> actualType, final Class<? extends Annotation> scope) {
       this.actualType = actualType;
@@ -150,6 +179,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
     public Builder withQualifiers(final Annotation[] qualifiers) {
       this.qualifiers = Arrays.asList(qualifiers);
+      return this;
+    }
+
+    public Builder withTyped(final Typed typed) {
+      this.typed = typed;
       return this;
     }
 
@@ -163,8 +197,8 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       return this;
     }
 
-    public SyncBeanDefImpl build() {
-      SyncBeanDefImpl definition = new SyncBeanDefImpl(actualType, scope);
+    public <T> SyncBeanDefImpl<T> build() {
+      SyncBeanDefImpl<T> definition = new SyncBeanDefImpl(actualType, scope);
       if (qualifiers != null) {
         definition.qualifiers = qualifiers;
       }
@@ -176,6 +210,10 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       if (factory != null) {
         factory.beanDef = definition;
         definition.factory = Optional.of(factory);
+      }
+
+      if (typed != null) {
+        definition.typed = Optional.of(typed);
       }
 
       return definition;

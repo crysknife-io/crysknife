@@ -178,9 +178,8 @@ public class BeanOracle {
       Set<AnnotationMirror> qualifiers) {
     Set<BeanDefinition> subclasses = getSubClasses(point.getVariableElement().asType());
 
-    List<String> temp =
-        qualifiers.stream().map(a -> a.getAnnotationType().toString()).collect(Collectors.toList());
-    String[] annotations = temp.toArray(new String[temp.size()]);
+    String[] annotations =
+        qualifiers.stream().map(a -> a.getAnnotationType().toString()).toArray(String[]::new);
 
     return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
         .filter(q -> Utils.containsAnnotation(MoreTypes.asTypeElement(q.getType()), annotations))

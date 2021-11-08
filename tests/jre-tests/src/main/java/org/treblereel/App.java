@@ -19,6 +19,7 @@ import javax.inject.Inject;
 
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
+import io.crysknife.ui.translation.api.annotations.Bundle;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;
@@ -31,8 +32,6 @@ import org.treblereel.injection.qualifiers.controls.NodeBuilderControl;
 import org.treblereel.injection.qualifiers.specializes.SpecializesBeanHolder;
 import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
-import org.treblereel.postconstruct.Child;
-import org.treblereel.postconstruct.ChildTwo;
 import org.treblereel.postconstruct.PostConstructs;
 import org.treblereel.produces.SimpleBeanProducerTest;
 import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
@@ -41,6 +40,7 @@ import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
  * @author Dmitrii Tikhomirov Created by treblereel 3/21/20
  */
 @Application
+@Bundle("i18n/simple/i18n.properties")
 public class App {
 
   public String testPostConstruct;
@@ -91,7 +91,7 @@ public class App {
 
   @PostConstruct
   public void init() {
-    this.testPostConstruct = "PostConstruct";
+    this.testPostConstruct = "PostConstructChild";
   }
 
   public String getTestPostConstruct() {

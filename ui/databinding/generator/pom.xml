@@ -3,14 +3,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>databinding-parent</artifactId>
+    <artifactId>parent</artifactId>
+    <groupId>io.crysknife.ui.databinding</groupId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>databinding-generator</artifactId>
-  <description>databinding generator</description>
+  <artifactId>generator</artifactId>
   <packaging>jar</packaging>
+
+  <name>UI databinding generator</name>
+  <description>UI databinding generator</description>
 
   <developers>
     <developer>
@@ -48,8 +50,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>databinding-api</artifactId>
+      <groupId>io.crysknife.ui.databinding</groupId>
+      <artifactId>api</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

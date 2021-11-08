@@ -34,7 +34,7 @@ public class ProducesValidator {
 
   private Set<Check> checks = new HashSet<Check>() {
     {
-      add(new Check() {
+      add(new Check<ExecutableElement>() {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
           if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
@@ -43,7 +43,7 @@ public class ProducesValidator {
         }
       });
 
-      add(new Check() {
+      add(new Check<ExecutableElement>() {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
           if (!variableElement.getModifiers().contains(Modifier.PUBLIC)) {
@@ -52,7 +52,7 @@ public class ProducesValidator {
         }
       });
 
-      add(new Check() {
+      add(new Check<ExecutableElement>() {
         @Override
         public void check(ExecutableElement variableElement) throws UnableToCompleteException {
           if (!variableElement.getParameters().isEmpty()) {
@@ -82,15 +82,4 @@ public class ProducesValidator {
     }
   }
 
-  private interface Check {
-
-    void check(ExecutableElement variableElement) throws UnableToCompleteException;
-
-    default void log(Element variableElement, String msg) throws UnableToCompleteException {
-      StringBuffer sb = new StringBuffer();
-      sb.append("Error at ").append(variableElement.getEnclosingElement()).append(".")
-          .append(variableElement.getSimpleName()).append(" : ").append(msg);
-      throw new UnableToCompleteException(sb.toString());
-    }
-  }
 }

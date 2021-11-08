@@ -18,11 +18,8 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLInputElement;
-import elemental2.dom.HTMLSelectElement;
+import elemental2.dom.*;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.jboss.elemento.IsElement;
 import io.crysknife.demo.client.inject.DependentBean;
@@ -71,7 +68,7 @@ public class DependentBeans implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("checkBtn")
-    public void onFallbackInputChange(final ClickEvent e) {
+    public void onFallbackInputChange(@ForEvent("click") final MouseEvent e) {
         StringBuffer sb = new StringBuffer();
         sb.append("beanOne1Instance random :");
         sb.append(beanOne1Instance.getRandom());

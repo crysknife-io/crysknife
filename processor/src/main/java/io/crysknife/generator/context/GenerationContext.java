@@ -34,8 +34,8 @@ public class GenerationContext {
   private final ProcessingEnvironment processingEnvironment;
   private final ScanResult scanResult = new ClassGraph().enableAllInfo().scan();
   private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
-  private boolean isGwt2 = false;
-  private boolean isJre = false;
+  private ExecutionEnv executionEnv = ExecutionEnv.J2CL;
+
 
   public GenerationContext(RoundEnvironment roundEnvironment,
       ProcessingEnvironment processingEnvironment) {
@@ -44,7 +44,7 @@ public class GenerationContext {
 
     try {
       Class.forName("com.google.gwt.core.client.GWT");
-      isGwt2 = true;
+      executionEnv = ExecutionEnv.GWT2;
       processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
           "GWT2 generation mode.");
     } catch (ClassNotFoundException e) {
@@ -53,12 +53,17 @@ public class GenerationContext {
 
     try {
       Class.forName("org.aspectj.lang.ProceedingJoinPoint");
-      isJre = true;
+      executionEnv = ExecutionEnv.JRE;
       processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
           "JRE generation mode.");
     } catch (ClassNotFoundException e) {
 
     }
+    System.out.println("Current generation mode: " + executionEnv);
+  }
+
+  public ExecutionEnv getExecutionEnv() {
+    return executionEnv;
   }
 
   public Elements getElements() {
@@ -75,14 +80,6 @@ public class GenerationContext {
 
   public ProcessingEnvironment getProcessingEnvironment() {
     return processingEnvironment;
-  }
-
-  public boolean isGwt2() {
-    return isGwt2;
-  }
-
-  public boolean isJre() {
-    return isJre;
   }
 
   public ResourceOracle getResourceOracle() {

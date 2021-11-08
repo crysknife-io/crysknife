@@ -3,14 +3,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>databinding-parent</artifactId>
+    <artifactId>parent</artifactId>
+    <groupId>io.crysknife.ui.databinding</groupId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>databinding-api</artifactId>
-  <description>databinding api</description>
+  <artifactId>api</artifactId>
+  <groupId>io.crysknife.ui.databinding</groupId>
   <packaging>jar</packaging>
+
+  <name>UI databinding api</name>
+  <description>UI databinding api</description>
 
   <developers>
     <developer>
@@ -63,10 +66,6 @@
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>templates-api</artifactId>
     </dependency>
   </dependencies>
 

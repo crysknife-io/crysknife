@@ -13,6 +13,8 @@
  */
 package io.crysknife.client.internal;
 
+import io.crysknife.client.BeanManager;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,22 +25,26 @@ import javax.enterprise.event.Event;
  */
 public abstract class AbstractEventFactory {
 
-  protected Map<Class, EventHolder> holder = new HashMap<>();
+  protected final BeanManager beanManager;
+
+  protected AbstractEventFactory(BeanManager beanManager) {
+    this.beanManager = beanManager;
+  }
+
+  protected Map<Class, AbstractEventHandler> holder = new HashMap<>();
 
   public <T> Event<T> get(Class type) {
     if (!holder.containsKey(type)) {
-      holder.put(type, new EventHolder(type));
+      holder.put(type, new EventHolder());
     }
 
     return holder.get(type);
   }
 
-  class EventHolder extends AbstractEventHandler {
+  public class EventHolder<T> extends AbstractEventHandler {
 
-    private Class type;
+    public EventHolder() {
 
-    EventHolder(Class type) {
-      this.type = type;
     }
   }
 }

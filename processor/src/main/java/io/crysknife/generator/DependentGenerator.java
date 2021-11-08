@@ -14,14 +14,12 @@
 
 package io.crysknife.generator;
 
-import javax.enterprise.context.Dependent;
-
-import com.github.javaparser.ast.Modifier;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.util.Utils;
+
+import javax.enterprise.context.Dependent;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19

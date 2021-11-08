@@ -14,6 +14,31 @@
 
 package io.crysknife.util;
 
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.context.IOCContext;
+import jsinterop.annotations.JsMethod;
+import jsinterop.annotations.JsProperty;
+
+import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Default;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -26,30 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.enterprise.inject.Default;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
-import io.crysknife.generator.context.IOCContext;
-import jsinterop.annotations.JsProperty;
-import io.crysknife.exception.GenerationException;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/21/19
@@ -101,6 +102,33 @@ public class Utils {
       sb.append("_");
     }
 
+    return sb.toString();
+  }
+
+  public static String getJsMethodName(ExecutableElement method) {
+    if (method.getAnnotation(JsMethod.class) != null) {
+      return method.getSimpleName().toString();
+    }
+    StringBuffer sb = new StringBuffer();
+    sb.append("m_");
+    sb.append(method.getSimpleName().toString());
+    sb.append("__");
+
+    String types =
+        method.getParameters().stream().map(elm -> elm.asType().toString().replaceAll("\\.", "_"))
+            .collect(Collectors.joining("__"));
+    sb.append(types);
+    if (method.getModifiers().contains(Modifier.PUBLIC)
+        || method.getModifiers().contains(Modifier.PROTECTED)) {
+      return sb.toString();
+    }
+    if (method.getModifiers().contains(Modifier.PRIVATE)) {
+      sb.append("_$p_");
+    } else {
+      sb.append("_$pp_");
+    }
+    sb.append(MoreElements.asType(method.getEnclosingElement()).getQualifiedName().toString()
+        .replaceAll("\\.", "_"));
     return sb.toString();
   }
 
@@ -160,6 +188,26 @@ public class Utils {
   }
 
   /**
+   * @param annotationMirror The annotation mirror
+   * @param fqcn the fully qualified class name to check against
+   * @return {@code true} if the provided annotation type is of the same type as the provided class,
+   *         {@code false} otherwise.
+   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
+   *      <p>
+   *      Returns {@code true} if the provided annotation type is of the same type as the provided
+   *      class, {@code false} otherwise. This method uses the string class names for comparison.
+   *      See also <a href=
+   *      "http://www.retep.org/2009/02/getting-class-values-from-annotations.html">getting-class-values-from-annotations</a>.
+   */
+  public static boolean isAnnotationMirrorOfType(AnnotationMirror annotationMirror, String fqcn) {
+    assert annotationMirror != null;
+    assert fqcn != null;
+    String annotationClassName = annotationMirror.getAnnotationType().toString();
+
+    return annotationClassName.equals(fqcn);
+  }
+
+  /**
    * see: typetools/checker-framework Return all methods declared in the given type or any
    * superclass/interface. Note that no constructors will be returned. TODO: should this use
    * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
@@ -176,27 +224,6 @@ public class Utils {
           .forEach(field -> fields.put(field.getSimpleName().toString(), field));
     }
     return fields.values();
-  }
-
-  public static Collection<ExecutableType> getAllTypedMethodsIn(Elements elements, Types types,
-      TypeMirror type) {
-    return getAllMethodsIn(elements, MoreTypes.asTypeElement(type)).stream()
-        .map(e -> types.asMemberOf(MoreTypes.asDeclared(type), e)).map(e -> (ExecutableType) e)
-        .collect(Collectors.toSet());
-  }
-
-  public static Collection<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
-    Map<String, ExecutableElement> methods = new LinkedHashMap<>();
-    ElementFilter.methodsIn(type.getEnclosedElements())
-        .forEach(method -> methods.put(method.getSimpleName().toString(), method));
-
-    List<TypeElement> alltypes = getSuperTypes(elements, type);
-    for (TypeElement atype : alltypes) {
-      ElementFilter.methodsIn(atype.getEnclosedElements()).stream()
-          .filter(method -> !methods.containsKey(method.getSimpleName().toString()))
-          .forEach(method -> methods.put(method.getSimpleName().toString(), method));
-    }
-    return methods.values();
   }
 
   /**
@@ -247,6 +274,26 @@ public class Utils {
     return Collections.unmodifiableList(superelems);
   }
 
+  public static Collection<ExecutableType> getAllTypedMethodsIn(Elements elements, Types types,
+      TypeMirror type) {
+    return getAllMethodsIn(elements, MoreTypes.asTypeElement(type)).stream()
+        .map(e -> types.asMemberOf(MoreTypes.asDeclared(type), e)).map(e -> (ExecutableType) e)
+        .collect(Collectors.toSet());
+  }
+
+  public static Collection<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
+    Map<String, ExecutableElement> methods = new LinkedHashMap<>();
+    ElementFilter.methodsIn(type.getEnclosedElements())
+        .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+
+    List<TypeElement> alltypes = getSuperTypes(elements, type);
+    for (TypeElement atype : alltypes) {
+      ElementFilter.methodsIn(atype.getEnclosedElements()).stream()
+          .filter(method -> !methods.containsKey(method.getSimpleName().toString()))
+          .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+    }
+    return methods.values();
+  }
 
   /**
    * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
@@ -268,29 +315,6 @@ public class Utils {
   }
 
   /**
-   *
-   * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
-   *
-   *      Returns {@code true} if the provided annotation type is of the same type as the provided
-   *      class, {@code false} otherwise. This method uses the string class names for comparison.
-   *      See also <a href=
-   *      "http://www.retep.org/2009/02/getting-class-values-from-annotations.html">getting-class-values-from-annotations</a>.
-   *
-   * @param annotationMirror The annotation mirror
-   * @param fqcn the fully qualified class name to check against
-   *
-   * @return {@code true} if the provided annotation type is of the same type as the provided class,
-   *         {@code false} otherwise.
-   */
-  public static boolean isAnnotationMirrorOfType(AnnotationMirror annotationMirror, String fqcn) {
-    assert annotationMirror != null;
-    assert fqcn != null;
-    String annotationClassName = annotationMirror.getAnnotationType().toString();
-
-    return annotationClassName.equals(fqcn);
-  }
-
-  /**
    * @url {https://github.com/hibernate/hibernate-metamodelgen/blob/master/src/main/java/org/hibernate/jpamodelgen/util/TypeUtils.java}
    */
   public static Object getAnnotationValue(AnnotationMirror annotationMirror,
@@ -307,6 +331,12 @@ public class Utils {
       }
     }
     return returnValue;
+  }
+
+  public static boolean isDependent(BeanDefinition beanDefinition) {
+    String annotation = beanDefinition.getScope().annotationType().getCanonicalName();
+    String dependent = Dependent.class.getCanonicalName();
+    return annotation.equals(dependent);
   }
 
 }

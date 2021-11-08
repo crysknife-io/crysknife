@@ -49,10 +49,12 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -118,8 +120,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
 
     initDelegate.getBody().ifPresent(body -> {
 
-      if (!(iocContext.getGenerationContext().isGwt2()
-          || iocContext.getGenerationContext().isJre())) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
         ObjectCreationExpr newInstance = generateNewInstanceCreationExpr(beanDefinition);
         Set<InjectionParameterDefinition> params = beanDefinition.getConstructorParams();
         Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
@@ -139,7 +140,6 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
       }
 
 
-
       body.addAndGetStatement(new VariableDeclarationExpr(new VariableDeclarator()
           .setType(Utils.getSimpleClassName(beanDefinition.getType())).setName("delegate")
           .setInitializer(generateInstanceInitializerNewObjectExpr(builder, beanDefinition))));
@@ -149,8 +149,8 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
               .setName("Proxy" + Utils.getSimpleClassName(beanDefinition.getType())),
           new NameExpr("instance"))), "setInstance").addArgument("delegate"));
 
-      body.addAndGetStatement(new MethodCallExpr("doInitInstance"));
-      if (!iocContext.getGenerationContext().isJre()) {
+      body.addAndGetStatement(new MethodCallExpr("doInitInstance").addArgument("instance"));
+      if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
         beanDefinition.getFields().forEach(fieldPoint -> {
           Expression expr =
               getFieldAccessorExpression(builder, beanDefinition, fieldPoint, "field");
@@ -222,6 +222,7 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
         Modifier.Keyword.PRIVATE);
 
     Utils.getAllMethodsIn(elements, MoreTypes.asTypeElement(beanDefinition.getType())).stream()
+        .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.STATIC))
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE))
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.ABSTRACT))
         .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.NATIVE))
@@ -264,11 +265,15 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
 
     methodDeclaration.setType(elm.getReturnType().toString());
     MethodCallExpr methodCallExpr =
-        new MethodCallExpr(new NameExpr("instance"), elm.getSimpleName().toString());
+        new MethodCallExpr(new NameExpr("this.instance"), elm.getSimpleName().toString());
+
 
     elm.getParameters().forEach(param -> {
       Parameter parameter = new Parameter();
-      parameter.setType(param.asType().toString());
+      String type =
+          param.asType().getKind().equals(TypeKind.TYPEVAR) ? "Object" : param.asType().toString();
+
+      parameter.setType(type);
       parameter.setName(param.getSimpleName().toString());
 
       methodDeclaration.addParameter(parameter);

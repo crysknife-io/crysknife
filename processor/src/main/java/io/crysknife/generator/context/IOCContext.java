@@ -104,7 +104,7 @@ public class IOCContext {
   public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeMirror typeElement)
       throws UnableToCompleteException {
     TypeMirror candidate = generationContext.getTypes().erasure(typeElement);
-    BeanDefinition beanDefinition = null;
+    BeanDefinition beanDefinition;
     if (beans.containsKey(candidate)) {
       return beans.get(candidate);
     } else {
@@ -187,8 +187,8 @@ public class IOCContext {
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredMethodInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());
-        type.getEnclosedElements().stream().filter(elm -> (elm instanceof ExecutableElement))
-            .filter(elm -> ((ExecutableElement) elm).getAnnotationMirrors().stream()
+        type.getEnclosedElements().stream()
+            .filter(elm -> elm.getAnnotationMirrors().stream()
                 .map(a -> a.getAnnotationType().toString()).filter(a -> a.equals(annotation))
                 .count() > 0)
             .map(method -> ((ExecutableElement) method)).forEach(results::add);
@@ -249,7 +249,7 @@ public class IOCContext {
         .collect(Collectors.toSet());
 
     ClassInfoList routeClassInfoList =
-        generationContext.getScanResult().getClassesWithMethodAnnotation(annotation);
+        generationContext.getScanResult().getClassesWithFieldAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       if (!routeClassInfo.getDeclaredFieldInfo().asMap().isEmpty()) {
         TypeElement type = elements.getTypeElement(routeClassInfo.getName());

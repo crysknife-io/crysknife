@@ -16,6 +16,7 @@ package org.jboss.gwt.elemento.processor.context;
 
 import java.util.Arrays;
 
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -27,16 +28,16 @@ public class EventHandlerInfo {
 
   private String[] events;
 
-  private String methodName;
+  private ExecutableElement method;
 
   private String eventType;
 
-  public EventHandlerInfo(DataElementInfo info, String[] events, String methodName,
+  public EventHandlerInfo(DataElementInfo info, String[] events, ExecutableElement method,
       String eventType) {
 
     this.info = info;
     this.events = events;
-    this.methodName = methodName;
+    this.method = method;
     this.eventType = eventType;
   }
 
@@ -51,11 +52,15 @@ public class EventHandlerInfo {
   @Override
   public String toString() {
     return "EventHandlerInfo{" + "info=" + info + ", events=" + Arrays.toString(events)
-        + ", methodName=" + methodName + '}';
+        + ", methodName=" + method.getSimpleName() + '}';
   }
 
   public String getMethodName() {
-    return methodName;
+    return method.getSimpleName().toString();
+  }
+
+  public ExecutableElement getMethod() {
+    return method;
   }
 
   public String getEventType() {

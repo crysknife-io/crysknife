@@ -20,9 +20,7 @@ import org.treblereel.injection.named.NamedBean;
 import org.treblereel.injection.named.NamedBeanDefault;
 import org.treblereel.injection.named.NamedBeanOne;
 import org.treblereel.injection.named.NamedBeanTwo;
-import org.treblereel.injection.qualifiers.QualifierBean;
 
-import javax.enterprise.inject.Instance;
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -100,10 +98,15 @@ public class NamedTest extends AbstractTest {
 
     assertEquals(NamedBeanDefault.class,
         app.beanManager.lookupBean(NamedBean.class).getInstance().getClass());
+    assertEquals(NamedBeanDefault.class.getCanonicalName(),
+        app.beanManager.lookupBean(NamedBean.class).getName());
     assertEquals(NamedBeanOne.class,
         app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getInstance().getClass());
+    assertEquals(NamedBeanOne.class.getSimpleName(),
+        app.beanManager.lookupBean(NamedBean.class, namedBeanOne).getName());
     assertEquals(NamedBeanTwo.class,
         app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getInstance().getClass());
-
+    assertEquals(NamedBeanTwo.class.getSimpleName(),
+        app.beanManager.lookupBean(NamedBean.class, namedBeanTwo).getName());
   }
 }

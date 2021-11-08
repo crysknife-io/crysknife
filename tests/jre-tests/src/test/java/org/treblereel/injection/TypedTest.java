@@ -20,6 +20,13 @@ import org.treblereel.injection.qualifiers.typed.AbstractCanvasHandler;
 import org.treblereel.injection.qualifiers.typed.ApplicationCommandManager;
 import org.treblereel.injection.qualifiers.typed.RegistryAwareCommandManager;
 import org.treblereel.injection.qualifiers.typed.SessionCommandManager;
+import org.treblereel.injection.typed.DefaultDefinitionsCacheRegistry;
+import org.treblereel.injection.typed.DefinitionUtils;
+import org.treblereel.injection.typed.DefinitionsCacheRegistry;
+import org.treblereel.injection.typed.SimpleDefinitionsCacheRegistry;
+import org.treblereel.injection.typed.case2.BeanOne;
+import org.treblereel.injection.typed.case2.BeanTwo;
+import org.treblereel.injection.typed.case2.Iface;
 
 import static org.junit.Assert.assertEquals;
 
@@ -38,4 +45,17 @@ public class TypedTest extends AbstractTest {
     assertEquals(RegistryAwareCommandManager.class,
         ((ApplicationCommandManager) sessionCommandManager).commandManagerInstances.getClass());
   }
+
+  @Test
+  public void testDefaultDefinitionsCacheRegistry() {
+    assertEquals(RegistryAwareCommandManager.class,
+        app.beanManager.lookupBean(RegistryAwareCommandManager.class).getInstance().getClass());
+  }
+
+  @Test
+  public void testDefaultAndTyped() {
+    assertEquals(BeanTwo.class, app.beanManager.lookupBean(Iface.class).getInstance().getClass());
+    assertEquals(BeanOne.class, app.beanManager.lookupBean(BeanOne.class).getInstance().getClass());
+  }
+
 }

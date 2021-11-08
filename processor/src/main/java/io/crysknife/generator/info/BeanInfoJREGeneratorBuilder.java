@@ -180,8 +180,7 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
   }
 
   private boolean isLocal(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {
-    return bean.getType()
-        .equals(MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()));
+    return bean.getType().equals(fieldPoint.getVariableElement().getEnclosingElement().asType());
   }
 
   private StringLiteralExpr getAnnotationValue(InjectableVariableDefinition fieldPoint) {
@@ -253,29 +252,6 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
       forStmt.setBody(blockStmt);
 
       body.addAndGetStatement(forStmt);
-
-      /*
-       * TryStmt ts = new TryStmt(); BlockStmt blockStmt = new BlockStmt();
-       * ts.setTryBlock(blockStmt);
-       * 
-       * blockStmt.addAndGetStatement(new ReturnStmt( new MethodCallExpr(new NameExpr("clazz"),
-       * "getField").addArgument("name")));
-       * 
-       * CatchClause catchClause1 = new CatchClause().setParameter(new Parameter() .setType(new
-       * ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
-       * ts.getCatchClauses().add(catchClause1); body.addAndGetStatement(ts);
-       * 
-       * TryStmt ts1 = new TryStmt(); BlockStmt blockStmt1 = new BlockStmt();
-       * ts1.setTryBlock(blockStmt1);
-       * 
-       * blockStmt1.addAndGetStatement(new ReturnStmt( new MethodCallExpr(new NameExpr("clazz"),
-       * "getDeclaredField").addArgument("name")));
-       * 
-       * CatchClause catchClause2 = new CatchClause().setParameter(new Parameter() .setType(new
-       * ClassOrInterfaceType().setName("NoSuchFieldException")).setName("e"));
-       * ts1.getCatchClauses().add(catchClause2); body.addAndGetStatement(ts1);
-       */
-
       ThrowStmt throwStmt = new ThrowStmt(
           new ObjectCreationExpr().setType(new ClassOrInterfaceType().setName("Error"))
               .addArgument("\"Error: no field named '\" + name + \"' at  \" + clazz + \" at \""));

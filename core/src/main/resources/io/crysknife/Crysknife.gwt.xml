@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
-    <inherits name="io.crysknife.Annotations"/>
+    <inherits name="io.crysknife.annotation.Annotations"/>
     <source path="client"/>
 </module>

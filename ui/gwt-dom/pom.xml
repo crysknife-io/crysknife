@@ -3,13 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.crysknife</groupId>
+        <groupId>io.crysknife.ui</groupId>
         <artifactId>ui-parent</artifactId>
         <version>0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>gwt-dom-generator</artifactId>
-    <description>gwt-dom factories generator</description>
+    <name>UI gwt-dom factories generator</name>
+    <description>UI gwt-dom factories generator</description>
     <packaging>jar</packaging>
 
     <developers>

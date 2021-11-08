@@ -3,14 +3,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>mutationobserver-parent</artifactId>
+    <groupId>io.crysknife.ui.mutationobserver</groupId>
+    <artifactId>parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>mutationobserver-generator</artifactId>
-  <description>mutationobserver generator</description>
+  <artifactId>generator</artifactId>
   <packaging>jar</packaging>
+
+  <name>UI mutationobserver generator</name>
+  <description>UI mutationobserver generator</description>
 
   <developers>
     <developer>
@@ -35,8 +37,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>mutationobserver-api</artifactId>
+      <groupId>io.crysknife.ui.mutationobserver</groupId>
+      <artifactId>api</artifactId>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>

@@ -10,7 +10,7 @@
     <artifactId>crysknife-annotations</artifactId>
     <packaging>jar</packaging>
 
-    <name>crysknife-annotations</name>
+    <name>crysknife annotations</name>
     <description>This artifact contains annotations for crysknife</description>
     <url>https://github.com/treblereel</url>
 

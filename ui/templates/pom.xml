@@ -3,17 +3,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
+    <groupId>io.crysknife.ui</groupId>
     <artifactId>ui-parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>templates-parent</artifactId>
+  <artifactId>parent</artifactId>
+  <groupId>io.crysknife.ui.templates</groupId>
+
   <packaging>pom</packaging>
 
-
-  <name>templates-parent</name>
-  <description>Templates parent</description>
+  <name>UI templates parent</name>
+  <description>UI templates parent</description>
   <url>https://github.com/treblereel</url>
 
   <developers>

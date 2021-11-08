@@ -43,6 +43,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.internal.AbstractBeanManager;
 import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.internal.ProducesBeanFactory;
@@ -60,9 +61,12 @@ import io.crysknife.util.Utils;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Specializes;
+import javax.enterprise.inject.Typed;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -147,7 +151,7 @@ public class BeanManagerGenerator implements Task {
       clazz.addImport(Annotation.class);
       clazz.addImport(Instance.class);
       clazz.addImport(InstanceImpl.class);
-      clazz.addImport(BeanManager.class);
+      clazz.addImport(AbstractBeanManager.class);
       clazz.addImport(SyncBeanDefImpl.class);
       clazz.addImport(BeanFactory.class);
       clazz.addImport(QualifierUtil.class);
@@ -157,7 +161,7 @@ public class BeanManagerGenerator implements Task {
       clazz.addImport("io.crysknife.client.internal.SyncBeanDefImpl.Builder", true, false);
 
       ClassOrInterfaceType factory = new ClassOrInterfaceType();
-      factory.setName("BeanManager");
+      factory.setName("AbstractBeanManager");
 
       classDeclaration.getExtendedTypes().add(factory);
     }
@@ -208,11 +212,9 @@ public class BeanManagerGenerator implements Task {
                         }
                       });
 
-                  List<AnnotationMirror> qualifiers = new ArrayList<>();
 
-
-                  Utils.getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased))
-                      .forEach(anno -> qualifiers.add(anno));
+                  List<AnnotationMirror> qualifiers = new ArrayList<>(Utils
+                      .getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased)));
                   Set<Expression> qualifiersExpression = new HashSet<>();
 
                   qualifiers
@@ -262,6 +264,23 @@ public class BeanManagerGenerator implements Task {
                     builderCallExpr = new MethodCallExpr(builderCallExpr, "withQualifiers")
                         .addArgument(withQualifiers);
                   }
+
+                  if (MoreTypes.asTypeElement(bean).getAnnotation(Typed.class) != null) {
+                    Typed typed = MoreTypes.asTypeElement(bean).getAnnotation(Typed.class);
+                    MethodCallExpr createTyped =
+                        new MethodCallExpr(new NameExpr("QualifierUtil"), "createTyped");
+                    try {
+                      typed.value();
+                    } catch (MirroredTypesException types) {
+                      List<DeclaredType> mirrors = (List<DeclaredType>) types.getTypeMirrors();
+                      mirrors
+                          .forEach(mirror -> createTyped.addArgument(mirror.toString() + ".class"));
+
+                      builderCallExpr =
+                          new MethodCallExpr(builderCallExpr, "withTyped").addArgument(createTyped);
+                    }
+                  }
+
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
                       new ObjectCreationExpr().setType(Utils.getQualifiedFactoryName(erased))
                           .addArgument(new ThisExpr()));
@@ -269,7 +288,6 @@ public class BeanManagerGenerator implements Task {
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
                   registerCallExpr.addArgument(builderCallExpr);
                   init.getBody().get().addAndGetStatement(registerCallExpr);
-
                 }
               }
             }
@@ -300,7 +318,7 @@ public class BeanManagerGenerator implements Task {
     private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
       return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
           && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT)
-          && beanDefinition.getIocGenerator().isPresent();
+          && beanDefinition.getIocGenerator().isPresent() && beanDefinition.hasFactory();
     }
 
     private void addProducesBeanDefinition(ProducesBeanDefinition beanDefinition) {

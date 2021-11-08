@@ -19,6 +19,8 @@ import io.crysknife.client.internal.IOCResolutionException;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
+import org.treblereel.injection.managedinstance.any.DefaultPreferencesRegistry;
+import org.treblereel.injection.managedinstance.any.StunnerPreferencesRegistryLoader;
 import org.treblereel.injection.managedinstance.select.ManagedInstanceBeanHolder;
 import org.treblereel.injection.managedinstance.select.SimpleInterface;
 import org.treblereel.produces.qualifier.QualifierBean;
@@ -33,6 +35,7 @@ import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -216,13 +219,29 @@ public class ManagedInstanceBeanTest extends AbstractTest {
   }
 
   @Test
-  public void testIsAmbiguous() {
+  public void isUnsatisfied() {
 
     ManagedInstanceTestsHolder managedInstanceTestsHolder =
         app.beanManager.lookupBean(ManagedInstanceTestsHolder.class).getInstance();
 
-    assertTrue(managedInstanceTestsHolder.uselessInterfaces.isAmbiguous());
-    assertFalse(managedInstanceTestsHolder.componentIface.isAmbiguous());
+    assertTrue(managedInstanceTestsHolder.uselessInterfaces.isUnsatisfied());
+    assertFalse(managedInstanceTestsHolder.componentIface.isUnsatisfied());
+    assertFalse(managedInstanceTestsHolder.simpleBean.select(new Default() {
+
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        return Default.class;
+      }
+    }).isUnsatisfied());
+  }
+
+  @Test
+  public void testIsAmbiguous() {
+    ManagedInstanceTestsHolder managedInstanceTestsHolder =
+        app.beanManager.lookupBean(ManagedInstanceTestsHolder.class).getInstance();
+
+    assertFalse(managedInstanceTestsHolder.uselessInterfaces.isAmbiguous());
+    assertTrue(managedInstanceTestsHolder.componentIface.isAmbiguous());
     assertFalse(managedInstanceTestsHolder.simpleBean.select(new Default() {
 
       @Override
@@ -345,5 +364,25 @@ public class ManagedInstanceBeanTest extends AbstractTest {
           }
         }).isAmbiguous());
 
+  }
+
+  @Test
+  public void testAny() {
+    assertEquals(DefaultPreferencesRegistry.class,
+        app.beanManager.lookupBean(StunnerPreferencesRegistryLoader.class)
+            .getInstance().preferencesHolders.get().getClass());
+  }
+
+  @Test
+  public void testDependent() {
+    assertNotEquals(
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get(),
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get());
+    assertNotEquals(
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get(),
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean2.get());
+    assertNotEquals(
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get().id,
+        app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean2.get().id);
   }
 }
