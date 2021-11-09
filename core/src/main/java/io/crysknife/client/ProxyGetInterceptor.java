@@ -44,7 +44,7 @@ public final class ProxyGetInterceptor implements GetFN {
   @Override
   public Object onInvoke(Object object, String objectKey, Object receiver) {
     if (Js.typeof(Js.asPropertyMap(object).get(objectKey)).equals("function")) {
-      if (object.equals(target) && methodHolder.containsKey(objectKey)) {
+      if (object == target && methodHolder.containsKey(objectKey)) {
         return methodHolder.get(objectKey).apply(object, objectKey);
       }
     } else {
