@@ -31,6 +31,9 @@ public class CDIEventProducer {
   @Inject
   Event<SimpleEvent> simpleEventEvent;
 
+  @Inject
+  Event<PersonEvent> managerEvent;
+
   public Set<SimpleEvent> events = new HashSet<>();
 
   public void onEvent(@Observes SimpleEvent event) {

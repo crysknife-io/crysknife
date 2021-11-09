@@ -14,20 +14,17 @@
 
 package org.treblereel.events;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 10/12/21
- */
-@ApplicationScoped
-public class SimpleEventSubscriberApplicationScoped {
+@Dependent
+public class PersonEventHolder {
 
-  public Set<SimpleEvent> events = new HashSet<>();
+  public Set<PersonEvent> events = new HashSet<>();
 
-  public void onEvent(@Observes SimpleEvent event) {
+  public void onEvent(@Observes PersonEvent<? extends Person> event) {
     events.add(event);
   }
 }
