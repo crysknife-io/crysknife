@@ -14,22 +14,27 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.*;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.internal.ManagedInstanceImpl;
+import io.crysknife.client.internal.QualifierUtil;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/27/21
@@ -90,7 +95,17 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
       ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
           .addArgument(new NameExpr("beanManager")).addArgument(new NameExpr(
               iocContext.getGenerationContext().getTypes().erasure(param).toString() + ".class"));
+      List<AnnotationMirror> qualifiers = new ArrayList<>(
+          Utils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
+      qualifiers
+          .forEach(type -> instance.addArgument(generationUtils.createQualifierExpression(type)));
 
+      if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null) {
+        clazz.getClassCompilationUnit().addImport(QualifierUtil.class.getCanonicalName());
+        instance.addArgument(new MethodCallExpr(new NameExpr("QualifierUtil"), "createNamed")
+            .addArgument(new StringLiteralExpr(
+                fieldPoint.getVariableElement().getAnnotation(Named.class).value())));
+      }
       result = instance;
     }
 

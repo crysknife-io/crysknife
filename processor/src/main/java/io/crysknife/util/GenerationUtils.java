@@ -180,6 +180,27 @@ public class GenerationUtils {
     }
   }
 
+  public Expression createQualifierExpression(AnnotationMirror qualifier) {
+
+    ObjectCreationExpr annotation = new ObjectCreationExpr();
+    annotation
+        .setType(new ClassOrInterfaceType().setName(qualifier.getAnnotationType().toString()));
+
+    NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
+
+    MethodDeclaration annotationType = new MethodDeclaration();
+    annotationType.setModifiers(Modifier.Keyword.PUBLIC);
+    annotationType.setName("annotationType");
+    annotationType.setType(
+        new ClassOrInterfaceType().setName("Class<? extends java.lang.annotation.Annotation>"));
+    annotationType.getBody().get().addAndGetStatement(
+        new ReturnStmt(new NameExpr(qualifier.getAnnotationType().toString() + ".class")));
+    anonymousClassBody.add(annotationType);
+
+    annotation.setAnonymousClassBody(anonymousClassBody);
+
+    return annotation;
+  }
 
   public String isQualifier(InjectableVariableDefinition field) {
     for (AnnotationMirror ann : field.getVariableElement().getAnnotationMirrors()) {

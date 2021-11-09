@@ -45,6 +45,22 @@ import static org.junit.Assert.assertTrue;
  */
 public class ManagedInstanceBeanTest extends AbstractTest {
 
+  private final ComponentQualifierOne componentQualifierOne = new ComponentQualifierOne() {
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+      return ComponentQualifierOne.class;
+    }
+  };
+
+  private final ComponentQualifierTwo componentQualifierTwo = new ComponentQualifierTwo() {
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+      return ComponentQualifierTwo.class;
+    }
+  };
+
   @Test
   public void testPostConstructAppBootstrap() {
     ManagedInstance<ComponentIface> managedInstanceBean =
@@ -127,22 +143,6 @@ public class ManagedInstanceBeanTest extends AbstractTest {
     List<ComponentIface> actualList =
         StreamSupport.stream(managedInstanceBean.spliterator(), false).collect(Collectors.toList());
     assertEquals(3, actualList.size());
-
-    ComponentQualifierOne componentQualifierOne = new ComponentQualifierOne() {
-
-      @Override
-      public Class<? extends Annotation> annotationType() {
-        return ComponentQualifierOne.class;
-      }
-    };
-
-    ComponentQualifierTwo componentQualifierTwo = new ComponentQualifierTwo() {
-
-      @Override
-      public Class<? extends Annotation> annotationType() {
-        return ComponentQualifierTwo.class;
-      }
-    };
 
     Named named1 = new Named() {
 
@@ -384,5 +384,27 @@ public class ManagedInstanceBeanTest extends AbstractTest {
     assertNotEquals(
         app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean1.get().id,
         app.beanManager.lookupBean(SimpleDependentBeanHolder.class).getInstance().bean2.get().id);
+  }
+
+  @Test
+  public void testQualifiedManagedInstance() {
+    QualifiedManagedInstanceTestsHolder holder =
+        app.beanManager.lookupBean(QualifiedManagedInstanceTestsHolder.class).getInstance();
+    assertEquals("ComponentOne", holder.c_bean1.get().getComponentName());
+    assertEquals("ComponentTwo", holder.c_bean2.get().getComponentName());
+    assertEquals("ComponentOne", holder.f_bean1.get().getComponentName());
+    assertEquals("ComponentTwo", holder.f_bean2.get().getComponentName());
+
+  }
+
+  @Test
+  public void testManedManagedInstance() {
+    NamedManagedInstanceTestsHolder holder =
+        app.beanManager.lookupBean(NamedManagedInstanceTestsHolder.class).getInstance();
+    assertEquals("NamedBeanOne", holder.c_bean1.get().getComponentName());
+    assertEquals("NamedBeanTwo", holder.c_bean2.get().getComponentName());
+    assertEquals("NamedBeanOne", holder.f_bean1.get().getComponentName());
+    assertEquals("NamedBeanTwo", holder.f_bean2.get().getComponentName());
+
   }
 }

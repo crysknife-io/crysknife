@@ -56,6 +56,7 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.task.Task;
+import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
@@ -89,6 +90,8 @@ public class BeanManagerGenerator implements Task {
 
   private final IOCContext iocContext;
 
+  private final GenerationUtils generationUtils;
+
   private final BeanOracle oracle;
 
   private final TypeMirror OBJECT;
@@ -96,6 +99,7 @@ public class BeanManagerGenerator implements Task {
   public BeanManagerGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.oracle = new BeanOracle(iocContext);
+    this.generationUtils = new GenerationUtils(iocContext);
     OBJECT = iocContext.getGenerationContext().getElements()
         .getTypeElement(Object.class.getCanonicalName()).asType();
   }
@@ -217,8 +221,8 @@ public class BeanManagerGenerator implements Task {
                       .getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased)));
                   Set<Expression> qualifiersExpression = new HashSet<>();
 
-                  qualifiers
-                      .forEach(type -> qualifiersExpression.add(createQualifierExpression(type)));
+                  qualifiers.forEach(type -> qualifiersExpression
+                      .add(generationUtils.createQualifierExpression(type)));
 
                   if (MoreTypes.asTypeElement(bean).getAnnotation(Named.class) != null) {
                     qualifiersExpression
@@ -292,27 +296,6 @@ public class BeanManagerGenerator implements Task {
               }
             }
           });
-    }
-
-    private Expression createQualifierExpression(AnnotationMirror qualifier) {
-
-      ObjectCreationExpr annotation = new ObjectCreationExpr();
-      annotation
-          .setType(new ClassOrInterfaceType().setName(qualifier.getAnnotationType().toString()));
-
-      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
-
-      MethodDeclaration annotationType = new MethodDeclaration();
-      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
-      annotationType.setName("annotationType");
-      annotationType.setType(new ClassOrInterfaceType().setName("Class<? extends Annotation>"));
-      annotationType.getBody().get().addAndGetStatement(
-          new ReturnStmt(new NameExpr(qualifier.getAnnotationType().toString() + ".class")));
-      anonymousClassBody.add(annotationType);
-
-      annotation.setAnonymousClassBody(anonymousClassBody);
-
-      return annotation;
     }
 
     private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
