@@ -26,6 +26,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -99,6 +100,12 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
           Utils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
       qualifiers
           .forEach(type -> instance.addArgument(generationUtils.createQualifierExpression(type)));
+
+      if (fieldPoint.getVariableElement().getAnnotation(Default.class) != null) {
+        clazz.getClassCompilationUnit().addImport(QualifierUtil.class.getCanonicalName());
+        instance
+            .addArgument(new FieldAccessExpr(new NameExpr("QualifierUtil"), "DEFAULT_ANNOTATION"));
+      }
 
       if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null) {
         clazz.getClassCompilationUnit().addImport(QualifierUtil.class.getCanonicalName());

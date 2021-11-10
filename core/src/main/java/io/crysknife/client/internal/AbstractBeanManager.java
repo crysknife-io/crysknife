@@ -129,13 +129,14 @@ public abstract class AbstractBeanManager implements BeanManager {
       }
 
       if (beans.get(type).beanDefinition != null) {
-        if (beans.get(type).beanDefinition.getTyped().isPresent())
+        if (beans.get(type).beanDefinition.getTyped().isPresent()) {
           if (Arrays.stream(((Typed) beans.get(type).beanDefinition.getTyped().get()).value())
               .anyMatch(any -> any.equals(type))) {
             Set<IOCBeanDef<T>> result = new HashSet<>();
             result.add(beans.get(type).beanDefinition);
             return result;
           }
+        }
 
         if (compareAnnotations(beans.get(type).beanDefinition.getQualifiers(), qualifiers)) {
           if (beans.get(type).beanDefinition.getFactory().isPresent()) {
@@ -185,7 +186,8 @@ public abstract class AbstractBeanManager implements BeanManager {
         for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
           if (compareAnnotations(subType.beanDefinition.getQualifiers(),
               _qual.toArray(new Annotation[_qual.size()]))) {
-            if (subType.beanDefinition.getTyped().isPresent()) {
+            if (subType.beanDefinition.getTyped().isPresent()
+                && !isDefault(subType.beanDefinition.getActualQualifiers())) {
               continue;
             } else if (subType.beanDefinition.getFactory().isPresent())
               candidates.add(subType.beanDefinition);
@@ -194,6 +196,13 @@ public abstract class AbstractBeanManager implements BeanManager {
       }
     }
     return candidates;
+  }
+
+  private boolean isDefault(Collection<Annotation> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return false;
+    }
+    return isDefault(qualifiers.toArray(new Annotation[qualifiers.size()]));
   }
 
   private boolean isDefault(Annotation[] qualifiers) {

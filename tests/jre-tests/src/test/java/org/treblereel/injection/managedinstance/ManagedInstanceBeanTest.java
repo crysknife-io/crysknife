@@ -23,6 +23,8 @@ import org.treblereel.injection.managedinstance.any.DefaultPreferencesRegistry;
 import org.treblereel.injection.managedinstance.any.StunnerPreferencesRegistryLoader;
 import org.treblereel.injection.managedinstance.select.ManagedInstanceBeanHolder;
 import org.treblereel.injection.managedinstance.select.SimpleInterface;
+import org.treblereel.injection.managedinstance.typed.AbstractTypedBeanHolder;
+import org.treblereel.injection.managedinstance.typed.SimpleBeanAbstractTyped;
 import org.treblereel.produces.qualifier.QualifierBean;
 
 import javax.enterprise.inject.Default;
@@ -398,13 +400,21 @@ public class ManagedInstanceBeanTest extends AbstractTest {
   }
 
   @Test
-  public void testManedManagedInstance() {
+  public void testNamedManagedInstance() {
     NamedManagedInstanceTestsHolder holder =
         app.beanManager.lookupBean(NamedManagedInstanceTestsHolder.class).getInstance();
     assertEquals("NamedBeanOne", holder.c_bean1.get().getComponentName());
     assertEquals("NamedBeanTwo", holder.c_bean2.get().getComponentName());
     assertEquals("NamedBeanOne", holder.f_bean1.get().getComponentName());
     assertEquals("NamedBeanTwo", holder.f_bean2.get().getComponentName());
+
+  }
+
+  @Test
+  public void testTypedAndDefaultManagedInstance() {
+    AbstractTypedBeanHolder holder =
+        app.beanManager.lookupBean(AbstractTypedBeanHolder.class).getInstance();
+    assertEquals(SimpleBeanAbstractTyped.class, holder.instance.get().getClass());
 
   }
 }
