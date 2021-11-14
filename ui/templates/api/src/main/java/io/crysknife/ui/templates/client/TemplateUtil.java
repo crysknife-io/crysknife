@@ -18,6 +18,7 @@ import elemental2.core.JsArray;
 import elemental2.dom.Attr;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Element;
+import elemental2.dom.EventListener;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.NamedNodeMap;
 import elemental2.dom.Node;
@@ -185,4 +186,116 @@ public final class TemplateUtil {
 
     Element select(HTMLElement context, String identifier);
   }
+
+  public static void onSinkEvents(Element elm, int chMask, EventListener listener) {
+    if ((chMask & 0x00001) != 0) {
+      elm.addEventListener("click", listener);
+    }
+
+    if ((chMask & 0x00002) != 0) {
+      elm.addEventListener("dblclick", listener);
+    }
+
+    if ((chMask & 0x00004) != 0) {
+      elm.addEventListener("mousedown", listener);
+    }
+
+    if ((chMask & 0x00008) != 0) {
+      elm.addEventListener("mouseup", listener);
+    }
+
+    if ((chMask & 0x00010) != 0) {
+      elm.addEventListener("mouseover", listener);
+    }
+
+    if ((chMask & 0x00020) != 0) {
+      elm.addEventListener("mouseout", listener);
+    }
+
+    if ((chMask & 0x00040) != 0) {
+      elm.addEventListener("mousemove", listener);
+    }
+
+    if ((chMask & 0x00080) != 0) {
+      elm.addEventListener("keydown", listener);
+    }
+
+    if ((chMask & 0x00100) != 0) {
+      elm.addEventListener("keypress", listener);
+    }
+
+    if ((chMask & 0x00200) != 0) {
+      elm.addEventListener("keyup", listener);
+    }
+
+    if ((chMask & 0x00400) != 0) {
+      elm.addEventListener("change", listener);
+    }
+
+    if ((chMask & 0x00800) != 0) {
+      elm.addEventListener("focus", listener);
+    }
+
+    if ((chMask & 0x01000) != 0) {
+      elm.addEventListener("blur", listener);
+    }
+
+    if ((chMask & 0x02000) != 0) {
+      elm.addEventListener("losecapture", listener);
+    }
+
+    if ((chMask & 0x04000) != 0) {
+      elm.addEventListener("scroll", listener);
+    }
+
+    if ((chMask & 0x08000) != 0) {
+      elm.addEventListener("load", listener);
+    }
+
+    if ((chMask & 0x10000) != 0) {
+      elm.addEventListener("error", listener);
+    }
+
+    if ((chMask & 0x20000) != 0) {
+      elm.addEventListener("mousewheel", listener);
+    }
+
+    if ((chMask & 0x40000) != 0) {
+      elm.addEventListener("contextmenu", listener);
+    }
+
+    if ((chMask & 0x80000) != 0) {
+      elm.addEventListener("paste", listener);
+    }
+
+    if ((chMask & 0x100000) != 0) {
+      elm.addEventListener("touchstart", listener);
+    }
+
+    if ((chMask & 0x200000) != 0) {
+      elm.addEventListener("touchmove", listener);
+    }
+
+    if ((chMask & 0x400000) != 0) {
+      elm.addEventListener("touchend", listener);
+    }
+
+    if ((chMask & 0x800000) != 0) {
+      elm.addEventListener("touchcancel", listener);
+    }
+
+    if ((chMask & 0x1000000) != 0) {
+      elm.addEventListener("gesturestart", listener);
+    }
+
+    if ((chMask & 0x2000000) != 0) {
+      elm.addEventListener("gesturechange", listener);
+    }
+
+    if ((chMask & 0x4000000) != 0) {
+      elm.addEventListener("gestureend", listener);
+    }
+
+  }
+
 }
