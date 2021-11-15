@@ -28,43 +28,38 @@ import java.util.Set;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/6/21
  */
-public class ProducesValidator {
-
-  private final IOCContext context;
-
-  private Set<Check> checks = new HashSet<Check>() {
-    {
-      add(new Check<ExecutableElement>() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
-            log(variableElement, "@Produces method must not be abstract");
-          }
-        }
-      });
-
-      add(new Check<ExecutableElement>() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (!variableElement.getModifiers().contains(Modifier.PUBLIC)) {
-            log(variableElement, "@Produces method must be public");
-          }
-        }
-      });
-
-      add(new Check<ExecutableElement>() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (!variableElement.getParameters().isEmpty()) {
-            log(variableElement, "@Produces method must have no args");
-          }
-        }
-      });
-    }
-  };
+public class ProducesValidator extends Validator<ExecutableElement> {
 
   public ProducesValidator(IOCContext context) {
-    this.context = context;
+    super(context);
+
+    addCheck(new Check<ExecutableElement>() {
+      @Override
+      public void check(ExecutableElement variableElement) throws UnableToCompleteException {
+        if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
+          log(variableElement, "@Produces method must not be abstract");
+        }
+      }
+    });
+
+    addCheck(new Check<ExecutableElement>() {
+      @Override
+      public void check(ExecutableElement variableElement) throws UnableToCompleteException {
+        if (!variableElement.getModifiers().contains(Modifier.PUBLIC)) {
+          log(variableElement, "@Produces method must be public");
+        }
+      }
+    });
+
+    addCheck(new Check<ExecutableElement>() {
+      @Override
+      public void check(ExecutableElement variableElement) throws UnableToCompleteException {
+        if (!variableElement.getParameters().isEmpty()) {
+          log(variableElement, "@Produces method must have no args");
+        }
+      }
+    });
+
   }
 
   public void validate(Element element) throws UnableToCompleteException {
@@ -76,10 +71,7 @@ public class ProducesValidator {
           .append(" Only method can be annotated with @Produces");
       throw new UnableToCompleteException(sb.toString());
     }
-
-    for (Check check : checks) {
-      check.check(MoreElements.asExecutable(element));
-    }
+    super.validate((ExecutableElement) element);
   }
 
 }

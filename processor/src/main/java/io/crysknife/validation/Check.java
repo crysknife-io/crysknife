@@ -15,27 +15,53 @@
 package io.crysknife.validation;
 
 import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.tools.Diagnostic;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/13/21
  */
-public interface Check<T> {
+public abstract class Check<T> {
 
-  void check(T element) throws UnableToCompleteException;
+  protected IOCContext context;
 
-  default void log(ExecutableElement variableElement, String msg) throws UnableToCompleteException {
+  Check<T> setContext(IOCContext context) {
+    this.context = context;
+    return this;
+  }
+
+  public abstract void check(T element) throws UnableToCompleteException;
+
+  public void log(ExecutableElement element, String msg, String... args)
+      throws UnableToCompleteException {
     StringBuffer sb = new StringBuffer();
-    sb.append("Error at ").append(variableElement.getEnclosingElement()).append(".")
-        .append(variableElement.getSimpleName()).append(" : ").append(msg);
+    sb.append("Error at ").append(element.getEnclosingElement()).append(".")
+        .append(element.getSimpleName()).append(" : ").append(msg);
+    context.getGenerationContext().getProcessingEnvironment().getMessager()
+        .printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
     throw new UnableToCompleteException(sb.toString());
   }
 
-  default void log(TypeElement element, String msg) throws UnableToCompleteException {
+  public void log(TypeElement element, String msg, String... args)
+      throws UnableToCompleteException {
     StringBuffer sb = new StringBuffer();
     sb.append("Error at ").append(element.toString()).append(" : ").append(msg);
+    context.getGenerationContext().getProcessingEnvironment().getMessager()
+        .printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
+    throw new UnableToCompleteException(sb.toString());
+  }
+
+  public void log(VariableElement element, String msg, String... args)
+      throws UnableToCompleteException {
+    StringBuffer sb = new StringBuffer();
+    sb.append("Error at ").append(element.getEnclosingElement()).append(".").append(element)
+        .append(" : ").append(msg);
+    context.getGenerationContext().getProcessingEnvironment().getMessager()
+        .printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
     throw new UnableToCompleteException(sb.toString());
   }
 
