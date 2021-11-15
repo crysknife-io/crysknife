@@ -12,22 +12,14 @@
  * the License.
  */
 
-package org.treblereel.events;
+package org.treblereel.injection.managedinstance.typed;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import java.util.HashSet;
-import java.util.Set;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Typed;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 10/12/21
- */
-@ApplicationScoped
-public class SimpleEventSubscriber {
-
-  public Set<SimpleEvent> events = new HashSet<>();
-
-  public void onEvent(@Observes SimpleEvent event) {
-    events.add(event);
-  }
+@Dependent
+@Typed(SimpleBeanAbstractTyped.class)
+@Default
+public class SimpleBeanAbstractTyped extends AbstractTyped {
 }

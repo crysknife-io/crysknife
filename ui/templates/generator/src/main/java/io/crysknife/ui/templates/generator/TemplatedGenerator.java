@@ -25,7 +25,6 @@ import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
@@ -37,21 +36,18 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 import com.inet.lib.less.Less;
 import elemental2.dom.DomGlobal;
-import elemental2.dom.Event;
 import elemental2.dom.HTMLAnchorElement;
 import elemental2.dom.HTMLAreaElement;
 import elemental2.dom.HTMLAudioElement;
@@ -111,51 +107,12 @@ import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
-import io.crysknife.ui.templates.client.annotation.DataField;
-import io.crysknife.ui.templates.client.annotation.EventHandler;
-import io.crysknife.ui.templates.client.annotation.ForEvent;
-import io.crysknife.ui.templates.client.annotation.Templated;
+import io.crysknife.ui.templates.client.annotation.*;
+import io.crysknife.ui.templates.generator.events.EventHandlerGenerator;
+import io.crysknife.ui.templates.generator.events.EventHandlerTemplatedProcessor;
 import io.crysknife.util.Utils;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
-import org.gwtproject.event.dom.client.BlurEvent;
-import org.gwtproject.event.dom.client.CanPlayThroughEvent;
-import org.gwtproject.event.dom.client.ChangeEvent;
-import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.event.dom.client.ContextMenuEvent;
-import org.gwtproject.event.dom.client.DomEvent;
-import org.gwtproject.event.dom.client.DoubleClickEvent;
-import org.gwtproject.event.dom.client.DragEndEvent;
-import org.gwtproject.event.dom.client.DragEnterEvent;
-import org.gwtproject.event.dom.client.DragEvent;
-import org.gwtproject.event.dom.client.DragLeaveEvent;
-import org.gwtproject.event.dom.client.DragOverEvent;
-import org.gwtproject.event.dom.client.DragStartEvent;
-import org.gwtproject.event.dom.client.DropEvent;
-import org.gwtproject.event.dom.client.EndedEvent;
-import org.gwtproject.event.dom.client.ErrorEvent;
-import org.gwtproject.event.dom.client.FocusEvent;
-import org.gwtproject.event.dom.client.GestureChangeEvent;
-import org.gwtproject.event.dom.client.GestureEndEvent;
-import org.gwtproject.event.dom.client.GestureStartEvent;
-import org.gwtproject.event.dom.client.KeyDownEvent;
-import org.gwtproject.event.dom.client.KeyPressEvent;
-import org.gwtproject.event.dom.client.KeyUpEvent;
-import org.gwtproject.event.dom.client.LoadEvent;
-import org.gwtproject.event.dom.client.LoadedMetadataEvent;
-import org.gwtproject.event.dom.client.LoseCaptureEvent;
-import org.gwtproject.event.dom.client.MouseDownEvent;
-import org.gwtproject.event.dom.client.MouseMoveEvent;
-import org.gwtproject.event.dom.client.MouseOutEvent;
-import org.gwtproject.event.dom.client.MouseOverEvent;
-import org.gwtproject.event.dom.client.MouseUpEvent;
-import org.gwtproject.event.dom.client.MouseWheelEvent;
-import org.gwtproject.event.dom.client.ProgressEvent;
-import org.gwtproject.event.dom.client.ScrollEvent;
-import org.gwtproject.event.dom.client.TouchCancelEvent;
-import org.gwtproject.event.dom.client.TouchEndEvent;
-import org.gwtproject.event.dom.client.TouchMoveEvent;
-import org.gwtproject.event.dom.client.TouchStartEvent;
 import org.jboss.elemento.IsElement;
 import org.jboss.gwt.elemento.processor.AbortProcessingException;
 import org.jboss.gwt.elemento.processor.ExpressionParser;
@@ -209,6 +166,8 @@ import static java.util.stream.Collectors.joining;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
+
+// TODO refactor this class
 @Generator
 public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
@@ -218,8 +177,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   // List of elements from https://developer.mozilla.org/en-US/docs/Web/HTML/Element
   // which have a class in elemental2.dom, are standardized and not obsolete or deprecated
   private static final SetMultimap<String, String> HTML_ELEMENTS = HashMultimap.create();
-
-  private static final HashBiMap<String, String> EVENTS = HashBiMap.create();
 
   static {
     HTML_ELEMENTS.put(HTMLAnchorElement.class.getName(), "a");
@@ -272,71 +229,22 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     HTML_ELEMENTS.put(HTMLUListElement.class.getName(), "ul");
     HTML_ELEMENTS.put(HTMLVideoElement.class.getName(), "video");
 
-    EVENTS.put(BlurEvent.class.getCanonicalName(), "blur");
-    EVENTS.put(CanPlayThroughEvent.class.getCanonicalName(), "canplaythrough");
-    EVENTS.put(ChangeEvent.class.getCanonicalName(), "change");
-    EVENTS.put(ClickEvent.class.getCanonicalName(), "click");
-    EVENTS.put(ContextMenuEvent.class.getCanonicalName(), "contextmenu");
-    EVENTS.put(DoubleClickEvent.class.getCanonicalName(), "dblclick");
-    EVENTS.put(DragEndEvent.class.getCanonicalName(), "dragend");
-    EVENTS.put(DragEnterEvent.class.getCanonicalName(), "dragenter");
-    EVENTS.put(DragEvent.class.getCanonicalName(), "drag");
-    EVENTS.put(DragLeaveEvent.class.getCanonicalName(), "dragleave");
-    EVENTS.put(DragOverEvent.class.getCanonicalName(), "dragover");
-    EVENTS.put(DragStartEvent.class.getCanonicalName(), "dragstart");
-    EVENTS.put(DropEvent.class.getCanonicalName(), "drop");
-    EVENTS.put(EndedEvent.class.getCanonicalName(), "ended");
-    EVENTS.put(ErrorEvent.class.getCanonicalName(), "error");
-    EVENTS.put(FocusEvent.class.getCanonicalName(), "focus");
-    EVENTS.put(GestureChangeEvent.class.getCanonicalName(), "gesturechange");
-    EVENTS.put(GestureEndEvent.class.getCanonicalName(), "gestureend");
-    EVENTS.put(GestureStartEvent.class.getCanonicalName(), "gesturestart");
-    EVENTS.put(KeyPressEvent.class.getCanonicalName(), "keypress");
-    EVENTS.put(KeyDownEvent.class.getCanonicalName(), "keydown");
-    EVENTS.put(KeyUpEvent.class.getCanonicalName(), "keyup");
-    EVENTS.put(LoadedMetadataEvent.class.getCanonicalName(), "loadedmetadata");
-    EVENTS.put(LoadEvent.class.getCanonicalName(), "load");
-    EVENTS.put(LoseCaptureEvent.class.getCanonicalName(), "losecapture");
-    EVENTS.put(MouseDownEvent.class.getCanonicalName(), "mousedown");
-    EVENTS.put(MouseMoveEvent.class.getCanonicalName(), "mousemove");
-    EVENTS.put(MouseOutEvent.class.getCanonicalName(), "mouseout");
-    EVENTS.put(MouseOverEvent.class.getCanonicalName(), "mouseover");
-    EVENTS.put(MouseUpEvent.class.getCanonicalName(), "mouseup");
-    EVENTS.put(MouseWheelEvent.class.getCanonicalName(), "mousewheel");
-    EVENTS.put(ProgressEvent.class.getCanonicalName(), "progress");
-    EVENTS.put(ScrollEvent.class.getCanonicalName(), "scroll");
-    EVENTS.put(TouchCancelEvent.class.getCanonicalName(), "touchcancel");
-    EVENTS.put(TouchEndEvent.class.getCanonicalName(), "touchend");
-    EVENTS.put(TouchMoveEvent.class.getCanonicalName(), "touchmove");
-    EVENTS.put(TouchStartEvent.class.getCanonicalName(), "touchstart");
   }
 
   private ProcessingEnvironment processingEnvironment;
   private Messager messager;
   private BeanDefinition beanDefinition;
   private TypeElement isWidget;
-  private TypeElement GWT3_Event;
-  private TypeElement GWT3_Shared_Event;
-  private TypeElement Elemental2_Event;
-  private TypeElement GWT3_Dom_Event;
-
+  private EventHandlerTemplatedProcessor eventHandlerTemplatedProcessor;
+  private EventHandlerGenerator eventHandlerGenerator;
 
   public TemplatedGenerator(IOCContext iocContext) {
     super(iocContext);
+    eventHandlerTemplatedProcessor = new EventHandlerTemplatedProcessor(iocContext);
+    eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);
 
     isWidget = iocContext.getGenerationContext().getElements()
         .getTypeElement("org.gwtproject.user.client.ui.IsWidget");
-
-    GWT3_Event = iocContext.getGenerationContext().getElements()
-        .getTypeElement("org.gwtproject.user.client.Event");
-    GWT3_Shared_Event = iocContext.getGenerationContext().getElements()
-        .getTypeElement("org.gwtproject.event.shared.Event");
-    GWT3_Dom_Event = iocContext.getGenerationContext().getElements()
-        .getTypeElement("org.gwtproject.event.dom.client.DomEvent");
-
-    Elemental2_Event = iocContext.getGenerationContext().getElements()
-        .getTypeElement(Event.class.getCanonicalName());
-
   }
 
   @Override
@@ -441,7 +349,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     List<DataElementInfo> dataElements = processDataElements(type, templateSelector, root);
     context.setDataElements(dataElements);
 
-    List<EventHandlerInfo> eventElements = processEventHandlers(type, context);
+    List<EventHandlerInfo> eventElements =
+        eventHandlerTemplatedProcessor.processEventHandlers(type, context);
     context.setEvents(eventElements);
 
     // css/gss stylesheet
@@ -628,9 +537,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     setAttributes(method.getBody().get(), templateContext);
     setInnerHTML(method.getBody().get(), templateContext);
-
-
-
   }
 
   private MethodCallExpr getDataFieldFieldAccessCallExpr(TemplateContext templateContext) {
@@ -798,12 +704,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     throw new GenerationException("Unable to find type of " + kind);
   }
 
-  private MethodCallExpr getFieldAccessCallExpr(String fieldName) {
+  public MethodCallExpr getFieldAccessCallExpr(String fieldName) {
     VariableElement field = getVariableElement(fieldName);
     return getFieldAccessCallExpr(field);
   }
 
-  private MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
+  public MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       return new MethodCallExpr(
           new NameExpr(
@@ -820,7 +726,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .addArgument("instance"));
   }
 
-  private Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
+  public Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
     if (element.getKind().equals(DataElementInfo.Kind.ElementoIsElement)) {
       instance = new MethodCallExpr(
           new EnclosedExpr(new CastExpr(
@@ -846,7 +752,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()), instance));
   }
 
-  private VariableElement getVariableElement(String elementName) {
+  public VariableElement getVariableElement(String elementName) {
     return MoreTypes.asTypeElement(beanDefinition.getType()).getEnclosedElements().stream()
         .filter(elm -> elm.getKind().equals(ElementKind.FIELD))
         .filter(elm -> elm.getSimpleName().toString().equals(elementName))
@@ -855,53 +761,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
             + MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName()));
   }
 
-  // TODO refactoring
   private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {
-    templateContext.getEvents().forEach(event -> {
-      for (String eventEvent : event.getEvents()) {
-        MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(event.getInfo().getName());
-        if (isGWT3_Dom_Event(event.getMethod().getParameters().get(0))) {
-          VariableElement field = getVariableElement(event.getInfo().getName());
-          TypeMirror target = iocContext.getGenerationContext().getTypes().erasure(field.asType());
-          Expression result = new EnclosedExpr(
-              new CastExpr().setType(target.toString()).setExpression(fieldAccessCallExpr));
-          String eventName =
-              MoreTypes.asTypeElement(event.getMethod().getParameters().get(0).asType())
-                  .getSimpleName().toString();
-          String handler = "add" + eventName.substring(0, eventName.length() - 5) + "Handler";
-
-          long methods = Utils
-              .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
-                  MoreTypes.asTypeElement(field.asType()))
-              .stream().filter(method -> method.getSimpleName().toString().equals(handler)).count();
-          if (methods == 0) {
-            System.out.println("Error: at " + event.getMethod().getEnclosingElement() + "."
-                + event.getMethod().getSimpleName()
-                + " : method event type must be supported by the target");
-            abortWithError(event.getMethod(),
-                "@%s method event type must be supported by the target",
-                EventHandler.class.getSimpleName());
-          }
-          Statement theCall = generationUtils.generateMethodCall(
-              templateContext.getDataElementType(), event.getMethod(), new NameExpr("e"));
-          LambdaExpr lambda = new LambdaExpr();
-          lambda.getParameters().add(new Parameter().setName("e").setType(MoreTypes
-              .asTypeElement(event.getMethod().getParameters().get(0).asType()).toString()));
-          lambda.setEnclosingParameters(true);
-          lambda.setBody(theCall);
-          builder.getInitInstanceMethod().getBody().get()
-              .addAndGetStatement(new MethodCallExpr(result, handler).addArgument(lambda));
-        } else {
-          Statement theCall = generationUtils.generateMethodCall(builder.beanDefinition.getType(),
-              event.getMethod(), new NameExpr("e"));
-          MethodCallExpr methodCallExpr =
-              new MethodCallExpr(getInstanceByElementKind(event.getInfo(), fieldAccessCallExpr),
-                  "addEventListener").addArgument(new StringLiteralExpr(eventEvent))
-                      .addArgument("e -> { " + theCall + " }");
-          builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
-        }
-      }
-    });
+    eventHandlerGenerator.generate(builder, templateContext);
   }
 
   private void addImports(ClassBuilder builder) {
@@ -1018,122 +879,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         });
 
     return dataElements;
-  }
-
-  private List<EventHandlerInfo> processEventHandlers(TypeElement type,
-      TemplateContext templateContext) {
-    List<EventHandlerInfo> eventHandlerElements = new ArrayList<>();
-
-    Element forEvent = iocContext.getGenerationContext().getElements()
-        .getTypeElement(ForEvent.class.getCanonicalName());
-    Element domEvent = iocContext.getGenerationContext().getElements()
-        .getTypeElement(DomEvent.class.getCanonicalName());
-
-    // fields
-    ElementFilter.methodsIn(type.getEnclosedElements()).stream()
-        .filter(method -> MoreElements.isAnnotationPresent(method, EventHandler.class))
-        .forEach(method -> {
-
-          // verify the field
-          if (method.getModifiers().contains(Modifier.STATIC)) {
-            abortWithError(method, "@%s method must not be static",
-                EventHandler.class.getSimpleName());
-          }
-
-          if (method.getParameters().isEmpty() || method.getParameters().size() > 1) {
-            abortWithError(method, "@%s method must have one parameter",
-                EventHandler.class.getSimpleName());
-          }
-
-          if (MoreTypes.asTypeElement(method.getParameters().get(0).asType()).getModifiers()
-              .contains(Modifier.ABSTRACT)) {
-            abortWithError(method, "@%s method must have one non abstract parameter",
-                EventHandler.class.getSimpleName());
-          }
-
-          VariableElement parameter = method.getParameters().get(0);
-          DeclaredType declaredType = MoreTypes.asDeclared(parameter.asType());
-
-
-          boolean isGWT3_Event = isGWT3_Event(declaredType);
-          boolean isGWT3_Shared_Event = isGWT3_Shared_Event(parameter);
-          boolean isELEMENATAL2_Event = isELEMENATAL2_Event(declaredType);
-
-
-          if (!isGWT3_Shared_Event && !EVENTS.containsKey(declaredType.toString())) {
-            if (parameter.getAnnotation(ForEvent.class) == null) {
-              System.out.println("Error: " + String.format(
-                  "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
-                  method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent));
-              abortWithError(method,
-                  "%s.%s must have one parameter and this parameter must be annotated with @%s or be subtype of %s,",
-                  method.getEnclosingElement(), method.getSimpleName(), forEvent, domEvent);
-            }
-
-            if ((parameter.getAnnotation(ForEvent.class) != null
-                && (parameter.getAnnotation(ForEvent.class).value() == null
-                    || parameter.getAnnotation(ForEvent.class).value().length == 0))) {
-              abortWithError(method, "@%s value must not be empty ",
-                  ForEvent.class.getSimpleName());
-            }
-          }
-
-          String[] events = getEvents(parameter);
-
-          String[] dataElements = method.getAnnotation(EventHandler.class).value();
-          if (!isELEMENATAL2_Event && !isGWT3_Event && !isGWT3_Shared_Event
-              && !EVENTS.containsKey(declaredType.toString())) {
-            abortWithError(method.getEnclosingElement(),
-                "@%s method must have only one parameter and this parameter must be type or subtype of  "
-                    + Elemental2_Event + " or " + domEvent + " or  ",
-                EventHandler.class.getSimpleName());
-          }
-
-          Arrays.stream(dataElements).forEach(data -> {
-            java.util.Optional<DataElementInfo> result = templateContext.getDataElements().stream()
-                .filter(elm -> elm.getSelector().equals(data)).findFirst();
-            if (result.isPresent()) {
-              DataElementInfo info = result.get();
-              eventHandlerElements
-                  .add(new EventHandlerInfo(info, events, method, declaredType.toString()));
-            } else {
-              abortWithError(method,
-                  "Unable to find DataField element with name or alias " + data + " from ");
-            }
-          });
-        });
-
-    return eventHandlerElements;
-  }
-
-  private boolean isELEMENATAL2_Event(DeclaredType declaredType) {
-    return iocContext.getGenerationContext().getTypes().isSubtype(declaredType,
-        Elemental2_Event.asType());
-  }
-
-  private boolean isGWT3_Event(DeclaredType declaredType) {
-    return (GWT3_Event != null && iocContext.getGenerationContext().getTypes()
-        .isSubtype(declaredType, GWT3_Event.asType()));
-  }
-
-  private boolean isGWT3_Shared_Event(VariableElement parameter) {
-    return GWT3_Shared_Event != null && iocContext.getGenerationContext().getTypes()
-        .isSubtype(parameter.asType(), GWT3_Shared_Event.asType());
-  }
-
-  private boolean isGWT3_Dom_Event(VariableElement parameter) {
-    return GWT3_Dom_Event != null
-        && iocContext.getGenerationContext().getTypes().isSubtype(parameter.asType(),
-            iocContext.getGenerationContext().getTypes().erasure(GWT3_Dom_Event.asType()));
-  }
-
-  private String[] getEvents(VariableElement parameter) {
-    if (parameter.getAnnotation(ForEvent.class) != null) {
-      return parameter.getAnnotation(ForEvent.class).value();
-    }
-    String[] result = new String[1];
-    result[0] = EVENTS.get(MoreTypes.asDeclared(parameter.asType()).toString());
-    return result;
   }
 
   private void verifyHTMLElement(String htmlType, String selector, Element element,
@@ -1343,7 +1088,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
    * Issue a compilation error and abandon the processing of this template. This does not prevent
    * the processing of other templates.
    */
-  private void abortWithError(Element element, String msg, Object... args) {
+  public void abortWithError(Element element, String msg, Object... args) {
     error(element, msg, args);
     throw new AbortProcessingException();
   }

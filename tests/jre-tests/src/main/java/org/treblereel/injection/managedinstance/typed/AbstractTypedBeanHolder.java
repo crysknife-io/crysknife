@@ -12,31 +12,22 @@
  * the License.
  */
 
-package org.treblereel.events;
+package org.treblereel.injection.managedinstance.typed;
+
+import io.crysknife.client.ManagedInstance;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
-import java.util.HashSet;
-import java.util.Set;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 10/12/21
- */
 @ApplicationScoped
-public class CDIEventProducer {
+public class AbstractTypedBeanHolder {
 
-
-  @Inject
-  Event<SimpleEvent> simpleEventEvent;
+  public final ManagedInstance<AbstractTyped> instance;
 
   @Inject
-  Event<PersonEvent> managerEvent;
-
-  public Set<SimpleEvent> events = new HashSet<>();
-
-  public void onEvent(@Observes SimpleEvent event) {
-    events.add(event);
+  AbstractTypedBeanHolder(@Any @Default ManagedInstance<AbstractTyped> instance) {
+    this.instance = instance;
   }
 }

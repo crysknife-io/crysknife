@@ -73,6 +73,10 @@ public class Utils {
     return MoreElements.getPackage(singleton).getQualifiedName().toString();
   }
 
+  public static String getPackageName(TypeMirror type) {
+    return getPackageName(MoreTypes.asTypeElement(type));
+  }
+
   public static String getFactoryClassName(TypeElement bean) {
     return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
         : (bean.getEnclosingElement().getSimpleName() + "_")) + bean.getSimpleName().toString()

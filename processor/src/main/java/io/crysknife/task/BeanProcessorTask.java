@@ -153,11 +153,9 @@ public class BeanProcessorTask implements Task {
         .forEach(iocGeneratorMetaCollectionEntry -> {
           iocGeneratorMetaCollectionEntry.getValue().forEach(gen -> {
 
-            TypeElement annotation = iocContext.getGenerationContext().getElements()
-                .getTypeElement(iocGeneratorMetaCollectionEntry.getKey().annotation);
-            Set<ExecutableElement> elements = iocContext.getGenerationContext()
-                .getRoundEnvironment().getElementsAnnotatedWith(annotation).stream()
-                .filter(elm -> elm.getKind().equals(ElementKind.PARAMETER))
+            Set<ExecutableElement> elements = iocContext
+                .getParametersByAnnotation(iocGeneratorMetaCollectionEntry.getKey().annotation)
+                .stream().filter(elm -> elm.getKind().equals(ElementKind.PARAMETER))
                 .map(MoreElements::asVariable)
                 .map(elm -> MoreElements.asExecutable(elm.getEnclosingElement()))
                 .map(MoreElements::asExecutable).collect(Collectors.toSet());

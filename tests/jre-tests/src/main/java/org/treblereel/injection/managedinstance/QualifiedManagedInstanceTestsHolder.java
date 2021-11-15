@@ -12,31 +12,31 @@
  * the License.
  */
 
-package org.treblereel.events;
+package org.treblereel.injection.managedinstance;
+
+import io.crysknife.client.ManagedInstance;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.util.HashSet;
-import java.util.Set;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 10/12/21
- */
 @ApplicationScoped
-public class CDIEventProducer {
+public class QualifiedManagedInstanceTestsHolder {
 
+  public final ManagedInstance<ComponentIface> c_bean1;
+  public final ManagedInstance<ComponentIface> c_bean2;
 
   @Inject
-  Event<SimpleEvent> simpleEventEvent;
+  @ComponentQualifierOne
+  public ManagedInstance<ComponentIface> f_bean1;
+  @Inject
+  @ComponentQualifierTwo
+  public ManagedInstance<ComponentIface> f_bean2;
 
   @Inject
-  Event<PersonEvent> managerEvent;
-
-  public Set<SimpleEvent> events = new HashSet<>();
-
-  public void onEvent(@Observes SimpleEvent event) {
-    events.add(event);
+  public QualifiedManagedInstanceTestsHolder(
+      @ComponentQualifierOne ManagedInstance<ComponentIface> c_bean1,
+      @ComponentQualifierTwo ManagedInstance<ComponentIface> c_bean2) {
+    this.c_bean1 = c_bean1;
+    this.c_bean2 = c_bean2;
   }
 }

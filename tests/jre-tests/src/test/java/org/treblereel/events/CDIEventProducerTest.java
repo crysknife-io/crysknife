@@ -27,10 +27,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class CDIEventProducerTest extends AbstractTest {
 
-  private final PrintStream standardOut = System.out;
-  private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
-
-
   @Test
   public void testSimpleEvents1() {
     CDIEventProducer cdiEventProducer =
@@ -41,12 +37,25 @@ public class CDIEventProducerTest extends AbstractTest {
 
   @Test
   public void testSimpleEvents2() {
-    System.setOut(new PrintStream(outputStreamCaptor));
+    SimpleEventSubscriberDependent simpleEventSubscriberDependent =
+        app.beanManager.lookupBean(SimpleEventSubscriberDependent.class).getInstance();
 
     CDIEventProducer cdiEventProducer =
         app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
     cdiEventProducer.simpleEventEvent.fire(new SimpleEvent());
-    assertEquals(2,
-        app.beanManager.lookupBean(SimpleEventSubscriber.class).getInstance().events.size());
+    assertEquals(2, app.beanManager.lookupBean(SimpleEventSubscriberApplicationScoped.class)
+        .getInstance().events.size());
+    assertEquals(1, simpleEventSubscriberDependent.events.size());
+  }
+
+  @Test
+  public void testSimpleEvents3() {
+    PersonEventHolder holder = app.beanManager.lookupBean(PersonEventHolder.class).getInstance();
+    CDIEventProducer cdiEventProducer =
+        app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
+    cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
+    assertEquals(1, holder.events.size());
+
+
   }
 }

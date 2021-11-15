@@ -14,61 +14,44 @@
 
 package io.crysknife.validation;
 
-import com.google.auto.common.MoreElements;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/13/21
  */
-public class PostConstructValidator {
-
-  private final IOCContext context;
-
-  private Set<Check> checks = new HashSet<Check>() {
-    {
-      add(new Check<ExecutableElement>() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
-            log(variableElement, "@PostConstruct method must not be abstract");
-          }
-        }
-      });
-
-      add(new Check<ExecutableElement>() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (variableElement.getModifiers().contains(Modifier.STATIC)) {
-            log(variableElement, "@PostConstruct method must be non-static");
-          }
-        }
-      });
-
-      add(new Check<ExecutableElement>() {
-        @Override
-        public void check(ExecutableElement variableElement) throws UnableToCompleteException {
-          if (!variableElement.getParameters().isEmpty()) {
-            log(variableElement, "@PostConstruct method must have no args");
-          }
-        }
-      });
-    }
-  };
-
+public class PostConstructValidator extends Validator<ExecutableElement> {
 
   public PostConstructValidator(IOCContext context) {
-    this.context = context;
-  }
+    super(context);
+    addCheck(new Check<ExecutableElement>() {
+      @Override
+      public void check(ExecutableElement variableElement) throws UnableToCompleteException {
+        if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
+          log(variableElement, "@PostConstruct method must not be abstract");
+        }
+      }
+    });
 
-  public void validate(ExecutableElement method) throws UnableToCompleteException {
-    for (Check check : checks) {
-      check.check(MoreElements.asExecutable(method));
-    }
+    addCheck(new Check<ExecutableElement>() {
+      @Override
+      public void check(ExecutableElement variableElement) throws UnableToCompleteException {
+        if (variableElement.getModifiers().contains(Modifier.STATIC)) {
+          log(variableElement, "@PostConstruct method must be non-static");
+        }
+      }
+    });
+
+    addCheck(new Check<ExecutableElement>() {
+      @Override
+      public void check(ExecutableElement variableElement) throws UnableToCompleteException {
+        if (!variableElement.getParameters().isEmpty()) {
+          log(variableElement, "@PostConstruct method must have no args");
+        }
+      }
+    });
   }
 }

@@ -12,31 +12,17 @@
  * the License.
  */
 
-package org.treblereel.events;
+package org.treblereel.injection.managedinstance;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import java.util.HashSet;
-import java.util.Set;
+import javax.enterprise.context.Dependent;
+import javax.inject.Named;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 10/12/21
- */
-@ApplicationScoped
-public class CDIEventProducer {
+@Dependent
+@Named("NamedBeanTwo")
+public class NamedBeanTwo implements NamedIface {
 
-
-  @Inject
-  Event<SimpleEvent> simpleEventEvent;
-
-  @Inject
-  Event<PersonEvent> managerEvent;
-
-  public Set<SimpleEvent> events = new HashSet<>();
-
-  public void onEvent(@Observes SimpleEvent event) {
-    events.add(event);
+  @Override
+  public String getComponentName() {
+    return getClass().getSimpleName();
   }
 }

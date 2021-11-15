@@ -12,31 +12,7 @@
  * the License.
  */
 
-package org.treblereel.events;
+package org.treblereel.injection.managedinstance.typed;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import java.util.HashSet;
-import java.util.Set;
-
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 10/12/21
- */
-@ApplicationScoped
-public class CDIEventProducer {
-
-
-  @Inject
-  Event<SimpleEvent> simpleEventEvent;
-
-  @Inject
-  Event<PersonEvent> managerEvent;
-
-  public Set<SimpleEvent> events = new HashSet<>();
-
-  public void onEvent(@Observes SimpleEvent event) {
-    events.add(event);
-  }
+public abstract class AbstractTyped {
 }

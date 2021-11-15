@@ -19,11 +19,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.inject.Named;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,14 +27,13 @@ import java.util.Set;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21
  */
-public class InjectionPointValidator {
+public class InjectionPointValidator extends Validator<VariableElement> {
 
-  private FieldValidator fieldValidator;
-  private IOCContext context;
+  private Validator fieldValidator;
 
   private Set<Check> checks = new HashSet<Check>() {
     {
-      add(new Check() {
+      add(new Check<VariableElement>() {
         @Override
         public void check(VariableElement variableElement) throws UnableToCompleteException {
           if (variableElement.getModifiers().contains(Modifier.ABSTRACT)) {
@@ -47,7 +42,7 @@ public class InjectionPointValidator {
         }
       });
 
-      add(new Check() {
+      add(new Check<VariableElement>() {
         @Override
         public void check(VariableElement variableElement) throws UnableToCompleteException {
           List<AnnotationMirror> qualifiers =
@@ -69,11 +64,11 @@ public class InjectionPointValidator {
 
 
   public InjectionPointValidator(IOCContext context, Element parent) {
-    this.context = context;
+    super(context);
     if (parent.getKind().equals(ElementKind.CLASS)) {
-      fieldValidator = new InjectionPointFieldValidator(this);
+      fieldValidator = new InjectionPointFieldValidator(context, this);
     } else if (parent.getKind().equals(ElementKind.CONSTRUCTOR)) {
-      fieldValidator = new InjectionPointConstructorValidator(this);
+      fieldValidator = new InjectionPointConstructorValidator(context, this);
     }
   }
 
@@ -81,31 +76,14 @@ public class InjectionPointValidator {
     fieldValidator.validate(variableElement);
   }
 
-  private interface FieldValidator {
+  private static class InjectionPointFieldValidator extends Validator<VariableElement> {
 
-    void validate(VariableElement variableElement) throws UnableToCompleteException;
-  }
-
-  private interface Check {
-
-    void check(VariableElement variableElement) throws UnableToCompleteException;
-
-    default void log(VariableElement variableElement, String msg) throws UnableToCompleteException {
-      StringBuffer sb = new StringBuffer();
-      sb.append("Error at ").append(variableElement.getEnclosingElement()).append(".")
-          .append(variableElement.getSimpleName()).append(" : ").append(msg);
-      throw new UnableToCompleteException(sb.toString());
-    }
-  }
-
-  private static class InjectionPointFieldValidator implements FieldValidator {
-
-    private Set<Check> checks = new HashSet<>();
-
-    private InjectionPointFieldValidator(InjectionPointValidator validator) {
-      checks.addAll(validator.checks);
-
-      checks.add(new Check() {
+    private InjectionPointFieldValidator(IOCContext context, InjectionPointValidator validator) {
+      super(context);
+      validator.checks.forEach(check -> {
+        addCheck(check);
+      });
+      addCheck(new Check<VariableElement>() {
         @Override
         public void check(VariableElement variableElement) throws UnableToCompleteException {
           if (variableElement.getModifiers().contains(Modifier.FINAL)) {
@@ -114,7 +92,7 @@ public class InjectionPointValidator {
         }
       });
 
-      checks.add(new Check() {
+      addCheck(new Check<VariableElement>() {
         @Override
         public void check(VariableElement variableElement) throws UnableToCompleteException {
           if (variableElement.getModifiers().contains(Modifier.FINAL)) {
@@ -122,30 +100,18 @@ public class InjectionPointValidator {
           }
         }
       });
-
     }
 
-    @Override
-    public void validate(VariableElement variableElement) throws UnableToCompleteException {
-      for (Check check : checks) {
-        check.check(variableElement);
-      }
-    }
   }
 
-  private static class InjectionPointConstructorValidator implements FieldValidator {
+  private static class InjectionPointConstructorValidator extends Validator<VariableElement> {
 
-    private Set<Check> checks = new HashSet<>();
-
-    private InjectionPointConstructorValidator(InjectionPointValidator validator) {
-      checks.addAll(validator.checks);
-    }
-
-    @Override
-    public void validate(VariableElement variableElement) throws UnableToCompleteException {
-      for (Check check : checks) {
-        check.check(variableElement);
-      }
+    private InjectionPointConstructorValidator(IOCContext context,
+        InjectionPointValidator validator) {
+      super(context);
+      validator.checks.forEach(check -> {
+        addCheck(check);
+      });
     }
   }
 }

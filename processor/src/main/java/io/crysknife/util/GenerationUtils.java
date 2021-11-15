@@ -37,6 +37,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.InstanceImpl;
@@ -50,11 +51,8 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 
 import javax.inject.Named;
 import javax.inject.Qualifier;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -72,6 +70,32 @@ public class GenerationUtils {
     qualifier = context.getGenerationContext().getElements()
         .getTypeElement(Qualifier.class.getCanonicalName()).asType();
 
+  }
+
+  public boolean isAccessible(TypeMirror caller, ExecutableElement method) {
+    TypeMirror methodEnclosingElement = method.getEnclosingElement().asType();
+
+    if (!context.getGenerationContext().getTypes().isAssignable(erase(caller),
+        erase(methodEnclosingElement))) {
+      return false;
+    }
+
+    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+      return true;
+    }
+
+    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
+      return false;
+    }
+
+    PackageElement methodPackageElement = MoreElements.getPackage(method);
+    PackageElement callerElement = MoreElements.getPackage(MoreTypes.asTypeElement(caller));
+
+    return callerElement.equals(methodPackageElement);
+  }
+
+  private TypeMirror erase(TypeMirror mirror) {
+    return context.getGenerationContext().getTypes().erasure(mirror);
   }
 
   public String getActualQualifiedBeanName(InjectableVariableDefinition fieldPoint) {
@@ -180,6 +204,27 @@ public class GenerationUtils {
     }
   }
 
+  public Expression createQualifierExpression(AnnotationMirror qualifier) {
+
+    ObjectCreationExpr annotation = new ObjectCreationExpr();
+    annotation
+        .setType(new ClassOrInterfaceType().setName(qualifier.getAnnotationType().toString()));
+
+    NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
+
+    MethodDeclaration annotationType = new MethodDeclaration();
+    annotationType.setModifiers(Modifier.Keyword.PUBLIC);
+    annotationType.setName("annotationType");
+    annotationType.setType(
+        new ClassOrInterfaceType().setName("Class<? extends java.lang.annotation.Annotation>"));
+    annotationType.getBody().get().addAndGetStatement(
+        new ReturnStmt(new NameExpr(qualifier.getAnnotationType().toString() + ".class")));
+    anonymousClassBody.add(annotationType);
+
+    annotation.setAnonymousClassBody(anonymousClassBody);
+
+    return annotation;
+  }
 
   public String isQualifier(InjectableVariableDefinition field) {
     for (AnnotationMirror ann : field.getVariableElement().getAnnotationMirrors()) {
@@ -228,6 +273,13 @@ public class GenerationUtils {
                   .addArgument(arg));
         }
         return new ExpressionStmt(result);
+      } else if (isAccessible(parent, method)) {
+        MethodCallExpr call =
+            new MethodCallExpr(new NameExpr("instance"), method.getSimpleName().toString());
+        for (Expression arg : args) {
+          call.addArgument(arg);
+        }
+        return new ExpressionStmt(call);
       } else {
         MethodCallExpr call =
             new MethodCallExpr(new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
@@ -245,8 +297,6 @@ public class GenerationUtils {
           call.addArgument(arg);
         }
         return new ExpressionStmt(new MethodCallExpr(call, "call"));
-
-
       }
     }
   }

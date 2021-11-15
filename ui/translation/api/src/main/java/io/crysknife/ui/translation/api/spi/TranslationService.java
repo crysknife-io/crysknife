@@ -112,26 +112,6 @@ public abstract class TranslationService {
   public static void retranslateTemplatedBeans() {
     throw new Error(
         TranslationService.class.getCanonicalName() + ".retranslateTemplatedBeans is not ");
-    /*    // Translate DOM-attached templates
-    DomVisit.revisit(new ElementWrapper(Document.get().getBody()), new TranslationDomRevisitor());
-    
-    // Translate DOM-detached Singleton templates
-    for (final AsyncBeanDef<Composite> beanDef : IOC.getAsyncBeanManager().lookupBeans(Composite.class)) {
-      final Class<? extends Annotation> scope = beanDef.getScope();
-      if (scope != null
-              && (scope.equals(ApplicationScoped.class)))
-        beanDef.getInstance(new CreationalCallback<Composite>() {
-          @Override
-          public void callback(final Composite beanInstance) {
-            *//*
-                                                                                                                                                            * Only translate parent-less widgets to avoid re-translating a single widget multiple
-                                                                                                                                                            * times (the call to revisit will traverse the whole subtree rooted at this widget).
-                                                                                                                                                            *//*
-                                                                                                                                                                                                                                                                                                             if (beanInstance.getParent() == null)
-                                                                                                                                                                                                                                                                                                               DomVisit.revisit(new ElementWrapper(beanInstance.getElement()), new TranslationDomRevisitor());
-                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                            });
-                                                                                                                                                                                                                                                                                                            }*/
   }
 
   /**

@@ -40,6 +40,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.validation.Check;
+import io.crysknife.validation.Validator;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -56,13 +57,15 @@ public class IOCProviderTask implements Task {
   private IOCContext context;
   private TreeLogger logger;
   private TypeMirror contextualTypeProvider;
-  private Validator validator = new Validator();
+  private Validator validator;
 
   public IOCProviderTask(IOCContext context, TreeLogger logger) {
     this.context = context;
     this.logger = logger;
     this.contextualTypeProvider = context.getGenerationContext().getTypes()
         .erasure(context.getTypeMirror(ContextualTypeProvider.class));
+
+    validator = new ProviderValidator(context);
   }
 
   @Override
@@ -138,7 +141,7 @@ public class IOCProviderTask implements Task {
     }
   }
 
-  private static class Validator {
+  private class ProviderValidator extends Validator<TypeElement> {
 
     private Set<Check> checks = new HashSet<Check>() {
       {
@@ -163,12 +166,9 @@ public class IOCProviderTask implements Task {
       }
     };
 
-
-    public void validate(TypeElement type) throws UnableToCompleteException {
-      for (Check check : checks) {
-        check.check(type);
-      }
+    public ProviderValidator(IOCContext context) {
+      super(context);
+      checks.forEach(check -> addCheck(check));
     }
-
   }
 }
