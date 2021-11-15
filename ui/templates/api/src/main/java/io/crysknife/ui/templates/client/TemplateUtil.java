@@ -187,6 +187,10 @@ public final class TemplateUtil {
     Element select(HTMLElement context, String identifier);
   }
 
+  public static void onSinkEvents(Object elm, int chMask, EventListener listener) {
+    onSinkEvents(Js.uncheckedCast(elm), chMask, listener);
+  }
+
   public static void onSinkEvents(Element elm, int chMask, EventListener listener) {
     if ((chMask & 0x00001) != 0) {
       elm.addEventListener("click", listener);
