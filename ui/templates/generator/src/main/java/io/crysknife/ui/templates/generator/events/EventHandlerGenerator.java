@@ -28,6 +28,7 @@ import io.crysknife.ui.templates.client.annotation.SinkNative;
 import io.crysknife.ui.templates.generator.TemplatedGenerator;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
+import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
 
@@ -111,40 +112,72 @@ public class EventHandlerGenerator {
     @Override
     void generate(ClassBuilder builder, TemplateContext templateContext,
         EventHandlerInfo eventHandlerInfo) {
-      MethodCallExpr fieldAccessCallExpr =
-          templatedGenerator.getFieldAccessCallExpr(eventHandlerInfo.getInfo().getName());
 
-      VariableElement field =
-          templatedGenerator.getVariableElement(eventHandlerInfo.getInfo().getName());
-      TypeMirror target = iocContext.getGenerationContext().getTypes().erasure(field.asType());
-      Expression result = new EnclosedExpr(
-          new CastExpr().setType(target.toString()).setExpression(fieldAccessCallExpr));
-      String eventName =
-          MoreTypes.asTypeElement(eventHandlerInfo.getMethod().getParameters().get(0).asType())
-              .getSimpleName().toString();
-      String handler = "add" + eventName.substring(0, eventName.length() - 5) + "Handler";
 
-      long methods = Utils
-          .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
-              MoreTypes.asTypeElement(field.asType()))
-          .stream().filter(method -> method.getSimpleName().toString().equals(handler)).count();
-      if (methods == 0) {
-        System.out.println("Error: at " + eventHandlerInfo.getMethod().getEnclosingElement() + "."
-            + eventHandlerInfo.getMethod().getSimpleName()
-            + " : method event type must be supported by the target");
-        templatedGenerator.abortWithError(eventHandlerInfo.getMethod(),
-            "@%s method event type must be supported by the target",
-            EventHandler.class.getSimpleName());
+      if (eventHandlerInfo.getInfo() == null) {
+        DataElementInfo.Kind kind =
+            templatedGenerator.getDataElementInfoKind(templateContext.getDataElementType());
+        if (!kind.equals(DataElementInfo.Kind.IsWidget)) {
+          templatedGenerator.abortWithError(eventHandlerInfo.getMethod(),
+              "It's not possible to bind GWT event to non-GWT template, use elemental2 instead");
+        }
+
+        String eventName =
+            MoreTypes.asTypeElement(eventHandlerInfo.getMethod().getParameters().get(0).asType())
+                .getQualifiedName().toString();
+        MethodCallExpr theCall = new MethodCallExpr(new NameExpr("instance"), "addDomHandler");
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("e -> ");
+        sb.append("instance.");
+        sb.append(eventHandlerInfo.getMethodName());
+        sb.append("(e)");
+
+        theCall.addArgument(sb.toString());
+        theCall.addArgument(new MethodCallExpr(new NameExpr(eventName), "getType"));
+        builder.getInitInstanceMethod().getBody().get().addAndGetStatement(theCall);
+      } else {
+        MethodCallExpr fieldAccessCallExpr =
+            templatedGenerator.getFieldAccessCallExpr(eventHandlerInfo.getInfo().getName());
+
+        VariableElement field =
+            templatedGenerator.getVariableElement(eventHandlerInfo.getInfo().getName());
+        TypeMirror target = iocContext.getGenerationContext().getTypes().erasure(field.asType());
+        Expression result = new EnclosedExpr(
+            new CastExpr().setType(target.toString()).setExpression(fieldAccessCallExpr));
+
+
+
+        String eventName =
+            MoreTypes.asTypeElement(eventHandlerInfo.getMethod().getParameters().get(0).asType())
+                .getSimpleName().toString();
+        String handler = "add" + eventName.substring(0, eventName.length() - 5) + "Handler";
+
+        long methods = Utils
+            .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
+                MoreTypes.asTypeElement(field.asType()))
+            .stream().filter(method -> method.getSimpleName().toString().equals(handler)).count();
+        if (methods == 0) {
+          System.out.println("Error: at " + eventHandlerInfo.getMethod().getEnclosingElement() + "."
+              + eventHandlerInfo.getMethod().getSimpleName()
+              + " : method event type must be supported by the target");
+          templatedGenerator.abortWithError(eventHandlerInfo.getMethod(),
+              "@%s method event type must be supported by the target",
+              EventHandler.class.getSimpleName());
+        }
+        Statement theCall = generationUtils.generateMethodCall(templateContext.getDataElementType(),
+            eventHandlerInfo.getMethod(), new NameExpr("e"));
+        LambdaExpr lambda = new LambdaExpr();
+        lambda.getParameters()
+            .add(new Parameter().setName("e")
+                .setType(MoreTypes
+                    .asTypeElement(eventHandlerInfo.getMethod().getParameters().get(0).asType())
+                    .toString()));
+        lambda.setEnclosingParameters(true);
+        lambda.setBody(theCall);
+        builder.getInitInstanceMethod().getBody().get()
+            .addAndGetStatement(new MethodCallExpr(result, handler).addArgument(lambda));
       }
-      Statement theCall = generationUtils.generateMethodCall(templateContext.getDataElementType(),
-          eventHandlerInfo.getMethod(), new NameExpr("e"));
-      LambdaExpr lambda = new LambdaExpr();
-      lambda.getParameters().add(new Parameter().setName("e").setType(MoreTypes
-          .asTypeElement(eventHandlerInfo.getMethod().getParameters().get(0).asType()).toString()));
-      lambda.setEnclosingParameters(true);
-      lambda.setBody(theCall);
-      builder.getInitInstanceMethod().getBody().get()
-          .addAndGetStatement(new MethodCallExpr(result, handler).addArgument(lambda));
     }
   }
 
@@ -157,7 +190,6 @@ public class EventHandlerGenerator {
     @Override
     public void generate(ClassBuilder builder, TemplateContext templateContext,
         EventHandlerInfo eventHandlerInfo) {
-      // TemplateUtil.onSinkEvents(btn, 1, evt -> sinkEvent(event));
       MethodCallExpr fieldAccessCallExpr =
           templatedGenerator.getFieldAccessCallExpr(eventHandlerInfo.getInfo().getName());
 
@@ -187,16 +219,30 @@ public class EventHandlerGenerator {
     public void generate(ClassBuilder builder, TemplateContext templateContext,
         EventHandlerInfo eventHandlerInfo) {
       for (String event : eventHandlerInfo.getEvents()) {
-        MethodCallExpr fieldAccessCallExpr =
-            templatedGenerator.getFieldAccessCallExpr(eventHandlerInfo.getInfo().getName());
+
         Statement theCall = generationUtils.generateMethodCall(builder.beanDefinition.getType(),
             eventHandlerInfo.getMethod(), new NameExpr("e"));
-        MethodCallExpr methodCallExpr =
-            new MethodCallExpr(templatedGenerator.getInstanceByElementKind(
-                eventHandlerInfo.getInfo(), fieldAccessCallExpr), "addEventListener")
-                    .addArgument(new StringLiteralExpr(event))
-                    .addArgument("e -> { " + theCall + " }");
-        builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
+
+        // handle event, that binds to the root of the template
+        if (eventHandlerInfo.getInfo() == null) {
+          DataElementInfo.Kind kind =
+              templatedGenerator.getDataElementInfoKind(templateContext.getDataElementType());
+          Expression fieldAccessCallExpr = templatedGenerator.getInstanceMethodName(kind);
+          MethodCallExpr methodCallExpr =
+              new MethodCallExpr(fieldAccessCallExpr, "addEventListener")
+                  .addArgument(new StringLiteralExpr(event))
+                  .addArgument("e -> { " + theCall + " }");
+          builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
+        } else {
+          Expression fieldAccessCallExpr =
+              templatedGenerator.getFieldAccessCallExpr(eventHandlerInfo.getInfo().getName());
+          MethodCallExpr methodCallExpr =
+              new MethodCallExpr(templatedGenerator.getInstanceByElementKind(
+                  eventHandlerInfo.getInfo(), fieldAccessCallExpr), "addEventListener")
+                      .addArgument(new StringLiteralExpr(event))
+                      .addArgument("e -> { " + theCall + " }");
+          builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
+        }
       }
     }
   }

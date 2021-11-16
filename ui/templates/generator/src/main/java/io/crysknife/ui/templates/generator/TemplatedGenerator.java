@@ -680,7 +680,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     });
   }
 
-  private Expression getInstanceMethodName(DataElementInfo.Kind kind) {
+  public Expression getInstanceMethodName(DataElementInfo.Kind kind) {
     MethodCallExpr expr = new MethodCallExpr(new NameExpr("instance"), getMethodName(kind));
     if (kind.equals(DataElementInfo.Kind.IsWidget)) {
       uncheckedCastCall(expr, isWidget.toString());
@@ -924,7 +924,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     }
   }
 
-  private DataElementInfo.Kind getDataElementInfoKind(TypeMirror dataElementType) {
+  public DataElementInfo.Kind getDataElementInfoKind(TypeMirror dataElementType) {
     if (isAssignable(dataElementType, HTMLElement.class)) {
       return DataElementInfo.Kind.HTMLElement;
     } else if (isAssignable(dataElementType, io.crysknife.client.IsElement.class)) {
