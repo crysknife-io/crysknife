@@ -46,6 +46,7 @@ public class EventHandlerGenerator {
   private final TypeElement gwt3SharedEvent;
   private final TypeElement gwt3DomEvent;
   private final TypeElement elemental2Event;
+  private final TypeElement gwt3Widget;
   private final GWT3DomEventGenerator gwt3DomEventGenerator;
   private final SinkNativeGenerator sinkNativeGenerator;
   private final Elemental2Generator elemental2Generator;
@@ -64,6 +65,8 @@ public class EventHandlerGenerator {
         .getTypeElement("org.gwtproject.event.dom.client.DomEvent");
     elemental2Event = iocContext.getGenerationContext().getElements()
         .getTypeElement(Event.class.getCanonicalName());
+    gwt3Widget = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.user.client.ui.Widget");
 
     gwt3DomEventGenerator = new GWT3DomEventGenerator(iocContext, templatedGenerator);
     sinkNativeGenerator = new SinkNativeGenerator(iocContext, templatedGenerator);
@@ -127,6 +130,15 @@ public class EventHandlerGenerator {
         VariableElement field =
             templatedGenerator.getVariableElement(eventHandlerInfo.getInfo().getName());
         TypeMirror target = iocContext.getGenerationContext().getTypes().erasure(field.asType());
+
+        if (gwt3Widget != null) {
+          if (!iocContext.getGenerationContext().getTypes().isAssignable(target,
+              gwt3Widget.asType())) {
+            templatedGenerator.abortWithError(eventHandlerInfo.getMethod(),
+                "It's not possible to bind GWT event to non-GWT template, use elemental2 instead");
+          }
+        }
+
         fieldAccessCallExpr =
             new EnclosedExpr(new CastExpr().setType(target.toString()).setExpression(
                 templatedGenerator.getFieldAccessCallExpr(eventHandlerInfo.getInfo().getName())));
@@ -186,6 +198,11 @@ public class EventHandlerGenerator {
     public void generate(ClassBuilder builder, TemplateContext templateContext,
         EventHandlerInfo eventHandlerInfo) {
       for (String event : eventHandlerInfo.getEvents()) {
+
+        if (event == null) {
+          templatedGenerator.abortWithError(eventHandlerInfo.getMethod(),
+              "It's not possible to determine event type, maybe @SinkNative or @ForEvent missed ?");
+        }
 
         Statement theCall = generationUtils.generateMethodCall(builder.beanDefinition.getType(),
             eventHandlerInfo.getMethod(), new NameExpr("e"));

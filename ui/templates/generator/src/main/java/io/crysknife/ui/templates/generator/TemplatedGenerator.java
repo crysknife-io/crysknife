@@ -1113,6 +1113,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   public void error(Element element, String msg, Object... args) {
+    StringBuffer sb = new StringBuffer();
+    sb.append("Error at ").append(element.getEnclosingElement()).append(".")
+        .append(element.getSimpleName()).append(" : ").append(String.format(msg, args));
+    System.out.println(sb);
     this.messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
   }
 
