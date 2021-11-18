@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import elemental2.dom.DomGlobal;
 import jsinterop.base.Js;
 
 /**
@@ -43,14 +44,12 @@ public final class ProxyGetInterceptor implements GetFN {
 
   @Override
   public Object onInvoke(Object object, String objectKey, Object receiver) {
-    if (Js.typeof(Js.asPropertyMap(object).get(objectKey)).equals("function")) {
-      if (object == target && methodHolder.containsKey(objectKey)) {
-        return methodHolder.get(objectKey).apply(object, objectKey);
-      }
-    } else {
-      if (object.equals(target) && propHolder.containsKey(objectKey)) {
-        return propHolder.get(objectKey).apply(object, objectKey);
-      }
+    if (object != target) {
+      return Js.asPropertyMap(object).get(objectKey);
+    }
+
+    if (object == target && propHolder.containsKey(objectKey)) {
+      return propHolder.get(objectKey).apply(object, objectKey);
     }
     return Js.asPropertyMap(object).get(objectKey);
   }

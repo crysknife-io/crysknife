@@ -70,18 +70,24 @@ public class EventHandlerTemplatedProcessor {
         String[] events = getEvents(parameter);
         String[] dataElements = method.getAnnotation(EventHandler.class).value();
 
-        Arrays.stream(dataElements).forEach(data -> {
-          java.util.Optional<DataElementInfo> result = templateContext.getDataElements().stream()
-              .filter(elm -> elm.getSelector().equals(data)).findFirst();
-          if (result.isPresent()) {
-            DataElementInfo info = result.get();
-            eventHandlerElements
-                .add(new EventHandlerInfo(info, events, method, declaredType.toString()));
-          } else {
-            abortWithError(method,
-                "Unable to find DataField element with name or alias " + data + " from ");
-          }
-        });
+        if (dataElements.length > 0) {
+          Arrays.stream(dataElements).forEach(data -> {
+            java.util.Optional<DataElementInfo> result = templateContext.getDataElements().stream()
+                .filter(elm -> elm.getSelector().equals(data)).findFirst();
+            if (result.isPresent()) {
+              DataElementInfo info = result.get();
+              eventHandlerElements
+                  .add(new EventHandlerInfo(info, events, method, declaredType.toString()));
+            } else {
+              abortWithError(method,
+                  "Unable to find DataField element with name or alias " + data + " from ");
+            }
+          });
+          // Handle events, that binds to the root of the template
+        } else {
+          eventHandlerElements
+              .add(new EventHandlerInfo(null, events, method, declaredType.toString()));
+        }
       }
     }
 
