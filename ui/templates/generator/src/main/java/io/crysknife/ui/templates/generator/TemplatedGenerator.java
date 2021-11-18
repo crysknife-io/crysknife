@@ -14,24 +14,8 @@
 
 package io.crysknife.ui.templates.generator;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.EnclosedExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -47,54 +31,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 import com.inet.lib.less.Less;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLAnchorElement;
-import elemental2.dom.HTMLAreaElement;
-import elemental2.dom.HTMLAudioElement;
-import elemental2.dom.HTMLBRElement;
-import elemental2.dom.HTMLButtonElement;
-import elemental2.dom.HTMLCanvasElement;
-import elemental2.dom.HTMLDataListElement;
-import elemental2.dom.HTMLDetailsElement;
-import elemental2.dom.HTMLDialogElement;
-import elemental2.dom.HTMLDivElement;
-import elemental2.dom.HTMLElement;
-import elemental2.dom.HTMLEmbedElement;
-import elemental2.dom.HTMLFieldSetElement;
-import elemental2.dom.HTMLFormElement;
-import elemental2.dom.HTMLHRElement;
-import elemental2.dom.HTMLHeadingElement;
-import elemental2.dom.HTMLImageElement;
-import elemental2.dom.HTMLInputElement;
-import elemental2.dom.HTMLLIElement;
-import elemental2.dom.HTMLLabelElement;
-import elemental2.dom.HTMLLegendElement;
-import elemental2.dom.HTMLMapElement;
-import elemental2.dom.HTMLMenuElement;
-import elemental2.dom.HTMLMenuItemElement;
-import elemental2.dom.HTMLMeterElement;
-import elemental2.dom.HTMLOListElement;
-import elemental2.dom.HTMLObjectElement;
-import elemental2.dom.HTMLOptGroupElement;
-import elemental2.dom.HTMLOptionElement;
-import elemental2.dom.HTMLOutputElement;
-import elemental2.dom.HTMLParagraphElement;
-import elemental2.dom.HTMLParamElement;
-import elemental2.dom.HTMLPreElement;
-import elemental2.dom.HTMLProgressElement;
-import elemental2.dom.HTMLQuoteElement;
-import elemental2.dom.HTMLScriptElement;
-import elemental2.dom.HTMLSelectElement;
-import elemental2.dom.HTMLSourceElement;
-import elemental2.dom.HTMLTableCaptionElement;
-import elemental2.dom.HTMLTableCellElement;
-import elemental2.dom.HTMLTableColElement;
-import elemental2.dom.HTMLTableElement;
-import elemental2.dom.HTMLTableRowElement;
-import elemental2.dom.HTMLTextAreaElement;
-import elemental2.dom.HTMLTrackElement;
-import elemental2.dom.HTMLUListElement;
-import elemental2.dom.HTMLVideoElement;
+import elemental2.dom.*;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
@@ -107,23 +44,17 @@ import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
-import io.crysknife.ui.templates.client.annotation.*;
+import io.crysknife.ui.templates.client.annotation.DataField;
+import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.templates.generator.events.EventHandlerGenerator;
 import io.crysknife.ui.templates.generator.events.EventHandlerTemplatedProcessor;
 import io.crysknife.util.Utils;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
 import org.jboss.elemento.IsElement;
-import org.jboss.gwt.elemento.processor.AbortProcessingException;
-import org.jboss.gwt.elemento.processor.ExpressionParser;
-import org.jboss.gwt.elemento.processor.ProcessingException;
-import org.jboss.gwt.elemento.processor.TemplateSelector;
-import org.jboss.gwt.elemento.processor.TypeSimplifier;
-import org.jboss.gwt.elemento.processor.context.DataElementInfo;
-import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
-import org.jboss.gwt.elemento.processor.context.RootElementInfo;
+import org.jboss.gwt.elemento.processor.*;
 import org.jboss.gwt.elemento.processor.context.StyleSheet;
-import org.jboss.gwt.elemento.processor.context.TemplateContext;
+import org.jboss.gwt.elemento.processor.context.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -131,14 +62,8 @@ import org.jsoup.select.Elements;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -148,16 +73,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -242,7 +158,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     super(iocContext);
     eventHandlerTemplatedProcessor = new EventHandlerTemplatedProcessor(iocContext);
     eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);
-
+    dataFieldProcessor = new DataFieldProcessor(iocContext);
     isWidget = iocContext.getGenerationContext().getElements()
         .getTypeElement("org.gwtproject.user.client.ui.IsWidget");
   }
@@ -335,6 +251,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     return null;
   }
 
+  private DataFieldProcessor dataFieldProcessor;
+
   private void processType(ClassBuilder builder, TypeElement type, Templated templated) {
     String isElementTypeParameter = getIsElementTypeParameter(type.getInterfaces());
     String subclass = TypeSimplifier.simpleNameOf(generatedClassName(type, "Templated_", ""));
@@ -345,9 +263,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     org.jsoup.nodes.Element root = parseTemplate(type, templateSelector);
     context.setRoot(createRootElementInfo(root, subclass));
 
+
     // find and verify all @DataField members
     List<DataElementInfo> dataElements = processDataElements(type, templateSelector, root);
-    context.setDataElements(dataElements);
+    context.setDataElements(dataFieldProcessor.process(dataElements, context, root));
 
     List<EventHandlerInfo> eventElements =
         eventHandlerTemplatedProcessor.processEventHandlers(type, context);
@@ -753,13 +672,15 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   public VariableElement getVariableElement(String elementName) {
-    return MoreTypes.asTypeElement(beanDefinition.getType()).getEnclosedElements().stream()
-        .filter(elm -> elm.getKind().equals(ElementKind.FIELD))
-        .filter(elm -> elm.getSimpleName().toString().equals(elementName))
+    return Utils
+        .getAllFieldsIn(iocContext.getGenerationContext().getElements(),
+            MoreTypes.asTypeElement(beanDefinition.getType()))
+        .stream().filter(elm -> elm.getSimpleName().toString().equals(elementName))
         .map(elm -> MoreElements.asVariable(elm)).findFirst()
         .orElseThrow(() -> new Error("Unable to find @DataField " + elementName + " in "
             + MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName()));
   }
+
 
   private void processEventHandlers(ClassBuilder builder, TemplateContext templateContext) {
     eventHandlerGenerator.generate(builder, templateContext);
@@ -808,8 +729,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     List<DataElementInfo> dataElements = new ArrayList<>();
 
     // fields
-    ElementFilter.fieldsIn(type.getEnclosedElements()).stream()
-        .filter(field -> MoreElements.isAnnotationPresent(field, DataField.class))
+    Utils
+        .getAnnotatedElements(iocContext.getGenerationContext().getElements(), type,
+            DataField.class)
+        .stream().filter(e -> e.getKind().isField()).map(e -> MoreElements.asVariable(e))
         .forEach(field -> {
 
           // verify the field
@@ -837,7 +760,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
               kind, false));
         });
 
-    // methods
+    // methods TODO
     ElementFilter.methodsIn(type.getEnclosedElements()).stream()
         .filter(method -> MoreElements.isAnnotationPresent(method, DataField.class))
         .forEach(method -> {
