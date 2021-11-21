@@ -31,6 +31,9 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -78,21 +81,20 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
         .erasure(fieldPoint.getVariableElement().asType());
     Expression result;
 
+    TypeMirror param =
+        MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
+
+    if (param.getKind().equals(TypeKind.TYPEVAR)) {
+      param = iocContext.getGenerationContext().getTypes().asMemberOf(
+          MoreTypes.asDeclared(clazz.beanDefinition.getType()), MoreTypes.asElement(param));
+    }
+
     if (iocContext.getGenerationContext().getTypes().isSameType(instanceTypeMirror, erased)) {
-      TypeMirror param =
-          MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
-
       ObjectCreationExpr instance = new ObjectCreationExpr().setType(InstanceImpl.class)
-          .addArgument(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean").addArgument(
-              new NameExpr(iocContext.getGenerationContext().getTypes().erasure(param).toString()
-                  + ".class")));
-
+          .addArgument(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+              .addArgument(new NameExpr(param + ".class")));
       result = instance;
     } else {
-
-      TypeMirror param =
-          MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments().get(0);
-
       ObjectCreationExpr instance = new ObjectCreationExpr().setType(ManagedInstanceImpl.class)
           .addArgument(new NameExpr("beanManager")).addArgument(new NameExpr(
               iocContext.getGenerationContext().getTypes().erasure(param).toString() + ".class"));

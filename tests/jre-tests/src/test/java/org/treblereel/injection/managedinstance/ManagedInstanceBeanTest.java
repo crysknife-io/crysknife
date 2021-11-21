@@ -19,8 +19,10 @@ import io.crysknife.client.internal.IOCResolutionException;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
+import org.treblereel.injection.inheritance.BeanChild;
 import org.treblereel.injection.managedinstance.any.DefaultPreferencesRegistry;
 import org.treblereel.injection.managedinstance.any.StunnerPreferencesRegistryLoader;
+import org.treblereel.injection.managedinstance.inheritance.Child;
 import org.treblereel.injection.managedinstance.select.ManagedInstanceBeanHolder;
 import org.treblereel.injection.managedinstance.select.SimpleInterface;
 import org.treblereel.injection.managedinstance.typed.AbstractTypedBeanHolder;
@@ -416,5 +418,12 @@ public class ManagedInstanceBeanTest extends AbstractTest {
         app.beanManager.lookupBean(AbstractTypedBeanHolder.class).getInstance();
     assertEquals(SimpleBeanAbstractTyped.class, holder.instance.get().getClass());
 
+  }
+
+  @Test
+  public void testInheritance() {
+    Child holder = app.beanManager.lookupBean(Child.class).getInstance();
+    assertEquals(SimpleBean.class, holder.get().getClass());
+    assertEquals(BeanChild.class, holder.get2().getClass());
   }
 }
