@@ -18,7 +18,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 
 import io.crysknife.client.internal.collections.Multimap;
-import io.crysknife.ui.navigation.client.local.CreationalCallback;
+import io.crysknife.client.utils.CreationalCallback;
 import io.crysknife.ui.navigation.client.local.HistoryToken;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.Page;
