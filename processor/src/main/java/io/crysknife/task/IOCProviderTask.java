@@ -20,15 +20,13 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
@@ -39,14 +37,19 @@ import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
+import io.crysknife.util.Utils;
 import io.crysknife.validation.Check;
 import io.crysknife.validation.Validator;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -100,10 +103,14 @@ public class IOCProviderTask implements Task {
           @Override
           public Expression generateBeanLookupCall(ClassBuilder clazz,
               InjectableVariableDefinition fieldPoint) {
+            clazz.getClassCompilationUnit().addImport(Annotation.class.getCanonicalName());
+
             ClassOrInterfaceType classOrInterfaceType = new ClassOrInterfaceType();
             classOrInterfaceType.setName(type.getQualifiedName().toString());
             MethodCallExpr methodCallExpr = new MethodCallExpr(
                 new ObjectCreationExpr().setType(classOrInterfaceType), "provide");
+
+            methodCallExpr.addArgument(new NameExpr("beanManager"));
 
             ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
             ((DeclaredType) fieldPoint.getVariableElement().asType()).getTypeArguments().forEach(
@@ -114,7 +121,19 @@ public class IOCProviderTask implements Task {
             withAssignableTypes.setInitializer(withAssignableTypesValues);
 
             methodCallExpr.addArgument(withAssignableTypes);
-            methodCallExpr.addArgument(new NullLiteralExpr());
+
+            List<AnnotationMirror> qualifiers = new ArrayList<>(
+                Utils.getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased)));
+            Set<Expression> qualifiersExpression = new HashSet<>();
+
+            qualifiers.forEach(
+                type -> qualifiersExpression.add(generationUtils.createQualifierExpression(type)));
+            ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
+            qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
+            ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
+            withQualifiers.setElementType("Annotation[]");
+            withQualifiers.setInitializer(withQualifiersValues);
+            methodCallExpr.addArgument(withQualifiers);
 
             ClassOrInterfaceType type = new ClassOrInterfaceType();
             type.setName(InstanceFactory.class.getCanonicalName());
