@@ -94,7 +94,7 @@ public class ListComponentGenerator extends BeanIOCGenerator {
 
     MethodCallExpr instance = new MethodCallExpr(new ObjectCreationExpr()
         .setType(ListComponentProvider.class).addArgument(new NameExpr("beanManager")), "provide")
-            .addArgument(types).addArgument(annotations);
+            .addArgument(new NameExpr("beanManager")).addArgument(types).addArgument(annotations);
     return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(instance);
   }
 

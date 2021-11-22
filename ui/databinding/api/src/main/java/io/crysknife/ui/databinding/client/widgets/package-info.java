@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,11 +12,5 @@
  * the License.
  */
 
-package io.crysknife.ui.navigation.client.local;
-
-/**
- * @author Mike Brock
- */
-public interface CreationalCallback<T> {
-  void callback(T beanInstance);
-}
+@Deprecated
+package io.crysknife.ui.databinding.client.widgets;
