@@ -14,6 +14,7 @@
 
 package org.treblereel.providers;
 
+import io.crysknife.client.BeanManager;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
 
@@ -26,7 +27,8 @@ import java.lang.annotation.Annotation;
 public class MyIOCBeanProvider implements ContextualTypeProvider<MyIOCBean> {
 
   @Override
-  public MyIOCBean provide(Class<?>[] typeargs, Annotation[] qualifiers) {
+  public MyIOCBean provide(final BeanManager beanManager, Class<?>[] typeargs,
+      Annotation[] qualifiers) {
     Class clazz1 = typeargs[0];
     Class clazz2 = typeargs[1];
 
