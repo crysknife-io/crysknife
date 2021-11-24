@@ -21,7 +21,7 @@ import javax.enterprise.event.Observes;
 
 public class ObservesParent extends ObservesBeanParentParent {
 
-  public void onEvent(@Observes SimpleEvent event) {
-    events.put(getClass(), event);
+  public void onEvent2(@Observes SimpleEvent event) {
+    events.add(event);
   }
 }

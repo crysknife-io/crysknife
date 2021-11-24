@@ -17,14 +17,14 @@ package org.treblereel.events.inheritance.subpackage;
 import org.treblereel.events.SimpleEvent;
 
 import javax.enterprise.event.Observes;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ObservesBeanParentParent {
+public abstract class ObservesBeanParentParent {
 
-  public Map<Class, SimpleEvent> events = new HashMap<>();
+  public List<SimpleEvent> events = new ArrayList<>();
 
-  public void onEvent(@Observes SimpleEvent event) {
-    events.put(getClass(), event);
+  public void onEvent3(@Observes SimpleEvent event) {
+    events.add(event);
   }
 }

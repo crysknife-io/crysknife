@@ -99,7 +99,6 @@ public class BeanProcessorTask implements Task {
     processTypeDecorators();
     processFieldDecorators();
     processMethodDecorators();
-    processMethodParamDecorators();
 
     logger.log(TreeLogger.INFO, "beans registered " + iocContext.getBeans().size());
 
@@ -141,36 +140,6 @@ public class BeanProcessorTask implements Task {
                       .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
                           .map(em -> (IOCGenerator<VariableDefinition>) em)
                           .collect(Collectors.toSet())));
-            });
-          });
-        });
-  }
-
-  private void processMethodParamDecorators() {
-    iocContext.getGenerators().asMap().entrySet().stream()
-        .filter(iocGeneratorMetaCollectionEntry -> iocGeneratorMetaCollectionEntry
-            .getKey().wiringElementType.equals(WiringElementType.PARAMETER))
-        .forEach(iocGeneratorMetaCollectionEntry -> {
-          iocGeneratorMetaCollectionEntry.getValue().forEach(gen -> {
-
-            Set<ExecutableElement> elements = iocContext
-                .getParametersByAnnotation(iocGeneratorMetaCollectionEntry.getKey().annotation)
-                .stream().filter(elm -> elm.getKind().equals(ElementKind.PARAMETER))
-                .map(MoreElements::asVariable)
-                .map(elm -> MoreElements.asExecutable(elm.getEnclosingElement()))
-                .map(MoreElements::asExecutable).collect(Collectors.toSet());
-
-            elements.stream().forEach(e -> {
-              TypeMirror erased = iocContext.getGenerationContext().getTypes()
-                  .erasure(e.getEnclosingElement().asType());
-              BeanDefinition bean = iocContext.getBeans().get(erased);
-              ExecutableType methodType = (ExecutableType) e.asType();
-              bean.getMethods().stream()
-                  .filter(mmethod -> MoreTypes.asExecutable(mmethod.getExecutableElement().asType())
-                      .equals(methodType))
-                  .findFirst().orElse(methodDefinitionFactory.of(bean, e)).getDecorators()
-                  .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
-                      .map(em -> (IOCGenerator<MethodDefinition>) em).collect(Collectors.toSet()));
             });
           });
         });

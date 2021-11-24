@@ -18,6 +18,7 @@ import io.crysknife.generator.IOCGenerator;
 
 import javax.lang.model.element.ExecutableElement;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -47,4 +48,18 @@ public class MethodDefinition implements Definition {
     return decorators;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    MethodDefinition that = (MethodDefinition) o;
+    return executableElement.equals(that.executableElement);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(executableElement);
+  }
 }

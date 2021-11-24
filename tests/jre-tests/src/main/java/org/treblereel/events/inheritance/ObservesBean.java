@@ -30,6 +30,6 @@ public class ObservesBean extends ObservesParent {
   }
 
   public void onEvent(@Observes SimpleEvent event) {
-    events.put(getClass(), event);
+    events.add(event);
   }
 }
