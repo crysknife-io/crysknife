@@ -115,7 +115,9 @@
       <resource>
         <directory>src/main/java</directory>
         <includes>
+<!--
           <include>**/*.java</include>
+-->
           <include>**/*.html</include>
           <include>**/*.css</include>
           <include>**/*.less</include>
@@ -126,7 +128,7 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
+<!--      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.1.0</version>
@@ -150,7 +152,7 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
+      </plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -169,20 +171,6 @@
           </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>package</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>com.vertispan.j2cl</groupId>
         <artifactId>j2cl-maven-plugin</artifactId>
         <version>${j2cl.maven.plugin.version}</version>
@@ -196,7 +184,7 @@
           </execution>
         </executions>
         <configuration>
-          <defaultWebappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</defaultWebappDirectory>
+          <webappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</webappDirectory>
           <compilationLevel>BUNDLE</compilationLevel>
         </configuration>
       </plugin>
