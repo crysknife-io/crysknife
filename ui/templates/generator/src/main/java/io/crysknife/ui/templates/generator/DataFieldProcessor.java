@@ -53,13 +53,19 @@ public class DataFieldProcessor {
           String selector = node.attr("data-field");
           if (!dataElementInfoMap.containsKey(selector)) {
             context.getGenerationContext().getProcessingEnvironment().getMessager().printMessage(
-                Diagnostic.Kind.NOTE, String.format("Unknown [data-field=%s], ignoring", selector),
+                Diagnostic.Kind.NOTE,
+                String.format("Unknown [data-field=%s] at %s, ignoring", selector,
+                    templateContext.getDataElementType()),
                 MoreTypes.asTypeElement(templateContext.getDataElementType()));
           } else {
             DataElementInfo temp = dataElementInfoMap.get(node.attr("data-field"));
             result.remove(temp);
             result.addLast(temp);
           }
+        } else if (node.hasAttr("id") && dataElementInfoMap.containsKey(node.attr("id"))) {
+          DataElementInfo temp = dataElementInfoMap.get(node.attr("id"));
+          result.remove(temp);
+          result.addLast(temp);
         }
       }
 

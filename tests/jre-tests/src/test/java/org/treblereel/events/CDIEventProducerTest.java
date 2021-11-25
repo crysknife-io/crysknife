@@ -16,9 +16,7 @@ package org.treblereel.events;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import org.treblereel.events.inheritance.ObservesBean;
 
 import static org.junit.Assert.assertEquals;
 
@@ -55,7 +53,13 @@ public class CDIEventProducerTest extends AbstractTest {
         app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
     cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
     assertEquals(1, holder.events.size());
+  }
 
-
+  @Test
+  public void testInheritance() {
+    ObservesBean holder = app.beanManager.lookupBean(ObservesBean.class).getInstance();
+    holder.events.clear();
+    holder.event.fire(new SimpleEvent());
+    assertEquals(3, holder.events.size());
   }
 }

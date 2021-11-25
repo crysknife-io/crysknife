@@ -24,6 +24,8 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
@@ -77,13 +79,24 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
           + method.getEnclosingElement() + " " + method);
     }
 
+    if (!MoreElements.getPackage(MoreTypes.asTypeElement(classBuilder.beanDefinition.getType()))
+        .equals(MoreElements.getPackage(method.getEnclosingElement()))
+        && !method.getModifiers().contains(Modifier.PUBLIC)) {
+      throw new GenerationException(
+          String.format("Method %s annotated with @Observes is not accessible from parent bean %s",
+              (method.getEnclosingElement().toString() + "." + method), parent.getType()));
+    }
+
+
     classBuilder.getClassCompilationUnit().addImport(Consumer.class);
 
     VariableElement parameter = method.getParameters().get(0);
     TypeMirror parameterTypeMirror =
         iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
     String parameterName = parameter.getEnclosingElement().getSimpleName().toString() + "_"
-        + parameterTypeMirror.toString().replaceAll("\\.", "_");
+        + parameterTypeMirror.toString().replaceAll("\\.", "_") + "_"
+        + MoreElements.asType(method.getEnclosingElement()).getQualifiedName().toString()
+            .replaceAll("\\.", "_");
 
     classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
     MethodCallExpr eventFactory =
