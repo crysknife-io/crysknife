@@ -451,8 +451,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     MethodCallExpr methodCallExpr = getDataFieldFieldAccessCallExpr(templateContext);
 
     Expression root = new FieldAccessExpr(new ThisExpr(), "root");
-    method.getBody().get().addStatement(new AssignExpr().setTarget(root)
-        .setValue(new CastExpr(new ClassOrInterfaceType().setName(element), methodCallExpr)));
+    method.getBody().get().addStatement(new AssignExpr().setTarget(root).setValue(
+        new MethodCallExpr(new NameExpr("Js"), "uncheckedCast").addArgument(methodCallExpr)));
 
     setAttributes(method.getBody().get(), templateContext);
     setInnerHTML(method.getBody().get(), templateContext);
