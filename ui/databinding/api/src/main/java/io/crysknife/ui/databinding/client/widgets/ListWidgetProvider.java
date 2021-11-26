@@ -16,9 +16,7 @@ package io.crysknife.ui.databinding.client.widgets;
 
 import java.lang.annotation.Annotation;
 
-import elemental2.dom.DomGlobal;
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.internal.QualifierUtil;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
 import io.crysknife.ui.databinding.client.api.HasModel;
@@ -35,7 +33,7 @@ import org.gwtproject.user.client.ui.IsWidget;
  */
 @IOCProvider
 // @Singleton
-public class ListWidgetProvider implements ContextualTypeProvider<ListWidget<?, ?>> {
+public class ListWidgetProvider implements ContextualTypeProvider<ListWidget> {
 
   private static class GenericListWidget<M, W extends HasModel<M> & IsWidget>
       extends ListWidget<M, W> {
@@ -63,16 +61,9 @@ public class ListWidgetProvider implements ContextualTypeProvider<ListWidget<?, 
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
   public ListWidget provide(BeanManager beanManager, Class<?>[] typeargs, Annotation[] qualifiers) {
-
-    DomGlobal.console.log("provide " + QualifierUtil.print(qualifiers));
-
     Class<?> itemWidgetType = typeargs[1];
     if (qualifiers != null && qualifiers.length > 0) {
       Class<? extends Annotation> anno = qualifiers[0].annotationType();
-
-      DomGlobal.console.log("   anno " + anno.getCanonicalName());
-
-
       if (anno.equals(OrderedList.class)) {
         return new GenericListWidget(beanManager, itemWidgetType, new HTMLPanel("ol", ""));
       } else if (anno.equals(UnOrderedList.class)) {

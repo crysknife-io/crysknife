@@ -27,7 +27,6 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
@@ -52,7 +51,6 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 import javax.lang.model.element.*;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -220,6 +218,17 @@ public class GenerationUtils {
     annotationType.getBody().get().addAndGetStatement(
         new ReturnStmt(new NameExpr(qualifier.getAnnotationType().toString() + ".class")));
     anonymousClassBody.add(annotationType);
+
+    qualifier.getElementValues().forEach((name, type) -> {
+      MethodDeclaration annotationTypeDeclaration = new MethodDeclaration();
+      annotationTypeDeclaration.setModifiers(Modifier.Keyword.PUBLIC);
+      annotationTypeDeclaration.setName(name.getSimpleName().toString());
+      annotationTypeDeclaration.setType(
+          new ClassOrInterfaceType().setName(type.getValue().getClass().getCanonicalName()));
+      annotationTypeDeclaration.getBody().get()
+          .addAndGetStatement(new ReturnStmt(new NameExpr(type.toString())));
+      anonymousClassBody.add(annotationTypeDeclaration);
+    });
 
     annotation.setAnonymousClassBody(anonymousClassBody);
 
