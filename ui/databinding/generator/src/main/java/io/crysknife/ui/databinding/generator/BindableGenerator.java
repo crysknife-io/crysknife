@@ -219,10 +219,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
 
   private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type)
       throws UnableToCompleteException {
-    new BindableProxyGenerator(
-        iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils(),
-        iocContext.getGenerationContext().getProcessingEnvironment().getTypeUtils(),
-        methodDeclaration, type).generate();
+    new BindableProxyGenerator(iocContext, methodDeclaration, type).generate();
   }
 
   private void printErrors(Set<UnableToCompleteException> errors) {

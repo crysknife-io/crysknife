@@ -202,6 +202,16 @@ public class GenerationUtils {
     }
   }
 
+  public boolean isAssignableFrom(TypeMirror typeMirror, Class<?> targetClass) {
+    return isAssignableFrom(typeMirror, context.getGenerationContext().getElements()
+        .getTypeElement(targetClass.getCanonicalName()));
+  }
+
+  public boolean isAssignableFrom(TypeMirror typeMirror, TypeElement targetClass) {
+    return context.getGenerationContext().getTypes().isAssignable(typeMirror,
+        context.getGenerationContext().getTypes().getDeclaredType(targetClass));
+  }
+
   public Expression createQualifierExpression(AnnotationMirror qualifier) {
 
     ObjectCreationExpr annotation = new ObjectCreationExpr();

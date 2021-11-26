@@ -18,7 +18,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.databinding.client.api.Bindable;
+import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,6 +33,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -53,16 +56,19 @@ public class BindableProxyGenerator {
   private Types types;
   private Elements elements;
 
+  private GenerationUtils generationUtils;
 
-  BindableProxyGenerator(Elements elements, Types types, MethodDeclaration methodDeclaration,
+
+  BindableProxyGenerator(IOCContext context, MethodDeclaration methodDeclaration,
       TypeElement type) {
     this.methodDeclaration = methodDeclaration;
     this.type = type;
-    this.types = types;
-    this.elements = elements;
+    this.types = context.getGenerationContext().getTypes();
+    this.elements = context.getGenerationContext().getElements();
 
     listTypeMirror = elements.getTypeElement(List.class.getCanonicalName()).asType();
     objectTypeMirror = elements.getTypeElement(Object.class.getCanonicalName()).asType();
+    generationUtils = new GenerationUtils(context);
 
     errors.clear();
   }
@@ -388,7 +394,72 @@ public class BindableProxyGenerator {
       return;
     }
 
-    if (!isBindableType(elm.type)) {
+    if (generationUtils.isAssignableFrom(elm.type, Collection.class)) {
+
+      String colType;
+      String colTypeImpl;
+
+      if ((MoreTypes.asTypeElement(elm.type).getKind().isInterface()
+          || MoreTypes.asTypeElement(elm.type).getModifiers().contains(Modifier.ABSTRACT))
+          && (generationUtils.isAssignableFrom(elm.type, List.class)
+              || generationUtils.isAssignableFrom(elm.type, Set.class))) {
+
+        colType =
+            generationUtils.isAssignableFrom(elm.type, Set.class) ? Set.class.getCanonicalName()
+                : List.class.getCanonicalName();
+        colTypeImpl =
+            generationUtils.isAssignableFrom(elm.type, Set.class) ? HashSet.class.getCanonicalName()
+                : ArrayList.class.getCanonicalName();
+      } else {
+        if (!MoreTypes.asTypeElement(elm.type).getKind().isInterface()
+            && !MoreTypes.asTypeElement(elm.type).getModifiers().contains(Modifier.ABSTRACT)) {
+          colType = MoreTypes.asTypeElement(elm.type).getQualifiedName().toString();
+          colTypeImpl = MoreTypes.asTypeElement(elm.type).getQualifiedName().toString();
+        } else {
+          System.out.println("Bean validation on collection " + elm.name + " in class "
+              + elm.field.getEnclosingElement()
+              + " won't work. Change to either List or Set or use a concrete type instead.");
+          return;
+        }
+      }
+
+      sb.append("  ");
+      sb.append(String.format("if (t.%s() != null) {", elm.getter));
+      sb.append(newLine);
+      sb.append("    ");
+      sb.append(String.format("final %s %sClone = new %s();", colType, elm.name, colTypeImpl));
+      sb.append(newLine);
+      sb.append("    ");
+      sb.append(String.format("for (Object %sElem : t.%s()) {", elm.name, elm.getter));
+      sb.append(newLine);
+      sb.append("      ");
+      sb.append(String.format("if (%sElem instanceof BindableProxy) {", elm.name, elm.getter));
+      sb.append(newLine);
+      sb.append("        ");
+      sb.append(
+          String.format("%sClone.add(((BindableProxy) %sElem).deepUnwrap());", elm.name, elm.name));
+      sb.append(newLine);
+      sb.append("      ");
+      sb.append("} else {");
+      sb.append(newLine);
+      sb.append("        ");
+      sb.append(String.format("%sClone.add(%sElem);", elm.name, elm.name));
+      sb.append(newLine);
+      sb.append("      ");
+      sb.append("}");
+      sb.append(newLine);
+      sb.append("    ");
+      sb.append("}");
+      sb.append(newLine);
+      sb.append("    ");
+      sb.append(String.format("clone.%s(%sClone);", elm.setter, elm.name));
+      sb.append(newLine);
+      sb.append("  ");
+      sb.append("}");
+      sb.append(newLine);
+
+
+    } else if (!isBindableType(elm.type)) {
       sb.append("  ");
       sb.append(String.format("clone.%s(t.%s());", elm.setter, elm.getter));
       sb.append(newLine);

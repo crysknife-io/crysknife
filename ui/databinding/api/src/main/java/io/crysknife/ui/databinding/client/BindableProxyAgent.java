@@ -236,13 +236,8 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
     registrar = mergeToLeft(registrar, () -> {
       DomGlobal.console.debug("Adding value change handler to {" + component + "}");
 
-      DomGlobal.console.debug("   component " + component.getClass().getCanonicalName());
       final HandlerRegistration valueHandlerReg =
           ((HasValue) component).addValueChangeHandler(event -> {
-
-            DomGlobal.console
-                .debug("   on value {" + component + "}" + ((HasValue) component).getValue());
-
             final Object value = ((HasValue) component).getValue();
             modelUpdater.accept(value);
           });
