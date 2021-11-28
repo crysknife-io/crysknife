@@ -84,9 +84,9 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
   }
 
   @Override
-  public void setValue(final List<M> value) {
-    final boolean changed = this.value != value;
-    this.value = value;
+  public void setValue(final List<M> newValue) {
+    final boolean changed = newValue.equals(value);
+    this.value = newValue;
 
     if (changed) {
       for (int i = components.size() - 1; i > -1; i--) {
