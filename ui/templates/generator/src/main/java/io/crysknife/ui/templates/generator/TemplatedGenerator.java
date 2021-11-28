@@ -59,6 +59,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -74,6 +75,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
@@ -422,8 +424,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     }
 
-    ReturnStmt _return =
-        new ReturnStmt(new CastExpr(new ClassOrInterfaceType().setName(element), root));
+    ReturnStmt _return = new ReturnStmt(root);
 
     method.getBody().get().addStatement(_return);
   }
@@ -924,13 +925,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       String html = IOUtils.toString(url, Charset.defaultCharset());
       Document document = Jsoup.parse(html);
       if (templateSelector.hasSelector()) {
-        String query = "[data-field=" + templateSelector.selector + "]";
-        Elements selector = document.select(query);
-        if (selector.isEmpty()) {
+        org.jsoup.nodes.Element rootElement = getRoot(document, templateSelector.selector);
+        if (rootElement == null) {
           abortWithError(type, "Unable to select HTML from \"%s\" using \"%s\"",
-              templateSelector.template, query);
+              templateSelector.template, "[data-field] || [id]");
         } else {
-          root = selector.first();
+          root = rootElement;
         }
       } else {
         if (document.body() == null || document.body().children().isEmpty()) {
@@ -944,6 +944,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       abortWithError(type, "Unable to read template \"%s\": %s", fqTemplate, e.getMessage());
     }
     return root;
+  }
+
+  private org.jsoup.nodes.Element getRoot(Document document, String selector) {
+    RootNodeVisitor visitor = new RootNodeVisitor(selector);
+    org.jsoup.select.NodeTraversor.traverse(visitor, document);
+    return visitor.result;
   }
 
   private boolean isAssignable(TypeElement subType, Class<?> baseType) {
@@ -1111,4 +1117,34 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     return String.valueOf(newChars);
   }
+
+  private static class RootNodeVisitor implements NodeVisitor {
+
+    private org.jsoup.nodes.Element result;
+
+    private String selector;
+
+    private RootNodeVisitor(String selector) {
+      this.selector = selector;
+    }
+
+    @Override
+    public void head(org.jsoup.nodes.Node node, int i) {
+      if (node.hasAttr("data-field")) {
+        if (node.attr("data-field").equals(selector)) {
+          result = (org.jsoup.nodes.Element) node;
+        }
+      } else if (node.hasAttr("id")) {
+        if (node.attr("id").equals(selector)) {
+          result = (org.jsoup.nodes.Element) node;
+        }
+      }
+    }
+
+    @Override
+    public void tail(org.jsoup.nodes.Node node, int i) {
+
+    }
+  }
+
 }
