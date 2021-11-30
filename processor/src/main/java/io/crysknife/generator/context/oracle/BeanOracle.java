@@ -106,8 +106,12 @@ public class BeanOracle {
     return null;
   }
 
+  // TODO add support to constructor injection points
   private Optional<BeanDefinition> asGenericPoint(TypeMirror parent,
       InjectableVariableDefinition point) {
+    if (!point.getVariableElement().getEnclosingElement().getKind().isClass()) {
+      return Optional.empty();
+    }
     if (!MoreTypes.asDeclared(point.getVariableElement().asType()).getTypeArguments().isEmpty()
         && MoreTypes.asDeclared(point.getVariableElement().asType()).getTypeArguments()
             .size() == 1) {
