@@ -236,7 +236,7 @@ public class BeanProcessorTask implements Task {
         } else if (iocContext.getBeans().get(beanTypeMirror) instanceof ProducesBeanDefinition) {
           // TODO
         } else {
-          BeanDefinition implementation = oracle.guess(point);
+          BeanDefinition implementation = oracle.guess(type, point);
           if (implementation != null) {
             point.setImplementation(implementation);
             definition.getDependencies().add(implementation);
