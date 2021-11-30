@@ -14,12 +14,7 @@
 
 package io.crysknife.ui.databinding.client.components;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -85,7 +80,7 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
 
   @Override
   public void setValue(final List<M> newValue) {
-    final boolean changed = newValue.equals(value);
+    boolean changed = !newValue.equals(value);
     this.value = newValue;
 
     if (changed) {
@@ -100,7 +95,11 @@ public class DefaultListComponent<M, C extends TakesValue<M>> implements ListCom
 
   @Override
   public List<M> getValue() {
-    return value;
+    List<M> result = new ArrayList<>();
+    if (value != null) {
+      result.addAll(value);
+    }
+    return result;
   }
 
   @Override
