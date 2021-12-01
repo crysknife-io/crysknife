@@ -234,7 +234,8 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
       Supplier<Map<Class<? extends org.gwtproject.event.shared.Event>, HandlerRegistration>> registrar) {
 
     registrar = mergeToLeft(registrar, () -> {
-      DomGlobal.console.debug("Adding value change handler to {" + component + "}");
+      DomGlobal.console.debug(
+          "Adding value change handler to {" + component.getClass().getCanonicalName() + "}");
 
       final HandlerRegistration valueHandlerReg =
           ((HasValue) component).addValueChangeHandler(event -> {
@@ -359,7 +360,8 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
    */
   public Binding bind(final Object component, final String property,
       final Converter providedConverter, final boolean bindOnKeyUp, final StateSync initialState) {
-    DomGlobal.console.debug("Binding property {" + property + "} to component {" + component + "}");
+    DomGlobal.console.debug("Binding property {" + property + "} to component {"
+        + component.getClass().getCanonicalName() + "}");
 
     final Converter converter =
         findConverter(property, getPropertyType(property).getType(), component, providedConverter);
