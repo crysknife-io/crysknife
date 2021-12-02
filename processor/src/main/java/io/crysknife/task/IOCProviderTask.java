@@ -87,6 +87,9 @@ public class IOCProviderTask implements Task {
         TypeMirror provided = asDeclaredType.getTypeArguments().get(0);
         TypeMirror erased = context.getGenerationContext().getTypes().erasure(provided);
         validator.validate(type);
+
+        logger.log(TreeLogger.Type.INFO, String.format("registered @IOCProvider for %s", erased));
+
         BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(erased);
         beanDefinition.setHasFactory(false);
         beanDefinition.setIocGenerator(new IOCGenerator<BeanDefinition>(context) {
@@ -122,8 +125,8 @@ public class IOCProviderTask implements Task {
 
             methodCallExpr.addArgument(withAssignableTypes);
 
-            List<AnnotationMirror> qualifiers = new ArrayList<>(
-                Utils.getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased)));
+            List<AnnotationMirror> qualifiers = new ArrayList<>(Utils
+                .getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
             Set<Expression> qualifiersExpression = new HashSet<>();
 
             qualifiers.forEach(

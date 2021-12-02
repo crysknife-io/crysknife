@@ -15,10 +15,10 @@
 package io.crysknife.generator.context.oracle;
 
 import com.google.auto.common.MoreTypes;
-import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.UnscopedBeanDefinition;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
@@ -31,9 +31,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +54,7 @@ public class BeanOracle {
     this.context = context;
   }
 
-  public BeanDefinition guess(InjectableVariableDefinition point) {
+  public BeanDefinition guess(TypeMirror parent, InjectableVariableDefinition point) {
     Named named = point.getVariableElement().getAnnotation(Named.class);
     Set<AnnotationMirror> qualifiers = getAnnotationMirrors(point);
     boolean isInterfaceOrAbstractClass =
@@ -90,11 +93,41 @@ public class BeanOracle {
       }
     }
 
+    // handle generic injection point type
+    Optional<BeanDefinition> maybeGeneric = asGenericPoint(parent, point);
+    if (maybeGeneric.isPresent()) {
+      return maybeGeneric.get();
+    }
+
     if (isUnscopedBean(beanTypeMirror)) {
       return new UnscopedBeanDefinition(beanTypeMirror, context);
     }
 
     return null;
+  }
+
+  // TODO add support to constructor injection points
+  private Optional<BeanDefinition> asGenericPoint(TypeMirror parent,
+      InjectableVariableDefinition point) {
+    if (!point.getVariableElement().getEnclosingElement().getKind().isClass()) {
+      return Optional.empty();
+    }
+    if (!MoreTypes.asDeclared(point.getVariableElement().asType()).getTypeArguments().isEmpty()
+        && MoreTypes.asDeclared(point.getVariableElement().asType()).getTypeArguments()
+            .size() == 1) {
+      Types types = context.getGenerationContext().getTypes();
+      DeclaredType declaredType = (DeclaredType) parent;
+      TypeMirror asMemberOf = types.asMemberOf(declaredType, point.getVariableElement());
+      Set<BeanDefinition> subclasses =
+          getSubClasses(types.erasure(point.getVariableElement().asType()));
+
+      for (BeanDefinition sub : subclasses) {
+        if (types.isSubtype(sub.getType(), asMemberOf)) {
+          return Optional.of(sub);
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   private boolean isUnscopedBean(TypeMirror beanTypeMirror) {
