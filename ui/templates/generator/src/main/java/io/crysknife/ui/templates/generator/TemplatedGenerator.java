@@ -63,6 +63,7 @@ import org.jsoup.select.NodeVisitor;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.enterprise.inject.Instance;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
@@ -152,7 +153,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   private ProcessingEnvironment processingEnvironment;
   private Messager messager;
   private BeanDefinition beanDefinition;
-  private TypeElement isWidget;
+  private TypeElement isWidgetType;
+  private TypeElement widgetType;
   private EventHandlerTemplatedProcessor eventHandlerTemplatedProcessor;
   private EventHandlerGenerator eventHandlerGenerator;
 
@@ -161,8 +163,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     eventHandlerTemplatedProcessor = new EventHandlerTemplatedProcessor(iocContext);
     eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);
     dataFieldProcessor = new DataFieldProcessor(iocContext);
-    isWidget = iocContext.getGenerationContext().getElements()
+    isWidgetType = iocContext.getGenerationContext().getElements()
         .getTypeElement("org.gwtproject.user.client.ui.IsWidget");
+    widgetType = iocContext.getGenerationContext().getElements()
+        .getTypeElement("org.gwtproject.user.client.ui.Widget");
   }
 
   @Override
@@ -172,7 +176,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
     iocContext.register(Templated.class, WiringElementType.CLASS_DECORATOR, this);
 
-    if (isWidget != null) {
+    if (isWidgetType != null) {
       new TemplateWidgetGenerator(iocContext).build(false).generate();
     }
   }
@@ -328,12 +332,23 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       builder.getInitInstanceMethod().getBody().get().addAndGetStatement(expressionStmt);
 
       widgets.forEach(widget -> {
-        Expression instance =
+        TypeElement typeElement =
+            iocContext.getGenerationContext().getElements().getTypeElement(widget.getType());
+
+        boolean isWidget = iocContext.getGenerationContext().getTypes()
+            .isSubtype(typeElement.asType(), widgetType.asType());
+        MethodCallExpr uncheckedCast =
             new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
                 .addArgument(getFieldAccessCallExpr(widget.getName()));
 
+        if (!isWidget) {
+          uncheckedCast
+              .setTypeArguments(new ClassOrInterfaceType().setName(isWidgetType.toString()));
+          uncheckedCast = new MethodCallExpr(uncheckedCast, "asWidget");
+        }
+
         MethodCallExpr methodCallExpr =
-            new MethodCallExpr(new NameExpr("widgets"), "add").addArgument(instance);
+            new MethodCallExpr(new NameExpr("widgets"), "add").addArgument(uncheckedCast);
         builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
       });
 
@@ -603,7 +618,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   public Expression getInstanceMethodName(DataElementInfo.Kind kind) {
     MethodCallExpr expr = new MethodCallExpr(new NameExpr("instance"), getMethodName(kind));
     if (kind.equals(DataElementInfo.Kind.IsWidget)) {
-      uncheckedCastCall(expr, isWidget.toString());
+      uncheckedCastCall(expr, isWidgetType.toString());
     }
     return expr;
   }
@@ -646,6 +661,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .addArgument("instance"));
   }
 
+  // TODO this method must be refactored
   public Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
     if (element.getKind().equals(DataElementInfo.Kind.ElementoIsElement)) {
       instance = new MethodCallExpr(
@@ -658,15 +674,25 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
               .setName(io.crysknife.client.IsElement.class.getCanonicalName()), instance)),
           "getElement");
     } else if (element.getKind().equals(DataElementInfo.Kind.IsWidget)) {
+      TypeElement typeElement =
+          iocContext.getGenerationContext().getElements().getTypeElement(element.getType());
+      boolean isIsWidget = iocContext.getGenerationContext().getTypes()
+          .isSubtype(typeElement.asType(), isWidgetType.asType());
+      Expression expr;
+      if (isIsWidget) {
+        expr = new MethodCallExpr(
+            new EnclosedExpr(new CastExpr(
+                new ClassOrInterfaceType().setName(isWidgetType.toString()), instance)),
+            "asWidget");
+      } else {
+        expr = new EnclosedExpr(new CastExpr(
+            new ClassOrInterfaceType().setName("org.gwtproject.user.client.ui.UIObject"),
+            instance));
+      }
       return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
           "<" + HTMLElement.class.getCanonicalName() + ">uncheckedCast")
-              .addArgument(
-                  new MethodCallExpr(
-                      new EnclosedExpr(new CastExpr(new ClassOrInterfaceType()
-                          .setName("org.gwtproject.user.client.ui.UIObject"), instance)),
-                      "getElement"));
+              .addArgument(new MethodCallExpr(expr, "getElement"));
     }
-
 
     return new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()), instance));
@@ -865,10 +891,10 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private boolean maybeGwtWidget(TypeMirror dataElementType) {
-    if (isWidget == null) {
+    if (isWidgetType == null) {
       return false;
     }
-    return isAssignable(dataElementType, isWidget.asType());
+    return isAssignable(dataElementType, isWidgetType.asType());
   }
 
   private boolean maybeGwtDom(TypeMirror dataElementType) {
@@ -994,7 +1020,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         || maybeGwtWidget(type.asType()))) {
       abortWithError(type, "%s must implement %s", type.getQualifiedName(),
           (IsElement.class.getCanonicalName() + " or "
-              + io.crysknife.client.IsElement.class.getCanonicalName() + " or " + isWidget));
+              + io.crysknife.client.IsElement.class.getCanonicalName() + " or " + isWidgetType));
     }
   }
 
