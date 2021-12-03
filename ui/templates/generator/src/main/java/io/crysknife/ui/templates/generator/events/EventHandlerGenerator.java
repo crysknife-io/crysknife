@@ -26,6 +26,7 @@ import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.SinkNative;
 import io.crysknife.ui.templates.generator.TemplatedGenerator;
+import io.crysknife.ui.templates.generator.TemplatedGeneratorUtils;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
@@ -106,10 +107,12 @@ public class EventHandlerGenerator {
   }
 
   private class GWT3DomEventGenerator extends Generator {
-
+    private TemplatedGeneratorUtils templatedGeneratorUtils;
 
     GWT3DomEventGenerator(IOCContext iocContext, TemplatedGenerator templatedGenerator) {
       super(iocContext, templatedGenerator);
+      templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
+
     }
 
     @Override
@@ -120,7 +123,7 @@ public class EventHandlerGenerator {
 
       if (eventHandlerInfo.getInfo() == null) {
         DataElementInfo.Kind kind =
-            templatedGenerator.getDataElementInfoKind(templateContext.getDataElementType());
+            templatedGeneratorUtils.getDataElementInfoKind(templateContext.getDataElementType());
         if (!kind.equals(DataElementInfo.Kind.IsWidget)) {
           templatedGenerator.abortWithError(eventHandlerInfo.getMethod(),
               "It's not possible to bind GWT event to non-GWT template, use elemental2 instead");
@@ -189,9 +192,12 @@ public class EventHandlerGenerator {
   }
 
   private class Elemental2Generator extends Generator {
+    private TemplatedGeneratorUtils templatedGeneratorUtils;
 
     Elemental2Generator(IOCContext iocContext, TemplatedGenerator templatedGenerator) {
       super(iocContext, templatedGenerator);
+      templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
+
     }
 
     @Override
@@ -210,8 +216,8 @@ public class EventHandlerGenerator {
         // handle event, that binds to the root of the template
         if (eventHandlerInfo.getInfo() == null) {
           DataElementInfo.Kind kind =
-              templatedGenerator.getDataElementInfoKind(templateContext.getDataElementType());
-          Expression fieldAccessCallExpr = templatedGenerator.getInstanceMethodName(kind);
+              templatedGeneratorUtils.getDataElementInfoKind(templateContext.getDataElementType());
+          Expression fieldAccessCallExpr = templatedGeneratorUtils.getInstanceMethodName(kind);
           MethodCallExpr methodCallExpr =
               new MethodCallExpr(fieldAccessCallExpr, "addEventListener")
                   .addArgument(new StringLiteralExpr(event))
