@@ -32,4 +32,17 @@ public class MyIOCBeanTest extends AbstractTest {
     assertEquals(Integer.class, holder.getMybean1().getKey());
     assertEquals(Double.class, holder.getMybean1().getValue());
   }
+
+  @Test
+  public void testSingleton() {
+    MyIOCBeanHolder holder = app.beanManager.lookupBean(MyIOCBeanHolder.class).getInstance();
+    assertEquals(Integer.class, holder.getMyIOCSingletonBean().getKey());
+    assertEquals(Double.class, holder.getMyIOCSingletonBean().getValue());
+
+    assertEquals(Integer.class, holder.getMyIOCSingletonBean2().getKey());
+    assertEquals(Double.class, holder.getMyIOCSingletonBean2().getValue());
+
+    assertEquals(holder.getMyIOCSingletonBean2().unique, holder.getMyIOCSingletonBean().unique);
+
+  }
 }

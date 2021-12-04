@@ -27,12 +27,19 @@ public class MyIOCBeanHolder {
   @Inject
   private MyIOCBean mybean;
 
+  @Inject
+  private MyIOCSingletonBean<Integer, Double> myIOCSingletonBean;
+
+  private MyIOCSingletonBean<Integer, Double> myIOCSingletonBean2;
+
   private MyIOCBean mybean1;
 
 
   @Inject
-  public MyIOCBeanHolder(MyIOCBean<Integer, Double> bean) {
+  public MyIOCBeanHolder(MyIOCBean<Integer, Double> bean,
+      MyIOCSingletonBean<Integer, Double> bean2) {
     this.mybean1 = bean;
+    this.myIOCSingletonBean2 = bean2;
   }
 
   public MyIOCBean getMybean() {
@@ -41,5 +48,13 @@ public class MyIOCBeanHolder {
 
   public MyIOCBean getMybean1() {
     return mybean1;
+  }
+
+  public MyIOCSingletonBean getMyIOCSingletonBean() {
+    return myIOCSingletonBean;
+  }
+
+  public MyIOCSingletonBean getMyIOCSingletonBean2() {
+    return myIOCSingletonBean2;
   }
 }
