@@ -40,16 +40,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.lang.annotation.Annotation;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -286,17 +277,15 @@ public class Utils {
   }
 
   public static Collection<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
-    Map<String, ExecutableElement> methods = new LinkedHashMap<>();
-    ElementFilter.methodsIn(type.getEnclosedElements())
-        .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+    Set<ExecutableElement> methods = new LinkedHashSet<>();
+    ElementFilter.methodsIn(type.getEnclosedElements()).forEach(method -> methods.add(method));
 
     List<TypeElement> alltypes = getSuperTypes(elements, type);
     for (TypeElement atype : alltypes) {
       ElementFilter.methodsIn(atype.getEnclosedElements()).stream()
-          .filter(method -> !methods.containsKey(method.getSimpleName().toString()))
-          .forEach(method -> methods.put(method.getSimpleName().toString(), method));
+          .filter(method -> !methods.contains(method)).forEach(method -> methods.add(method));
     }
-    return methods.values();
+    return methods;
   }
 
   /**
