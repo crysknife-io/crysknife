@@ -35,8 +35,7 @@ public class MyIOCSingletonBeanProvider implements ContextualTypeProvider<MyIOCS
   private BeanManager beanManager;
 
   @Override
-  public MyIOCSingletonBean provide(final BeanManager beanManager, Class<?>[] typeargs,
-      Annotation[] qualifiers) {
+  public MyIOCSingletonBean provide(Class<?>[] typeargs, Annotation[] qualifiers) {
     if (beanManager == null) {
       throw new Error();
     }

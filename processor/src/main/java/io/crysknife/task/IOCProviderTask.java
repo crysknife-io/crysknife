@@ -142,8 +142,6 @@ public class IOCProviderTask implements Task {
         wrapper.addMethod("provide", com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
     provide.addAnnotation(Override.class);
     provide.setType(erased.toString());
-    provide.addParameter(new Parameter().setType("BeanManager").setName("beanManager")
-        .setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true));
     provide.addParameter(new Parameter().setType("Class<?>[]").setName("typeargs"));
     provide.addParameter(
         new Parameter().setType("java.lang.annotation.Annotation[]").setName("qualifiers"));
@@ -153,8 +151,8 @@ public class IOCProviderTask implements Task {
     BlockStmt blockStmt = new BlockStmt();
 
     blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
-        .setValue(new MethodCallExpr(new NameExpr("super"), "provide").addArgument("beanManager")
-            .addArgument("typeargs").addArgument("qualifiers")));
+        .setValue(new MethodCallExpr(new NameExpr("super"), "provide").addArgument("typeargs")
+            .addArgument("qualifiers")));
     ifStmt.setThenStmt(blockStmt);
 
     provide.getBody().get().addAndGetStatement(ifStmt);
@@ -192,8 +190,6 @@ public class IOCProviderTask implements Task {
           new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
               .addArgument(type.getQualifiedName().toString() + ".class"), "getInstance"),
           "provide");
-
-      methodCallExpr.addArgument(new NameExpr("beanManager"));
 
       ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
       ((DeclaredType) fieldPoint.getVariableElement().asType()).getTypeArguments().forEach(
