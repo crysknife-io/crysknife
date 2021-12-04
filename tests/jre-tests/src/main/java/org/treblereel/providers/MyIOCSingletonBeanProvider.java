@@ -17,7 +17,9 @@ package org.treblereel.providers;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
+import io.crysknife.exception.GenerationException;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 
@@ -28,9 +30,17 @@ import java.lang.annotation.Annotation;
 @IOCProvider
 public class MyIOCSingletonBeanProvider implements ContextualTypeProvider<MyIOCSingletonBean> {
 
+
+  @Inject
+  private BeanManager beanManager;
+
   @Override
   public MyIOCSingletonBean provide(final BeanManager beanManager, Class<?>[] typeargs,
       Annotation[] qualifiers) {
+    if (beanManager == null) {
+      throw new Error();
+    }
+
     Class clazz1 = typeargs[0];
     Class clazz2 = typeargs[1];
 

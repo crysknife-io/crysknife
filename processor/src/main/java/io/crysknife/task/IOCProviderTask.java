@@ -37,12 +37,13 @@ import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.DependentGenerator;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
@@ -103,29 +104,20 @@ public class IOCProviderTask implements Task {
         boolean isSingleton = Utils.containsAnnotation(type, Singleton.class.getCanonicalName(),
             ApplicationScoped.class.getCanonicalName());
 
+        BeanDefinition beanDefinitionContextualTypeProvider =
+            context.getBeanDefinitionOrCreateAndReturn(type.asType());
         if (isSingleton) {
-          BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(type.asType());
-          beanDefinition.setIocGenerator(new SingletonGenerator(context) {
+          beanDefinitionContextualTypeProvider.setIocGenerator(new SingletonGenerator(context) {
 
             @Override
-            public void register() {
-
-            }
-
-            @Override
-            public void generate(ClassBuilder clazz, Definition definition) {
-              clazz.getClassCompilationUnit().addImport(Annotation.class);
-
-              initClassBuilder(clazz, beanDefinition);
-              generateNewInstanceMethodBuilder(clazz);
-              generateInitInstanceMethodBuilder(clazz, beanDefinition);
-              generateInstanceGetMethodBuilder(clazz, beanDefinition);
-              generateDependantFieldDeclaration(clazz, beanDefinition);
-              generateInstanceGetMethodReturn(clazz, beanDefinition);
+            public void write(ClassBuilder clazz, BeanDefinition beanDefinition,
+                GenerationContext context) {
               addProxy(clazz, beanDefinition, erased);
-              write(clazz, beanDefinition, iocContext.getGenerationContext());
+              super.write(clazz, beanDefinition, iocContext.getGenerationContext());
             }
           });
+        } else {
+          beanDefinitionContextualTypeProvider.setIocGenerator(new DependentGenerator(context));
         }
 
         BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(erased);
@@ -153,7 +145,8 @@ public class IOCProviderTask implements Task {
     provide.addParameter(new Parameter().setType("BeanManager").setName("beanManager")
         .setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true));
     provide.addParameter(new Parameter().setType("Class<?>[]").setName("typeargs"));
-    provide.addParameter(new Parameter().setType("Annotation[]").setName("qualifiers"));
+    provide.addParameter(
+        new Parameter().setType("java.lang.annotation.Annotation[]").setName("qualifiers"));
 
     IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
         new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
@@ -173,14 +166,12 @@ public class IOCProviderTask implements Task {
 
     private final TypeElement type;
     private final TypeMirror erased;
-    private final boolean isSingleton;
 
     public ProviderStatelessIOCGenerator(IOCContext iocContext, TypeElement type, TypeMirror erased,
         boolean isSingleton) {
       super(iocContext);
       this.type = type;
       this.erased = erased;
-      this.isSingleton = isSingleton;
     }
 
     @Override
@@ -197,20 +188,11 @@ public class IOCProviderTask implements Task {
         InjectableVariableDefinition fieldPoint) {
       clazz.getClassCompilationUnit().addImport(Annotation.class.getCanonicalName());
 
-      MethodCallExpr methodCallExpr;
+      MethodCallExpr methodCallExpr = new MethodCallExpr(
+          new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+              .addArgument(type.getQualifiedName().toString() + ".class"), "getInstance"),
+          "provide");
 
-      if (isSingleton) {
-        methodCallExpr = new MethodCallExpr(
-            new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                .addArgument(type.getQualifiedName().toString() + ".class"), "getInstance"),
-            "provide");
-      } else {
-        ClassOrInterfaceType classOrInterfaceType = new ClassOrInterfaceType();
-        classOrInterfaceType.setName(type.getQualifiedName().toString());
-
-        methodCallExpr =
-            new MethodCallExpr(new ObjectCreationExpr().setType(classOrInterfaceType), "provide");
-      }
       methodCallExpr.addArgument(new NameExpr("beanManager"));
 
       ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
