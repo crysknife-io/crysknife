@@ -12,5 +12,29 @@
  * the License.
  */
 
-@Deprecated
-package io.crysknife.ui.databinding.client.widgets;
+package org.treblereel.providers.contextualtypeprovider;
+
+import java.util.Random;
+
+/**
+ * @author Dmitrii Tikhomirov Created by treblereel 12/3/21
+ */
+public class MyIOCSingletonBean<K, V> {
+
+  private Class key;
+  private Class value;
+  public int unique = new Random().nextInt();
+
+  public MyIOCSingletonBean(Class key, Class value) {
+    this.key = key;
+    this.value = value;
+  }
+
+  public Class getValue() {
+    return value;
+  }
+
+  public Class getKey() {
+    return key;
+  }
+}

@@ -24,6 +24,7 @@ import io.crysknife.client.ioc.IOCProvider;
 import jsinterop.base.Js;
 import org.gwtproject.user.client.ui.IsWidget;
 
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,20 +40,15 @@ import java.util.function.Supplier;
  * @author Max Barkley <mbarkley@redhat.com>
  */
 @SuppressWarnings("rawtypes")
-// TODO
-// @IOCProvider
+@IOCProvider
 public class ListComponentProvider implements ContextualTypeProvider<ListComponent> {
 
-  public final BeanManager beanManager;
-
-  public ListComponentProvider(BeanManager beanManager) {
-    this.beanManager = beanManager;
-  }
+  @Inject
+  public BeanManager beanManager;
 
   @SuppressWarnings("unchecked")
   @Override
-  public ListComponent provide(final BeanManager beanManager, final Class<?>[] typeargs,
-      final Annotation[] qualifiers) {
+  public ListComponent provide(final Class<?>[] typeargs, final Annotation[] qualifiers) {
     final Annotation[] filteredQualifiers = filterQualifiers(qualifiers);
     final Optional<ListContainer> listContainer = getListContainer(qualifiers);
     final HTMLElement root = (HTMLElement) DomGlobal.document

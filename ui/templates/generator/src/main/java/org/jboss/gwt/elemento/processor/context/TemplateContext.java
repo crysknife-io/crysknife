@@ -31,6 +31,7 @@ public class TemplateContext {
   private List<PostConstructInfo> postConstructs;
   private List<AbstractPropertyInfo> abstractProperties;
   private List<EventHandlerInfo> events;
+  private String templateFileName;
 
   public TemplateContext(String pkg, String base, String subclass, String isElementTypeParameter,
       TypeMirror dataElementType) {
@@ -112,5 +113,13 @@ public class TemplateContext {
 
   public TypeMirror getDataElementType() {
     return dataElementType;
+  }
+
+  public String getTemplateFileName() {
+    return templateFileName;
+  }
+
+  public void setTemplateFileName(String templateFileName) {
+    this.templateFileName = templateFileName;
   }
 }

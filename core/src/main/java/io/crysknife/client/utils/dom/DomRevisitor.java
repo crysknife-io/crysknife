@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,26 +12,21 @@
  * the License.
  */
 
-package org.treblereel.providers;
+package io.crysknife.client.utils.dom;
+
+import elemental2.dom.Element;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
+ * An interface for visiting DOM nodes and performing some post visiting task.
+ * 
+ * @author Max Barkley <mbarkley@redhat.com>
  */
-public class MyIOCBean<K, V> {
+public interface DomRevisitor extends DomVisitor {
 
-  private Class key;
-  private Class value;
-
-  public MyIOCBean(Class key, Class value) {
-    this.key = key;
-    this.value = value;
-  }
-
-  public Class getValue() {
-    return value;
-  }
-
-  public Class getKey() {
-    return key;
-  }
+  /**
+   * This method is invoked after this element and all of its children have been visited.
+   * 
+   * @param element The element that has previously been visited.
+   */
+  public void afterVisit(Element element);
 }

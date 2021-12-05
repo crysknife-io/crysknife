@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
+ * Copyright © 2021 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,19 +12,15 @@
  * the License.
  */
 
-package io.crysknife.ui.databinding.client.widgets;
+package org.treblereel.providers.provider;
 
-@SuppressWarnings("serial")
-public class InvalidBeanScopeException extends RuntimeException {
-  public InvalidBeanScopeException() {
-    super();
-  }
+import java.util.Random;
 
-  public InvalidBeanScopeException(String message) {
-    super(message);
-  }
+/**
+ * @author Dmitrii Tikhomirov Created by treblereel 12/4/21
+ */
+public class IOCProviderBean {
 
-  public InvalidBeanScopeException(String message, Throwable causes) {
-    super(message, causes);
-  }
+  public int unique = new Random().nextInt();
+
 }

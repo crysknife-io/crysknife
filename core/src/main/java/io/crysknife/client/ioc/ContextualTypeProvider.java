@@ -42,5 +42,5 @@ public interface ContextualTypeProvider<T> {
    *
    * @return the type produced by this provider.
    */
-  public T provide(BeanManager beanManager, Class<?>[] typeargs, Annotation[] qualifiers);
+  public T provide(Class<?>[] typeargs, Annotation[] qualifiers);
 }

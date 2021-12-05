@@ -16,6 +16,7 @@ package org.treblereel.providers;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
+import org.treblereel.providers.contextualtypeprovider.MyIOCBeanHolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
  */
-public class MyIOCBeanTest extends AbstractTest {
+public class ContextualTypeProviderTest extends AbstractTest {
 
   @Test
   public void test1() {
@@ -31,5 +32,18 @@ public class MyIOCBeanTest extends AbstractTest {
     MyIOCBeanHolder holder = app.beanManager.lookupBean(MyIOCBeanHolder.class).getInstance();
     assertEquals(Integer.class, holder.getMybean1().getKey());
     assertEquals(Double.class, holder.getMybean1().getValue());
+  }
+
+  @Test
+  public void testSingleton() {
+    MyIOCBeanHolder holder = app.beanManager.lookupBean(MyIOCBeanHolder.class).getInstance();
+    assertEquals(Integer.class, holder.getMyIOCSingletonBean().getKey());
+    assertEquals(Double.class, holder.getMyIOCSingletonBean().getValue());
+
+    assertEquals(Integer.class, holder.getMyIOCSingletonBean2().getKey());
+    assertEquals(Double.class, holder.getMyIOCSingletonBean2().getValue());
+
+    assertEquals(holder.getMyIOCSingletonBean2().unique, holder.getMyIOCSingletonBean().unique);
+
   }
 }
