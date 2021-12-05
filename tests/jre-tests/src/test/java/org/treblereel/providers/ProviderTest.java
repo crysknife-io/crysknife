@@ -14,24 +14,22 @@
 
 package org.treblereel.providers;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.ioc.ContextualTypeProvider;
-import io.crysknife.client.ioc.IOCProvider;
+import org.junit.Test;
+import org.treblereel.AbstractTest;
+import org.treblereel.providers.provider.IOCProviderBean;
+import org.treblereel.providers.provider.IOCProviderHolder;
 
-import java.lang.annotation.Annotation;
+import static org.junit.Assert.assertEquals;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
+ * @author Dmitrii Tikhomirov Created by treblereel 12/4/21
  */
-@IOCProvider
-public class MyIOCBeanProvider implements ContextualTypeProvider<MyIOCBean> {
+public class ProviderTest extends AbstractTest {
 
-  @Override
-  public MyIOCBean provide(Class<?>[] typeargs, Annotation[] qualifiers) {
-    Class clazz1 = typeargs[0];
-    Class clazz2 = typeargs[1];
-
-    MyIOCBean myIOCBean = new MyIOCBean(clazz1, clazz2);
-    return myIOCBean;
+  @Test
+  public void test1() {
+    IOCProviderHolder holder = app.beanManager.lookupBean(IOCProviderHolder.class).getInstance();
+    assertEquals(IOCProviderBean.class, holder.iocProviderBean.getClass());
+    assertEquals(holder.iocProviderBean.unique, holder.iocProviderBean2.unique);
   }
 }

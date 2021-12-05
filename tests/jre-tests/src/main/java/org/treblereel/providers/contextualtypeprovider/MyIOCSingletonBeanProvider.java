@@ -12,12 +12,11 @@
  * the License.
  */
 
-package org.treblereel.providers;
+package org.treblereel.providers.contextualtypeprovider;
 
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
-import io.crysknife.exception.GenerationException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package org.treblereel.providers;
+package org.treblereel.providers.contextualtypeprovider;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

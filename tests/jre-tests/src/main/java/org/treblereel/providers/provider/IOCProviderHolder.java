@@ -12,26 +12,24 @@
  * the License.
  */
 
-package org.treblereel.providers;
+package org.treblereel.providers.provider;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
+ * @author Dmitrii Tikhomirov Created by treblereel 12/4/21
  */
-public class MyIOCBean<K, V> {
+@Singleton
+public class IOCProviderHolder {
 
-  private Class key;
-  private Class value;
+  @Inject
+  public IOCProviderBean iocProviderBean;
 
-  public MyIOCBean(Class key, Class value) {
-    this.key = key;
-    this.value = value;
-  }
+  public IOCProviderBean iocProviderBean2;
 
-  public Class getValue() {
-    return value;
-  }
-
-  public Class getKey() {
-    return key;
+  @Inject
+  public IOCProviderHolder(IOCProviderBean iocProviderBean) {
+    this.iocProviderBean2 = iocProviderBean;
   }
 }

@@ -16,6 +16,7 @@ package org.treblereel.providers;
 
 import org.junit.Test;
 import org.treblereel.AbstractTest;
+import org.treblereel.providers.contextualtypeprovider.MyIOCBeanHolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
  */
-public class MyIOCBeanTest extends AbstractTest {
+public class ContextualTypeProviderTest extends AbstractTest {
 
   @Test
   public void test1() {

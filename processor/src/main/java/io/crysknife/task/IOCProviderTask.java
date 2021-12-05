@@ -71,13 +71,17 @@ public class IOCProviderTask implements Task {
   private IOCContext context;
   private TreeLogger logger;
   private TypeMirror contextualTypeProvider;
+  private TypeMirror provider;
   private Validator validator;
 
   public IOCProviderTask(IOCContext context, TreeLogger logger) {
     this.context = context;
     this.logger = logger;
+
     this.contextualTypeProvider = context.getGenerationContext().getTypes()
         .erasure(context.getTypeMirror(ContextualTypeProvider.class));
+    this.provider = context.getGenerationContext().getTypes()
+        .erasure(context.getTypeMirror(javax.inject.Provider.class));
 
     validator = new ProviderValidator(context);
   }
@@ -92,8 +96,7 @@ public class IOCProviderTask implements Task {
 
   private void process(TypeElement type) throws UnableToCompleteException {
     for (TypeMirror iface : type.getInterfaces()) {
-      if (context.getGenerationContext().getTypes().isSameType(contextualTypeProvider,
-          context.getGenerationContext().getTypes().erasure(iface))) {
+      if (isContextualTypeProvider(iface) || isProvider(iface)) {
         DeclaredType asDeclaredType = (DeclaredType) iface;
         TypeMirror provided = asDeclaredType.getTypeArguments().get(0);
         TypeMirror erased = context.getGenerationContext().getTypes().erasure(provided);
@@ -112,7 +115,7 @@ public class IOCProviderTask implements Task {
             @Override
             public void write(ClassBuilder clazz, BeanDefinition beanDefinition,
                 GenerationContext context) {
-              addProxy(clazz, beanDefinition, erased);
+              addProxy(clazz, beanDefinition, erased, isSingleton, iface);
               super.write(clazz, beanDefinition, iocContext.getGenerationContext());
             }
           });
@@ -123,12 +126,24 @@ public class IOCProviderTask implements Task {
         BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(erased);
         beanDefinition.setHasFactory(false);
         beanDefinition
-            .setIocGenerator(new ProviderStatelessIOCGenerator(context, type, erased, isSingleton));
+            .setIocGenerator(new ProviderStatelessIOCGenerator(context, type, erased, iface));
+        break;
       }
     }
   }
 
-  private void addProxy(ClassBuilder clazz, BeanDefinition beanDefinition, TypeMirror erased) {
+  private boolean isContextualTypeProvider(TypeMirror iface) {
+    return context.getGenerationContext().getTypes().isSameType(contextualTypeProvider,
+        context.getGenerationContext().getTypes().erasure(iface));
+  }
+
+  private boolean isProvider(TypeMirror iface) {
+    return context.getGenerationContext().getTypes().isSameType(provider,
+        context.getGenerationContext().getTypes().erasure(iface));
+  }
+
+  private void addProxy(ClassBuilder clazz, BeanDefinition beanDefinition, TypeMirror erased,
+      boolean isSingleton, TypeMirror iface) {
     ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
     wrapper.setName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString());
     wrapper.addExtendedType(beanDefinition.getType().toString());
@@ -138,38 +153,72 @@ public class IOCProviderTask implements Task {
     wrapper.addField(erased.toString(), "instance",
         com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
 
-    MethodDeclaration provide =
-        wrapper.addMethod("provide", com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-    provide.addAnnotation(Override.class);
-    provide.setType(erased.toString());
-    provide.addParameter(new Parameter().setType("Class<?>[]").setName("typeargs"));
-    provide.addParameter(
-        new Parameter().setType("java.lang.annotation.Annotation[]").setName("qualifiers"));
+    if (isProvider(iface)) {
+      MethodDeclaration provide =
+          wrapper.addMethod("get", com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+      provide.addAnnotation(Override.class);
+      provide.setType(erased.toString());
 
-    IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
-        new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-    BlockStmt blockStmt = new BlockStmt();
+      if (isSingleton) {
+        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
+            new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
+        BlockStmt blockStmt = new BlockStmt();
 
-    blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
-        .setValue(new MethodCallExpr(new NameExpr("super"), "provide").addArgument("typeargs")
-            .addArgument("qualifiers")));
-    ifStmt.setThenStmt(blockStmt);
+        blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
+            .setValue(new MethodCallExpr(new NameExpr("super"), "get")));
+        ifStmt.setThenStmt(blockStmt);
 
-    provide.getBody().get().addAndGetStatement(ifStmt);
-    provide.getBody().get().addAndGetStatement(new ReturnStmt("instance"));
+        provide.getBody().get().addAndGetStatement(ifStmt);
+        provide.getBody().get().addAndGetStatement(new ReturnStmt("instance"));
+      } else {
+        provide.getBody().get()
+            .addAndGetStatement(new ReturnStmt(new MethodCallExpr(new NameExpr("super"), "get")));
+      }
+
+    } else {
+
+      MethodDeclaration provide =
+          wrapper.addMethod("provide", com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+      provide.addAnnotation(Override.class);
+      provide.setType(erased.toString());
+      provide.addParameter(new Parameter().setType("Class<?>[]").setName("typeargs"));
+      provide.addParameter(
+          new Parameter().setType("java.lang.annotation.Annotation[]").setName("qualifiers"));
+
+      if (isSingleton) {
+
+        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
+            new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
+        BlockStmt blockStmt = new BlockStmt();
+
+        blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
+            .setValue(new MethodCallExpr(new NameExpr("super"), "provide").addArgument("typeargs")
+                .addArgument("qualifiers")));
+        ifStmt.setThenStmt(blockStmt);
+
+        provide.getBody().get().addAndGetStatement(ifStmt);
+        provide.getBody().get().addAndGetStatement(new ReturnStmt("instance"));
+      } else {
+        provide.getBody().get()
+            .addAndGetStatement(new ReturnStmt(new MethodCallExpr(new NameExpr("super"), "provide")
+                .addArgument("typeargs").addArgument("qualifiers")));
+      }
+    }
   }
 
-  private static class ProviderStatelessIOCGenerator
+  private class ProviderStatelessIOCGenerator
       extends IOCGenerator<io.crysknife.definition.BeanDefinition> {
 
     private final TypeElement type;
     private final TypeMirror erased;
+    private final TypeMirror iface;
 
     public ProviderStatelessIOCGenerator(IOCContext iocContext, TypeElement type, TypeMirror erased,
-        boolean isSingleton) {
+        TypeMirror iface) {
       super(iocContext);
       this.type = type;
       this.erased = erased;
+      this.iface = iface;
     }
 
     @Override
@@ -186,53 +235,80 @@ public class IOCProviderTask implements Task {
         InjectableVariableDefinition fieldPoint) {
       clazz.getClassCompilationUnit().addImport(Annotation.class.getCanonicalName());
 
-      MethodCallExpr methodCallExpr = new MethodCallExpr(
-          new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-              .addArgument(type.getQualifiedName().toString() + ".class"), "getInstance"),
-          "provide");
+      if (isProvider(iface)) {
+        MethodCallExpr get =
+            new MethodCallExpr(
+                new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                    .addArgument(type.getQualifiedName().toString() + ".class"), "getInstance"),
+                "get");
 
-      ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
-      ((DeclaredType) fieldPoint.getVariableElement().asType()).getTypeArguments().forEach(
-          type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName(InstanceFactory.class.getCanonicalName());
+        type.setTypeArguments(new ClassOrInterfaceType().setName(erased.toString()));
 
-      ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
-      withAssignableTypes.setElementType("Class<?>[]");
-      withAssignableTypes.setInitializer(withAssignableTypesValues);
+        ObjectCreationExpr factory = new ObjectCreationExpr().setType(type);
+        NodeList<BodyDeclaration<?>> supplierClassBody = new NodeList<>();
 
-      methodCallExpr.addArgument(withAssignableTypes);
+        MethodDeclaration getInstance = new MethodDeclaration();
+        getInstance.setModifiers(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+        getInstance.setName("getInstance");
+        getInstance.addAnnotation(Override.class);
+        getInstance.setType(new ClassOrInterfaceType().setName(erased.toString()));
 
-      List<AnnotationMirror> qualifiers = new ArrayList<>(
-          Utils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
-      Set<Expression> qualifiersExpression = new HashSet<>();
+        getInstance.getBody().get().addAndGetStatement(new ReturnStmt(get));
+        supplierClassBody.add(getInstance);
 
-      qualifiers.forEach(
-          type -> qualifiersExpression.add(generationUtils.createQualifierExpression(type)));
-      ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
-      qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
-      ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
-      withQualifiers.setElementType("Annotation[]");
-      withQualifiers.setInitializer(withQualifiersValues);
-      methodCallExpr.addArgument(withQualifiers);
+        return factory.setAnonymousClassBody(supplierClassBody);
 
-      ClassOrInterfaceType type = new ClassOrInterfaceType();
-      type.setName(InstanceFactory.class.getCanonicalName());
-      type.setTypeArguments(new ClassOrInterfaceType().setName(erased.toString()));
+      } else {
+        MethodCallExpr methodCallExpr = new MethodCallExpr(
+            new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                .addArgument(type.getQualifiedName().toString() + ".class"), "getInstance"),
+            "provide");
 
-      ObjectCreationExpr factory = new ObjectCreationExpr().setType(type);
-      NodeList<BodyDeclaration<?>> supplierClassBody = new NodeList<>();
+        ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
+        ((DeclaredType) fieldPoint.getVariableElement().asType()).getTypeArguments().forEach(
+            type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
 
-      MethodDeclaration getInstance = new MethodDeclaration();
-      getInstance.setModifiers(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-      getInstance.setName("getInstance");
-      getInstance.addAnnotation(Override.class);
-      getInstance.setType(new ClassOrInterfaceType().setName(erased.toString()));
+        ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
+        withAssignableTypes.setElementType("Class<?>[]");
+        withAssignableTypes.setInitializer(withAssignableTypesValues);
 
-      getInstance.getBody().get().addAndGetStatement(new ReturnStmt(methodCallExpr));
-      supplierClassBody.add(getInstance);
+        methodCallExpr.addArgument(withAssignableTypes);
 
-      factory.setAnonymousClassBody(supplierClassBody);
+        List<AnnotationMirror> qualifiers = new ArrayList<>(
+            Utils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
+        Set<Expression> qualifiersExpression = new HashSet<>();
 
-      return factory;
+        qualifiers.forEach(
+            type -> qualifiersExpression.add(generationUtils.createQualifierExpression(type)));
+        ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
+        qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
+        ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
+        withQualifiers.setElementType("Annotation[]");
+        withQualifiers.setInitializer(withQualifiersValues);
+        methodCallExpr.addArgument(withQualifiers);
+
+        ClassOrInterfaceType type = new ClassOrInterfaceType();
+        type.setName(InstanceFactory.class.getCanonicalName());
+        type.setTypeArguments(new ClassOrInterfaceType().setName(erased.toString()));
+
+        ObjectCreationExpr factory = new ObjectCreationExpr().setType(type);
+        NodeList<BodyDeclaration<?>> supplierClassBody = new NodeList<>();
+
+        MethodDeclaration getInstance = new MethodDeclaration();
+        getInstance.setModifiers(com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
+        getInstance.setName("getInstance");
+        getInstance.addAnnotation(Override.class);
+        getInstance.setType(new ClassOrInterfaceType().setName(erased.toString()));
+
+        getInstance.getBody().get().addAndGetStatement(new ReturnStmt(methodCallExpr));
+        supplierClassBody.add(getInstance);
+
+        factory.setAnonymousClassBody(supplierClassBody);
+
+        return factory;
+      }
     }
   }
 
