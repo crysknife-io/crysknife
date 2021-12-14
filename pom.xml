@@ -209,6 +209,7 @@
                         <exclude>**/*.css</exclude>
                         <exclude>**/.factorypath</exclude>
                         <exclude>**/*.properties</exclude>
+                        <exclude>**/*.gwt.xml</exclude>
                     </excludes>
                     <properties>
                         <year>${project.inceptionYear}</year>
