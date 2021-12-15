@@ -18,6 +18,7 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.task.Task;
 
 import javax.tools.JavaFileObject;
@@ -32,7 +33,7 @@ public class BeanInfoGenerator implements Task {
   private IOCContext iocContext;
   private AbstractBeanInfoGenerator generator;
 
-  public BeanInfoGenerator(IOCContext iocContext) {
+  public BeanInfoGenerator(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
       generator = new BeanInfoGWT2GeneratorBuilder(iocContext);

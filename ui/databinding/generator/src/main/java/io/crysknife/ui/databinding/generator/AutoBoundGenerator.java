@@ -29,6 +29,7 @@ import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.databinding.client.api.AutoBound;
 import io.crysknife.ui.databinding.client.api.Bound;
 import io.crysknife.ui.databinding.client.api.Convert;
@@ -53,8 +54,8 @@ import java.util.stream.Collectors;
 @Generator(priority = 100003)
 public class AutoBoundGenerator extends IOCGenerator<InjectableVariableDefinition> {
 
-  public AutoBoundGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public AutoBoundGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   /**

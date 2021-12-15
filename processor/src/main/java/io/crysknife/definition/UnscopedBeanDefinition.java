@@ -21,6 +21,7 @@ import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.type.TypeMirror;
@@ -30,15 +31,15 @@ import javax.lang.model.type.TypeMirror;
  */
 public class UnscopedBeanDefinition extends BeanDefinition {
 
-  public UnscopedBeanDefinition(TypeMirror type, IOCContext context) {
+  public UnscopedBeanDefinition(TypeMirror type, TreeLogger logger, IOCContext context) {
     super(type);
-    setIocGenerator(new UnscopedIOCGenerator(context));
+    setIocGenerator(new UnscopedIOCGenerator(logger, context));
   }
 
   private static class UnscopedIOCGenerator extends IOCGenerator {
 
-    private UnscopedIOCGenerator(IOCContext context) {
-      super(context);
+    private UnscopedIOCGenerator(TreeLogger logger, IOCContext context) {
+      super(logger, context);
     }
 
     @Override

@@ -21,6 +21,7 @@ import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Generator;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 
 import javax.enterprise.inject.Produces;
 import javax.lang.model.element.TypeElement;
@@ -33,8 +34,8 @@ public class ProducesGenerator extends ScopedBeanGenerator {
 
   private static final String BEAN_MANAGER_IMPL = "io.crysknife.client.BeanManagerImpl";
 
-  public ProducesGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public ProducesGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

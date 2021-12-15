@@ -31,6 +31,7 @@ import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.translation.api.spi.TranslationService;
 
 import javax.inject.Inject;
@@ -41,8 +42,8 @@ import javax.inject.Inject;
 @Generator(priority = 100002)
 public class TranslationServiceGenerator extends ScopedBeanGenerator {
 
-  public TranslationServiceGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public TranslationServiceGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

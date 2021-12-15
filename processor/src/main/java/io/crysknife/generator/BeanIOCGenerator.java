@@ -19,6 +19,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.annotation.processing.FilerException;
@@ -32,8 +33,8 @@ import java.io.PrintWriter;
  */
 public abstract class BeanIOCGenerator<T extends BeanDefinition> extends IOCGenerator<T> {
 
-  public BeanIOCGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public BeanIOCGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   public void write(ClassBuilder clazz, T beanDefinition, GenerationContext context) {

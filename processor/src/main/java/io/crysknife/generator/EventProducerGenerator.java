@@ -44,6 +44,7 @@ import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.event.Event;
@@ -59,8 +60,8 @@ import java.util.function.Consumer;
 @Generator(priority = 999)
 public class EventProducerGenerator extends ScopedBeanGenerator {
 
-  public EventProducerGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public EventProducerGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

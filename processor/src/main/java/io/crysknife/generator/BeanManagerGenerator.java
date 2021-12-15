@@ -55,6 +55,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.context.oracle.BeanOracle;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.task.Task;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
@@ -96,9 +97,9 @@ public class BeanManagerGenerator implements Task {
 
   private final TypeMirror OBJECT;
 
-  public BeanManagerGenerator(IOCContext iocContext) {
+  public BeanManagerGenerator(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
-    this.oracle = new BeanOracle(iocContext);
+    this.oracle = new BeanOracle(iocContext, logger);
     this.generationUtils = new GenerationUtils(iocContext);
     OBJECT = iocContext.getGenerationContext().getElements()
         .getTypeElement(Object.class.getCanonicalName()).asType();

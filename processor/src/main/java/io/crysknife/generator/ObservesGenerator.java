@@ -32,6 +32,7 @@ import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.event.Observes;
@@ -47,8 +48,8 @@ import java.util.function.Consumer;
 @Generator(priority = 1000)
 public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
-  public ObservesGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public ObservesGenerator(TreeLogger logger, IOCContext iocContext) {
+    super(logger, iocContext);
   }
 
   @Override

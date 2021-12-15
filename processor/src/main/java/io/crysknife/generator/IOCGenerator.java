@@ -22,6 +22,7 @@ import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 
 import javax.lang.model.util.Elements;
@@ -39,8 +40,12 @@ public abstract class IOCGenerator<T extends Definition> {
   protected final Types types;
   protected final Elements elements;
 
-  public IOCGenerator(IOCContext iocContext) {
+  protected final TreeLogger logger;
+
+  public IOCGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     this.iocContext = iocContext;
+    this.logger = treeLogger;
+
     this.generationUtils = new GenerationUtils(iocContext);
 
     types = iocContext.getGenerationContext().getTypes();

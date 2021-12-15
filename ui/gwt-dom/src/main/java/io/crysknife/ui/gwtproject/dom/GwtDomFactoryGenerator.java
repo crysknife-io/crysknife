@@ -32,6 +32,7 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
+import io.crysknife.logger.TreeLogger;
 import org.gwtproject.dom.client.AnchorElement;
 import org.gwtproject.dom.client.AreaElement;
 import org.gwtproject.dom.client.AudioElement;
@@ -445,8 +446,8 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
     return fieldPoint.getVariableElement().getAnnotation(Named.class).value();
   }
 
-  public GwtDomFactoryGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public GwtDomFactoryGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

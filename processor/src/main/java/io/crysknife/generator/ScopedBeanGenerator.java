@@ -39,6 +39,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 import org.checkerframework.checker.units.qual.C;
 
@@ -66,8 +67,8 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   private PostConstructGenerator postConstructGenerator = new PostConstructGenerator(iocContext);
 
-  public ScopedBeanGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public ScopedBeanGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

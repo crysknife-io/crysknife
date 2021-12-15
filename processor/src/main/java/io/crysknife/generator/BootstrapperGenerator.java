@@ -39,6 +39,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.inject.Provider;
@@ -53,8 +54,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   private String BOOTSTRAP_EXTENSION = "Bootstrap";
 
-  public BootstrapperGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public BootstrapperGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

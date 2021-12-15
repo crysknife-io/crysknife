@@ -73,7 +73,7 @@ public class ApplicationProcessor extends AbstractProcessor {
     }
     this.application = maybeApplication.get();
 
-    initAndRegisterGenerators();
+    initAndRegisterGenerators(logger);
 
     TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
     // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
@@ -87,9 +87,9 @@ public class ApplicationProcessor extends AbstractProcessor {
 
     taskGroup.addTask(new MethodParamDecoratorTask(iocContext, logger));
 
-    taskGroup.addTask(new FactoryGenerator(iocContext));
-    taskGroup.addTask(new BeanInfoGenerator(iocContext));
-    taskGroup.addTask(new BeanManagerGenerator(iocContext));
+    taskGroup.addTask(new FactoryGenerator(iocContext, logger));
+    taskGroup.addTask(new BeanInfoGenerator(iocContext, logger));
+    taskGroup.addTask(new BeanManagerGenerator(iocContext, logger));
     taskGroup.addTask(new FireAfterTask(iocContext, logger));
     taskGroup.execute();
 
@@ -114,14 +114,17 @@ public class ApplicationProcessor extends AbstractProcessor {
     return applications.stream().findFirst();
   }
 
-  private void initAndRegisterGenerators() {
+  private void initAndRegisterGenerators(TreeLogger logger) {
     try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
       ClassInfoList routeClassInfoList =
           scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
       for (ClassInfo routeClassInfo : routeClassInfoList) {
         try {
-          Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(IOCContext.class);
-          ((IOCGenerator) c.newInstance(iocContext)).register();
+          Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(TreeLogger.class,
+              IOCContext.class);
+          ((IOCGenerator) c.newInstance(
+              logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
+              iocContext)).register();
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
             | NoSuchMethodException | InvocationTargetException e) {
           throw new GenerationException(e);

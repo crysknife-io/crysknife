@@ -24,6 +24,7 @@ import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.logger.TreeLogger;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/30/19
@@ -31,8 +32,8 @@ import io.crysknife.definition.BeanDefinition;
 @Generator()
 public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
 
-  public BeanManagerProducerGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public BeanManagerProducerGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override
