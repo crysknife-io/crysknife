@@ -75,7 +75,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
       BeanDefinition beanDefinition = (BeanDefinition) definition;
       initClassBuilder(clazz, beanDefinition);
       generateBeanGetMethod(clazz, beanDefinition);
-      write(clazz, beanDefinition, iocContext.getGenerationContext());
+      write(clazz, beanDefinition);
     }
   }
 

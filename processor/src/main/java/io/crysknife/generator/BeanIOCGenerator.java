@@ -37,23 +37,22 @@ public abstract class BeanIOCGenerator<T extends BeanDefinition> extends IOCGene
     super(treeLogger, iocContext);
   }
 
-  public void write(ClassBuilder clazz, T beanDefinition, GenerationContext context) {
+  public void write(ClassBuilder clazz, T beanDefinition) {
     try {
       String fileName = Utils.getQualifiedFactoryName(beanDefinition.getType());
       String source = clazz.toSourceCode();
-      build(fileName, source, context);
+      build(fileName, source);
     } catch (javax.annotation.processing.FilerException e1) {
-      context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.NOTE,
-          e1.getMessage());
+      iocContext.getGenerationContext().getProcessingEnvironment().getMessager()
+          .printMessage(Diagnostic.Kind.NOTE, e1.getMessage());
     } catch (IOException e1) {
       throw new GenerationException(e1);
     }
   }
 
-  protected void build(String fileName, String source, GenerationContext context)
-      throws IOException {
-    JavaFileObject builderFile =
-        context.getProcessingEnvironment().getFiler().createSourceFile(fileName);
+  protected void build(String fileName, String source) throws IOException {
+    JavaFileObject builderFile = iocContext.getGenerationContext().getProcessingEnvironment()
+        .getFiler().createSourceFile(fileName);
 
     try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
       out.append(source);

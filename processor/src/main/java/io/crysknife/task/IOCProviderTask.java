@@ -114,10 +114,9 @@ public class IOCProviderTask implements Task {
               .setIocGenerator(new SingletonGenerator(logger, context) {
 
                 @Override
-                public void write(ClassBuilder clazz, BeanDefinition beanDefinition,
-                    GenerationContext context) {
+                public void write(ClassBuilder clazz, BeanDefinition beanDefinition) {
                   addProxy(clazz, beanDefinition, erased, isSingleton, iface);
-                  super.write(clazz, beanDefinition, iocContext.getGenerationContext());
+                  super.write(clazz, beanDefinition);
                 }
               });
         } else {

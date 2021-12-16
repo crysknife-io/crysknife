@@ -148,7 +148,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
     getMethodDeclaration.setType(Utils.getSimpleClassName(clazz.beanDefinition.getType()));
     getMethodDeclaration.getBody().get().addAndGetStatement(new ReturnStmt(new NullLiteralExpr()));
 
-    write(clazz, beanDefinition, iocContext.getGenerationContext());
+    write(clazz, beanDefinition);
   }
 
   private void maybeAddDefaultConverters(ClassBuilder clazz, MethodDeclaration methodDeclaration) {

@@ -172,12 +172,12 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void write(ClassBuilder clazz, BeanDefinition beanDefinition, GenerationContext context) {
+  public void write(ClassBuilder clazz, BeanDefinition beanDefinition) {
     try {
       String fileName = Utils.getQualifiedName(MoreTypes.asElement(beanDefinition.getType()))
           + BOOTSTRAP_EXTENSION;
       String source = clazz.toSourceCode();
-      build(fileName, source, context);
+      build(fileName, source);
     } catch (IOException e1) {
       // throw new GenerationException(e1);
     }

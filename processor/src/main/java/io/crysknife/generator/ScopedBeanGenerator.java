@@ -84,7 +84,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     generateInstanceGetMethodDecorators(clazz, beanDefinition);
     generateInstanceGetMethodReturn(clazz, beanDefinition);
     processPostConstructAnnotation(clazz, beanDefinition);
-    write(clazz, beanDefinition, iocContext.getGenerationContext());
+    write(clazz, beanDefinition);
   }
 
   private void generateDependantFields(ClassBuilder classBuilder, BeanDefinition definition) {
