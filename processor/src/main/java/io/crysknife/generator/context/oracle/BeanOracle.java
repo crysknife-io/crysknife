@@ -19,6 +19,7 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.UnscopedBeanDefinition;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
@@ -49,9 +50,11 @@ import java.util.stream.Collectors;
 public class BeanOracle {
 
   private final IOCContext context;
+  private final TreeLogger logger;
 
-  public BeanOracle(IOCContext context) {
+  public BeanOracle(IOCContext context, TreeLogger logger) {
     this.context = context;
+    this.logger = logger;
   }
 
   public BeanDefinition guess(TypeMirror parent, InjectableVariableDefinition point) {
@@ -100,7 +103,7 @@ public class BeanOracle {
     }
 
     if (isUnscopedBean(beanTypeMirror)) {
-      return new UnscopedBeanDefinition(beanTypeMirror, context);
+      return new UnscopedBeanDefinition(beanTypeMirror, logger, context);
     }
 
     return null;

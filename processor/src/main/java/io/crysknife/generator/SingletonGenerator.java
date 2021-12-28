@@ -29,6 +29,7 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 /**
@@ -37,8 +38,8 @@ import io.crysknife.util.Utils;
 @Generator(priority = 1)
 public class SingletonGenerator extends ScopedBeanGenerator {
 
-  public SingletonGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public SingletonGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

@@ -125,14 +125,27 @@
             <dependency>
                 <groupId>io.crysknife.ui.translation</groupId>
                 <artifactId>api</artifactId>
-                <version>0.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>io.crysknife.ui.translation</groupId>
                 <artifactId>generator</artifactId>
-                <version>0.3-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.validation</groupId>
+                <artifactId>api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.validation</groupId>
+                <artifactId>generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

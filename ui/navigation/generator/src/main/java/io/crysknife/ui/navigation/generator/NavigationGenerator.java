@@ -28,6 +28,7 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.PrintWriterTreeLogger;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
@@ -45,8 +46,8 @@ import java.util.stream.Collectors;
 @Generator
 public class NavigationGenerator extends SingletonGenerator {
 
-  public NavigationGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public NavigationGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

@@ -110,17 +110,18 @@ public class IOCProviderTask implements Task {
         BeanDefinition beanDefinitionContextualTypeProvider =
             context.getBeanDefinitionOrCreateAndReturn(type.asType());
         if (isSingleton) {
-          beanDefinitionContextualTypeProvider.setIocGenerator(new SingletonGenerator(context) {
+          beanDefinitionContextualTypeProvider
+              .setIocGenerator(new SingletonGenerator(logger, context) {
 
-            @Override
-            public void write(ClassBuilder clazz, BeanDefinition beanDefinition,
-                GenerationContext context) {
-              addProxy(clazz, beanDefinition, erased, isSingleton, iface);
-              super.write(clazz, beanDefinition, iocContext.getGenerationContext());
-            }
-          });
+                @Override
+                public void write(ClassBuilder clazz, BeanDefinition beanDefinition) {
+                  addProxy(clazz, beanDefinition, erased, isSingleton, iface);
+                  super.write(clazz, beanDefinition);
+                }
+              });
         } else {
-          beanDefinitionContextualTypeProvider.setIocGenerator(new DependentGenerator(context));
+          beanDefinitionContextualTypeProvider
+              .setIocGenerator(new DependentGenerator(logger, context));
         }
 
         BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(erased);
@@ -215,7 +216,7 @@ public class IOCProviderTask implements Task {
 
     public ProviderStatelessIOCGenerator(IOCContext iocContext, TypeElement type, TypeMirror erased,
         TypeMirror iface) {
-      super(iocContext);
+      super(IOCProviderTask.this.logger, iocContext);
       this.type = type;
       this.erased = erased;
       this.iface = iface;

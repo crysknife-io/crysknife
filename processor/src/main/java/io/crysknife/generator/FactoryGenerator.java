@@ -27,6 +27,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.generator.context.oracle.BeanOracle;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.task.Task;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
@@ -39,9 +40,9 @@ public class FactoryGenerator implements Task {
   private final IOCContext iocContext;
   private final BeanOracle oracle;
 
-  public FactoryGenerator(IOCContext iocContext) {
+  public FactoryGenerator(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
-    this.oracle = new BeanOracle(iocContext);
+    this.oracle = new BeanOracle(iocContext, logger);
   }
 
   public void execute() throws UnableToCompleteException {

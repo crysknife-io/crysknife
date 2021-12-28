@@ -39,6 +39,7 @@ import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.databinding.client.BindableProxy;
 import io.crysknife.ui.databinding.client.BindableProxyAgent;
 import io.crysknife.ui.databinding.client.BindableProxyFactory;
@@ -69,8 +70,8 @@ import java.util.stream.Collectors;
 @Generator(priority = 100002)
 public class BindableGenerator extends ScopedBeanGenerator {
 
-  public BindableGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public BindableGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override
@@ -147,7 +148,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
     getMethodDeclaration.setType(Utils.getSimpleClassName(clazz.beanDefinition.getType()));
     getMethodDeclaration.getBody().get().addAndGetStatement(new ReturnStmt(new NullLiteralExpr()));
 
-    write(clazz, beanDefinition, iocContext.getGenerationContext());
+    write(clazz, beanDefinition);
   }
 
   private void maybeAddDefaultConverters(ClassBuilder clazz, MethodDeclaration methodDeclaration) {

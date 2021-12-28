@@ -33,6 +33,7 @@
     <module>mutationobserver</module>
     <module>navigation</module>
     <module>translation</module>
+    <module>validation</module>
   </modules>
 
   <licenses>

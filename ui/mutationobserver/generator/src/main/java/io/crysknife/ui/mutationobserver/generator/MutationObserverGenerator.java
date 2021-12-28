@@ -29,6 +29,7 @@ import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
 import io.crysknife.ui.mutationobserver.client.api.ObserverCallback;
 import io.crysknife.ui.mutationobserver.client.api.OnAttach;
@@ -51,8 +52,8 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
   private BeanDefinition mutationObserverBeanDefinition;
 
-  public MutationObserverGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public MutationObserverGenerator(TreeLogger logger, IOCContext iocContext) {
+    super(logger, iocContext);
   }
 
   @Override

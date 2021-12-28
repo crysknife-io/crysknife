@@ -24,6 +24,7 @@ import io.crysknife.client.internal.QualifierUtil;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.inject.Default;
@@ -49,8 +50,8 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
   private final TypeMirror instanceTypeMirror;
   private final TypeMirror managedInstanceTypeMirror;
 
-  public ManagedInstanceGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public ManagedInstanceGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
     instanceTypeMirror = iocContext.getGenerationContext().getTypes()
         .erasure(iocContext.getTypeMirror(Instance.class.getCanonicalName()));
     managedInstanceTypeMirror = iocContext.getGenerationContext().getTypes()

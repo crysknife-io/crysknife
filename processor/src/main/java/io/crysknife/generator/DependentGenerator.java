@@ -18,6 +18,7 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 
 import javax.enterprise.context.Dependent;
 
@@ -27,8 +28,8 @@ import javax.enterprise.context.Dependent;
 @Generator(priority = 1)
 public class DependentGenerator extends ScopedBeanGenerator {
 
-  public DependentGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public DependentGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

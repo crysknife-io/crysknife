@@ -33,6 +33,7 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.local.Navigation;
 import io.crysknife.ui.navigation.client.local.TransitionTo;
 
@@ -44,8 +45,8 @@ public class TransitionToGenerator extends ScopedBeanGenerator {
 
   public static final String TRANSITION_TO_FACTORY = "TransitionTo_Factory";
 
-  public TransitionToGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public TransitionToGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

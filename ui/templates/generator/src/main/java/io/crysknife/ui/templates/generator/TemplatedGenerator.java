@@ -42,6 +42,7 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.DataField;
@@ -158,8 +159,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   private DataFieldProcessor dataFieldProcessor;
   private EventHandlerGenerator eventHandlerGenerator;
 
-  public TemplatedGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public TemplatedGenerator(TreeLogger logger, IOCContext iocContext) {
+    super(logger, iocContext);
     templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
     eventHandlerTemplatedProcessor = new EventHandlerTemplatedProcessor(iocContext);
     eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);

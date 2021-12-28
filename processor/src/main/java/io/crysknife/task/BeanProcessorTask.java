@@ -75,7 +75,7 @@ public class BeanProcessorTask implements Task {
   public BeanProcessorTask(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
     this.logger = logger;
-    this.oracle = new BeanOracle(iocContext);
+    this.oracle = new BeanOracle(iocContext, logger);
     this.beanDefinitionFactory = new BeanDefinitionFactory(iocContext, logger);
     this.methodDefinitionFactory = new MethodDefinitionFactory(iocContext, logger);
     this.objectTypeMirror = iocContext.getGenerationContext().getElements()

@@ -31,6 +31,7 @@ import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
+import io.crysknife.logger.TreeLogger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -109,8 +110,8 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
     HTML_ELEMENTS.put(HTMLTableSectionElement.class, "tbody");
   }
 
-  public Elemenatal2FactoryGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public Elemenatal2FactoryGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override

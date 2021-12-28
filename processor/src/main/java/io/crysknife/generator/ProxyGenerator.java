@@ -51,6 +51,7 @@ import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
@@ -75,8 +76,8 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
   };
   private MethodDeclaration initDelegate;
 
-  public ProxyGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public ProxyGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override
