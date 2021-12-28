@@ -14,26 +14,55 @@
 
 package io.crysknife.ui.validation.generator;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.expr.*;
+import com.google.auto.common.MoreTypes;
+import elemental2.dom.DomGlobal;
 import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.generator.IOCGenerator;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.BeanIOCGenerator;
+import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
+
+import javax.inject.Inject;
+import javax.validation.Validator;
+import java.io.IOException;
 
 @Generator
-public class ValidationGenerator extends IOCGenerator<BeanDefinition> {
+public class ValidationGenerator extends BeanIOCGenerator<BeanDefinition> {
 
-  public ValidationGenerator(IOCContext iocContext) {
-    super(iocContext);
+  public ValidationGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+    super(treeLogger, iocContext);
   }
 
   @Override
   public void register() {
 
+    iocContext.register(Inject.class, Validator.class, WiringElementType.BEAN, this); // PARAMETER
   }
 
   @Override
   public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
+    CompilationUnit gwtValidatorGenerator =
+        new GwtValidatorGenerator().generate(logger, iocContext);
+    if (gwtValidatorGenerator != null) {
+      try {
+        build(GwtValidatorGenerator.FILE_NAME, gwtValidatorGenerator.toString());
+      } catch (javax.annotation.processing.FilerException e) {
+      } catch (IOException e) {
+        throw new GenerationException(e);
+      }
+    }
+  }
 
+  @Override
+  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
+      InjectableVariableDefinition fieldPoint) {
+    return generationUtils.wrapCallInstanceImpl(classBuilder,
+        new ObjectCreationExpr().setType("io.crysknife.ui.validation.client.GwtValidatorImpl"));
   }
 }

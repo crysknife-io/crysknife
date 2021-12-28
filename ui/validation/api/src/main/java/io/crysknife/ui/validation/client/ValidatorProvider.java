@@ -25,8 +25,8 @@ import javax.validation.Validator;
  * 
  * @author Christian Sadilek <csadilek@redhat.com>
  */
-@IOCProvider
-@Singleton
+// @IOCProvider
+// @Singleton
 public class ValidatorProvider implements Provider<Validator> {
 
   @Override

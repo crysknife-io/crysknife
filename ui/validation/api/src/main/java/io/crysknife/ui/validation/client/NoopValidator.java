@@ -55,44 +55,8 @@ public class NoopValidator extends AbstractGwtValidator {
 
   @Override
   public BeanDescriptor getConstraintsForClass(final Class<?> clazz) {
-    return new BeanDescriptor() {
-
-      @Override
-      public boolean hasConstraints() {
-        return false;
-      }
-
-      @Override
-      public Class<?> getElementClass() {
-        return clazz;
-      }
-
-      @Override
-      public Set<ConstraintDescriptor<?>> getConstraintDescriptors() {
-        return Collections.emptySet();
-      }
-
-      @Override
-      public ConstraintFinder findConstraints() {
-        return null;
-      }
-
-      @Override
-      public boolean isBeanConstrained() {
-        return false;
-      }
-
-      @Override
-      public PropertyDescriptor getConstraintsForProperty(final String propertyName) {
-        return null;
-      }
-
-      @Override
-      public Set<PropertyDescriptor> getConstrainedProperties() {
-        return Collections.emptySet();
-      }
-
-    };
+    return null;
+    // return new BeanDescriptor();
   }
 
   @Override
