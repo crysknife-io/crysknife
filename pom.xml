@@ -62,7 +62,7 @@
         <maven.formatter.plugin.version>2.13.0</maven.formatter.plugin.version>
         <maven.license.plugin.version>3.0</maven.license.plugin.version>
         <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
-
+        <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
 
         <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
         <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
@@ -157,6 +157,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
                     <version>${maven.deploy.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
