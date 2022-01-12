@@ -97,8 +97,11 @@ public class BeanManagerGenerator implements Task {
 
   private final TypeMirror OBJECT;
 
+  private TreeLogger logger;
+
   public BeanManagerGenerator(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
+    this.logger = logger;
     this.oracle = new BeanOracle(iocContext, logger);
     this.generationUtils = new GenerationUtils(iocContext);
     OBJECT = iocContext.getGenerationContext().getElements()
@@ -114,10 +117,15 @@ public class BeanManagerGenerator implements Task {
   }
 
   private void build() throws IOException {
-    JavaFileObject builderFile = iocContext.getGenerationContext().getProcessingEnvironment()
-        .getFiler().createSourceFile(BeanManager.class.getCanonicalName() + "Impl");
-    try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-      out.append(new BeanManagerGeneratorBuilder().build().toString());
+    try {
+      JavaFileObject builderFile = iocContext.getGenerationContext().getProcessingEnvironment()
+          .getFiler().createSourceFile(BeanManager.class.getCanonicalName() + "Impl");
+      try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
+        out.append(new BeanManagerGeneratorBuilder().build().toString());
+      }
+    } catch (javax.annotation.processing.FilerException e) {
+      logger.log(TreeLogger.ERROR,
+          "Attempt to recreate a file for type " + BeanManager.class.getCanonicalName() + "Impl");
     }
   }
 
