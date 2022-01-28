@@ -39,12 +39,13 @@ public class BeanInfoGenerator implements Task {
       generator = new BeanInfoGWT2GeneratorBuilder(iocContext);
     } else if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
       generator = new BeanInfoJREGeneratorBuilder(iocContext);
-    } else {
-      generator = new BeanInfoJ2CLGeneratorBuilder(iocContext);
     }
   }
 
   public void execute() throws UnableToCompleteException {
+    if (generator == null) {
+      return;
+    }
     iocContext.getBeans().forEach((k, bean) -> {
       try {
         generate(bean);
