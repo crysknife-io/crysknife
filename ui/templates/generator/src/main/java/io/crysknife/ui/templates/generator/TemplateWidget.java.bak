@@ -19,6 +19,7 @@ package org.gwtproject.user.client.ui;
 import java.util.Collection;
 import java.util.Iterator;
 
+import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import jsinterop.base.Js;
@@ -28,7 +29,7 @@ import org.gwtproject.dom.client.Element;
  * Used to merge a {@link Templated} onto a {@link Composite} component.
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class TemplateWidget extends FocusPanel {
+public class TemplateWidget extends SimplePanel {
 
     private final Collection<Widget> children;
 
@@ -45,13 +46,17 @@ public class TemplateWidget extends FocusPanel {
 
     private void doInit() {
         for (Widget child : children) {
-            if (!(child instanceof TemplateWidget) && child.getParent() instanceof TemplateWidget) {
-                child = child.getParent();
+            if (!child.isAttached()) {
+                if (!(child instanceof TemplateWidget) && child.getParent() instanceof TemplateWidget) {
+                    child = child.getParent();
+                }
+                if (child.getParent() instanceof HasWidgets) {
+                    child.removeFromParent();
+                }
+                adopt(child);
             }
-            if(child.getParent() instanceof HasWidgets) {
-                child.removeFromParent();
-            }
-            adopt(child);
+
+
             //if (!child.isAttached()) {
             //    child.onAttach();
             //}
@@ -78,7 +83,10 @@ public class TemplateWidget extends FocusPanel {
             ((Composite)component).initWidget(wrapElemental2(wrapped));
         }
 
+        //widget.doDetachChildren();
+
         widget.onAttach();
+
         try {
             RootPanel.detachOnWindowClose(widget);
         } catch (Exception e) {
@@ -88,11 +96,6 @@ public class TemplateWidget extends FocusPanel {
 
     public static Widget wrapElemental2(HTMLElement element) {
         return new FocusWidget(Js.uncheckedCast(element)) {};
-    }
-
-    @Override
-    public void onAttach() {
-        super.onAttach();
     }
 
     @Override

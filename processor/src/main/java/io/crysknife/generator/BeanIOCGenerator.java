@@ -43,8 +43,7 @@ public abstract class BeanIOCGenerator<T extends BeanDefinition> extends IOCGene
       String source = clazz.toSourceCode();
       build(fileName, source);
     } catch (javax.annotation.processing.FilerException e1) {
-      iocContext.getGenerationContext().getProcessingEnvironment().getMessager()
-          .printMessage(Diagnostic.Kind.NOTE, e1.getMessage());
+      // just ignore it
     } catch (IOException e1) {
       throw new GenerationException(e1);
     }

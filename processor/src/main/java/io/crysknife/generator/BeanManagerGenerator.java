@@ -124,8 +124,7 @@ public class BeanManagerGenerator implements Task {
         out.append(new BeanManagerGeneratorBuilder().build().toString());
       }
     } catch (javax.annotation.processing.FilerException e) {
-      logger.log(TreeLogger.ERROR,
-          "Attempt to recreate a file for type " + BeanManager.class.getCanonicalName() + "Impl");
+      // we can ignore it
     }
   }
 

@@ -18,6 +18,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import org.apache.commons.io.IOUtils;
 
+import javax.annotation.processing.FilerException;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -64,8 +65,10 @@ public class TemplateWidgetGenerator {
       try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
         out.append(clazz);
       }
+    } catch (FilerException f) {
+      // just ignore it
     } catch (IOException e) {
-      throw new GenerationException("Unable to generate TemplateWidget");
+      throw new GenerationException("Unable to generate TemplateWidget " + e.getMessage());
     }
   }
 }
