@@ -22,6 +22,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
+import jsinterop.annotations.JsType;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.lang.model.element.ElementKind;
@@ -122,6 +123,33 @@ public class BindableProxyGenerator {
           }
         });
 
+
+    if (type.getAnnotation(JsType.class) != null) {
+      JsType jsType = type.getAnnotation(JsType.class);
+      if (!jsType.isNative()) {
+        StringBuffer stringBuffer = new StringBuffer("@jsinterop.annotations.JsType");
+
+        boolean hasName = !jsType.name().equals("<auto>");
+        boolean hasNamespace = !jsType.namespace().equals("<auto>");
+
+        if (hasName || hasNamespace) {
+          stringBuffer.append("(");
+          if (hasName) {
+            stringBuffer.append("name =  \"" + jsType.name() + "\"");
+            if (hasNamespace) {
+              stringBuffer.append(",");
+            }
+          }
+
+          if (hasNamespace) {
+            stringBuffer.append("namespace =  \"" + jsType.namespace() + "\"");
+          }
+          stringBuffer.append(")");
+        }
+        sb.append(stringBuffer);
+        sb.append(newLine);
+      }
+    }
 
     sb.append(String.format("class %s extends %s implements BindableProxy { ", clazzName,
         type.getSimpleName()));
