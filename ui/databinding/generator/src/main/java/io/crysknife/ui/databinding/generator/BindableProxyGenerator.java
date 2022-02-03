@@ -14,10 +14,13 @@
 
 package io.crysknife.ui.databinding.generator;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.databinding.client.api.Bindable;
 import io.crysknife.util.GenerationUtils;
@@ -51,19 +54,14 @@ public class BindableProxyGenerator {
   private final TypeMirror listTypeMirror;
   private final TypeMirror objectTypeMirror;
   private final Set<UnableToCompleteException> errors = new HashSet<>();
-  private MethodDeclaration methodDeclaration;
-  private TypeElement type;
   private String newLine = System.lineSeparator();
   private Types types;
   private Elements elements;
-
   private GenerationUtils generationUtils;
+  private ClassBuilder clazz;
 
-
-  BindableProxyGenerator(IOCContext context, MethodDeclaration methodDeclaration,
-      TypeElement type) {
-    this.methodDeclaration = methodDeclaration;
-    this.type = type;
+  BindableProxyGenerator(IOCContext context, ClassBuilder clazz) {
+    this.clazz = clazz;
     this.types = context.getGenerationContext().getTypes();
     this.elements = context.getGenerationContext().getElements();
 
@@ -74,11 +72,7 @@ public class BindableProxyGenerator {
     errors.clear();
   }
 
-  void generate() throws UnableToCompleteException {
-    Set<UnableToCompleteException> errors = new HashSet<>();
-    String clazzName = type.getQualifiedName().toString().replaceAll("\\.", "_") + "Proxy";
-
-    StringBuffer sb = new StringBuffer();
+  void generateProxy(TypeElement type) throws UnableToCompleteException {
 
     Set<VariableElement> properties = Utils.getAllFieldsIn(elements, type).stream()
         .filter(e -> !e.getModifiers().contains(Modifier.FINAL))
@@ -90,13 +84,13 @@ public class BindableProxyGenerator {
     for (VariableElement field : properties) {
       try {
         boolean isFinal = field.getModifiers().contains(Modifier.FINAL);
-        String setter = isFinal ? null : getSetter(field);
+        String setter = isFinal ? null : getSetter(type, field);
 
         PropertyHolder propertyHolder = new PropertyHolder();
         propertyHolder.field = field;
         propertyHolder.name = field.getSimpleName().toString();
         propertyHolder.isFinal = isFinal;
-        propertyHolder.getter = getGetter(field);
+        propertyHolder.getter = getGetter(type, field);
         propertyHolder.setter = setter;
         propertyHolder.type = field.asType();
         fields.add(propertyHolder);
@@ -123,6 +117,9 @@ public class BindableProxyGenerator {
           }
         });
 
+    String clazzName = getProxyClassName(type);
+
+    StringBuffer sb = new StringBuffer();
 
     if (type.getAnnotation(JsType.class) != null) {
       JsType jsType = type.getAnnotation(JsType.class);
@@ -151,8 +148,8 @@ public class BindableProxyGenerator {
       }
     }
 
-    sb.append(String.format("class %s extends %s implements BindableProxy { ", clazzName,
-        type.getSimpleName()));
+    sb.append(String.format("private static class %s extends %s implements BindableProxy { ",
+        clazzName, type.getSimpleName()));
     sb.append(newLine);
     sb.append(String.format("private BindableProxyAgent<%s> agent;", type.getSimpleName()));
     sb.append(newLine);
@@ -210,7 +207,7 @@ public class BindableProxyGenerator {
     sb.append(newLine);
     sb.append("}");
 
-    deepUnwrap(fields, sb);
+    deepUnwrap(type, fields, sb);
     equals(clazzName, sb);
 
     sb.append(newLine);
@@ -239,14 +236,33 @@ public class BindableProxyGenerator {
     sb.append("}");
 
     getterAndSetter(type, fields, sb);
-    get(fields, sb);
+    get(type, fields, sb);
     set(type, fields, sb);
     getBeanProperties(sb);
 
     sb.append("}");
     sb.append(newLine);
 
-    addBindableProxy(clazzName, sb);
+    // TODO
+    ClassOrInterfaceDeclaration proxy =
+        new JavaParser().parse(sb.toString()).getResult().get().getClassByName(clazzName).get();
+
+    clazz.getClassDeclaration().addMember(proxy);
+
+
+  }
+
+  private String getProxyClassName(TypeElement type) {
+    return type.getQualifiedName().toString().replaceAll("\\.", "_") + "Proxy";
+  }
+
+  void generate(TypeElement type, MethodDeclaration methodDeclaration)
+      throws UnableToCompleteException {
+    Set<UnableToCompleteException> errors = new HashSet<>();
+
+    StringBuffer sb = new StringBuffer();
+
+    addBindableProxy(type, sb);
 
     methodDeclaration.getBody().get().addAndGetStatement(sb.toString());
 
@@ -255,7 +271,9 @@ public class BindableProxyGenerator {
     }
   }
 
-  private void addBindableProxy(String clazzName, StringBuffer sb) {
+  private void addBindableProxy(TypeElement type, StringBuffer sb) {
+    String clazzName = getProxyClassName(type);
+
     sb.append(String.format(
         "BindableProxyFactory.addBindableProxy(%s.class, new BindableProxyProvider() {",
         type.getSimpleName()));
@@ -321,7 +339,7 @@ public class BindableProxyGenerator {
     sb.append(newLine);
   }
 
-  private void get(Set<PropertyHolder> fields, StringBuffer sb) {
+  private void get(TypeElement type, Set<PropertyHolder> fields, StringBuffer sb) {
     sb.append(newLine);
     sb.append("public Object get(String property) {");
     sb.append(newLine);
@@ -390,7 +408,7 @@ public class BindableProxyGenerator {
     sb.append("}");
   }
 
-  private void deepUnwrap(Set<PropertyHolder> fields, StringBuffer sb) {
+  private void deepUnwrap(TypeElement type, Set<PropertyHolder> fields, StringBuffer sb) {
     sb.append(newLine);
     sb.append(String.format("public %s deepUnwrap() {", type.getSimpleName()));
     sb.append(newLine);
@@ -404,7 +422,7 @@ public class BindableProxyGenerator {
 
     fields.forEach(elm -> {
       try {
-        deepUnwrap(elm, sb);
+        deepUnwrap(type, elm, sb);
       } catch (UnableToCompleteException e) {
         errors.add(e);
       }
@@ -417,7 +435,8 @@ public class BindableProxyGenerator {
 
   }
 
-  private void deepUnwrap(PropertyHolder elm, StringBuffer sb) throws UnableToCompleteException {
+  private void deepUnwrap(TypeElement type, PropertyHolder elm, StringBuffer sb)
+      throws UnableToCompleteException {
     if (elm.isFinal) {
       return;
     }
@@ -516,9 +535,10 @@ public class BindableProxyGenerator {
 
   }
 
-  private String getGetter(VariableElement variable) throws UnableToCompleteException {
+  private String getGetter(TypeElement type, VariableElement variable)
+      throws UnableToCompleteException {
     if (isBoolean(variable)) {
-      return getBooleanGetter(variable);
+      return getBooleanGetter(type, variable);
     }
 
     String method = compileGetterMethodName(variable);
@@ -529,7 +549,8 @@ public class BindableProxyGenerator {
             .format("Unable to find getter [%s] in [%s]", method, variable.getEnclosingElement())));
   }
 
-  private String getBooleanGetter(VariableElement variable) throws UnableToCompleteException {
+  private String getBooleanGetter(TypeElement type, VariableElement variable)
+      throws UnableToCompleteException {
     String varName = variable.getSimpleName().toString();
     String is = "is" + StringUtils.capitalize(varName) + "()";
     String get = "get" + StringUtils.capitalize(varName) + "()";
@@ -560,7 +581,8 @@ public class BindableProxyGenerator {
         || variable.asType().toString().equals(Boolean.class.getCanonicalName());
   }
 
-  private String getSetter(VariableElement variable) throws UnableToCompleteException {
+  private String getSetter(TypeElement type, VariableElement variable)
+      throws UnableToCompleteException {
     String method = compileSetterMethodName(variable);
     return Utils.getAllMethodsIn(elements, type).stream()
         .filter(e -> e.getKind().equals(ElementKind.METHOD))

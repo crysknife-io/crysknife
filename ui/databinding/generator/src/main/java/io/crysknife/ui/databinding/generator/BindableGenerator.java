@@ -15,6 +15,7 @@
 package io.crysknife.ui.databinding.generator;
 
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
@@ -112,15 +113,30 @@ public class BindableGenerator extends ScopedBeanGenerator {
     initClassBuilder(clazz, beanDefinition);
     clazz.getImplementedTypes().clear();
 
+    Set<UnableToCompleteException> errors = new HashSet<>();
+
+    Set<TypeElement> types =
+        iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName()).stream()
+            .collect(Collectors.toSet());
+
+    BindableProxyGenerator bindableProxyGenerator = new BindableProxyGenerator(iocContext, clazz);
+
+    // add proxies first
+    types.forEach(c -> {
+      try {
+        bindableProxyGenerator.generateProxy(MoreTypes.asTypeElement(c.asType()));
+      } catch (UnableToCompleteException e) {
+        errors.add(e);
+      }
+    });
+
     MethodDeclaration methodDeclaration =
         clazz.addMethod("loadBindableProxies", Modifier.Keyword.PRIVATE);
 
-    Set<UnableToCompleteException> errors = new HashSet<>();
-
-    iocContext.getTypeElementsByAnnotation(Bindable.class.getCanonicalName()).forEach(c -> {
+    types.forEach(c -> {
       clazz.getClassCompilationUnit().addImport(c.toString());
       try {
-        generateBindableProxy(methodDeclaration, MoreTypes.asTypeElement(c.asType()));
+        bindableProxyGenerator.generate(MoreTypes.asTypeElement(c.asType()), methodDeclaration);
       } catch (UnableToCompleteException e) {
         errors.add(e);
       }
@@ -129,7 +145,7 @@ public class BindableGenerator extends ScopedBeanGenerator {
     if (!errors.isEmpty()) {
       printErrors(errors);
       throw new GenerationException(
-          "at " + beanDefinition.getType() + " during Databining generation");
+          "at " + beanDefinition.getType() + " during Databinding generation");
     }
 
     maybeAddDefaultConverters(clazz, methodDeclaration);
@@ -216,11 +232,6 @@ public class BindableGenerator extends ScopedBeanGenerator {
     forTypMethodDeclaration.setType(DataBinder.class);
     forTypMethodDeclaration.getBody().get().addAndGetStatement(new ReturnStmt(
         new MethodCallExpr(new NameExpr("DataBinder"), "forType").addArgument("modelType")));
-  }
-
-  private void generateBindableProxy(MethodDeclaration methodDeclaration, TypeElement type)
-      throws UnableToCompleteException {
-    new BindableProxyGenerator(iocContext, methodDeclaration, type).generate();
   }
 
   private void printErrors(Set<UnableToCompleteException> errors) {
