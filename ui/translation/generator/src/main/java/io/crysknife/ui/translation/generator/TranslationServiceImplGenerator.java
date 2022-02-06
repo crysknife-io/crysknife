@@ -153,8 +153,7 @@ public class TranslationServiceImplGenerator {
         out.append(source);
       }
     } catch (javax.annotation.processing.FilerException e) {
-      // ignore
-      System.out.println(e.getMessage());
+      // ignores
     } catch (IOException e) {
       throw new GenerationException("Unable to generate TemplateWidget ", e);
     }

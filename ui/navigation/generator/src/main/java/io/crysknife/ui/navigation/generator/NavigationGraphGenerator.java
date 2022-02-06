@@ -134,8 +134,7 @@ public class NavigationGraphGenerator {
       String source = compilationUnit.toString();
       build(fileName, source, context);
     } catch (javax.annotation.processing.FilerException e1) {
-      context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.NOTE,
-          e1.getMessage());
+      // just ignore it
     } catch (IOException e1) {
       throw new Error(e1);
     }

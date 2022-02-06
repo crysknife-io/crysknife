@@ -53,6 +53,7 @@ public class ValidationGenerator extends BeanIOCGenerator<BeanDefinition> {
       try {
         build(GwtValidatorGenerator.FILE_NAME, gwtValidatorGenerator.toString());
       } catch (javax.annotation.processing.FilerException e) {
+        // just ignore it
       } catch (IOException e) {
         throw new GenerationException(e);
       }
