@@ -16,22 +16,9 @@ package io.crysknife.generator;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.EnclosedExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.IfStmt;
-import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -45,6 +32,7 @@ import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
+import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 
 import javax.enterprise.event.Event;
@@ -60,8 +48,11 @@ import java.util.function.Consumer;
 @Generator(priority = 999)
 public class EventProducerGenerator extends ScopedBeanGenerator {
 
+  private GenerationUtils generationUtils;
+
   public EventProducerGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
+    generationUtils = new GenerationUtils(iocContext);
   }
 
   @Override
@@ -157,10 +148,26 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         accept.getParameters()
             .add(new Parameter().setType(parameter.asType().toString()).setName("event"));
         accept.getBody().ifPresent(body -> {
-          body.addAndGetStatement(new MethodCallExpr(
+
+          VariableDeclarator variableDeclarator = new VariableDeclarator();
+
+          ClassOrInterfaceType consumerClassDeclaration =
+              new ClassOrInterfaceType().setName(parent.getQualifiedName());
+          variableDeclarator.setType(consumerClassDeclaration);
+          variableDeclarator.setInitializer(
               new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                  .addArgument(parent.getQualifiedName() + ".class"), "getInstance"),
-              method.getSimpleName().toString()).addArgument("event"));
+                  .addArgument(parent.getQualifiedName() + ".class"), "getInstance"));
+          variableDeclarator.setName("instance");
+
+          ExpressionStmt expressionStmt = new ExpressionStmt();
+          VariableDeclarationExpr variableDeclarationExpr = new VariableDeclarationExpr();
+          variableDeclarationExpr.addVariable(variableDeclarator);
+          expressionStmt.setExpression(variableDeclarationExpr);
+          body.addAndGetStatement(expressionStmt);
+
+          Statement call =
+              generationUtils.generateMethodCall(parent.getType(), method, new NameExpr("event"));
+          body.addAndGetStatement(call);
         });
 
         NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
