@@ -20,6 +20,8 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.LambdaExpr;
@@ -324,11 +326,8 @@ public class GenerationUtils {
   // Closure aggressively inline methods, so if method is private and never called, most likely it
   // ll be removed
   private Statement generatePrivateJ2CLMethodCall(ExecutableElement method, Expression[] args) {
-    throw new Error("Private method calls aren't supported for J2CL : "
-        + method.getEnclosingElement() + "." + method.getSimpleName());
+    String valueName = Utils.getJsMethodName(method);
 
-    /*    String valueName = Utils.getJsMethodName(method);
-    
     MethodCallExpr bind = new MethodCallExpr(new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName("elemental2.core.Function"),
         new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get").addArgument("instance")
@@ -336,12 +335,12 @@ public class GenerationUtils {
                 new MethodCallExpr(new NameExpr("io.crysknife.client.Reflect"), "objectProperty")
                     .addArgument(new StringLiteralExpr(valueName)).addArgument("instance")))),
         "bind").addArgument("instance");
-    
+
     for (Expression arg : args) {
       bind.addArgument(arg);
     }
-    
-    return new ExpressionStmt(new MethodCallExpr(bind, "call"));*/
+
+    return new ExpressionStmt(new MethodCallExpr(bind, "call"));
   }
 
   private TryStmt generatePrivateJREMethodCall(ExecutableElement method, Expression[] args) {
