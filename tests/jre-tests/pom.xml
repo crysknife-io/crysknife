@@ -3,17 +3,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>parent</artifactId>
-        <groupId>io.crysknife.tests</groupId>
-        <version>0.3-SNAPSHOT</version>
-    </parent>
-
+    <groupId>io.crysknife.tests</groupId>
     <artifactId>jre-tests</artifactId>
     <version>0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
         <aspectj.version>1.9.5</aspectj.version>
         <aspectj.maven.plugin.version>1.12.6</aspectj.maven.plugin.version>
         <webappdir>${project.build.directory}/webapp</webappdir>
@@ -21,8 +21,8 @@
         <maven.properties.plugin>1.0.0</maven.properties.plugin>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.surfire.plugin>3.0.0-M1</maven.surfire.plugin>
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <dependencies>
@@ -53,10 +53,12 @@
         <dependency>
             <groupId>io.crysknife.ui.translation</groupId>
             <artifactId>api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.crysknife.ui.translation</groupId>
             <artifactId>generator</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

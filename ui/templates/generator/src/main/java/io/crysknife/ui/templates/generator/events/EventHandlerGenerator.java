@@ -16,6 +16,7 @@ package io.crysknife.ui.templates.generator.events;
 
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -151,14 +152,17 @@ public class EventHandlerGenerator {
           MoreTypes.asTypeElement(eventHandlerInfo.getMethod().getParameters().get(0).asType())
               .getQualifiedName().toString();
 
-      StringBuffer sb = new StringBuffer();
-      sb.append("e -> ");
-      sb.append("instance.");
-      sb.append(eventHandlerInfo.getMethodName());
-      sb.append("(e)");
+      Statement call = generationUtils.generateMethodCall(
+          eventHandlerInfo.getMethod().getEnclosingElement().asType(), eventHandlerInfo.getMethod(),
+          new NameExpr("event"));
+
+      LambdaExpr lambda = new LambdaExpr();
+      lambda.setEnclosingParameters(true);
+      lambda.getParameters().add(new Parameter().setName("event").setType(eventName));
+      lambda.setBody(call);
 
       builder.getInitInstanceMethod().getBody().get().addAndGetStatement(
-          new MethodCallExpr(fieldAccessCallExpr, "addDomHandler").addArgument(sb.toString())
+          new MethodCallExpr(fieldAccessCallExpr, "addDomHandler").addArgument(lambda)
               .addArgument(new MethodCallExpr(new NameExpr(eventName), "getType")));
     }
   }
