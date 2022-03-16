@@ -91,7 +91,7 @@ public class Utils {
     sb.append("f_");
     sb.append(field.getSimpleName().toString());
     sb.append("__");
-    sb.append(MoreElements.asType(field.getEnclosingElement()).getQualifiedName().toString()
+    sb.append(((TypeElement) field.getEnclosingElement()).getQualifiedName().toString()
         .replaceAll("\\.", "_"));
     if (field.getModifiers().contains(Modifier.PRIVATE)) {
       sb.append("_");
@@ -119,11 +119,13 @@ public class Utils {
     }
     if (method.getModifiers().contains(Modifier.PRIVATE)) {
       sb.append("_$p_");
+      sb.append(((TypeElement) (method.getEnclosingElement())).getQualifiedName().toString()
+          .replaceAll("\\.", "_"));
     } else {
       sb.append("_$pp_");
+      sb.append(
+          ((method.getEnclosingElement())).getEnclosingElement().toString().replaceAll("\\.", "_"));
     }
-    sb.append(MoreElements.asType(method.getEnclosingElement()).getQualifiedName().toString()
-        .replaceAll("\\.", "_"));
     return sb.toString();
   }
 
