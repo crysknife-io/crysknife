@@ -63,7 +63,6 @@
         <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
         <apache.commons.io.version>2.8.0</apache.commons.io.version>
 
-        <elemento.version>1.0.3</elemento.version>
         <jsoup.version>1.11.3</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
         <lesscss.version>1.10</lesscss.version>
@@ -106,11 +105,6 @@
                 <groupId>com.google.elemental2</groupId>
                 <artifactId>elemental2-dom</artifactId>
                 <version>${elemental2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.elemento</groupId>
-                <artifactId>elemento-core</artifactId>
-                <version>${elemento.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.auto</groupId>

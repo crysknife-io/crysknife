@@ -14,12 +14,9 @@
 
 package io.crysknife.ui.navigation.client.local;
 
+import elemental2.core.JsArray;
 import elemental2.dom.HTMLElement;
-import org.jboss.elemento.ElementsBag;
 import io.crysknife.ui.navigation.client.local.api.DelegationControl;
-
-import static org.jboss.elemento.Elements.removeChildrenFrom;
-import static org.jboss.elemento.Elements.wrapHtmlElement;
 
 /**
  * Default content delegation procedure.
@@ -29,18 +26,26 @@ import static org.jboss.elemento.Elements.wrapHtmlElement;
 public class DefaultContentDelegation implements ContentDelegation {
 
   @Override
-  public void showContent(Object page, HTMLElement container, ElementsBag elements,
+  public void showContent(Object page, HTMLElement container, JsArray<HTMLElement> elements,
       Object previousPage, DelegationControl control) {
     if (container != null && elements != null) {
-      wrapHtmlElement(container).addAll(elements.elements());
+
+      elements.forEach((node, p1, p2) -> {
+        container.append(node);
+        return null;
+      });
     }
     control.proceed();
   }
 
   @Override
-  public void hideContent(Object page, HTMLElement container, ElementsBag elements, Object nextPage,
-      DelegationControl control) {
-    removeChildrenFrom(container);
+  public void hideContent(Object page, HTMLElement container, JsArray<HTMLElement> elements,
+      Object nextPage, DelegationControl control) {
+    if (container != null) {
+      while (container.firstChild != null) {
+        container.removeChild(container.firstChild);
+      }
+    }
     control.proceed();
   }
 }

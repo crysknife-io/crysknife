@@ -46,10 +46,6 @@
             <artifactId>elemental2-dom</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.elemento</groupId>
-            <artifactId>elemento-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-processor</artifactId>
         </dependency>

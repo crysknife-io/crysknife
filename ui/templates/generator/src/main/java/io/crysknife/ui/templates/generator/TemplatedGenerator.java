@@ -33,6 +33,7 @@ import com.google.common.escape.Escapers;
 import com.inet.lib.less.Less;
 import elemental2.dom.*;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.IsElement;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
@@ -53,7 +54,6 @@ import io.crysknife.ui.templates.generator.translation.TranslationServiceGenerat
 import io.crysknife.util.Utils;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
-import org.jboss.elemento.IsElement;
 import org.jboss.gwt.elemento.processor.*;
 import org.jboss.gwt.elemento.processor.context.StyleSheet;
 import org.jboss.gwt.elemento.processor.context.*;
@@ -634,12 +634,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
   // TODO this method must be refactored
   public Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
-    if (element.getKind().equals(DataElementInfo.Kind.ElementoIsElement)) {
-      instance = new MethodCallExpr(
-          new EnclosedExpr(new CastExpr(
-              new ClassOrInterfaceType().setName(IsElement.class.getCanonicalName()), instance)),
-          "element");
-    } else if (element.getKind().equals(DataElementInfo.Kind.CrysknifeIsElement)) {
+    if (element.getKind().equals(DataElementInfo.Kind.IsElement)) {
       instance = new MethodCallExpr(
           new EnclosedExpr(new CastExpr(new ClassOrInterfaceType()
               .setName(io.crysknife.client.IsElement.class.getCanonicalName()), instance)),
@@ -946,9 +941,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         || templatedGeneratorUtils.isAssignable(type, io.crysknife.client.IsElement.class)
         || templatedGeneratorUtils.maybeGwtWidget(type.asType()))) {
       abortWithError(type, "%s must implement %s", type.getQualifiedName(),
-          (IsElement.class.getCanonicalName() + " or "
-              + io.crysknife.client.IsElement.class.getCanonicalName() + " or "
-              + templatedGeneratorUtils.isWidgetType));
+          (IsElement.class.getCanonicalName() + " or " + templatedGeneratorUtils.isWidgetType));
     }
   }
 

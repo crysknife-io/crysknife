@@ -14,24 +14,18 @@
 
 package io.crysknife.ui.navigation.client.local;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import elemental2.core.JsArray;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
 import jsinterop.base.Js;
 import org.gwtproject.event.shared.HandlerRegistration;
-import org.jboss.elemento.By;
-import org.jboss.elemento.Elements;
-import org.jboss.elemento.ElementsBag;
-import org.jboss.elemento.IsElement;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.local.api.DelegationControl;
 import io.crysknife.ui.navigation.client.local.api.NavigationControl;
@@ -44,7 +38,6 @@ import io.crysknife.ui.navigation.client.local.spi.PageNode;
 
 import static elemental2.dom.DomGlobal.console;
 import static elemental2.dom.DomGlobal.document;
-import static org.jboss.elemento.Elements.removeChildrenFrom;
 
 /**
  * Central control point for navigating between pages of the application.
@@ -120,12 +113,12 @@ public class Navigation {
 
   // @Inject
   // @NavigationSelector
-  private By navigationContainerSelector;
+  private String navigationContainerSelector;
   private HTMLElement navigationContainer;
 
   private PageNode<Object> currentNode;
   private Object currentPage;
-  private ElementsBag currentElements;
+  private JsArray<HTMLElement> currentElements;
   private HistoryToken currentToken;
 
   private ContentDelegation contentDelegation = new DefaultContentDelegation();
@@ -361,13 +354,18 @@ public class Navigation {
             requestPage, hideControl);
       } else {
         // Cannot call content delegation. The contract requests that currentPage != null!
-        removeChildrenFrom(navigationContainer);
+        if (navigationContainer != null) {
+          while (navigationContainer.firstChild != null) {
+            navigationContainer.removeChild(navigationContainer.firstChild);
+          }
+        }
+
         hideControl.proceed();
       }
     }
   }
 
-  private <P> void pageHiding(P page, ElementsBag pageElements, Request<P> request,
+  private <P> void pageHiding(P page, JsArray<HTMLElement> pageElements, Request<P> request,
       boolean fireEvent) {
     HTMLElement navigationContainer = navigationContainer();
     if (navigationContainer != null) {
@@ -408,17 +406,17 @@ public class Navigation {
     }
   }
 
-  private boolean sameElements(HTMLElement navigationContainer, ElementsBag elements) {
+  private boolean sameElements(HTMLElement navigationContainer, JsArray<HTMLElement> elements) {
     int currentElementCount = (int) navigationContainer.childElementCount;
     int newElementsCount = 0;
-    for (HTMLElement ignored : elements.elements()) {
+    for (HTMLElement ignored : elements.asList()) {
       newElementsCount++;
     }
     if (currentElementCount != newElementsCount) {
       return false;
     }
-    Iterator<HTMLElement> currentIterator = Elements.iterator(navigationContainer);
-    Iterator<HTMLElement> newIterator = elements.elements().iterator();
+    Iterator<HTMLElement> currentIterator = new JsArrayElementIterator(navigationContainer);
+    Iterator<HTMLElement> newIterator = elements.asList().iterator();
     while (currentIterator.hasNext() && newIterator.hasNext()) {
       HTMLElement currentElement = currentIterator.next();
       HTMLElement newElement = newIterator.next();
@@ -488,10 +486,10 @@ public class Navigation {
     this.contentDelegation = contentDelegation;
   }
 
-  public void setNavigationContainerSelector(By selector) {
+  public void setNavigationContainerSelector(String selector) {
     this.navigationContainerSelector = selector;
     if (selector != null) {
-      this.navigationContainer = Elements.find(document.body, navigationContainerSelector);
+      document.body.querySelector(navigationContainerSelector);
     }
   }
 
@@ -524,7 +522,7 @@ public class Navigation {
       return navigationContainer;
     }
     if (navigationContainerSelector != null) {
-      navigationContainer = Elements.find(document.body, navigationContainerSelector);
+      navigationContainer = (HTMLElement) document.body.querySelector(navigationContainerSelector);
     }
     if (navigationContainer == null) {
       console.warn(
@@ -538,21 +536,17 @@ public class Navigation {
   }
 
   @SuppressWarnings("rawtypes")
-  private ElementsBag pageElements(Object page) {
-    ElementsBag elements = new ElementsBag();
+  private JsArray<HTMLElement> pageElements(Object page) {
+    JsArray<HTMLElement> elements = new JsArray<>();
     if (page != null) {
-      if (page instanceof IsElement) {
-        elements.add(((IsElement) page).element());
-      } else if (page instanceof io.crysknife.client.IsElement) {
-        elements.add(((io.crysknife.client.IsElement) page).getElement());
+      if (page instanceof io.crysknife.client.IsElement) {
+        elements.push(((io.crysknife.client.IsElement) page).getElement());
       } else if (page instanceof Iterable) {
         for (Object o : ((Iterable) page)) {
-          if (o instanceof IsElement) {
-            elements.add(((IsElement) o).element());
-          } else if (page instanceof io.crysknife.client.IsElement) {
-            elements.add(((io.crysknife.client.IsElement) o).getElement());
+          if (page instanceof io.crysknife.client.IsElement) {
+            elements.push(((io.crysknife.client.IsElement) o).getElement());
           } else if (o instanceof HTMLElement) {
-            elements.add(((HTMLElement) o));
+            elements.push(((HTMLElement) o));
           }
         }
       }
@@ -573,4 +567,39 @@ public class Navigation {
       this.state = state;
     }
   }
+
+  private static class JsArrayElementIterator implements Iterator<HTMLElement> {
+
+    private HTMLElement parent, last, next;
+
+    public JsArrayElementIterator(HTMLElement parent) {
+      this.parent = parent;
+      next = (HTMLElement) parent.firstElementChild;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return next != null;
+    }
+
+    @Override
+    public HTMLElement next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      last = next;
+      next = (HTMLElement) last.nextElementSibling;
+      return last;
+    }
+
+    @Override
+    public void remove() {
+      if (last == null) {
+        throw new IllegalStateException();
+      }
+      parent.removeChild(last);
+      last = null;
+    }
+  }
+
 }

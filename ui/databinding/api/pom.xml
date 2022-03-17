@@ -54,10 +54,6 @@
       <artifactId>gwt-widgets</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.elemento</groupId>
-      <artifactId>elemento-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>
       <scope>provided</scope>

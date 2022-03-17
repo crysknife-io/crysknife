@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
+import io.crysknife.client.IsElement;
 import jsinterop.annotations.JsFunction;
 import jsinterop.base.Js;
 import org.gwtproject.core.client.JavaScriptObject;
@@ -45,7 +46,6 @@ import org.gwtproject.user.client.ui.HasText;
 import org.gwtproject.user.client.ui.HasValue;
 import org.gwtproject.user.client.ui.ValueBoxBase;
 import org.gwtproject.user.client.ui.Widget;
-import org.jboss.elemento.IsElement;
 import io.crysknife.client.internal.Assert;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.databinding.client.api.Convert;
@@ -153,10 +153,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
     if (component instanceof HasValue) {
       registrar = mergeHasValueChangeHandler(component, modelUpdater, registrar);
     } else if (component instanceof IsElement) {
-      registrar = mergeNativeChangeEventListener(((IsElement) component).element(), uiGetter,
-          modelUpdater, registrar);
-    } else if (component instanceof IsElement) {
-      registrar = mergeNativeChangeEventListener(((IsElement) component).element(), uiGetter,
+      registrar = mergeNativeChangeEventListener(((IsElement) component).getElement(), uiGetter,
           modelUpdater, registrar);
     } else if (isElement(component)) {
       registrar = mergeNativeChangeEventListener(component, uiGetter, modelUpdater, registrar);
@@ -169,10 +166,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
         registrar = mergeNativeKeyUpEventListener(((ElementWrapperWidget) component).getElement(),
             uiGetter, modelUpdater, registrar);
       } else if (component instanceof IsElement) {
-        registrar = mergeNativeKeyUpEventListener(((IsElement) component).element(), uiGetter,
-            modelUpdater, registrar);
-      } else if (component instanceof IsElement) {
-        registrar = mergeNativeKeyUpEventListener(((IsElement) component).element(), uiGetter,
+        registrar = mergeNativeKeyUpEventListener(((IsElement) component).getElement(), uiGetter,
             modelUpdater, registrar);
       } else if (isElement(component)) {
         registrar = mergeNativeKeyUpEventListener(component, uiGetter, modelUpdater, registrar);
@@ -384,9 +378,8 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
     } else if (component instanceof HasText) {
       return createHasTextGetter((HasText) component);
     } else if (component instanceof IsElement) {
-      return maybeCreateElementValueGetter(BoundUtil.asElement(((IsElement) component).element()));
-    } else if (component instanceof IsElement) {
-      return maybeCreateElementValueGetter(BoundUtil.asElement(((IsElement) component).element()));
+      return maybeCreateElementValueGetter(
+          BoundUtil.asElement(((IsElement) component).getElement()));
     } else if (isElement(component)) {
       return maybeCreateElementValueGetter(BoundUtil.asElement(component));
     } else {
@@ -762,9 +755,7 @@ public final class BindableProxyAgent<T> implements HasPropertyChangeHandlers {
 
   private Object getUIPart(final Object component) {
     if (component instanceof IsElement) {
-      return ((IsElement) component).element();
-    } else if (component instanceof IsElement) {
-      return ((IsElement) component).element();
+      return ((IsElement) component).getElement();
     } else {
       return component;
     }
