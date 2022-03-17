@@ -50,8 +50,8 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
+import io.crysknife.client.IsElement;
 import io.crysknife.client.utils.CreationalCallback;
-import org.jboss.elemento.IsElement;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.internal.collections.BiMap;
 import io.crysknife.exception.GenerationException;
@@ -161,8 +161,7 @@ public class NavigationGraphGenerator {
   }
 
   private void generatePage(TypeElement page, ConstructorDeclaration ctor) {
-    if (!(isAssignable(page.asType(), IsElement.class)
-        || isAssignable(page.asType(), io.crysknife.client.IsElement.class))) {
+    if (!(isAssignable(page.asType(), IsElement.class))) {
       throw new GenerationException("Class " + page
           + " is annotated with @Page, so it must implement org.jboss.elemento.IsElement or io.crysknife.client.IsElement");
     }

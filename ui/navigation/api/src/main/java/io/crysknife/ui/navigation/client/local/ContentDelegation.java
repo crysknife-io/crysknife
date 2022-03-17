@@ -14,8 +14,8 @@
 
 package io.crysknife.ui.navigation.client.local;
 
+import elemental2.core.JsArray;
 import elemental2.dom.HTMLElement;
-import org.jboss.elemento.ElementsBag;
 import io.crysknife.ui.navigation.client.local.api.DelegationControl;
 
 /**
@@ -34,8 +34,8 @@ public interface ContentDelegation {
    * @param previousPage the previous page, <b>this can be null</b>.
    * @param control the delegation control for proceeding navigation process.
    */
-  void showContent(Object page, HTMLElement container, ElementsBag elements, Object previousPage,
-      DelegationControl control);
+  void showContent(Object page, HTMLElement container, JsArray<HTMLElement> elements,
+      Object previousPage, DelegationControl control);
 
   /**
    * Called when the page is hiding its content (clearing the navigation container).
@@ -46,6 +46,6 @@ public interface ContentDelegation {
    * @param nextPage potential next requested page, <b>this can be null</b>.
    * @param control the delegation control for proceeding navigation process.
    */
-  void hideContent(Object page, HTMLElement container, ElementsBag elements, Object nextPage,
-      DelegationControl control);
+  void hideContent(Object page, HTMLElement container, JsArray<HTMLElement> elements,
+      Object nextPage, DelegationControl control);
 }

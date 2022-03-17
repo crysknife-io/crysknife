@@ -24,8 +24,8 @@ import java.util.Map.Entry;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import io.crysknife.client.IsElement;
 import io.crysknife.client.utils.CreationalCallback;
-import org.jboss.elemento.IsElement;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.local.PageRole;

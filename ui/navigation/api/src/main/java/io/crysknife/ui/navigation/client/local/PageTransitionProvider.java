@@ -14,10 +14,10 @@
 
 package io.crysknife.ui.navigation.client.local;
 
+import io.crysknife.client.IsElement;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.jboss.elemento.IsElement;
 
 @Singleton
 public class PageTransitionProvider {

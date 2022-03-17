@@ -21,7 +21,6 @@ import elemental2.dom.HTMLElement;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import jsinterop.base.Js;
-import org.jboss.elemento.IsElement;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
 
@@ -63,10 +62,7 @@ public class TemplatedGeneratorUtils {
   }
 
   public String getMethodName(DataElementInfo.Kind kind) {
-    if (kind.equals(DataElementInfo.Kind.ElementoIsElement)
-        || kind.equals(DataElementInfo.Kind.HTMLElement)) {
-      return "element";
-    } else if (kind.equals(DataElementInfo.Kind.CrysknifeIsElement)) {
+    if (kind.equals(DataElementInfo.Kind.IsElement)) {
       return "getElement";
     } else if (kind.equals(DataElementInfo.Kind.IsWidget)) {
       return "getIsWidgetElement";
@@ -105,9 +101,7 @@ public class TemplatedGeneratorUtils {
     if (isAssignable(dataElementType, HTMLElement.class)) {
       return DataElementInfo.Kind.HTMLElement;
     } else if (isAssignable(dataElementType, io.crysknife.client.IsElement.class)) {
-      return DataElementInfo.Kind.CrysknifeIsElement;
-    } else if (isAssignable(dataElementType, IsElement.class)) {
-      return DataElementInfo.Kind.ElementoIsElement;
+      return DataElementInfo.Kind.IsElement;
     } else if (maybeGwtWidget(dataElementType)) {
       return DataElementInfo.Kind.IsWidget;
     } else if (maybeGwtDom(dataElementType)) {
