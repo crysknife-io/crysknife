@@ -3,16 +3,19 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife</groupId>
-    <artifactId>crysknife-parent</artifactId>
+    <groupId>io.crysknife.legacy.ui</groupId>
+    <artifactId>legacy-ui-parent</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>ui-parent</artifactId>
-  <groupId>io.crysknife.ui</groupId>
-  <name>UI parent</name>
-  <description>UI parent</description>
+  <artifactId>navigation-parent</artifactId>
+  <groupId>io.crysknife.legacy.ui.navigation</groupId>
+
   <packaging>pom</packaging>
+
+  <name>UI navigation parent</name>
+  <description>UI navigation parent</description>
+  <url>https://github.com/treblereel</url>
 
   <developers>
     <developer>
@@ -21,13 +24,6 @@
       <email>chani.liet@gmail.com</email>
     </developer>
   </developers>
-
-  <modules>
-    <module>elemental2</module>
-    <module>templates</module>
-    <module>mutationobserver</module>
-    <module>translation</module>
-  </modules>
 
   <licenses>
     <license>
@@ -42,4 +38,8 @@
     <url>https://github.com/treblereel</url>
   </organization>
 
+  <modules>
+    <module>api</module>
+    <module>generator</module>
+  </modules>
 </project>

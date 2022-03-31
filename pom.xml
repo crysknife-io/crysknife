@@ -91,6 +91,7 @@
         <module>core</module>
         <module>ui</module>
         <module>tests</module>
+        <module>legacy</module>
     </modules>
 
     <dependencyManagement>
