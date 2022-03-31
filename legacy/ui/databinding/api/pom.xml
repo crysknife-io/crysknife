@@ -38,19 +38,19 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.gwtproject.event</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.event</groupId>
       <artifactId>gwt-event</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.event</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.event</groupId>
       <artifactId>gwt-event-dom</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.event</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.event</groupId>
       <artifactId>gwt-event-legacy</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.widgets</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.widgets</groupId>
       <artifactId>gwt-widgets</artifactId>
     </dependency>
     <dependency>

@@ -40,15 +40,15 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.resources</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.resources</groupId>
       <artifactId>gwt-resources-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.resources</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.resources</groupId>
       <artifactId>gwt-resources-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.resources</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.resources</groupId>
       <artifactId>gwt-resources-processor</artifactId>
     </dependency>
     <dependency>

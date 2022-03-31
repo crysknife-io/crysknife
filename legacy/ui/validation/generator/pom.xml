@@ -4,7 +4,7 @@
 
   <parent>
     <artifactId>parent</artifactId>
-    <groupId>io.crysknife.ui.validation</groupId>
+    <groupId>io.crysknife.legacy.ui.validation</groupId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
@@ -46,7 +46,7 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.crysknife.ui.validation</groupId>
+      <groupId>io.crysknife.legacy.ui.validation</groupId>
       <artifactId>api</artifactId>
       <version>${project.version}</version>
     </dependency>

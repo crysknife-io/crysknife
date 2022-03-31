@@ -15,50 +15,47 @@
 package io.crysknife.ui.templates.generator.events;
 
 import com.google.common.collect.HashBiMap;
-import org.gwtproject.event.dom.client.BlurEvent;
-import org.gwtproject.event.dom.client.CanPlayThroughEvent;
-import org.gwtproject.event.dom.client.ChangeEvent;
-import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.event.dom.client.ContextMenuEvent;
-import org.gwtproject.event.dom.client.DoubleClickEvent;
-import org.gwtproject.event.dom.client.DragEndEvent;
-import org.gwtproject.event.dom.client.DragEnterEvent;
-import org.gwtproject.event.dom.client.DragEvent;
-import org.gwtproject.event.dom.client.DragLeaveEvent;
-import org.gwtproject.event.dom.client.DragOverEvent;
-import org.gwtproject.event.dom.client.DragStartEvent;
-import org.gwtproject.event.dom.client.DropEvent;
-import org.gwtproject.event.dom.client.EndedEvent;
-import org.gwtproject.event.dom.client.ErrorEvent;
-import org.gwtproject.event.dom.client.FocusEvent;
-import org.gwtproject.event.dom.client.GestureChangeEvent;
-import org.gwtproject.event.dom.client.GestureEndEvent;
-import org.gwtproject.event.dom.client.GestureStartEvent;
-import org.gwtproject.event.dom.client.KeyDownEvent;
-import org.gwtproject.event.dom.client.KeyPressEvent;
-import org.gwtproject.event.dom.client.KeyUpEvent;
-import org.gwtproject.event.dom.client.LoadEvent;
-import org.gwtproject.event.dom.client.LoadedMetadataEvent;
-import org.gwtproject.event.dom.client.LoseCaptureEvent;
-import org.gwtproject.event.dom.client.MouseDownEvent;
-import org.gwtproject.event.dom.client.MouseMoveEvent;
-import org.gwtproject.event.dom.client.MouseOutEvent;
-import org.gwtproject.event.dom.client.MouseOverEvent;
-import org.gwtproject.event.dom.client.MouseUpEvent;
-import org.gwtproject.event.dom.client.MouseWheelEvent;
-import org.gwtproject.event.dom.client.ProgressEvent;
-import org.gwtproject.event.dom.client.ScrollEvent;
-import org.gwtproject.event.dom.client.TouchCancelEvent;
-import org.gwtproject.event.dom.client.TouchEndEvent;
-import org.gwtproject.event.dom.client.TouchMoveEvent;
-import org.gwtproject.event.dom.client.TouchStartEvent;
+/*
+ * import org.gwtproject.event.dom.client.BlurEvent; import
+ * org.gwtproject.event.dom.client.CanPlayThroughEvent; import
+ * org.gwtproject.event.dom.client.ChangeEvent; import org.gwtproject.event.dom.client.ClickEvent;
+ * import org.gwtproject.event.dom.client.ContextMenuEvent; import
+ * org.gwtproject.event.dom.client.DoubleClickEvent; import
+ * org.gwtproject.event.dom.client.DragEndEvent; import
+ * org.gwtproject.event.dom.client.DragEnterEvent; import org.gwtproject.event.dom.client.DragEvent;
+ * import org.gwtproject.event.dom.client.DragLeaveEvent; import
+ * org.gwtproject.event.dom.client.DragOverEvent; import
+ * org.gwtproject.event.dom.client.DragStartEvent; import org.gwtproject.event.dom.client.DropEvent;
+ * import org.gwtproject.event.dom.client.EndedEvent; import
+ * org.gwtproject.event.dom.client.ErrorEvent; import org.gwtproject.event.dom.client.FocusEvent;
+ * import org.gwtproject.event.dom.client.GestureChangeEvent; import
+ * org.gwtproject.event.dom.client.GestureEndEvent; import
+ * org.gwtproject.event.dom.client.GestureStartEvent; import
+ * org.gwtproject.event.dom.client.KeyDownEvent; import
+ * org.gwtproject.event.dom.client.KeyPressEvent; import org.gwtproject.event.dom.client.KeyUpEvent;
+ * import org.gwtproject.event.dom.client.LoadEvent; import
+ * org.gwtproject.event.dom.client.LoadedMetadataEvent; import
+ * org.gwtproject.event.dom.client.LoseCaptureEvent; import
+ * org.gwtproject.event.dom.client.MouseDownEvent; import
+ * org.gwtproject.event.dom.client.MouseMoveEvent; import
+ * org.gwtproject.event.dom.client.MouseOutEvent; import
+ * org.gwtproject.event.dom.client.MouseOverEvent; import
+ * org.gwtproject.event.dom.client.MouseUpEvent; import
+ * org.gwtproject.event.dom.client.MouseWheelEvent; import
+ * org.gwtproject.event.dom.client.ProgressEvent; import
+ * org.gwtproject.event.dom.client.ScrollEvent; import
+ * org.gwtproject.event.dom.client.TouchCancelEvent; import
+ * org.gwtproject.event.dom.client.TouchEndEvent; import
+ * org.gwtproject.event.dom.client.TouchMoveEvent; import
+ * org.gwtproject.event.dom.client.TouchStartEvent;
+ */
 
 public class Elemental2EventsMapping {
 
   static final HashBiMap<String, String> EVENTS = HashBiMap.create();
 
   static {
-    EVENTS.put(BlurEvent.class.getCanonicalName(), "blur");
+    /*    EVENTS.put(BlurEvent.class.getCanonicalName(), "blur");
     EVENTS.put(CanPlayThroughEvent.class.getCanonicalName(), "canplaythrough");
     EVENTS.put(ChangeEvent.class.getCanonicalName(), "change");
     EVENTS.put(ClickEvent.class.getCanonicalName(), "click");
@@ -94,7 +91,7 @@ public class Elemental2EventsMapping {
     EVENTS.put(TouchCancelEvent.class.getCanonicalName(), "touchcancel");
     EVENTS.put(TouchEndEvent.class.getCanonicalName(), "touchend");
     EVENTS.put(TouchMoveEvent.class.getCanonicalName(), "touchmove");
-    EVENTS.put(TouchStartEvent.class.getCanonicalName(), "touchstart");
+    EVENTS.put(TouchStartEvent.class.getCanonicalName(), "touchstart");*/
   }
 
 

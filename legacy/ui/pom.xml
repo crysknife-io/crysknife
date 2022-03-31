@@ -43,4 +43,20 @@
         <url>https://github.com/treblereel</url>
     </organization>
 
+    <properties>
+        <gwtproject.version>202203291</gwtproject.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.treblereel.gwt.gwtproject</groupId>
+                <artifactId>gwt-bom</artifactId>
+                <version>${gwtproject.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 </project>

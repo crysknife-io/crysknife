@@ -41,7 +41,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.gwtproject.dom</groupId>
+            <groupId>org.treblereel.gwt.gwtproject.dom</groupId>
             <artifactId>gwt-dom</artifactId>
         </dependency>
         <dependency>

@@ -4,12 +4,11 @@
 
   <parent>
     <artifactId>parent</artifactId>
-    <groupId>io.crysknife.ui.validation</groupId>
+    <groupId>io.crysknife.legacy.ui.validation</groupId>
     <version>0.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>api</artifactId>
-  <groupId>io.crysknife.ui.validation</groupId>
   <packaging>jar</packaging>
 
   <name>UI validation api</name>
@@ -38,11 +37,11 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.gwtproject.validation</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.validation</groupId>
       <artifactId>gwt-validation-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.regexp</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.regexp</groupId>
       <artifactId>gwt-regexp</artifactId>
     </dependency>
     <dependency>
@@ -56,7 +55,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>io.crysknife.ui.databinding</groupId>
+      <groupId>io.crysknife.legacy.ui.databinding</groupId>
       <artifactId>api</artifactId>
     </dependency>
   </dependencies>

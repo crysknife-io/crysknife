@@ -50,23 +50,23 @@
       <artifactId>crysknife-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.regexp</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.regexp</groupId>
       <artifactId>gwt-regexp</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.safehtml</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.safehtml</groupId>
       <artifactId>gwt-safehtml</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.event</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.event</groupId>
       <artifactId>gwt-event-logical</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.user.history</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.user.history</groupId>
       <artifactId>gwt-history</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.gwtproject.user.window</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.user.window</groupId>
       <artifactId>gwt-window</artifactId>
     </dependency>
 
