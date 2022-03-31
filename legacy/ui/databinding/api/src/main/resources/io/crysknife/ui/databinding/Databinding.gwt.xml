@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
-  <inherits name="org.jboss.elemento.Core"/>
   <inherits name="org.gwtproject.user.Widgets" />
   <inherits name="elemental2.dom.Dom"/>
   <inherits name="io.crysknife.Crysknife"/>
