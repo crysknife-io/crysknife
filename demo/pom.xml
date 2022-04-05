@@ -103,9 +103,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.gwtproject.dom</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.dom</groupId>
       <artifactId>gwt-dom</artifactId>
-      <version>HEAD-SNAPSHOT</version>
+      <version>202203291</version>
     </dependency>
 
   </dependencies>

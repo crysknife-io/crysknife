@@ -7,3 +7,4 @@
 *.iml
 target
 .vscode/
+.flattened-pom.xml

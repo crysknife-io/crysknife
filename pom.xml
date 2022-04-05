@@ -63,12 +63,12 @@
         <maven.license.plugin.version>3.0</maven.license.plugin.version>
         <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
+        <maven.flatten.plugin>1.2.2</maven.flatten.plugin>
 
         <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
         <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
         <apache.commons.io.version>2.8.0</apache.commons.io.version>
 
-        <elemento.version>HEAD-SNAPSHOT</elemento.version>
         <jsoup.version>1.11.3</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
         <lesscss.version>1.7.0.1.1</lesscss.version>
@@ -91,6 +91,7 @@
         <module>core</module>
         <module>ui</module>
         <module>tests</module>
+        <module>legacy</module>
     </modules>
 
     <dependencyManagement>
@@ -172,6 +173,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven.javadoc.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${maven.flatten.plugin}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
@@ -271,15 +277,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-deploy</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>deploy</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -306,6 +306,29 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <extensions>true</extensions>
@@ -330,66 +353,4 @@
         </repository>
     </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>treblereel-snapshots</id>
-            <name>treblereel hosted artifacts-snapshots</name>
-            <url>https://repo.treblereel.org/snapshots</url>
-        </repository>
-        <repository>
-            <id>treblereel-releases</id>
-            <name>treblereel hosted artifacts-releases</name>
-            <url>https://repo.treblereel.org/releases</url>
-        </repository>
-        <repository>
-            <id>vertispan-releases</id>
-            <name>Vertispan hosted artifacts-releases</name>
-            <url>https://repo.vertispan.com/j2cl</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <profiles>
-        <!-- release profile to create sources, javadoc, and sign all artifacts before uploading -->
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>${maven.source.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- see http://central.sonatype.org/pages/working-with-pgp-signatures.html for more detail -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven.gpg.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

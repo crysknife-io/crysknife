@@ -68,80 +68,81 @@
                 <artifactId>elemental2-generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>io.crysknife.ui</groupId>
+                <groupId>io.crysknife.ui.mutationobserver</groupId>
+                <artifactId>api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.mutationobserver</groupId>
+                <artifactId>generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.templates</groupId>
+                <artifactId>api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.templates</groupId>
+                <artifactId>generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.translation</groupId>
+                <artifactId>api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui.translation</groupId>
+                <artifactId>generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.legacy.ui</groupId>
                 <artifactId>gwt-dom-generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.ui.databinding</groupId>
+                <groupId>io.crysknife.legacy.ui.databinding</groupId>
                 <artifactId>api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.ui.databinding</groupId>
+                <groupId>io.crysknife.legacy.ui.databinding</groupId>
                 <artifactId>generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.ui.mutationobserver</groupId>
+                <groupId>io.crysknife.legacy.ui.navigation</groupId>
                 <artifactId>api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.ui.mutationobserver</groupId>
+                <groupId>io.crysknife.legacy.ui.navigation</groupId>
                 <artifactId>generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.ui.navigation</groupId>
+                <groupId>io.crysknife.legacy.ui.validation</groupId>
                 <artifactId>api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.ui.navigation</groupId>
-                <artifactId>generator</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.crysknife.ui.templates</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.crysknife.ui.templates</groupId>
-                <artifactId>generator</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.crysknife.ui.translation</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.crysknife.ui.translation</groupId>
-                <artifactId>generator</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.crysknife.ui.validation</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.crysknife.ui.validation</groupId>
+                <groupId>io.crysknife.legacy.ui.validation</groupId>
                 <artifactId>generator</artifactId>
                 <version>${project.version}</version>
             </dependency>

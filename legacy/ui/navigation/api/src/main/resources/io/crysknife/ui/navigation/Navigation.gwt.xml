@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <inherits name="org.gwtproject.regexp.RegExp"/>
+    <inherits name="org.gwtproject.user.history.History"/>
+    <inherits name="org.gwtproject.safehtml.SafeHtml"/>
+    <inherits name="io.crysknife.Crysknife"/>
+</module>

@@ -70,7 +70,6 @@
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
 
-        <gwtproject.version>HEAD-SNAPSHOT</gwtproject.version>
         <javaparser.core.version>3.15.18</javaparser.core.version>
         <elemental2.version>1.1.0</elemental2.version>
         <auto.common.version>0.11</auto.common.version>
@@ -81,15 +80,6 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <dependency>
-                <groupId>org.gwtproject</groupId>
-                <artifactId>gwt-bom</artifactId>
-                <version>HEAD-SNAPSHOT</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>

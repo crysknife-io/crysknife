@@ -24,16 +24,9 @@
 
   <modules>
     <module>elemental2</module>
-    <module>gwt-dom</module>
-<!--
-    <module>gwt-resources</module>
--->
     <module>templates</module>
-    <module>databinding</module>
     <module>mutationobserver</module>
-    <module>navigation</module>
     <module>translation</module>
-    <module>validation</module>
   </modules>
 
   <licenses>
@@ -48,5 +41,17 @@
     <name>Treblereel</name>
     <url>https://github.com/treblereel</url>
   </organization>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
