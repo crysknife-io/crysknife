@@ -37,6 +37,18 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>crysknife-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife</groupId>
+      <artifactId>crysknife-processor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife.legacy.ui.databinding</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.auto</groupId>
       <artifactId>auto-common</artifactId>
     </dependency>
@@ -44,16 +56,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
-    <dependency>
-      <groupId>io.crysknife</groupId>
-      <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.crysknife.legacy.ui.databinding</groupId>
-      <artifactId>api</artifactId>
-    </dependency>
-
   </dependencies>
 
   <build>

@@ -37,18 +37,20 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.google.auto</groupId>
-            <artifactId>auto-common</artifactId>
-        </dependency>
-        <dependency>
             <artifactId>api</artifactId>
             <groupId>io.crysknife.ui.translation</groupId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-processor</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto</groupId>
+            <artifactId>auto-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
         </dependency>
     </dependencies>
 

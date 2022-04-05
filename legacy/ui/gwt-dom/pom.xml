@@ -41,10 +41,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.treblereel.gwt.gwtproject.dom</groupId>
-            <artifactId>gwt-dom</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-annotations</artifactId>
             <scope>provided</scope>
@@ -58,6 +54,14 @@
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.gwt.gwtproject.dom</groupId>
+            <artifactId>gwt-dom</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto</groupId>
+            <artifactId>auto-common</artifactId>
         </dependency>
     </dependencies>
 

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>parent</artifactId>
+    <artifactId>validation-parent</artifactId>
     <groupId>io.crysknife.legacy.ui.validation</groupId>
     <version>0.3-SNAPSHOT</version>
   </parent>
@@ -37,18 +37,20 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.google.auto</groupId>
-      <artifactId>auto-common</artifactId>
+      <groupId>io.crysknife</groupId>
+      <artifactId>crysknife-annotations</artifactId>
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>io.crysknife.legacy.ui.validation</groupId>
       <artifactId>api</artifactId>
-      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.auto</groupId>
+      <artifactId>auto-common</artifactId>
     </dependency>
   </dependencies>
 
