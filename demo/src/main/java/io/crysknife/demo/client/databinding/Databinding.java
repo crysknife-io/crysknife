@@ -19,6 +19,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import elemental2.dom.*;
+import io.crysknife.client.IsElement;
 import io.crysknife.demo.client.databinding.listcomponent.KeyValueRow;
 import io.crysknife.demo.client.databinding.listcomponent.RolesEditorWidgetView;
 import io.crysknife.ui.databinding.client.api.AutoBound;
@@ -31,7 +32,6 @@ import io.crysknife.ui.templates.client.annotation.ForEvent;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.gwtproject.user.client.ui.CheckBox;
 import org.gwtproject.user.client.ui.TextBox;
-import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.navigation.client.local.Page;
@@ -135,7 +135,7 @@ public class Databinding implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return root;
     }
 

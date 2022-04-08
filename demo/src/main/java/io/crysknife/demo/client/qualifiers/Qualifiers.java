@@ -22,7 +22,7 @@ import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MouseEvent;
-import org.jboss.elemento.IsElement;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
@@ -90,7 +90,7 @@ public class Qualifiers implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return root;
     }
 }

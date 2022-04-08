@@ -19,7 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import elemental2.dom.HTMLDivElement;
-import org.jboss.elemento.IsElement;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.navigation.client.local.Page;
 
 /**
@@ -41,13 +41,13 @@ public class Named implements IsElement<HTMLDivElement> {
 
     @PostConstruct
     public void init() {
-        root.appendChild(constructor.element());
-        root.appendChild(field.element());
+        root.appendChild(constructor.getElement());
+        root.appendChild(field.getElement());
 
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return root;
     }
 }

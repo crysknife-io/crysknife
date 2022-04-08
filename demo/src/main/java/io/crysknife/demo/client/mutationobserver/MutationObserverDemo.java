@@ -18,11 +18,14 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import elemental2.dom.*;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.MouseEvent;
+import elemental2.dom.MutationRecord;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
-import org.gwtproject.event.dom.client.ClickEvent;
-//import org.gwtproject.user.client.ui.Button;
-import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.Templated;
@@ -126,7 +129,7 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return mutationobserverdemo;
     }
 }

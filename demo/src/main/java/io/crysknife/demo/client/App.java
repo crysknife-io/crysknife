@@ -46,9 +46,9 @@ public class App {
     public void init() {
 
         DomGlobal.console.log("binit 1" + (main != null));
-        DomGlobal.console.log("binit 2" + (main.element() != null));
+        DomGlobal.console.log("binit 2" + (main.getElement() != null));
 
-        DomGlobal.document.body.appendChild(main.element());
+        DomGlobal.document.body.appendChild(main.getElement());
         initToast();
         navigation.goToWithRole(DefaultPage.class);
     }

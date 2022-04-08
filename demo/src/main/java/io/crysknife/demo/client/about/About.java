@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import elemental2.dom.HTMLDivElement;
-import org.jboss.elemento.IsElement;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.navigation.client.local.DefaultPage;
@@ -38,7 +38,7 @@ public class About implements IsElement<HTMLDivElement> {
     HTMLDivElement root;
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return root;
     }
 }

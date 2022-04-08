@@ -19,8 +19,7 @@ import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import elemental2.dom.HTMLDivElement;
-import org.jboss.elemento.IsElement;
-import io.crysknife.ui.navigation.client.local.Page;
+import io.crysknife.client.IsElement;
 
 /**
  * @author Dmitrii Tikhomirov
@@ -28,7 +27,7 @@ import io.crysknife.ui.navigation.client.local.Page;
  */
 @ApplicationScoped
 //@Page
-public class Qualifiers2 implements IsElement<HTMLDivElement>  {
+public class Qualifiers2 implements IsElement<HTMLDivElement> {
 
     @Inject
     @QualifierOne
@@ -43,7 +42,7 @@ public class Qualifiers2 implements IsElement<HTMLDivElement>  {
     public QualifierBean qualifierBeanDefault;
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return null;
     }
 }
