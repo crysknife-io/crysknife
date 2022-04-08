@@ -157,12 +157,14 @@ public class BindableProxyGenerator {
     sb.append(String.format("private %s target;", type.getSimpleName()));
     sb.append(newLine);
 
-    sb.append(String.format("public %s() {", clazzName));
+    sb.append(String.format("public static %s of() {", clazzName));
     sb.append(newLine);
-    sb.append(String.format("  this(new %s());", type.getSimpleName()));
+    sb.append(String.format("  return new %s(new %s());", clazzName, type.getSimpleName()));
     sb.append(newLine);
     sb.append("}");
     sb.append(newLine);
+    sb.append(newLine);
+
     sb.append(String.format("public %s(%s targetVal) {", clazzName, type.getSimpleName()));
     sb.append(newLine);
     sb.append(String.format("  agent = new BindableProxyAgent<%s>(this, targetVal);",
@@ -287,7 +289,7 @@ public class BindableProxyGenerator {
 
     sb.append("  public BindableProxy getBindableProxy() {");
     sb.append(newLine);
-    sb.append(String.format("    return new %s();", clazzName));
+    sb.append(String.format("    return %s.of();", clazzName));
     sb.append(newLine);
     sb.append("  }");
     sb.append(newLine);
