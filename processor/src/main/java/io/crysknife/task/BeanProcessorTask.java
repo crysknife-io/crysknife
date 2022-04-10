@@ -167,11 +167,10 @@ public class BeanProcessorTask implements Task {
             .forEach(gen -> {
               TypeElement annotation = iocContext.getGenerationContext().getElements()
                   .getTypeElement(iocGeneratorMetaCollectionEntry.getKey().annotation);
-
-              Set<ExecutableElement> elements = iocContext.getGenerationContext()
-                  .getRoundEnvironment().getElementsAnnotatedWith(annotation).stream()
-                  .filter(elm -> elm.getKind().equals(ElementKind.METHOD))
-                  .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toSet());
+              Set<ExecutableElement> elements =
+                  iocContext.getMethodsByAnnotation(annotation.toString()).stream()
+                      .filter(elm -> elm.getKind().equals(ElementKind.METHOD))
+                      .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toSet());
 
               elements.stream().forEach(e -> {
                 TypeMirror erased = iocContext.getGenerationContext().getTypes()
