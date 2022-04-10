@@ -40,6 +40,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import java.util.function.Consumer;
 
 /**
@@ -165,8 +166,10 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
           expressionStmt.setExpression(variableDeclarationExpr);
           body.addAndGetStatement(expressionStmt);
 
+          TypeMirror caller = iocContext.getGenerationContext().getElements()
+              .getTypeElement(Event.class.getCanonicalName()).asType();
           Statement call =
-              generationUtils.generateMethodCall(parent.getType(), method, new NameExpr("event"));
+              generationUtils.generateMethodCall(caller, method, new NameExpr("event"));
           body.addAndGetStatement(call);
         });
 
