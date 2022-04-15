@@ -75,7 +75,7 @@ public class TemplatedGeneratorUtils {
     if (kind.equals(DataElementInfo.Kind.IsElement)) {
       return "getElement";
     } else if (kind.equals(DataElementInfo.Kind.IsWidget)) {
-      return "getIsWidgetElement";
+      return "getElement";
     }
     throw new GenerationException("Unable to find type of " + kind);
   }

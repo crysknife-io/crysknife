@@ -17,6 +17,8 @@ package org.jboss.gwt.elemento.processor.context;
 import com.google.common.base.Strings;
 import elemental2.dom.HTMLElement;
 
+import javax.lang.model.type.TypeMirror;
+
 public class DataElementInfo {
 
   public enum Kind {
@@ -24,13 +26,13 @@ public class DataElementInfo {
     HTMLElement, IsElement, IsWidget, Custom, GWT_DOM
   }
 
-  private final String type;
+  private final TypeMirror type;
   private final String name;
   private final String selector;
   private final Kind kind;
   private final boolean returnedByMethod;
 
-  public DataElementInfo(final String type, final String name, final String selector,
+  public DataElementInfo(final TypeMirror type, final String name, final String selector,
       final Kind kind, boolean returnedByMethod) {
     this.type = type;
     this.name = name;
@@ -45,7 +47,7 @@ public class DataElementInfo {
         + (returnedByMethod ? ", return by method" : "") + ")";
   }
 
-  public String getType() {
+  public TypeMirror getType() {
     return type;
   }
 

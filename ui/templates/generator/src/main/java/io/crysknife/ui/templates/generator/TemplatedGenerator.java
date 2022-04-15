@@ -337,9 +337,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
       builder.getInitInstanceMethod().getBody().get().addAndGetStatement(expressionStmt);
 
-      widgets.forEach(widget -> {
-        TypeElement typeElement =
-            iocContext.getGenerationContext().getElements().getTypeElement(widget.getType());
+      for (DataElementInfo widget : widgets) {
+        TypeElement typeElement = MoreTypes.asTypeElement(widget.getType());
 
         boolean isWidget = iocContext.getGenerationContext().getTypes()
             .isSubtype(typeElement.asType(), templatedGeneratorUtils.widgetType.asType());
@@ -356,13 +355,16 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         MethodCallExpr methodCallExpr =
             new MethodCallExpr(new NameExpr("widgets"), "add").addArgument(uncheckedCast);
         builder.getInitInstanceMethod().getBody().get().addAndGetStatement(methodCallExpr);
-      });
+      }
 
       Expression instance = templatedGeneratorUtils.getInstanceMethodName(kind);
 
       MethodCallExpr doInit;
 
       if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+        builder.addField(HTMLElement.class.getCanonicalName(), "root",
+            com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
+
         doInit = new MethodCallExpr(new ClassOrInterfaceType()
             .setName("org.gwtproject.user.client.ui.TemplateWidget").getNameAsExpression(),
             "initTemplated").addArgument(new NameExpr("instance")).addArgument(new NameExpr("root"))
@@ -379,21 +381,57 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     }
   }
 
-  private Expression asWidgetCall(Expression target) {
-    return new MethodCallExpr(target, "asWidget");
-  }
-
-  private Expression asWidgetGetElementCall(Expression target) {
-    return new MethodCallExpr(asWidgetCall(target), "getElement");
-  }
-
   private void addInitMethod(ClassBuilder builder, TemplateContext templateContext) {
     MethodDeclaration method = builder.addMethod("_setAndInitTemplate",
         com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
 
+    maybeAddRootElement(method.getBody().get(), templateContext);
+    addGetElementMethod(builder, templateContext);
     maybeAddSyntheticGetElementMethod(builder, method.getBody().get(), templateContext);
     setAttributes(method.getBody().get(), templateContext);
     setInnerHTML(method.getBody().get(), templateContext);
+  }
+
+  private MethodCallExpr getDataFieldFieldAccessCallExpr(TemplateContext templateContext) {
+    if (templateContext.getRoot().getDataField().isPresent()) {
+      String dataField = templateContext.getRoot().getDataField().get().getValue();
+      java.util.Optional<DataElementInfo> dataElementInfo = templateContext.getDataElements()
+          .stream().filter(e -> e.getSelector().equals(dataField)).findFirst();
+      if (dataElementInfo.isPresent()) {
+        MethodCallExpr expr = getFieldAccessCallExpr(dataElementInfo.get().getName());
+        return expr;
+      }
+    }
+    return new MethodCallExpr(
+        new FieldAccessExpr(new NameExpr("elemental2.dom.DomGlobal"), "document"), "createElement")
+            .addArgument(new StringLiteralExpr(templateContext.getRoot().getTag()));
+  }
+
+  private void maybeAddRootElement(BlockStmt block, TemplateContext templateContext) {
+    DataElementInfo.Kind kind =
+        templatedGeneratorUtils.getDataElementInfoKind(templateContext.getDataElementType());
+    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+      block.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("root"))
+          .setValue(new CastExpr().setType(HTMLElement.class.getCanonicalName())
+              .setExpression(new MethodCallExpr(
+                  new FieldAccessExpr(new NameExpr(DomGlobal.class.getCanonicalName()), "document"),
+                  "createElement").addArgument(new StringLiteralExpr("div")))));
+    }
+  }
+
+  private void addGetElementMethod(ClassBuilder builder, TemplateContext templateContext) {
+    DataElementInfo.Kind kind =
+        templatedGeneratorUtils.getDataElementInfoKind(templateContext.getDataElementType());
+    Expression call;
+    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+      call = new NameExpr("root");
+    } else {
+      call = new MethodCallExpr(new NameExpr("instance"), "getElement");
+    }
+    MethodDeclaration getElement =
+        builder.addMethod("getElement", com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
+    getElement.setType(HTMLElement.class);
+    getElement.getBody().get().addAndGetStatement(new ReturnStmt(call));
   }
 
   private void maybeAddSyntheticGetElementMethod(ClassBuilder builder, BlockStmt block,
@@ -406,13 +444,13 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         builder.getClassCompilationUnit().addImport(FunctionalInterface.class);
 
         VariableDeclarator root = new VariableDeclarator();
-        root.setType(new ClassOrInterfaceType().setName(HTMLDivElement.class.getCanonicalName()));
+        root.setType(new ClassOrInterfaceType().setName(HTMLElement.class.getCanonicalName()));
+
+        MethodCallExpr rootElm = getDataFieldFieldAccessCallExpr(templateContext);
+
         root.setInitializer(
-            new CastExpr()
-                .setExpression(new MethodCallExpr(new FieldAccessExpr(
-                    new NameExpr(DomGlobal.class.getCanonicalName()), "document"), "createElement")
-                        .addArgument(new StringLiteralExpr("div")))
-                .setType(HTMLDivElement.class.getCanonicalName()))
+            new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
+                .addArgument(rootElm))
             .setName("fake_root");
         block.addAndGetStatement(new ExpressionStmt(new VariableDeclarationExpr(root)));
 
@@ -439,7 +477,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
         wrapper.setInterface(true);
 
         MethodDeclaration fakeGetElement = wrapper.addMethod("getElement");
-        fakeGetElement.setType(HTMLDivElement.class.getCanonicalName());
+        fakeGetElement.setType(HTMLElement.class.getCanonicalName());
         fakeGetElement.removeBody();
 
         builder.getClassDeclaration().addMember(wrapper);
@@ -512,21 +550,28 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private void processDataFields(ClassBuilder builder, TemplateContext templateContext) {
-    Expression instance = templatedGeneratorUtils.getInstanceCallExpression(templateContext);
+    DataElementInfo.Kind kind =
+        templatedGeneratorUtils.getDataElementInfoKind(beanDefinition.getType());
+    Expression instance = new NameExpr("instance");
+    if (kind == DataElementInfo.Kind.IsWidget) {
+      instance = new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()), "uncheckedCast")
+          .addArgument(new MethodCallExpr(new MethodCallExpr(instance, "asWidget"), "getElement"));
+    } else {
+      instance = new MethodCallExpr(instance, "getElement");
+    }
 
-    templateContext.getDataElements().forEach(element -> {
+    for (DataElementInfo element : templateContext.getDataElements()) {
       MethodCallExpr resolveElement;
       MethodCallExpr fieldAccessCallExpr = getFieldAccessCallExpr(element.getName());
 
       IfStmt ifStmt = new IfStmt().setCondition(
           new BinaryExpr(fieldAccessCallExpr, new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
 
-
       if (element.needsCast()) {
         resolveElement = new MethodCallExpr(
             new ClassOrInterfaceType().setName("TemplateUtil").getNameAsExpression(),
             "resolveElementAs")
-                .setTypeArguments(new ClassOrInterfaceType().setName(element.getType()))
+                .setTypeArguments(new ClassOrInterfaceType().setName(element.getType().toString()))
                 .addArgument(instance).addArgument(new StringLiteralExpr(element.getSelector()));
       } else {
         resolveElement = new MethodCallExpr(
@@ -560,7 +605,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
               .addArgument(new StringLiteralExpr(element.getSelector()))
               .addArgument(getInstanceByElementKind(element, fieldAccessCallExpr))));
       builder.getInitInstanceMethod().getBody().get().addAndGetStatement(ifStmt);
-    });
+    }
   }
 
   public MethodCallExpr getFieldAccessCallExpr(String fieldName) {
@@ -585,16 +630,20 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .addArgument("instance"));
   }
 
-  // TODO this method must be refactored
   public Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
-    if (element.getKind().equals(DataElementInfo.Kind.IsElement)) {
+    return getInstanceByElementKind(element.getKind(), element.getType(), instance);
+  }
+
+  // TODO this method must be refactored
+  public Expression getInstanceByElementKind(DataElementInfo.Kind kind, TypeMirror element,
+      Expression instance) {
+    if (kind.equals(DataElementInfo.Kind.IsElement)) {
       instance = new MethodCallExpr(
           new EnclosedExpr(new CastExpr(new ClassOrInterfaceType()
               .setName(io.crysknife.client.IsElement.class.getCanonicalName()), instance)),
           "getElement");
-    } else if (element.getKind().equals(DataElementInfo.Kind.IsWidget)) {
-      TypeElement typeElement =
-          iocContext.getGenerationContext().getElements().getTypeElement(element.getType());
+    } else if (kind.equals(DataElementInfo.Kind.IsWidget)) {
+      TypeElement typeElement = MoreTypes.asTypeElement(element);
       boolean isIsWidget = iocContext.getGenerationContext().getTypes()
           .isSubtype(typeElement.asType(), templatedGeneratorUtils.isWidgetType.asType());
       Expression expr;
@@ -644,18 +693,17 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     if (templateContext.getRoot().getInnerHtml() != null
         && !templateContext.getRoot().getInnerHtml().isEmpty()) {
       block.addAndGetStatement(new AssignExpr()
-          .setTarget(new FieldAccessExpr(new MethodCallExpr(new NameExpr("instance"), "getElement"),
+          .setTarget(new FieldAccessExpr(new MethodCallExpr(new NameExpr("this"), "getElement"),
               "innerHTML"))
           .setValue(new StringLiteralExpr(templateContext.getRoot().getInnerHtml())));
     }
   }
 
   private void setAttributes(BlockStmt block, TemplateContext templateContext) {
-    templateContext.getRoot().getAttributes()
-        .forEach(attribute -> block.addAndGetStatement(
-            new MethodCallExpr(new MethodCallExpr(new NameExpr("instance"), "getElement"),
-                "setAttribute").addArgument(new StringLiteralExpr(attribute.getKey()))
-                    .addArgument(new StringLiteralExpr(attribute.getValue()))));
+    templateContext.getRoot().getAttributes().forEach(attribute -> block.addAndGetStatement(
+        new MethodCallExpr(new MethodCallExpr(new NameExpr("this"), "getElement"), "setAttribute")
+            .addArgument(new StringLiteralExpr(attribute.getKey()))
+            .addArgument(new StringLiteralExpr(attribute.getValue()))));
   }
 
   private String generatedClassName(TypeElement type, String prefix, String suffix) {
@@ -703,8 +751,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
           }
 
           // create info class for template processing
-          dataElements.add(new DataElementInfo(typeName, field.getSimpleName().toString(), selector,
-              kind, false));
+          dataElements.add(new DataElementInfo(field.asType(), field.getSimpleName().toString(),
+              selector, kind, false));
         });
 
     // methods TODO
@@ -745,8 +793,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
             verifyHTMLElement(typeName, selector, method, templateSelector, root);
           }
           // create info class for template processing
-          dataElements.add(new DataElementInfo(typeName, method.getSimpleName().toString(),
-              selector, kind, true));
+          dataElements.add(new DataElementInfo(method.getReturnType(),
+              method.getSimpleName().toString(), selector, kind, true));
         });
 
     return dataElements;
