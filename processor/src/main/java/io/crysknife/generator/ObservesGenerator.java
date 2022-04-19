@@ -16,13 +16,9 @@ package io.crysknife.generator;
 
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.EnclosedExpr;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -70,11 +66,6 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
           + method.getEnclosingElement() + " " + method);
     }
 
-    if (method.getModifiers().contains(Modifier.PRIVATE)) {
-      throw new GenerationException("Method annotated with @Observes must be non-private "
-          + method.getEnclosingElement() + " " + method);
-    }
-
     if (method.getModifiers().contains(Modifier.STATIC)) {
       throw new GenerationException("Method annotated with @Observes must be non-static "
           + method.getEnclosingElement() + " " + method);
@@ -90,6 +81,15 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
 
     classBuilder.getClassCompilationUnit().addImport(Consumer.class);
+    TypeMirror caller = iocContext.getTypeMirror(Observes.class);
+    Statement call = generationUtils.generateMethodCall(caller, method, new NameExpr("event"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.getParameters().add(new Parameter().setName("event")
+        .setType(method.getParameters().get(0).asType().toString()));
+    lambda.setBody(call);
+
 
     VariableElement parameter = method.getParameters().get(0);
     TypeMirror parameterTypeMirror =
@@ -119,8 +119,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     consumerClassDeclaration
         .setTypeArguments(new ClassOrInterfaceType().setName(parameter.asType().toString()));
     variableDeclarator.setType(consumerClassDeclaration);
-    variableDeclarator
-        .setInitializer("event -> this.instance." + method.getSimpleName().toString() + "(event)");
+    variableDeclarator.setInitializer(lambda);
     variableDeclarationExpr.getVariables().add(variableDeclarator);
     expressionStmt.setExpression(variableDeclarationExpr);
 
