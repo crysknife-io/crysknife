@@ -79,7 +79,7 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("checkBtn")
-    void onCityClick(@ForEvent("click") final MouseEvent e) {
+    private void onCityClick(@ForEvent("click") final MouseEvent e) {
         if (test.parentNode == null) {
             container.appendChild(test);
         } else {
@@ -88,14 +88,14 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("reset")
-    void reset(@ForEvent("click") final MouseEvent e) {
+    private void reset(@ForEvent("click") final MouseEvent e) {
         observer.addOnAttachListener(test, m -> onAttach(m));
         observer.addOnDetachListener(test, m -> onDetach(m));
         textBox.textContent = "";
     }
 
     @EventHandler("disconnect")
-    void disconnect(@ForEvent("click") final MouseEvent e) {
+    private void disconnect(@ForEvent("click") final MouseEvent e) {
         observer.disconnect();
         removeAttach.disabled = true;
         removeDetach.disabled = true;
@@ -105,13 +105,13 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("removeAttach")
-    void removeOnAttachListener(@ForEvent("click") final MouseEvent e) {
+    private void removeOnAttachListener(@ForEvent("click") final MouseEvent e) {
         observer.removeOnAttachListener(test);
         textBox.value = "";
     }
 
     @EventHandler("removeDetach")
-    void removeOnDetachListener(@ForEvent("click") final MouseEvent e) {
+    private void removeOnDetachListener(@ForEvent("click") final MouseEvent e) {
         observer.removeOnDetachListener(test);
         textBox.value = "";
     }
