@@ -178,7 +178,7 @@
         <artifactId>tomcat7-maven-plugin</artifactId>
         <version>${maven.tomcat.plugin.version}</version>
         <configuration>
-          <contextFile>${basedir}/src/main/tomcatconf/context.xml</contextFile>
+          <contextFile>srctconf/context.xml</contextFile>
         </configuration>
       </plugin>
     </plugins>

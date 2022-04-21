@@ -63,7 +63,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     protected HTMLButtonElement sendUserEvent, sendAddressEvent;
 
     @PostConstruct
-    public void init() {
+    private void init() {
         initBtn();
     }
 
@@ -83,11 +83,11 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
         });
     }
 
-    public void onUserEvent(@Observes User user) {
+    private void onUserEvent(@Observes User user) {
         setText(user.toString());
     }
 
-    public void onAddressEvent(@Observes Address address) {
+    private void onAddressEvent(@Observes Address address) {
         setText(address.toString());
     }
 
@@ -101,7 +101,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("sendAddressEvent")
-    protected void sendAddressEvent(@ForEvent("click") final MouseEvent event) {
+    private void sendAddressEvent(@ForEvent("click") final MouseEvent event) {
         Address address = new Address();
         address.setId(new Random().nextInt());
         address.setName("Redhat");
@@ -109,7 +109,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("sendUserEvent")
-    protected void sendUserEvent(@ForEvent("click") final MouseEvent event) {
+    private void sendUserEvent(@ForEvent("click") final MouseEvent event) {
         User user = new User();
         user.setId(new Random().nextInt());
         user.setName("IAMUSER");
