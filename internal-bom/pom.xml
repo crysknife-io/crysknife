@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>internal-bom</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
     <packaging>pom</packaging>
 
 
