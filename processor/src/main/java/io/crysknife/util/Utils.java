@@ -100,7 +100,7 @@ public class Utils {
     return sb.toString();
   }
 
-  //TODO move it to GenerationUtils and replace .contains("<") with Types.erase
+  // TODO move it to GenerationUtils and replace .contains("<") with Types.erase
   public static String getJsMethodName(ExecutableElement method) {
     if (method.getAnnotation(JsMethod.class) != null) {
       return method.getSimpleName().toString();

@@ -42,6 +42,10 @@
     </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
+      <artifactId>crysknife-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
     </dependency>
     <dependency>
@@ -83,6 +87,10 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

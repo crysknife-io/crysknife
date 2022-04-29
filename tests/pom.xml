@@ -8,7 +8,7 @@
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>parent</artifactId>
+  <artifactId>tests-parent</artifactId>
   <groupId>io.crysknife.tests</groupId>
   <version>0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -16,17 +16,35 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
         <configuration>
-          <skip>false</skip>
+          <flattenMode>oss</flattenMode>
         </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>package</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
 
   <profiles>
-    <!-- DO NOT CHANGE THE *ORDER* IN WHICH THESE PROFILES ARE DEFINED! -->
+<!--
+    DO NOT CHANGE THE *ORDER* IN WHICH THESE PROFILES ARE DEFINED!
+-->
     <profile>
       <id>J2CL</id>
       <modules>
