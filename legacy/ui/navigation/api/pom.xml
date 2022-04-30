@@ -5,7 +5,7 @@
   <parent>
     <artifactId>navigation-parent</artifactId>
     <groupId>io.crysknife.legacy.ui.navigation</groupId>
-    <version>0.3</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>api</artifactId>
