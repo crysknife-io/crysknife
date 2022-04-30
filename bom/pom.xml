@@ -35,6 +35,18 @@
         <url>https://github.com/treblereel</url>
     </organization>
 
+    <scm>
+        <url>https://github.com/crysknife-io/crysknife</url>
+        <developerConnection>scm:git:git@github.com:crysknife-io/crysknifen.git</developerConnection>
+        <connection>scm:git:git://github.com/crysknife-io/crysknife.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -149,6 +161,39 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven.gpg.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>${maven.deploy.plugin.version}</version>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 
     <distributionManagement>
         <snapshotRepository>
