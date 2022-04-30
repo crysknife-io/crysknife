@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>bom</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
     <packaging>pom</packaging>
 
 
@@ -34,6 +34,18 @@
         <name>Treblereel</name>
         <url>https://github.com/treblereel</url>
     </organization>
+
+    <scm>
+        <url>https://github.com/crysknife-io/crysknife</url>
+        <developerConnection>scm:git:git@github.com:crysknife-io/crysknifen.git</developerConnection>
+        <connection>scm:git:git://github.com/crysknife-io/crysknife.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -150,14 +162,47 @@
         </dependencies>
     </dependencyManagement>
 
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven.gpg.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>${maven.deploy.plugin.version}</version>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+
     <distributionManagement>
         <snapshotRepository>
-            <id>treblereel</id>
-            <url>https://repo.treblereel.org/snapshots</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>treblereel</id>
-            <url>https://repo.treblereel.org/releases</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 

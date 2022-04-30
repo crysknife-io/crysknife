@@ -45,7 +45,8 @@ public class Interceptor {
     return this;
   }
 
-  public Interceptor addGetMethodInterceptor(String obfuscatedPropertyName, BiFunction function) {
+  public Interceptor addGetMethodInterceptor(String obfuscatedPropertyName,
+      BiFunction<Object, String, Object> function) {
     get.addMethod(obfuscatedPropertyName, function);
     return this;
   }

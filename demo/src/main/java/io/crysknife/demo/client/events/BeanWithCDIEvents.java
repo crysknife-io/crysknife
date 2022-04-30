@@ -28,8 +28,7 @@ import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLInputElement;
 import elemental2.dom.MouseEvent;
-import io.crysknife.client.internal.AbstractEventFactory;
-import org.jboss.elemento.IsElement;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
@@ -64,7 +63,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     protected HTMLButtonElement sendUserEvent, sendAddressEvent;
 
     @PostConstruct
-    public void init() {
+    private void init() {
         initBtn();
     }
 
@@ -84,11 +83,11 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
         });
     }
 
-    public void onUserEvent(@Observes User user) {
+    private void onUserEvent(@Observes User user) {
         setText(user.toString());
     }
 
-    public void onAddressEvent(@Observes Address address) {
+    private void onAddressEvent(@Observes Address address) {
         setText(address.toString());
     }
 
@@ -97,12 +96,12 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return root;
     }
 
     @EventHandler("sendAddressEvent")
-    protected void sendAddressEvent(@ForEvent("click") final MouseEvent event) {
+    private void sendAddressEvent(@ForEvent("click") final MouseEvent event) {
         Address address = new Address();
         address.setId(new Random().nextInt());
         address.setName("Redhat");
@@ -110,7 +109,7 @@ public class BeanWithCDIEvents implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("sendUserEvent")
-    protected void sendUserEvent(@ForEvent("click") final MouseEvent event) {
+    private void sendUserEvent(@ForEvent("click") final MouseEvent event) {
         User user = new User();
         user.setId(new Random().nextInt());
         user.setName("IAMUSER");

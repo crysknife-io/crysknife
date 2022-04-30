@@ -4,4 +4,5 @@
     <inherits name="org.gwtproject.user.history.History"/>
     <inherits name="org.gwtproject.safehtml.SafeHtml"/>
     <inherits name="io.crysknife.Crysknife"/>
+    <source path="client"/>
 </module>

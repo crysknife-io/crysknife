@@ -59,11 +59,7 @@ public class NavigationGenerator extends SingletonGenerator {
   @Override
   public void before() {
 
-    Set<TypeElement> pages =
-        iocContext.getGenerationContext().getRoundEnvironment().getElementsAnnotatedWith(Page.class)
-            .stream().filter(elm -> elm.getKind().equals(ElementKind.CLASS))
-            .map(elm -> MoreElements.asType(elm)).collect(Collectors.toSet());
-
+    Set<TypeElement> pages = iocContext.getTypeElementsByAnnotation(Page.class.getCanonicalName());
     new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
         iocContext.getGenerationContext());
   }

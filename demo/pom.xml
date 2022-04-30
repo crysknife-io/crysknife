@@ -5,17 +5,18 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.3</version>
   <packaging>war</packaging>
 
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <elemental2.version>1.1.0</elemental2.version>
-    <j2cl.maven.plugin.version>0.17-SNAPSHOT</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.19</j2cl.maven.plugin.version>
     <maven.jetty.plugin.version>9.4.31.v20200723</maven.jetty.plugin.version>
     <maven.tomcat.plugin.version>2.2</maven.tomcat.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>
+    <org.treblereel.j2cl.processors.version>0.3</org.treblereel.j2cl.processors.version>
   </properties>
 
   <dependencies>
@@ -66,37 +67,37 @@
     </dependency>
 
     <dependency>
-      <groupId>io.crysknife.ui.navigation</groupId>
+      <groupId>io.crysknife.legacy.ui.navigation</groupId>
       <artifactId>api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.crysknife.ui.navigation</groupId>
+      <groupId>io.crysknife.legacy.ui.navigation</groupId>
       <artifactId>generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.gwtproject.user.window</groupId>
+      <groupId>org.treblereel.gwt.gwtproject.user.window</groupId>
       <artifactId>gwt-window</artifactId>
-      <version>HEAD-SNAPSHOT</version>
+      <version>202203291</version>
     </dependency>
 
     <dependency>
-      <groupId>io.crysknife.ui.databinding</groupId>
+      <groupId>io.crysknife.legacy.ui.databinding</groupId>
       <artifactId>api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.crysknife.ui.databinding</groupId>
+      <groupId>io.crysknife.legacy.ui.databinding</groupId>
       <artifactId>generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>io.crysknife.ui</groupId>
+      <groupId>io.crysknife.legacy.ui</groupId>
       <artifactId>gwt-dom-generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -108,6 +109,18 @@
       <version>202203291</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.treblereel.j2cl.processors</groupId>
+      <artifactId>annotations</artifactId>
+      <version>${org.treblereel.j2cl.processors.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.j2cl.processors</groupId>
+      <artifactId>processors</artifactId>
+      <version>${org.treblereel.j2cl.processors.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -115,9 +128,6 @@
       <resource>
         <directory>src/main/java</directory>
         <includes>
-<!--
-          <include>**/*.java</include>
--->
           <include>**/*.html</include>
           <include>**/*.css</include>
           <include>**/*.less</include>
@@ -128,31 +138,6 @@
       </resource>
     </resources>
     <plugins>
-<!--      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>custom-resources</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <resources>
-                <resource>
-                  <targetPath>${basedir}/target/gwt/launcherDir/demo</targetPath>
-                  <directory>src/main/webapp</directory>
-                  <filtering>true</filtering>
-                </resource>
-              </resources>
-              <encoding>UTF-8</encoding>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -185,7 +170,7 @@
         </executions>
         <configuration>
           <webappDirectory>${project.build.directory}/gwt/launcherDir/${project.artifactId}/</webappDirectory>
-          <compilationLevel>BUNDLE</compilationLevel>
+          <compilationLevel>ADVANCED</compilationLevel>
         </configuration>
       </plugin>
       <plugin>
@@ -193,95 +178,18 @@
         <artifactId>tomcat7-maven-plugin</artifactId>
         <version>${maven.tomcat.plugin.version}</version>
         <configuration>
-          <contextFile>${basedir}/src/main/tomcatconf/context.xml</contextFile>
+          <contextFile>srctconf/context.xml</contextFile>
         </configuration>
       </plugin>
     </plugins>
   </build>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>vertispan-releases</id>
-      <name>Vertispan hosted artifacts-releases</name>
-      <url>https://repo.vertispan.com/j2cl</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>sonatype-snapshots-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
   <repositories>
-
     <repository>
-      <id>treblereel-snapshots</id>
-      <name>treblereel hosted artifacts-snapshots</name>
-      <url>https://repo.treblereel.org/snapshots</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-      </snapshots>
-    </repository>
-
-    <repository>
-      <id>vertispan-releases</id>
-      <name>Vertispan hosted artifacts-releases</name>
-      <url>https://repo.vertispan.com/j2cl</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-      </snapshots>
-    </repository>
-
-<!--    <repository>
-      <id>vertispan-snapshots</id>
-      <name>Vertispan Snapshots</name>
-      <url>https://repo.vertispan.com/gwt-snapshot/</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>-->
-    <repository>
-      <id>sonatype-snapshots-repo</id>
+      <id>snapshots-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/repositories</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>sonatype</id>
-      <name>sonatype</name>
-      <url>https://oss.sonatype.org/content/repositories/releases/</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
     </repository>
   </repositories>
 </project>

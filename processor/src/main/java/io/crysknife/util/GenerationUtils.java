@@ -302,14 +302,15 @@ public class GenerationUtils {
         }
         return new ExpressionStmt(call);
       } else {
+
         MethodCallExpr call =
             new MethodCallExpr(new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
                 "<elemental2.core.Function>uncheckedCast").addArgument(
 
                     new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get")
                         .addArgument("instance")
-                        .addArgument(new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()),
-                            "objectProperty")
+                        .addArgument(new MethodCallExpr(
+                            new NameExpr(Reflect.class.getCanonicalName()), "objectProperty")
                                 .addArgument(new StringLiteralExpr(Utils.getJsMethodName(method)))
                                 .addArgument("instance"))),
                 "bind").addArgument("instance");

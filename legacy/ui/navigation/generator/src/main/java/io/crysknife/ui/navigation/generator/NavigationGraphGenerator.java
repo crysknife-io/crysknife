@@ -168,7 +168,7 @@ public class NavigationGraphGenerator {
     Page annotation = page.getAnnotation(Page.class);
     String pageName = getPageName(page);
 
-    List<? extends TypeMirror> annotatedPageRoles = getRoles(annotation);
+    Set<String> annotatedPageRoles = getRoles(annotation);
 
     TypeElement prevPageWithThisName = pageNames.put(pageName, page);
     if (prevPageWithThisName != null) {
@@ -177,10 +177,7 @@ public class NavigationGraphGenerator {
     }
 
     String pageImplStmt = generateNewInstanceOfPageImpl(page, pageName, ctor);
-
-    TypeMirror defaultPage =
-        context.getElements().getTypeElement(DefaultPage.class.getCanonicalName()).asType();
-    if (annotatedPageRoles.contains(defaultPage)) {
+    if (annotatedPageRoles.contains(DefaultPage.class.getCanonicalName())) {
       // need to assign the page impl to a variable and add it to the map twice
       URLPattern pattern = URLPatternMatcher.generatePattern(annotation.path());
       if (pattern.getParamList().size() > 0) {
@@ -219,11 +216,11 @@ public class NavigationGraphGenerator {
     return pageClass.getSimpleName().toString();
   }
 
-  private List<? extends TypeMirror> getRoles(Page annotation) {
+  private Set<String> getRoles(Page annotation) {
     try {
       annotation.role();
     } catch (MirroredTypesException e) {
-      return e.getTypeMirrors();
+      return e.getTypeMirrors().stream().map(elm -> elm.toString()).collect(Collectors.toSet());
     }
 
     return null;

@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.crysknife.legacy.ui</groupId>
         <artifactId>legacy-ui-parent</artifactId>
-        <version>0.3-SNAPSHOT</version>
+        <version>0.3</version>
     </parent>
 
     <artifactId>gwt-dom-generator</artifactId>
@@ -38,22 +38,22 @@
         <dependency>
             <groupId>com.google.elemental2</groupId>
             <artifactId>elemental2-dom</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-annotations</artifactId>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.crysknife</groupId>
+            <artifactId>crysknife-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-processor</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.treblereel.gwt.gwtproject.dom</groupId>
@@ -95,6 +95,10 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

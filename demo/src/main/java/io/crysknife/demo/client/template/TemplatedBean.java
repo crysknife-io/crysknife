@@ -18,6 +18,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.MouseEvent;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
@@ -25,7 +26,6 @@ import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import org.gwtproject.event.dom.client.ClickEvent;
 import org.gwtproject.user.client.ui.Button;
-import org.jboss.elemento.IsElement;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -63,7 +63,7 @@ public class TemplatedBean implements IsElement<HTMLDivElement> {
         DomGlobal.alert("GWT Button->ClickEvent pressed");
     }
 
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return root;
     }
 }

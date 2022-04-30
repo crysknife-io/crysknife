@@ -100,6 +100,7 @@ public class Utils {
     return sb.toString();
   }
 
+  // TODO move it to GenerationUtils and replace .contains("<") with Types.erase
   public static String getJsMethodName(ExecutableElement method) {
     if (method.getAnnotation(JsMethod.class) != null) {
       return method.getSimpleName().toString();
@@ -109,24 +110,35 @@ public class Utils {
     sb.append(method.getSimpleName().toString());
     sb.append("__");
 
-    String types =
-        method.getParameters().stream().map(elm -> elm.asType().toString().replaceAll("\\.", "_"))
-            .collect(Collectors.joining("__"));
+    String types = method.getParameters().stream().map(elm -> elm.asType().toString())
+        .map(type -> maybeErase(type)).map(type -> type.replaceAll("\\.", "_"))
+        .collect(Collectors.joining("__"));
     sb.append(types);
     if (method.getModifiers().contains(Modifier.PUBLIC)
         || method.getModifiers().contains(Modifier.PROTECTED)) {
       return sb.toString();
     }
+
+    String className;
+
     if (method.getModifiers().contains(Modifier.PRIVATE)) {
       sb.append("_$p_");
-      sb.append(((TypeElement) (method.getEnclosingElement())).getQualifiedName().toString()
-          .replaceAll("\\.", "_"));
+      className = ((TypeElement) (method.getEnclosingElement())).getQualifiedName().toString();
     } else {
       sb.append("_$pp_");
-      sb.append(
-          ((method.getEnclosingElement())).getEnclosingElement().toString().replaceAll("\\.", "_"));
+      className = ((method.getEnclosingElement())).getEnclosingElement().toString();
     }
+
+    className = maybeErase(className).replaceAll("\\.", "_");
+    sb.append(className);
     return sb.toString();
+  }
+
+  private static String maybeErase(String className) {
+    if (className.contains("<")) { // type name contains wildcards
+      return className.substring(0, className.indexOf("<"));
+    }
+    return className;
   }
 
   public static Set<Element> getAnnotatedElements(Elements elements, TypeElement type,

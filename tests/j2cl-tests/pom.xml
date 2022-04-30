@@ -3,9 +3,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>parent</artifactId>
+        <artifactId>tests-parent</artifactId>
         <groupId>io.crysknife.tests</groupId>
-        <version>0.3-SNAPSHOT</version>
+        <version>0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,8 +13,8 @@
     <description>J2CL tests</description>
 
     <properties>
-        <maven.j2cl.plugin>0.17-SNAPSHOT</maven.j2cl.plugin>
-        <j2cl.version>0.9-SNAPSHOT</j2cl.version>
+        <maven.j2cl.plugin>0.19</maven.j2cl.plugin>
+        <j2cl.version>0.10</j2cl.version>
     </properties>
 
     <dependencies>
@@ -73,7 +73,7 @@
                         <path>
                             <groupId>io.crysknife</groupId>
                             <artifactId>crysknife-processor</artifactId>
-                            <version>0.3-SNAPSHOT</version>
+                            <version>${project.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -103,15 +103,14 @@
                     <webdriver>chrome</webdriver>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>vertispan-releases</id>
-            <name>Vertispan hosted artifacts-releases</name>
-            <url>https://repo.vertispan.com/j2cl/</url>
-        </pluginRepository>
-    </pluginRepositories>
 
 </project>

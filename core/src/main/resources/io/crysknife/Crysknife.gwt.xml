@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
     <inherits name="io.crysknife.annotation.Annotations"/>
+    <inherits name="elemental2.dom.Dom"/>
     <source path="client"/>
 </module>

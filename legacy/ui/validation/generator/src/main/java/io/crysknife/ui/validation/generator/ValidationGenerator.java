@@ -39,16 +39,11 @@ public class ValidationGenerator extends BeanIOCGenerator<BeanDefinition> {
 
   @Override
   public void register() {
-
     iocContext.register(Inject.class, Validator.class, WiringElementType.BEAN, this); // PARAMETER
   }
 
   @Override
   public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
-    if (true) {
-      throw new Error();
-    }
-
     CompilationUnit gwtValidatorGenerator =
         new GwtValidatorGenerator().generate(logger, iocContext);
     if (gwtValidatorGenerator != null) {

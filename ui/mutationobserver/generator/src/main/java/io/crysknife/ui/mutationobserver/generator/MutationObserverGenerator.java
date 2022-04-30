@@ -25,6 +25,7 @@ import elemental2.dom.MutationRecord;
 import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
@@ -74,18 +75,18 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
   private void isValid(VariableElement target) {
     if (target.getModifiers().contains(Modifier.PRIVATE)) {
-      throw new Error("MutationObserver target  [" + target.getSimpleName() + " in "
-          + target.getEnclosingElement().getSimpleName() + " must not be private");
+      throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
+          + target.getEnclosingElement() + " must not be private");
     }
 
     if (target.getModifiers().contains(Modifier.STATIC)) {
-      throw new Error("MutationObserver target  [" + target.getSimpleName() + " in "
-          + target.getEnclosingElement().getSimpleName() + " must not be static");
+      throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
+          + target.getEnclosingElement() + " must not be static");
     }
 
     if (iocContext.getGenerationContext().getTypes().isSubtype(htmlElement, target.asType())) {
-      throw new Error("MutationObserver target  [" + target.getSimpleName() + " in "
-          + target.getEnclosingElement().getSimpleName() + " must be subtype of HTMLElement atm");
+      throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
+          + target.getEnclosingElement() + " must be subtype of HTMLElement atm");
     }
   }
 
@@ -117,21 +118,22 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
   private void ifValid(MethodDefinition mutationObserver) {
     if (mutationObserver.getExecutableElement().getParameters().size() > 1
         || mutationObserver.getExecutableElement().getParameters().isEmpty()) {
-      throw new Error("Method [" + mutationObserver.getExecutableElement().getSimpleName() + " in "
-          + mutationObserver.getExecutableElement().getEnclosingElement().getSimpleName()
-          + " must have only one arg of type MutationRecord");
+      throw new GenerationException(
+          "Method [" + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+              + mutationObserver.getExecutableElement().getEnclosingElement()
+              + " must have only one arg of type MutationRecord");
     }
 
     if (mutationObserver.getExecutableElement().getModifiers().contains(Modifier.PRIVATE)) {
-      throw new Error("Method [" + mutationObserver.getExecutableElement().getSimpleName() + " in "
-          + mutationObserver.getExecutableElement().getEnclosingElement().getSimpleName()
-          + " must not be private");
+      throw new GenerationException("Method ["
+          + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+          + mutationObserver.getExecutableElement().getEnclosingElement() + " must not be private");
     }
 
     if (mutationObserver.getExecutableElement().getModifiers().contains(Modifier.STATIC)) {
-      throw new Error("Method [" + mutationObserver.getExecutableElement().getSimpleName() + " in "
-          + mutationObserver.getExecutableElement().getEnclosingElement().getSimpleName()
-          + " must not be static");
+      throw new GenerationException("Method ["
+          + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+          + mutationObserver.getExecutableElement().getEnclosingElement() + " must not be static");
     }
 
     TypeMirror mutationRecord = iocContext.getGenerationContext().getElements()
@@ -139,9 +141,10 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
     if (!mutationObserver.getExecutableElement().getParameters().get(0).asType()
         .equals(mutationRecord)) {
-      throw new Error("Method [" + mutationObserver.getExecutableElement().getSimpleName() + " in "
-          + mutationObserver.getExecutableElement().getEnclosingElement().getSimpleName()
-          + " must have arg of type MutationRecord");
+      throw new GenerationException(
+          "Method [" + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+              + mutationObserver.getExecutableElement().getEnclosingElement()
+              + " must have arg of type MutationRecord");
     }
   }
 

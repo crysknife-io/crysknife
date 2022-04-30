@@ -50,6 +50,22 @@ public class TestJ2clMethodNameGenerator {
   }
 
   @Test
+  public void testMethodDefaultGeneric() {
+    ExecutableElement method = getMethod("run_default", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>");
+    assertEquals("m_run_default___$pp_org_treblereel_test", Utils.getJsMethodName(method));
+  }
+
+  @Test
+  public void testMethodDefaultGenericWithGenericArg() {
+    VariableElement arg = getParam("java.util.Map<? extends org.my.project.CanvasHandler>");
+    ExecutableElement method = getMethod("run_default", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>", arg);
+    assertEquals("m_run_default__java_util_Map_$pp_org_treblereel_test",
+        Utils.getJsMethodName(method));
+  }
+
+  @Test
   public void testMethodJsMethod() {
     ExecutableElement method = getMethod("method", "org.treblereel.test", "MyClass");
     JsMethod jsMethod = new JsMethod() {
@@ -92,6 +108,23 @@ public class TestJ2clMethodNameGenerator {
   }
 
   @Test
+  public void testMethodPublicGeneric() {
+    ExecutableElement method = getMethod("run", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>");
+    addModifier(method, Modifier.PUBLIC);
+    assertEquals("m_run__", Utils.getJsMethodName(method));
+  }
+
+  @Test
+  public void testMethodPublicGenericWithGenericArg() {
+    VariableElement arg = getParam("java.util.Map<? extends org.my.project.CanvasHandler>");
+    ExecutableElement method = getMethod("run", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>", arg);
+    addModifier(method, Modifier.PUBLIC);
+    assertEquals("m_run__java_util_Map", Utils.getJsMethodName(method));
+  }
+
+  @Test
   public void testMethodProtected() {
     ExecutableElement method =
         getMethod("run", "org.treblereel.test", "org.treblereel.test.Runner");
@@ -109,6 +142,23 @@ public class TestJ2clMethodNameGenerator {
   }
 
   @Test
+  public void testMethodProtectedGeneric() {
+    ExecutableElement method = getMethod("run", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>");
+    addModifier(method, Modifier.PROTECTED);
+    assertEquals("m_run__", Utils.getJsMethodName(method));
+  }
+
+  @Test
+  public void testMethodProtectedGenericWithGenericArg() {
+    VariableElement arg = getParam("java.util.Map<? extends org.my.project.CanvasHandler>");
+    ExecutableElement method = getMethod("run", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>", arg);
+    addModifier(method, Modifier.PROTECTED);
+    assertEquals("m_run__java_util_Map", Utils.getJsMethodName(method));
+  }
+
+  @Test
   public void testMethodPrivate() {
     ExecutableElement method =
         getMethod("run_private", "org.treblereel.test", "org.treblereel.test.Runner");
@@ -123,6 +173,24 @@ public class TestJ2clMethodNameGenerator {
         getMethod("run_private", "org.treblereel.test", "org.treblereel.test.Runner", arg);
     addModifier(method, Modifier.PRIVATE);
     assertEquals("m_run_private__java_lang_String_$p_org_treblereel_test_Runner",
+        Utils.getJsMethodName(method));
+  }
+
+  @Test
+  public void testMethodPrivateGeneric() {
+    ExecutableElement method = getMethod("run_private", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>");
+    addModifier(method, Modifier.PRIVATE);
+    assertEquals("m_run_private___$p_org_treblereel_test_Runner", Utils.getJsMethodName(method));
+  }
+
+  @Test
+  public void testMethodPrivateGenericWithGenericArg() {
+    VariableElement arg = getParam("java.util.Map<? extends org.my.project.CanvasHandler>");
+    ExecutableElement method = getMethod("run_private", "org.treblereel.test",
+        "org.treblereel.test.Runner<? extends org.my.project.CanvasHandler>", arg);
+    addModifier(method, Modifier.PRIVATE);
+    assertEquals("m_run_private__java_util_Map_$p_org_treblereel_test_Runner",
         Utils.getJsMethodName(method));
   }
 

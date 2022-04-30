@@ -18,11 +18,14 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import elemental2.dom.*;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.MouseEvent;
+import elemental2.dom.MutationRecord;
+import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
-import org.gwtproject.event.dom.client.ClickEvent;
-//import org.gwtproject.user.client.ui.Button;
-import org.jboss.elemento.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.Templated;
@@ -76,7 +79,7 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("checkBtn")
-    void onCityClick(@ForEvent("click") final MouseEvent e) {
+    private void onCityClick(@ForEvent("click") final MouseEvent e) {
         if (test.parentNode == null) {
             container.appendChild(test);
         } else {
@@ -85,14 +88,14 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("reset")
-    void reset(@ForEvent("click") final MouseEvent e) {
+    private void reset(@ForEvent("click") final MouseEvent e) {
         observer.addOnAttachListener(test, m -> onAttach(m));
         observer.addOnDetachListener(test, m -> onDetach(m));
         textBox.textContent = "";
     }
 
     @EventHandler("disconnect")
-    void disconnect(@ForEvent("click") final MouseEvent e) {
+    private void disconnect(@ForEvent("click") final MouseEvent e) {
         observer.disconnect();
         removeAttach.disabled = true;
         removeDetach.disabled = true;
@@ -102,13 +105,13 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @EventHandler("removeAttach")
-    void removeOnAttachListener(@ForEvent("click") final MouseEvent e) {
+    private void removeOnAttachListener(@ForEvent("click") final MouseEvent e) {
         observer.removeOnAttachListener(test);
         textBox.value = "";
     }
 
     @EventHandler("removeDetach")
-    void removeOnDetachListener(@ForEvent("click") final MouseEvent e) {
+    private void removeOnDetachListener(@ForEvent("click") final MouseEvent e) {
         observer.removeOnDetachListener(test);
         textBox.value = "";
     }
@@ -126,7 +129,7 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     }
 
     @Override
-    public HTMLDivElement element() {
+    public HTMLDivElement getElement() {
         return mutationobserverdemo;
     }
 }

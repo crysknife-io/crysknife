@@ -25,6 +25,7 @@ import io.crysknife.demo.client.events.User;
 import io.crysknife.annotation.Application;
 import io.crysknife.ui.navigation.client.local.DefaultPage;
 import io.crysknife.ui.navigation.client.local.Navigation;
+import org.treblereel.j2cl.processors.annotations.GWT3EntryPoint;
 
 @Application
 public class App {
@@ -38,6 +39,7 @@ public class App {
     @Inject
     private Navigation navigation;
 
+    @GWT3EntryPoint
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
     }
@@ -46,9 +48,9 @@ public class App {
     public void init() {
 
         DomGlobal.console.log("binit 1" + (main != null));
-        DomGlobal.console.log("binit 2" + (main.element() != null));
+        DomGlobal.console.log("binit 2" + (main.getElement() != null));
 
-        DomGlobal.document.body.appendChild(main.element());
+        DomGlobal.document.body.appendChild(main.getElement());
         initToast();
         navigation.goToWithRole(DefaultPage.class);
     }
@@ -60,14 +62,14 @@ public class App {
         DomGlobal.document.body.appendChild(toast);
     }
 
-    void onUserEvent(@Observes User user) {
+    private void onUserEvent(@Observes User user) {
         toast.className = "show";
         toast.textContent = "App : onEvent " + user.toString();
 
         DomGlobal.setTimeout(p0 -> toast.className = toast.className.replace("show", ""), 3000);
     }
 
-    void onAddressEvent(@Observes Address address) {
+    private void onAddressEvent(@Observes Address address) {
         toast.className = "show";
         toast.textContent = "App : onEvent " + address.toString();
 
