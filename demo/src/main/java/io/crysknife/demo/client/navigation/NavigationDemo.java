@@ -59,22 +59,26 @@ public class WidgetPanel implements io.crysknife.client.IsElement<HTMLDivElement
     }
 
     @PageShown
-    public void onPageShown() {
-        DomGlobal.console.log(this.getClass().getCanonicalName() + " PageShown");
+    public void PageShowing() {
+        DomGlobal.console.log("PageShowing " + getClass().getCanonicalName());
+
     }
 
     @PageShowing
-    public void onPageShowing() {
-        DomGlobal.console.log(this.getClass().getCanonicalName() + " PageShowing");
+    public void PageShown() {
+        DomGlobal.console.log("PageShown " + getClass().getCanonicalName());
+
     }
 
     @PageHidden
-    public void onPageHidden() {
-        DomGlobal.console.log(this.getClass().getCanonicalName() + " PageHidden");
+    public void PageHidden() {
+        DomGlobal.console.log("PageHidden " + getClass().getCanonicalName());
+
     }
 
     @PageHiding
-    public void onPageHiding() {
-        DomGlobal.console.log(this.getClass().getCanonicalName() + " PageHiding");
+    public void PageHiding() {
+        DomGlobal.console.log("PageHiding " + getClass().getCanonicalName());
+
     }
 }

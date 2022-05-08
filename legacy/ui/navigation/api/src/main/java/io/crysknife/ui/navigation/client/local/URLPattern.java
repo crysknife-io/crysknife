@@ -18,8 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.gwtproject.regexp.shared.MatchResult;
-import org.gwtproject.regexp.shared.RegExp;
+import elemental2.core.JsRegExp;
+import elemental2.core.RegExpResult;
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 
 /**
@@ -34,7 +34,8 @@ import io.crysknife.client.internal.collections.ImmutableMultimap;
 
 public class URLPattern {
   private final List<String> paramList;
-  private final RegExp regex;
+
+  private final JsRegExp regex;
   private final String urlTemplate;
 
   /**
@@ -50,7 +51,7 @@ public class URLPattern {
    */
   public static final String urlSafe = "([^/]+)";
 
-  public URLPattern(RegExp regex, List<String> paramList, String urlTemplate) {
+  public URLPattern(JsRegExp regex, List<String> paramList, String urlTemplate) {
     this.regex = regex;
     this.paramList = paramList;
     this.urlTemplate = urlTemplate;
@@ -66,7 +67,7 @@ public class URLPattern {
   /**
    * @return The regular expression used to match URLs.
    */
-  public RegExp getRegex() {
+  public JsRegExp getRegex() {
     return regex;
   }
 
@@ -93,12 +94,29 @@ public class URLPattern {
    * @return The constructed URL path without the application context.
    */
   public String printURL(ImmutableMultimap<String, String> state) {
-    RegExp re = RegExp.compile(paramRegex, "g");
+    JsRegExp nativeRegExp = new JsRegExp(paramRegex, "g");
+
+    // RegExp re = RegExp.compile(paramRegex, "g");
     String url = this.urlTemplate;
 
-    MatchResult mr;
+    // MatchResult mr;
+    RegExpResult nativemr;
 
-    while ((mr = re.exec(this.urlTemplate)) != null) {
+    while ((nativemr = nativeRegExp.exec(this.urlTemplate)) != null) {
+      String toReplace = nativemr.getAt(0);
+      String key = nativemr.getAt(1);
+      if (toReplace.contains(key)) {
+        // Encode all the characters we use to parse URLs.
+        String encodedValue = URLPattern.encodeParsingCharacters(state.get(key).iterator().next());
+        url = url.replace(toReplace, encodedValue);
+      } else {
+        throw new IllegalStateException(
+            "Path parameter list did not contain required parameter " + nativemr.getAt(1));
+      }
+    }
+
+
+    /*    while ((mr = re.exec(this.urlTemplate)) != null) {
       String toReplace = mr.getGroup(0);
       String key = mr.getGroup(1);
       if (toReplace.contains(key)) {
@@ -109,7 +127,7 @@ public class URLPattern {
         throw new IllegalStateException(
             "Path parameter list did not contain required parameter " + mr.getGroup(1));
       }
-    }
+    }*/
 
     if (state.keySet().size() == paramList.size()) {
       return url;

@@ -18,12 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.gwtproject.regexp.shared.MatchResult;
-import org.gwtproject.regexp.shared.RegExp;
+import elemental2.core.JsRegExp;
+import elemental2.core.RegExpResult;
+import elemental2.dom.DomGlobal;
 import io.crysknife.client.internal.collections.BiMap;
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.local.api.PageNotFoundException;
+import jsinterop.base.Js;
 
 /**
  * Used to match URLs typed in by the user to the correct {@link Page#path()}
@@ -58,10 +60,10 @@ public class URLPatternMatcher {
    * @return A {@link URLPattern} used to match URLs
    */
   public static URLPattern generatePattern(String urlTemplate) {
-    final RegExp regex = RegExp.compile(URLPattern.paramRegex, "g");
+    final JsRegExp regex = new JsRegExp(URLPattern.paramRegex, "g");
     final List<String> paramList = new ArrayList<>();
 
-    MatchResult mr;
+    RegExpResult mr;
     final StringBuilder sb = new StringBuilder();
 
     // Ensure matching at beginning of line
@@ -74,7 +76,7 @@ public class URLPatternMatcher {
 
     while ((mr = regex.exec(urlTemplate)) != null) {
       addParamName(paramList, mr);
-      startOfNextPattern = mr.getIndex();
+      startOfNextPattern = Js.asInt(mr.index);
 
       // Append any string literal that may occur in the URL path
       // before the next parameter.
@@ -83,7 +85,7 @@ public class URLPatternMatcher {
       // Append regex for matching the parameter value
       sb.append(URLPattern.urlSafe);
 
-      endOfPreviousPattern = regex.getLastIndex();
+      endOfPreviousPattern = regex.lastIndex;
     }
 
     // Append any remaining trailing string literals
@@ -92,11 +94,11 @@ public class URLPatternMatcher {
     // Ensure matching at end of line
     sb.append("$");
 
-    return new URLPattern(RegExp.compile(sb.toString()), paramList, urlTemplate);
+    return new URLPattern(new JsRegExp(sb.toString()), paramList, urlTemplate);
   }
 
-  private static void addParamName(List<String> paramList, MatchResult mr) {
-    paramList.add(mr.getGroup(1));
+  private static void addParamName(List<String> paramList, RegExpResult mr) {
+    paramList.add(mr.getAt(1));
   }
 
   /**
@@ -115,6 +117,10 @@ public class URLPatternMatcher {
     } else {
       pageInfo = url;
       keyValuePairs = null;
+    }
+
+    if (pageInfo.startsWith("#")) {
+      pageInfo = pageInfo.substring(1);
     }
 
     final String pageName = parseValues(pageInfo, mapBuilder);
@@ -139,10 +145,10 @@ public class URLPatternMatcher {
     if (pattern.getParamList().size() == 0)
       return pageName;
 
-    final MatchResult mr = pattern.getRegex().exec(rawURIPath);
+    final RegExpResult mr = pattern.getRegex().exec(rawURIPath);
     for (int keyIndex = 0; keyIndex < pattern.getParamList().size(); keyIndex++) {
       builder.put(URLPattern.decodeParsingCharacters(pattern.getParamList().get(keyIndex)),
-          URLPattern.decodeParsingCharacters(mr.getGroup(keyIndex + 1)));
+          URLPattern.decodeParsingCharacters(mr.getAt(keyIndex + 1)));
     }
     return pageName;
   }

@@ -14,6 +14,7 @@
 
 package io.crysknife.ui.navigation.client.local;
 
+import elemental2.dom.DomGlobal;
 import io.crysknife.client.internal.Assert;
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 import io.crysknife.client.internal.collections.Multimap;

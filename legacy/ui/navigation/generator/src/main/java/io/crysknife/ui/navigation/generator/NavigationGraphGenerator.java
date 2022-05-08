@@ -63,8 +63,6 @@ import io.crysknife.ui.navigation.client.local.PageHidden;
 import io.crysknife.ui.navigation.client.local.PageHiding;
 import io.crysknife.ui.navigation.client.local.PageShowing;
 import io.crysknife.ui.navigation.client.local.PageShown;
-import io.crysknife.ui.navigation.client.local.URLPattern;
-import io.crysknife.ui.navigation.client.local.URLPatternMatcher;
 import io.crysknife.ui.navigation.client.local.api.NavigationControl;
 import io.crysknife.ui.navigation.client.local.api.PageRequest;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
@@ -179,8 +177,7 @@ public class NavigationGraphGenerator {
     String pageImplStmt = generateNewInstanceOfPageImpl(page, pageName, ctor);
     if (annotatedPageRoles.contains(DefaultPage.class.getCanonicalName())) {
       // need to assign the page impl to a variable and add it to the map twice
-      URLPattern pattern = URLPatternMatcher.generatePattern(annotation.path());
-      if (pattern.getParamList().size() > 0) {
+      if (!"".equals(annotation.path())) {
         throw new GenerationException("Default Page must not contain any path parameters.");
       }
 

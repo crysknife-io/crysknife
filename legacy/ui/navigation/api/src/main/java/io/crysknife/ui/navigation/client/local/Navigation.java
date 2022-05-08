@@ -14,25 +14,26 @@
 
 package io.crysknife.ui.navigation.client.local;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import elemental2.core.JsArray;
-import elemental2.dom.DomGlobal;
-import elemental2.dom.HTMLElement;
+import elemental2.core.JsString;
+import elemental2.dom.*;
 import jsinterop.base.Js;
-import org.gwtproject.event.shared.HandlerRegistration;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.local.api.DelegationControl;
 import io.crysknife.ui.navigation.client.local.api.NavigationControl;
 import io.crysknife.ui.navigation.client.local.api.PageNavigationErrorHandler;
 import io.crysknife.ui.navigation.client.local.api.PageNotFoundException;
 import io.crysknife.ui.navigation.client.local.api.RedirectLoopException;
-import io.crysknife.ui.navigation.client.local.pushstate.PushStateUtil;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.local.spi.PageNode;
 
@@ -70,25 +71,7 @@ public class Navigation {
    *         non-empty, the return value always starts with a slash and never ends with one.
    */
   public static String getAppContext() {
-    if (PushStateUtil.isPushStateActivated()) {
-      return getAppContextFromHostPage();
-    } else {
-      return "";
-    }
-  }
-
-  /**
-   * Sets the application context used in pushstate URL paths. This application context should match
-   * the deployed application context in your web.xml
-   *
-   * @param path The context path. Never null.
-   */
-  public static void setAppContext(String path) {
-    if (path == null) {
-      Js.asPropertyMap(DomGlobal.window).set("erraiApplicationWebContext", Js.undefined());
-    } else {
-      Js.asPropertyMap(DomGlobal.window).set("erraiApplicationWebContext", path);
-    }
+    return "";
   }
 
   private static String getAppContextFromHostPage() {
@@ -123,7 +106,6 @@ public class Navigation {
 
   private ContentDelegation contentDelegation = new DefaultContentDelegation();
   private PageNavigationErrorHandler navigationErrorHandler;
-  private HandlerRegistration historyHandlerRegistration;
 
   @Inject
   private NavigationGraph navGraph;
@@ -132,42 +114,35 @@ public class Navigation {
 
   // ------------------------------------------------------ setup & tear down
 
-  @PostConstruct
   void init() {
     if (navGraph.isEmpty()) {
       return;
     }
 
-    String hash = DomGlobal.window.location.hash;
+    String raw = DomGlobal.window.location.hash;
     navigationErrorHandler = new DefaultNavigationErrorHandler(this);
-    historyHandlerRegistration = HistoryWrapper.addValueChangeHandler(event -> {
-      HistoryToken token = null;
-      try {
-        console.debug("URL value changed to " + event.getValue());
-        if (needsApplicationContext()) {
-          String context = inferAppContext(event.getValue());
-          console.info("No application context defined. Inferring application context as " + context
-              + ". Change this value by setting the variable \"erraiApplicationWebContext\" "
-              + "in your GWT host page, or calling Navigation.setAppContext(String).");
-          setAppContext(context);
-        }
-        token = historyTokenFactory.parseURL(event.getValue());
-        if (currentNode == null || !token.equals(currentToken)) {
-          PageNode<Object> toPage = navGraph.getPage(token.getPageName());
-          navigate(new Request<>(toPage, token), false);
-        }
-      } catch (final Exception e) {
-        if (token == null) {
-          navigationErrorHandler.handleInvalidURLError(e, event.getValue());
-        } else {
-          navigationErrorHandler.handleInvalidPageNameError(e, token.getPageName());
-        }
-      }
+    processToken(raw);
+
+    DomGlobal.window.addEventListener("hashchange", evt -> {
+      String raw1 = DomGlobal.window.location.hash;
+      HashChangeEvent hashChangeEvent = (HashChangeEvent) evt;
+      processToken(raw1);
     });
 
-    maybeConvertHistoryToken(hash);
-    if (navigationContainer() != null) {
-      HistoryWrapper.fireCurrentHistoryState();
+    DomGlobal.window.addEventListener("locationchange", evt -> {
+      HashChangeEvent.HashChangeEventEventInitDictType eventEventInitDictType =
+          HashChangeEvent.HashChangeEventEventInitDictType.create();
+      eventEventInitDictType.setOldURL(hash());
+      eventEventInitDictType.setNewURL(DomGlobal.window.location.href);
+      DomGlobal.window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
+    });
+  }
+
+  private void processToken(String raw) {
+    HistoryToken token = historyTokenFactory.parseURL(raw);
+    if (currentNode == null || !token.equals(currentToken)) {
+      PageNode<Object> toPage = navGraph.getPage(token.getPageName());
+      navigate(new Request<>(toPage, token), false);
     }
   }
 
@@ -183,21 +158,8 @@ public class Navigation {
     }
   }
 
-  private void maybeConvertHistoryToken(String token) {
-    if (PushStateUtil.isPushStateActivated()) {
-      if (token == null || token.isEmpty()) {
-        return;
-      }
-      if (token.startsWith("#")) {
-        token = token.substring(1);
-      }
-      HistoryWrapper.newItem(DomGlobal.window.location.pathname + token, false);
-    }
-  }
-
   @PreDestroy
   public void cleanUp() {
-    historyHandlerRegistration.removeHandler();
     setErrorHandler(null);
   }
 
@@ -275,7 +237,6 @@ public class Navigation {
   public void updateState(Multimap<String, String> state) {
     if (currentNode != null) {
       currentToken = historyTokenFactory.createHistoryToken(currentNode.name(), state);
-      HistoryWrapper.newItem(currentToken.toString(), false);
       currentNode.pageUpdate(currentPage, currentToken);
     } else {
       console.error("Cannot update the state before a page has loaded.");
@@ -317,7 +278,13 @@ public class Navigation {
       // This is the page which has to be displayed and the browser's history
       // can be updated.
       redirectDepth = 0;
-      HistoryWrapper.newItem(request.state.toString(), fireEvent);
+      if (!hash().equals(request.state.toString())) {
+        HashChangeEvent.HashChangeEventEventInitDictType eventEventInitDictType =
+            HashChangeEvent.HashChangeEventEventInitDictType.create();
+        eventEventInitDictType.setNewURL(request.state.toString());
+        eventEventInitDictType.setOldURL(hash());
+        DomGlobal.window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
+      }
     } else {
       // Process all navigation requests captured in the lifecycle methods.
       while (queuedRequests.size() != 0) {
@@ -370,6 +337,10 @@ public class Navigation {
     HTMLElement navigationContainer = navigationContainer();
     if (navigationContainer != null) {
 
+      String currentHash = hash();
+      if (!request.state.toString().equals(currentHash)) {
+        DomGlobal.location.hash = request.state.toString();
+      }
       Runnable runnable = () -> {
         NavigationControl showControl = new NavigationControl(Navigation.this, () -> {
           try {
@@ -397,8 +368,7 @@ public class Navigation {
           new NavigationControl(Navigation.this, () -> setCurrentNode(null)));
 
       NavigationControl control = new NavigationControl(Navigation.this, runnable, interrupt);
-      if (currentNode != null && currentPage != null && pageElements != null
-          && sameElements(navigationContainer, pageElements)) {
+      if (currentNode != null && currentPage != null) {
         currentNode.pageHiding(currentPage, control);
       } else {
         control.proceed();
@@ -491,10 +461,12 @@ public class Navigation {
     if (selector != null) {
       document.body.querySelector(navigationContainerSelector);
     }
+    init();
   }
 
   public void setNavigationContainer(HTMLElement navigationContainer) {
     this.navigationContainer = navigationContainer;
+    init();
   }
 
   /** Returns the navigation graph that provides PageNode instances to this Navigation instance. */
@@ -513,8 +485,7 @@ public class Navigation {
   }
 
   private boolean needsApplicationContext() {
-    return (currentNode == null) && (PushStateUtil.isPushStateActivated())
-        && (getAppContextFromHostPage().isEmpty());
+    return currentNode == null && getAppContextFromHostPage().isEmpty();
   }
 
   private HTMLElement navigationContainer() {
@@ -602,4 +573,15 @@ public class Navigation {
     }
   }
 
+  private String hash() {
+    String raw = DomGlobal.window.location.hash;
+    if (!raw.isEmpty()) {
+      if (raw.indexOf("?") > 0) {
+        raw = new JsString(raw).split("?").getAt(0);
+      }
+      raw = raw.replaceFirst("#", "");
+    }
+    return raw;
+
+  }
 }
