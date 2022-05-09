@@ -105,7 +105,6 @@ public class GenerationUtils {
       List<? extends TypeParameterElement> params =
           MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getTypeParameters();
 
-
       typeQualifiedName = context.getGenerationContext().getTypes()
           .erasure(fieldPoint.getVariableElement().asType()).toString();
       if (fieldPoint.getImplementation().isPresent()) {
@@ -129,11 +128,6 @@ public class GenerationUtils {
 
 
   public Expression getFieldAccessCallExpr(BeanDefinition beanDefinition, VariableElement field) {
-    if (context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-      return new MethodCallExpr(new NameExpr(beanDefinition.getType() + "Info"),
-          field.getSimpleName().toString()).addArgument("instance");
-    }
-
     if (!field.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
       if (isTheSame(beanDefinition.getType(), field.getEnclosingElement().asType())) {
         return new FieldAccessExpr(new NameExpr("instance"), field.getSimpleName().toString());

@@ -19,5 +19,5 @@ package io.crysknife.generator.context;
  */
 public enum ExecutionEnv {
 
-  GWT2, JRE, J2CL;
+  JRE, J2CL;
 }

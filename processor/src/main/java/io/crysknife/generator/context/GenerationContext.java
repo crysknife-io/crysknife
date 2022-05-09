@@ -43,15 +43,6 @@ public class GenerationContext {
     this.processingEnvironment = processingEnvironment;
 
     try {
-      Class.forName("com.google.gwt.core.client.GWT");
-      executionEnv = ExecutionEnv.GWT2;
-      processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,
-          "GWT2 generation mode.");
-    } catch (ClassNotFoundException e) {
-
-    }
-
-    try {
       Class.forName("org.aspectj.lang.ProceedingJoinPoint");
       executionEnv = ExecutionEnv.JRE;
       processingEnvironment.getMessager().printMessage(Diagnostic.Kind.WARNING,

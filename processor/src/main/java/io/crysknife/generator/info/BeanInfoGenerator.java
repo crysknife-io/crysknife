@@ -35,9 +35,7 @@ public class BeanInfoGenerator implements Task {
 
   public BeanInfoGenerator(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
-    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-      generator = new BeanInfoGWT2GeneratorBuilder(iocContext);
-    } else if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
       generator = new BeanInfoJREGeneratorBuilder(iocContext);
     }
   }
