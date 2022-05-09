@@ -581,12 +581,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       }
 
       MethodCallExpr fieldSetCallExpr = null;
-      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-        fieldSetCallExpr = new MethodCallExpr(
-            new NameExpr(
-                MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
-            element.getName()).addArgument("instance");
-      } else if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
         fieldSetCallExpr = new MethodCallExpr(
             new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
                 .addArgument("instance"),
@@ -614,13 +609,6 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   public MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
-    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-      return new MethodCallExpr(
-          new NameExpr(
-              MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName() + "Info"),
-          field.getSimpleName().toString()).addArgument("instance");
-    }
-
     return new MethodCallExpr(
         new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
             .addArgument("instance"),

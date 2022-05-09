@@ -263,14 +263,6 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
           new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
     }
 
-
-    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-      return new MethodCallExpr(Utils.getSimpleClassName(classBuilder.beanDefinition.getType())
-          + "Info." + fieldPoint.getVariableElement().getSimpleName())
-              .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"))
-              .addArgument(new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"));
-    }
-
     FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
     MethodCallExpr reflect =
         new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")

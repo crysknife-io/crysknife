@@ -60,8 +60,8 @@ public class NavigationGenerator extends SingletonGenerator {
   public void before() {
 
     Set<TypeElement> pages = iocContext.getTypeElementsByAnnotation(Page.class.getCanonicalName());
-    new NavigationGraphGenerator(pages).generate(new PrintWriterTreeLogger(),
-        iocContext.getGenerationContext());
+    new NavigationGraphGenerator(iocContext, pages)
+        .generate(logger.branch(TreeLogger.DEBUG, " starting generating navigation"));
   }
 
   @Override

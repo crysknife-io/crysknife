@@ -5,7 +5,7 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.3</version>
+  <version>0.4-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <properties>
@@ -79,41 +79,11 @@
     </dependency>
 
     <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.user.window</groupId>
-      <artifactId>gwt-window</artifactId>
-      <version>202203291</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.legacy.ui.databinding</groupId>
-      <artifactId>api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.crysknife.legacy.ui.databinding</groupId>
-      <artifactId>generator</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.legacy.ui</groupId>
-      <artifactId>gwt-dom-generator</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.dom</groupId>
-      <artifactId>gwt-dom</artifactId>
-      <version>202203291</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.treblereel.j2cl.processors</groupId>
       <artifactId>annotations</artifactId>
       <version>${org.treblereel.j2cl.processors.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.treblereel.j2cl.processors</groupId>
       <artifactId>processors</artifactId>
@@ -178,7 +148,7 @@
         <artifactId>tomcat7-maven-plugin</artifactId>
         <version>${maven.tomcat.plugin.version}</version>
         <configuration>
-          <contextFile>srctconf/context.xml</contextFile>
+          <contextFile>tomcatconf/context.xml</contextFile>
         </configuration>
       </plugin>
     </plugins>

@@ -24,12 +24,12 @@ import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLSelectElement;
 import elemental2.dom.MouseEvent;
 import io.crysknife.client.IsElement;
+import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.demo.client.inject.DependentBean;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov

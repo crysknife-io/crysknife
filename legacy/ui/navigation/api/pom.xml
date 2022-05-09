@@ -5,7 +5,7 @@
   <parent>
     <artifactId>navigation-parent</artifactId>
     <groupId>io.crysknife.legacy.ui.navigation</groupId>
-    <version>0.3</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>api</artifactId>
@@ -49,27 +49,6 @@
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.regexp</groupId>
-      <artifactId>gwt-regexp</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.safehtml</groupId>
-      <artifactId>gwt-safehtml</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.event</groupId>
-      <artifactId>gwt-event-logical</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.user.history</groupId>
-      <artifactId>gwt-history</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.treblereel.gwt.gwtproject.user.window</groupId>
-      <artifactId>gwt-window</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

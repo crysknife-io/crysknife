@@ -37,7 +37,6 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
-import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
@@ -73,17 +72,14 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
     String pkg = Utils.getPackageName(MoreTypes.asTypeElement(beanDefinition.getType()));
 
     clazz.getClassCompilationUnit().setPackageDeclaration(pkg);
-
-    if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.GWT2)) {
-      clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
-      clazz.getClassCompilationUnit().addImport(Reflect.class);
-      clazz.getClassCompilationUnit().addImport(SyncBeanDef.class);
-      clazz.getClassCompilationUnit().addImport(BeanFactory.class);
-      clazz.getClassCompilationUnit().addImport(Supplier.class);
-      clazz.getClassCompilationUnit().addImport(Provider.class);
-      clazz.getClassCompilationUnit().addImport(BeanManager.class);
-      clazz.getClassCompilationUnit().addImport(InstanceFactory.class);
-    }
+    clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
+    clazz.getClassCompilationUnit().addImport(Reflect.class);
+    clazz.getClassCompilationUnit().addImport(SyncBeanDef.class);
+    clazz.getClassCompilationUnit().addImport(BeanFactory.class);
+    clazz.getClassCompilationUnit().addImport(Supplier.class);
+    clazz.getClassCompilationUnit().addImport(Provider.class);
+    clazz.getClassCompilationUnit().addImport(BeanManager.class);
+    clazz.getClassCompilationUnit().addImport(InstanceFactory.class);
 
     clazz.setClassName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString()
         + BOOTSTRAP_EXTENSION);
