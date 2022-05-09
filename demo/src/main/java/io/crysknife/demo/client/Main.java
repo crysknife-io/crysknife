@@ -22,7 +22,6 @@ import javax.inject.Singleton;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 import io.crysknife.client.IsElement;
-import org.gwtproject.dom.client.LabelElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.navigation.client.local.Navigation;
@@ -46,9 +45,6 @@ public class Main implements IsElement<HTMLDivElement> {
     @DataField
     @Named("span")
     private HTMLElement span;
-
-    @Inject
-    LabelElement repeatCountReachesLabel;
 
     @PostConstruct
     public void init() {

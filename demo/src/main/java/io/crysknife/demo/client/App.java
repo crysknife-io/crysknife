@@ -23,8 +23,6 @@ import elemental2.dom.HTMLDivElement;
 import io.crysknife.demo.client.events.Address;
 import io.crysknife.demo.client.events.User;
 import io.crysknife.annotation.Application;
-import io.crysknife.ui.navigation.client.local.DefaultPage;
-import io.crysknife.ui.navigation.client.local.Navigation;
 import org.treblereel.j2cl.processors.annotations.GWT3EntryPoint;
 
 @Application
@@ -36,9 +34,6 @@ public class App {
     @Inject
     private Main main;
 
-    @Inject
-    private Navigation navigation;
-
     @GWT3EntryPoint
     public void onModuleLoad() {
         new AppBootstrap(this).initialize();
@@ -46,13 +41,8 @@ public class App {
 
     @PostConstruct
     public void init() {
-
-        DomGlobal.console.log("binit 1" + (main != null));
-        DomGlobal.console.log("binit 2" + (main.getElement() != null));
-
         DomGlobal.document.body.appendChild(main.getElement());
         initToast();
-        navigation.goToWithRole(DefaultPage.class);
     }
 
     private void initToast() {

@@ -41,7 +41,7 @@ import io.crysknife.ui.navigation.client.local.TransitionTo;
 @Page(path = "navigation")
 @Singleton
 @Templated("navigation.html")
-public class WidgetPanel implements io.crysknife.client.IsElement<HTMLDivElement> {
+public class NavigationDemo implements io.crysknife.client.IsElement<HTMLDivElement> {
 
     @Inject
     private Navigation navigation;
@@ -59,25 +59,25 @@ public class WidgetPanel implements io.crysknife.client.IsElement<HTMLDivElement
     }
 
     @PageShown
-    public void PageShowing() {
+    private void PageShowing() {
         DomGlobal.console.log("PageShowing " + getClass().getCanonicalName());
 
     }
 
     @PageShowing
-    public void PageShown() {
+    private void PageShown() {
         DomGlobal.console.log("PageShown " + getClass().getCanonicalName());
 
     }
 
     @PageHidden
-    public void PageHidden() {
+    private void PageHidden() {
         DomGlobal.console.log("PageHidden " + getClass().getCanonicalName());
 
     }
 
     @PageHiding
-    public void PageHiding() {
+    private void PageHiding() {
         DomGlobal.console.log("PageHiding " + getClass().getCanonicalName());
 
     }

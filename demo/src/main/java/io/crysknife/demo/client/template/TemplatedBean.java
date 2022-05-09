@@ -24,8 +24,6 @@ import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import org.gwtproject.event.dom.client.ClickEvent;
-import org.gwtproject.user.client.ui.Button;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -44,10 +42,6 @@ public class TemplatedBean implements IsElement<HTMLDivElement> {
     @DataField
     private HTMLButtonElement button;
 
-    @Inject
-    @DataField
-    private Button button1;
-
     @PostConstruct
     public void init() {
 
@@ -56,11 +50,6 @@ public class TemplatedBean implements IsElement<HTMLDivElement> {
     @EventHandler("button")
     public void onClick(@ForEvent("click") final MouseEvent e) {
         DomGlobal.alert("HTMLButtonElement pressed");
-    }
-
-    @EventHandler("button1")
-    public void onButton1(ClickEvent handler) {
-        DomGlobal.alert("GWT Button->ClickEvent pressed");
     }
 
     public HTMLDivElement getElement() {
