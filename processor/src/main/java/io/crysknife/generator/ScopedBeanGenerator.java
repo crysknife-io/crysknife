@@ -18,7 +18,20 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
+import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
@@ -34,16 +47,19 @@ import io.crysknife.client.Reflect;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.OnFieldAccessed;
-import io.crysknife.definition.*;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.InjectionParameterDefinition;
+import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
-import org.checkerframework.checker.units.qual.C;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.Dependent;
 import javax.inject.Provider;
 import javax.lang.model.element.ExecutableElement;
@@ -52,6 +68,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -63,9 +80,12 @@ import static com.github.javaparser.ast.expr.UnaryExpr.Operator.LOGICAL_COMPLEME
  */
 public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefinition> {
 
-  protected FieldAccessExpr instance;
+  protected NameExpr instance;
 
-  private PostConstructGenerator postConstructGenerator = new PostConstructGenerator(iocContext);
+  private PostConstructGenerator postConstructGenerator =
+      new PostConstructGenerator(logger, iocContext);
+
+  private PreDestroyGenerator preDestroyGenerator = new PreDestroyGenerator(logger, iocContext);
 
   public ScopedBeanGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
@@ -84,6 +104,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     generateInstanceGetMethodDecorators(clazz, beanDefinition);
     generateInstanceGetMethodReturn(clazz, beanDefinition);
     processPostConstructAnnotation(clazz, beanDefinition);
+    processPreDestroyAnnotation(clazz, beanDefinition);
     write(clazz, beanDefinition);
   }
 
@@ -193,11 +214,13 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
+    String clazzName = Utils.getSimpleClassName(classBuilder.beanDefinition.getType());
+
     MethodDeclaration getMethodDeclaration =
         classBuilder.addMethod("getInstance", Modifier.Keyword.PUBLIC);
 
     getMethodDeclaration.addAnnotation(Override.class);
-    getMethodDeclaration.setType(Utils.getSimpleClassName(classBuilder.beanDefinition.getType()));
+    getMethodDeclaration.setType(clazzName);
 
     getMethodDeclaration.getBody().ifPresent(body -> {
 
@@ -209,15 +232,18 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
       body.addAndGetStatement(ifStmt);
       BlockStmt blockStmt = new BlockStmt();
 
-      blockStmt.addAndGetStatement(
-          new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"), new NullLiteralExpr(),
-              BinaryExpr.Operator.NOT_EQUALS)).setThenStmt(new ReturnStmt("instance")));
+      blockStmt.addAndGetStatement(new IfStmt()
+          .setCondition(new BinaryExpr(new NameExpr("instance"), new NullLiteralExpr(),
+              BinaryExpr.Operator.NOT_EQUALS))
+          .setThenStmt(
+              new ReturnStmt(new CastExpr().setType(new ClassOrInterfaceType().setName(clazzName))
+                  .setExpression(new NameExpr("instance")))));
       ifStmt.setThenStmt(blockStmt);
 
       body.addAndGetStatement(new AssignExpr()
           .setTarget(new VariableDeclarationExpr(new ClassOrInterfaceType().setName(
               Utils.getSimpleClassName(classBuilder.beanDefinition.getType())), "instance"))
-          .setValue(new MethodCallExpr("createInstance")));
+          .setValue(new MethodCallExpr("createInstanceInternal")));
 
       body.addAndGetStatement(new MethodCallExpr("initInstance").addArgument("instance"));
       body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
@@ -316,8 +342,10 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   public void generateInstanceGetMethodReturn(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    classBuilder.getGetMethodDeclaration().getBody().get()
-        .addStatement(new ReturnStmt(new NameExpr("instance")));
+    String clazzName = Utils.getSimpleClassName(classBuilder.beanDefinition.getType());
+    classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+        new ReturnStmt(new CastExpr().setType(new ClassOrInterfaceType().setName(clazzName))
+            .setExpression(new NameExpr("instance"))));
   }
 
   private void processPostConstructAnnotation(ClassBuilder classBuilder,
@@ -335,9 +363,26 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     }
   }
 
+  private void processPreDestroyAnnotation(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    List<ExecutableElement> preDestroy = Utils
+        .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
+            MoreTypes.asTypeElement(beanDefinition.getType()))
+        .stream().filter(elm -> elm.getAnnotation(PreDestroy.class) != null)
+        .collect(Collectors.toList());
+    if (!preDestroy.isEmpty()) {
+      if (preDestroy.size() > 1) {
+        throw new GenerationException(
+            String.format("Bean %s must have only one method annotated with @PreDestroy",
+                beanDefinition.getType()));
+      }
+      preDestroyGenerator.generate(beanDefinition.getType(), classBuilder, preDestroy.get(0));
+    }
+  }
+
   protected Expression generateInstanceInitializer(ClassBuilder classBuilder,
       BeanDefinition definition) {
-    instance = new FieldAccessExpr(new ThisExpr(), "instance");
+    instance = new NameExpr("instance");
     Expression instanceFieldAssignExpr =
         generateInstanceInitializerNewObjectExpr(classBuilder, definition);
     return new AssignExpr().setTarget(instance).setValue(instanceFieldAssignExpr);

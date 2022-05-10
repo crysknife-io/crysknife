@@ -25,15 +25,16 @@ import java.lang.annotation.Annotation;
  */
 public abstract class BeanFactory<T> {
 
-  protected BeanManager beanManager;
+  protected AbstractBeanManager beanManager;
 
   protected SyncBeanDef beanDef;
+
   protected T instance;
   private T incompleteInstance;
   private boolean initialized = false;
 
   protected BeanFactory(BeanManager beanManager) {
-    this.beanManager = beanManager;
+    this.beanManager = (AbstractBeanManager) beanManager;
   }
 
   public T getIncompleteInstance() {
@@ -69,9 +70,27 @@ public abstract class BeanFactory<T> {
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");
   }
 
+  protected <T> T createInstanceInternal() {
+    T instance = createInstance();
+    return addBeanInstanceToPool(instance, this);
+  }
+
   public T createContextualInstance(final Class<?>[] typeArgs, final Annotation[] qualifiers) {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", does not support contextual instances.");
+  }
+
+  protected void onDestroy() {
+
+  }
+
+  void onDestroyInternal() {
+    onDestroy();
+    this.instance = null;
+  }
+
+  protected <T> T addBeanInstanceToPool(Object instance, BeanFactory factory) {
+    return (T) beanManager.addBeanInstanceToPool(instance, factory);
   }
 
 }

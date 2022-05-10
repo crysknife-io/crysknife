@@ -33,6 +33,8 @@ import java.util.Set;
 public abstract class AbstractBeanManager implements BeanManager {
 
   private final Map<Class, BeanDefinitionHolder> beans = new HashMap<>();
+
+  private final Map<Object, BeanFactory> pool = new HashMap<>();
   private final Map<String, Class> beansByBeanName = new HashMap<>();
 
   protected AbstractBeanManager() {
@@ -117,7 +119,15 @@ public abstract class AbstractBeanManager implements BeanManager {
   }
 
   public void destroyBean(Object ref) {
-    // DO NOTHING ATM
+    if (pool.containsKey(ref)) {
+      pool.get(ref).onDestroyInternal();
+      pool.remove(ref);
+    }
+  }
+
+  <T> T addBeanInstanceToPool(Object instance, BeanFactory factory) {
+    pool.put(instance, factory);
+    return (T) instance;
   }
 
   <T> Collection<IOCBeanDef<T>> doLookupBean(final Class<T> type, Annotation... qualifiers) {
