@@ -80,13 +80,14 @@ public abstract class BeanFactory<T> {
         "The factory, " + getClass().getSimpleName() + ", does not support contextual instances.");
   }
 
-  protected void onDestroy() {
+  protected void onDestroy(T instance) {
 
   }
 
-  void onDestroyInternal() {
-    onDestroy();
+  void onDestroyInternal(T instance) {
+    onDestroy(instance);
     this.instance = null;
+    initialized = false;
   }
 
   protected <T> T addBeanInstanceToPool(Object instance, BeanFactory factory) {

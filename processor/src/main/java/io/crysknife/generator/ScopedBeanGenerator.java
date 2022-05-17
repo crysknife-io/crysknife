@@ -42,11 +42,11 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.BeanFactory;
-import io.crysknife.client.internal.OnFieldAccessed;
+import io.crysknife.client.internal.proxy.Interceptor;
+import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
@@ -363,21 +363,9 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     }
   }
 
-  private void processPreDestroyAnnotation(ClassBuilder classBuilder,
+  protected void processPreDestroyAnnotation(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    List<ExecutableElement> preDestroy = Utils
-        .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
-            MoreTypes.asTypeElement(beanDefinition.getType()))
-        .stream().filter(elm -> elm.getAnnotation(PreDestroy.class) != null)
-        .collect(Collectors.toList());
-    if (!preDestroy.isEmpty()) {
-      if (preDestroy.size() > 1) {
-        throw new GenerationException(
-            String.format("Bean %s must have only one method annotated with @PreDestroy",
-                beanDefinition.getType()));
-      }
-      preDestroyGenerator.generate(beanDefinition.getType(), classBuilder, preDestroy.get(0));
-    }
+    preDestroyGenerator.generate(beanDefinition, classBuilder);
   }
 
   protected Expression generateInstanceInitializer(ClassBuilder classBuilder,

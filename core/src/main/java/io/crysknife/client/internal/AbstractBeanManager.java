@@ -120,7 +120,7 @@ public abstract class AbstractBeanManager implements BeanManager {
 
   public void destroyBean(Object ref) {
     if (pool.containsKey(ref)) {
-      pool.get(ref).onDestroyInternal();
+      pool.get(ref).onDestroyInternal(ref);
       pool.remove(ref);
     }
   }

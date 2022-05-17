@@ -12,9 +12,10 @@
  * the License.
  */
 
-package io.crysknife.client.internal;
+package io.crysknife.client.internal.proxy;
 
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.internal.BeanFactory;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/30/21

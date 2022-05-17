@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright (C) 2021
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,15 +11,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.crysknife.client;
 
-import jsinterop.annotations.JsFunction;
+package io.crysknife.client.internal.proxy;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/18/19
+ * @author Dmitrii Tikhomirov Created by treblereel 10/3/21
  */
-@FunctionalInterface
-@JsFunction
-public interface SetFN {
-  boolean onInvoke(Object object, String objectKey, Object value);
+public interface CircularDependencyProxy<T> {
+
+  void setInstance(T instance);
+
+  T unwrap();
 }

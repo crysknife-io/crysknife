@@ -43,6 +43,8 @@ public class ClassBuilder {
   private MethodDeclaration getGetMethodDeclaration;
   private MethodDeclaration initMethodDeclaration;
   private ConstructorDeclaration constructorDeclaration;
+
+  private MethodDeclaration onDestroy;
   private HashMap<String, FieldDeclaration> fields = new HashMap<>();
 
   public ClassBuilder(BeanDefinition beanDefinition) {
@@ -64,6 +66,8 @@ public class ClassBuilder {
 
   public void setClassName(String className) {
     this.classDeclaration = clazz.addClass(className);
+    this.onDestroy = classDeclaration.addMethod("onDestroy", Modifier.Keyword.PROTECTED);
+
   }
 
   public MethodDeclaration getGetMethodDeclaration() {
@@ -130,7 +134,6 @@ public class ClassBuilder {
   }
 
   public MethodDeclaration addMethod(String methodName, Modifier.Keyword... modifiers) {
-
     return getClassDeclaration().addMethod(methodName, modifiers);
   }
 
@@ -161,5 +164,9 @@ public class ClassBuilder {
 
   public MethodDeclaration getInitInstanceMethod() {
     return initMethodDeclaration;
+  }
+
+  public MethodDeclaration getOnDestroyMethod() {
+    return onDestroy;
   }
 }

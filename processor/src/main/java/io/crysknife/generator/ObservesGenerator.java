@@ -14,12 +14,14 @@
 
 package io.crysknife.generator;
 
+import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.UnknownType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
@@ -36,7 +38,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/5/19
@@ -57,9 +59,6 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
   public void generate(ClassBuilder classBuilder, MethodDefinition methodDefinition) {
     ExecutableElement method = methodDefinition.getExecutableElement();
     BeanDefinition parent = iocContext.getBean(method.getEnclosingElement().asType());
-    if (!Utils.isDependent(parent)) {
-      return;
-    }
 
     if (method.getParameters().size() > 1) {
       throw new GenerationException("Method annotated with @Observes must contain only one param "
@@ -79,60 +78,88 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
               (method.getEnclosingElement().toString() + "." + method), parent.getType()));
     }
 
-
-    classBuilder.getClassCompilationUnit().addImport(Consumer.class);
-    TypeMirror caller = iocContext.getTypeMirror(Observes.class);
-    Statement call = generationUtils.generateMethodCall(caller, method, new NameExpr("event"));
-
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.getParameters().add(new Parameter().setName("event")
-        .setType(method.getParameters().get(0).asType().toString()));
-    lambda.setBody(call);
-
+    classBuilder.getClassCompilationUnit().addImport(BiConsumer.class);
+    classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
 
     VariableElement parameter = method.getParameters().get(0);
     TypeMirror parameterTypeMirror =
         iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
-    String parameterName = parameter.getEnclosingElement().getSimpleName().toString() + "_"
+
+    String consumer = parameter.getEnclosingElement().getSimpleName().toString() + "_"
         + parameterTypeMirror.toString().replaceAll("\\.", "_") + "_"
         + MoreElements.asType(method.getEnclosingElement()).getQualifiedName().toString()
             .replaceAll("\\.", "_");
 
-    classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
+
+    addConsumerField(classBuilder, consumer, methodDefinition, parameter);
+    addSubscriberCall(classBuilder, parameter, consumer);
+    addUnSubscriberCall(classBuilder, parameter, consumer);
+  }
+
+  private void addUnSubscriberCall(ClassBuilder classBuilder, VariableElement parameter,
+      String consumer) {
+    TypeMirror parameterTypeMirror =
+        iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
+
     MethodCallExpr eventFactory =
         new MethodCallExpr(new NameExpr("Event_Factory").getNameAsExpression(), "get");
     MethodCallExpr getEventHandler = new MethodCallExpr(eventFactory, "get")
         .addArgument(new FieldAccessExpr(new NameExpr(parameterTypeMirror.toString()), "class"));
-
-    Parameter argument = new Parameter();
-    argument.setName("(event)");
-
-    ExpressionStmt expressionStmt = new ExpressionStmt();
-    VariableDeclarationExpr variableDeclarationExpr = new VariableDeclarationExpr();
-
-    VariableDeclarator variableDeclarator = new VariableDeclarator();
-    variableDeclarator.setName(parameterName);
-
-    ClassOrInterfaceType consumerClassDeclaration =
-        new ClassOrInterfaceType().setName(Consumer.class.getCanonicalName());
-    consumerClassDeclaration
-        .setTypeArguments(new ClassOrInterfaceType().setName(parameter.asType().toString()));
-    variableDeclarator.setType(consumerClassDeclaration);
-    variableDeclarator.setInitializer(lambda);
-    variableDeclarationExpr.getVariables().add(variableDeclarator);
-    expressionStmt.setExpression(variableDeclarationExpr);
-
-    classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(expressionStmt);
 
     EnclosedExpr castToAbstractEventHandler = new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName("io.crysknife.client.internal.AbstractEventHandler"),
         getEventHandler));
 
     MethodCallExpr addSubscriber =
-        new MethodCallExpr(castToAbstractEventHandler, "addSubscriber").addArgument(parameterName);
+        new MethodCallExpr(castToAbstractEventHandler, "removeSubscriber").addArgument("instance")
+            .addArgument(consumer);
+
+    classBuilder.getOnDestroyMethod().getBody().get().addAndGetStatement(addSubscriber);
+  }
+
+  private void addSubscriberCall(ClassBuilder classBuilder, VariableElement parameter,
+      String consumer) {
+    TypeMirror parameterTypeMirror =
+        iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
+
+    MethodCallExpr eventFactory =
+        new MethodCallExpr(new NameExpr("Event_Factory").getNameAsExpression(), "get");
+    MethodCallExpr getEventHandler = new MethodCallExpr(eventFactory, "get")
+        .addArgument(new FieldAccessExpr(new NameExpr(parameterTypeMirror.toString()), "class"));
+
+    EnclosedExpr castToAbstractEventHandler = new EnclosedExpr(new CastExpr(
+        new ClassOrInterfaceType().setName("io.crysknife.client.internal.AbstractEventHandler"),
+        getEventHandler));
+
+    MethodCallExpr addSubscriber = new MethodCallExpr(castToAbstractEventHandler, "addSubscriber")
+        .addArgument("instance").addArgument(consumer);
 
     classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(addSubscriber);
+  }
+
+  private void addConsumerField(ClassBuilder classBuilder, String parameterName,
+      MethodDefinition methodDefinition, VariableElement parameter) {
+    ExecutableElement method = methodDefinition.getExecutableElement();
+    BeanDefinition parent = iocContext.getBean(method.getEnclosingElement().asType());
+
+    TypeMirror caller = iocContext.getTypeMirror(Observes.class);
+    Statement call = generationUtils.generateMethodCall(caller, method, new NameExpr("event"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.getParameters().add(new Parameter().setName("event").setType(new UnknownType()));
+    lambda.getParameters().add(new Parameter().setName("instance").setType(new UnknownType()));
+    lambda.setBody(call);
+
+    ClassOrInterfaceType consumerClassDeclaration =
+        new ClassOrInterfaceType().setName(BiConsumer.class.getCanonicalName());
+    consumerClassDeclaration.setTypeArguments(
+        new ClassOrInterfaceType().setName(parameter.asType().toString()),
+        new ClassOrInterfaceType().setName(
+            iocContext.getGenerationContext().getTypes().erasure(parent.getType()).toString()));
+
+    classBuilder.addFieldWithInitializer(consumerClassDeclaration, parameterName, lambda,
+        Keyword.PRIVATE, Keyword.FINAL);
   }
 
 }

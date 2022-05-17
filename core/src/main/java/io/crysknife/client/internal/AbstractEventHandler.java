@@ -13,24 +13,41 @@
  */
 package io.crysknife.client.internal;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 import javax.enterprise.event.Event;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/1/19
  */
-public abstract class AbstractEventHandler<T> implements Event<T> {
+public abstract class AbstractEventHandler<T, I> implements Event<T> {
 
-  private Set<Consumer<T>> subscribers = new HashSet<>();
+  private Map<I, List<BiConsumer<T, I>>> subscribers = new HashMap<>();
 
   public void fire(T t) {
-    subscribers.forEach(subscriber -> subscriber.accept(t));
+    subscribers.forEach((instance, subscribers) -> subscribers
+        .forEach(subscriber -> subscriber.accept(t, instance)));
   }
 
-  public void addSubscriber(Consumer<T> subscriber) {
-    subscribers.add(subscriber);
+  public void addSubscriber(I instance, BiConsumer<T, I> subscriber) {
+    if (!subscribers.containsKey(instance)) {
+      subscribers.put(instance, new ArrayList<>());
+    }
+    subscribers.get(instance).add(subscriber);
+  }
+
+  public void removeSubscriber(I instance, BiConsumer<T, I> subscriber) {
+    if (subscribers.containsKey(instance)) {
+      if (subscribers.get(instance).contains(subscriber)) {
+        subscribers.get(instance).remove(subscriber);
+      }
+      if (subscribers.get(instance).isEmpty()) {
+        subscribers.remove(instance);
+      }
+    }
   }
 }

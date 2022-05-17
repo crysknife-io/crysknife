@@ -11,19 +11,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.crysknife.client;
+package io.crysknife.client.internal.proxy;
 
-import jsinterop.annotations.JsType;
-import jsinterop.base.JsPropertyMap;
+import jsinterop.annotations.JsFunction;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/13/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/18/19
  */
-@JsType(isNative = true, namespace = "<global>")
-public class Proxy {
-
-  public Proxy(Object target, JsPropertyMap handler) {
-
-  }
-
+@FunctionalInterface
+@JsFunction
+public interface SetFN {
+  boolean onInvoke(Object object, String objectKey, Object value);
 }

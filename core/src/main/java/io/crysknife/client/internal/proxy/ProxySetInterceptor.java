@@ -11,15 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package io.crysknife.client;
+package io.crysknife.client.internal.proxy;
 
-import jsinterop.annotations.JsFunction;
+import jsinterop.base.Js;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 12/16/19
+ * @author Dmitrii Tikhomirov Created by treblereel 12/18/19
  */
-@FunctionalInterface
-@JsFunction
-public interface GetFN {
-  Object onInvoke(Object object, String objectKey, Object receiver);
+public final class ProxySetInterceptor implements SetFN {
+
+  private Object target;
+
+  public ProxySetInterceptor(Object target) {
+    this.target = target;
+  }
+
+  @Override
+  public boolean onInvoke(Object object, String objectKey, Object value) {
+    Js.asPropertyMap(object).set(objectKey, value);
+    return true;
+  }
 }
