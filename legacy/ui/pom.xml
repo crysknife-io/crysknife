@@ -7,7 +7,7 @@
     <parent>
         <artifactId>legacy-parent</artifactId>
         <groupId>io.crysknife.legacy</groupId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>legacy-ui-parent</artifactId>
@@ -27,7 +27,6 @@
     <modules>
         <module>databinding</module>
         <module>gwt-dom</module>
-        <module>navigation</module>
         <module>validation</module>
     </modules>
 

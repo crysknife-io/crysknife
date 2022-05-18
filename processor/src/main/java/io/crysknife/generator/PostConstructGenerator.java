@@ -18,6 +18,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.validation.PostConstructValidator;
 
@@ -32,7 +33,7 @@ public class PostConstructGenerator {
   private PostConstructValidator validator;
   private GenerationUtils utils;
 
-  public PostConstructGenerator(IOCContext iocContext) {
+  public PostConstructGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     this.validator = new PostConstructValidator(iocContext);
     this.utils = new GenerationUtils(iocContext);
   }

@@ -28,11 +28,11 @@ import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.Interceptor;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.BeanFactory;
-import io.crysknife.client.internal.OnFieldAccessed;
+import io.crysknife.client.internal.proxy.Interceptor;
+import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
@@ -178,4 +178,8 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
       // throw new GenerationException(e1);
     }
   }
+
+  @Override
+  protected void processPreDestroyAnnotation(ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {}
 }

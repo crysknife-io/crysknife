@@ -15,12 +15,10 @@
 package io.crysknife.demo.client.events;
 
 import java.util.Random;
-import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

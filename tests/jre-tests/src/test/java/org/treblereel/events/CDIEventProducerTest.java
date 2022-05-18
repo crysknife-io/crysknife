@@ -18,6 +18,11 @@ import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.events.inheritance.ObservesBean;
 
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -35,14 +40,24 @@ public class CDIEventProducerTest extends AbstractTest {
 
   @Test
   public void testSimpleEvents2() {
+    Set<SimpleEvent> events = app.beanManager.lookupBean(SimpleEventSubscriberApplicationScoped.class)
+            .getInstance().events;
+
     SimpleEventSubscriberDependent simpleEventSubscriberDependent =
         app.beanManager.lookupBean(SimpleEventSubscriberDependent.class).getInstance();
 
     CDIEventProducer cdiEventProducer =
         app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
     cdiEventProducer.simpleEventEvent.fire(new SimpleEvent());
-    assertEquals(2, app.beanManager.lookupBean(SimpleEventSubscriberApplicationScoped.class)
-        .getInstance().events.size());
+
+    assertEquals(1, events.size());
+    assertEquals(1, simpleEventSubscriberDependent.events.size());
+
+    app.beanManager.destroyBean(app.beanManager.lookupBean(SimpleEventSubscriberApplicationScoped.class)
+            .getInstance());
+    app.beanManager.destroyBean(simpleEventSubscriberDependent);
+    cdiEventProducer.simpleEventEvent.fire(new SimpleEvent());
+    assertEquals(1, events.size());
     assertEquals(1, simpleEventSubscriberDependent.events.size());
   }
 
@@ -53,6 +68,34 @@ public class CDIEventProducerTest extends AbstractTest {
         app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
     cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
     assertEquals(1, holder.events.size());
+  }
+
+  @Test
+  public void testSimpleEvents4() {
+    Set<PersonEvent> events = new HashSet<>();
+    TesterWithDependentEventListener holder = app.beanManager.lookupBean(TesterWithDependentEventListener.class).getInstance();
+    holder.holder.events = events;
+    CDIEventProducer cdiEventProducer =
+            app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
+    cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
+    assertEquals(1, events.size());
+    app.beanManager.destroyBean(holder.holder);
+    cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
+    assertEquals(1, events.size());
+  }
+
+  @Test
+  public void testSimpleEvents5() {
+    Set<PersonEvent> events = new HashSet<>();
+    TesterWithSingletonEventListener holder = app.beanManager.lookupBean(TesterWithSingletonEventListener.class).getInstance();
+    holder.holder.events = events;
+    CDIEventProducer cdiEventProducer =
+            app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
+    cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
+    assertEquals(1, events.size());
+    app.beanManager.destroyBean(holder.holder);
+    cdiEventProducer.managerEvent.fire(new PersonEvent(new Manager()));
+    assertEquals(1, events.size());
   }
 
   @Test

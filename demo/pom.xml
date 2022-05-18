@@ -5,7 +5,7 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.5-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <properties>
@@ -67,12 +67,12 @@
     </dependency>
 
     <dependency>
-      <groupId>io.crysknife.legacy.ui.navigation</groupId>
+      <groupId>io.crysknife.ui.navigation</groupId>
       <artifactId>api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.crysknife.legacy.ui.navigation</groupId>
+      <groupId>io.crysknife.ui.navigation</groupId>
       <artifactId>generator</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>

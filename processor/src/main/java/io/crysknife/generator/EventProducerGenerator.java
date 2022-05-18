@@ -41,7 +41,7 @@ import javax.inject.Inject;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/31/19
@@ -123,67 +123,5 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         classBuilder.addConstructorDeclaration(Modifier.Keyword.PRIVATE);
     constructorDeclaration.getBody().addAndGetStatement(new MethodCallExpr("super").addArgument(
         new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get")));
-
-
-    iocContext.getParametersByAnnotation(Observes.class.getCanonicalName()).forEach(sub -> {
-      ExecutableElement method = MoreElements.asExecutable(sub.getEnclosingElement());
-      BeanDefinition parent = iocContext.getBean(method.getEnclosingElement().asType());
-      if (!Utils.isDependent(parent)) {
-        VariableElement parameter = method.getParameters().get(0);
-
-        ObjectCreationExpr eventHolder =
-            new ObjectCreationExpr().setType(AbstractEventFactory.EventHolder.class);
-
-        ClassOrInterfaceType type = new ClassOrInterfaceType();
-        type.setName(Consumer.class.getCanonicalName());
-        type.setTypeArguments(new ClassOrInterfaceType().setName(parameter.asType().toString()));
-
-        ObjectCreationExpr consumer = new ObjectCreationExpr();
-        consumer.setType(type);
-
-        MethodDeclaration accept = new MethodDeclaration();
-        accept.setModifiers(Modifier.Keyword.PUBLIC);
-        accept.addAnnotation(Override.class);
-        accept.setName("accept");
-        accept.setType("void");
-        accept.getParameters()
-            .add(new Parameter().setType(parameter.asType().toString()).setName("event"));
-        accept.getBody().ifPresent(body -> {
-
-          VariableDeclarator variableDeclarator = new VariableDeclarator();
-
-          ClassOrInterfaceType consumerClassDeclaration =
-              new ClassOrInterfaceType().setName(parent.getQualifiedName());
-          variableDeclarator.setType(consumerClassDeclaration);
-          variableDeclarator.setInitializer(
-              new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                  .addArgument(parent.getQualifiedName() + ".class"), "getInstance"));
-          variableDeclarator.setName("instance");
-
-          ExpressionStmt expressionStmt = new ExpressionStmt();
-          VariableDeclarationExpr variableDeclarationExpr = new VariableDeclarationExpr();
-          variableDeclarationExpr.addVariable(variableDeclarator);
-          expressionStmt.setExpression(variableDeclarationExpr);
-          body.addAndGetStatement(expressionStmt);
-
-          TypeMirror caller = iocContext.getGenerationContext().getElements()
-              .getTypeElement(Event.class.getCanonicalName()).asType();
-          Statement call =
-              generationUtils.generateMethodCall(caller, method, new NameExpr("event"));
-          body.addAndGetStatement(call);
-        });
-
-        NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
-        anonymousClassBody.add(accept);
-        consumer.setAnonymousClassBody(anonymousClassBody);
-        eventHolder.addArgument(consumer);
-        constructorDeclaration.getBody()
-            .addAndGetStatement(new MethodCallExpr(new EnclosedExpr(new CastExpr()
-                .setExpression(
-                    new MethodCallExpr("get").addArgument(parameter.asType().toString() + ".class"))
-                .setType("io.crysknife.client.internal.AbstractEventHandler")), "addSubscriber")
-                    .addArgument(consumer));
-      }
-    });
   }
 }
