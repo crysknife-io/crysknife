@@ -18,7 +18,6 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.google.auto.common.MoreElements;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.definition.BeanDefinition;
@@ -27,17 +26,14 @@ import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 
 import javax.inject.Inject;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/1/20

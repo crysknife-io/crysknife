@@ -20,7 +20,6 @@ import java.util.Map;
 
 import elemental2.core.JsRegExp;
 import elemental2.core.RegExpResult;
-import elemental2.dom.DomGlobal;
 import io.crysknife.client.internal.collections.BiMap;
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 import io.crysknife.client.internal.collections.Multimap;

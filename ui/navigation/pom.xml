@@ -3,13 +3,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>io.crysknife.legacy.ui</groupId>
-    <artifactId>legacy-ui-parent</artifactId>
+    <artifactId>ui-parent</artifactId>
+    <groupId>io.crysknife.ui</groupId>
     <version>0.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>navigation-parent</artifactId>
-  <groupId>io.crysknife.legacy.ui.navigation</groupId>
+  <groupId>io.crysknife.ui.navigation</groupId>
 
   <packaging>pom</packaging>
 

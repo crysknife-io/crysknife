@@ -27,6 +27,7 @@
     <module>templates</module>
     <module>mutationobserver</module>
     <module>translation</module>
+    <module>navigation</module>
   </modules>
 
   <licenses>

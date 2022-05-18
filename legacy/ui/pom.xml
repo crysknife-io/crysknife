@@ -27,7 +27,6 @@
     <modules>
         <module>databinding</module>
         <module>gwt-dom</module>
-        <module>navigation</module>
         <module>validation</module>
     </modules>
 
