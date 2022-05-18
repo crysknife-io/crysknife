@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public abstract class AbstractBeanManager implements BeanManager {
 
   private final Map<Class, BeanDefinitionHolder> beans = new HashMap<>();
 
-  private final Map<Object, BeanFactory> pool = new HashMap<>();
+  private final Map<Object, BeanFactory> pool = new IdentityHashMap<>();
   private final Map<String, Class> beansByBeanName = new HashMap<>();
 
   protected AbstractBeanManager() {
