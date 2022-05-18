@@ -5,7 +5,7 @@
   <parent>
     <artifactId>databinding-parent</artifactId>
     <groupId>io.crysknife.legacy.ui.databinding</groupId>
-    <version>0.4</version>
+    <version>0.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>generator</artifactId>
