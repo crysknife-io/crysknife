@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>bom</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4</version>
     <packaging>pom</packaging>
 
 
@@ -136,13 +136,13 @@
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.legacy.ui.navigation</groupId>
+                <groupId>io.crysknife.ui.navigation</groupId>
                 <artifactId>api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>io.crysknife.legacy.ui.navigation</groupId>
+                <groupId>io.crysknife.ui.navigation</groupId>
                 <artifactId>generator</artifactId>
                 <version>${project.version}</version>
             </dependency>

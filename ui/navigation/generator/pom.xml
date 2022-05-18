@@ -6,7 +6,7 @@
     <parent>
         <artifactId>navigation-parent</artifactId>
         <groupId>io.crysknife.ui.navigation</groupId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4</version>
     </parent>
 
     <artifactId>generator</artifactId>
@@ -50,7 +50,7 @@
             <artifactId>crysknife-processor</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.crysknife.legacy.ui.navigation</groupId>
+            <groupId>io.crysknife.ui.navigation</groupId>
             <artifactId>api</artifactId>
         </dependency>
     </dependencies>

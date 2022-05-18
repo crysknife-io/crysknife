@@ -7,7 +7,7 @@
     <parent>
         <artifactId>legacy-parent</artifactId>
         <groupId>io.crysknife.legacy</groupId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4</version>
     </parent>
 
     <artifactId>legacy-ui-parent</artifactId>
