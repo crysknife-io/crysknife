@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<module>
-  <inherits name="elemental2.dom.Dom"/>
-  <inherits name="io.crysknife.Crysknife"/>
-  <source path="client"/>
-</module>

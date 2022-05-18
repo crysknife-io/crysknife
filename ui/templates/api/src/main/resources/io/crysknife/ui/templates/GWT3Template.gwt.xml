@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<module>
-    <inherits name='io.crysknife.ui.templates.Template'/>
-    <inherits name="org.gwtproject.user.Widgets" />
-    <inherits name="org.gwtproject.event.dom.DomEvent"/>
-    <source path="client"/>
-</module>
