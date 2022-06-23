@@ -114,27 +114,29 @@ public class Navigation {
 
   // ------------------------------------------------------ setup & tear down
 
+  private Window window = DomGlobal.window;
+
   void init() {
     if (navGraph.isEmpty()) {
       return;
     }
 
-    String raw = DomGlobal.window.location.hash;
+    String raw = window.location.hash;
+    navigationErrorHandler = new DefaultNavigationErrorHandler(this);
     navigationErrorHandler = new DefaultNavigationErrorHandler(this);
     processToken(raw);
 
-    DomGlobal.window.addEventListener("hashchange", evt -> {
-      String raw1 = DomGlobal.window.location.hash;
-      HashChangeEvent hashChangeEvent = (HashChangeEvent) evt;
+    window.addEventListener("hashchange", evt -> {
+      String raw1 = window.location.hash;
       processToken(raw1);
     });
 
-    DomGlobal.window.addEventListener("locationchange", evt -> {
+    window.addEventListener("locationchange", evt -> {
       HashChangeEvent.HashChangeEventEventInitDictType eventEventInitDictType =
           HashChangeEvent.HashChangeEventEventInitDictType.create();
       eventEventInitDictType.setOldURL(hash());
-      eventEventInitDictType.setNewURL(DomGlobal.window.location.href);
-      DomGlobal.window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
+      eventEventInitDictType.setNewURL(window.location.href);
+      window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
     });
   }
 
@@ -283,7 +285,7 @@ public class Navigation {
             HashChangeEvent.HashChangeEventEventInitDictType.create();
         eventEventInitDictType.setNewURL(request.state.toString());
         eventEventInitDictType.setOldURL(hash());
-        DomGlobal.window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
+        window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
       }
     } else {
       // Process all navigation requests captured in the lifecycle methods.
@@ -464,6 +466,11 @@ public class Navigation {
     init();
   }
 
+  public void setWindowObject(Window window) {
+    this.window = window;
+    init();
+  }
+
   public void setNavigationContainer(HTMLElement navigationContainer) {
     this.navigationContainer = navigationContainer;
     init();
@@ -574,7 +581,7 @@ public class Navigation {
   }
 
   private String hash() {
-    String raw = DomGlobal.window.location.hash;
+    String raw = window.location.hash;
     if (!raw.isEmpty()) {
       if (raw.indexOf("?") > 0) {
         raw = new JsString(raw).split("?").getAt(0);
