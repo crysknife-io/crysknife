@@ -30,7 +30,7 @@ import io.crysknife.ui.navigation.client.local.Page;
  */
 @Singleton
 @Page(role = DefaultPage.class)
-@Templated(value = "about.html")
+@Templated(value = "about.html", stylesheet = "../about/MyCustomeStyle.gss")
 public class About implements IsElement<HTMLDivElement> {
 
     @Inject
