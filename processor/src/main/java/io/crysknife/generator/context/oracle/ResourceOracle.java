@@ -13,6 +13,8 @@
  */
 package io.crysknife.generator.context.oracle;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
 import java.net.URL;
 
 /**
@@ -30,8 +32,6 @@ public interface ResourceOracle {
   /** Returns the resource for the given path name or null if there is no such resource. */
   URL[] findResources(String packageName, String[] pathName);
 
-  URL findResource(String pkg, String relativeName);
-
-  URL findResource(String fullPath);
+  URL findResource(Element elm, String relativeName);
 
 }

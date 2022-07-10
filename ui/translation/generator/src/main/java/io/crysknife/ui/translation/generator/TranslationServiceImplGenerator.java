@@ -83,8 +83,8 @@ public class TranslationServiceImplGenerator {
   private void maybeGenerateContentHolders(Set<VariableElement> fields, StringBuffer source) {
     fields.stream().map(field -> field.getEnclosingElement())
         .map(element -> MoreElements.asType(element)).forEach(holder -> {
-          String lookup = holder.toString().replaceAll("\\.", "/") + ".properties";
-          URL url = context.getGenerationContext().getResourceOracle().findResource(lookup);
+          URL url = context.getGenerationContext().getResourceOracle().findResource(holder,
+              holder.getSimpleName().toString() + ".properties");
           if (url != null) {
             generateResource(url, source);
           }
@@ -96,8 +96,7 @@ public class TranslationServiceImplGenerator {
       if (path.endsWith(JSON)) {
         throw new GenerationException(JSON + " bundle is not supported atm : " + type);
       } else if (path.endsWith(PROPERTIES)) {
-        String fullPath = Utils.getPackageName(type).replaceAll("\\.", "/") + "/" + path;
-        URL url = context.getGenerationContext().getResourceOracle().findResource(fullPath);
+        URL url = context.getGenerationContext().getResourceOracle().findResource(type, path);
         if (url != null) {
           generateResource(url, source);
         }

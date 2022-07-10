@@ -71,10 +71,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -222,31 +224,23 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   private StyleSheet getStylesheet(TypeElement type, Templated templated) {
     if (Strings.emptyToNull(templated.stylesheet()) == null) {
       List<String> postfixes = Arrays.asList(".css", ".gss", ".less");
-      String path = MoreElements.getPackage(type).toString().replaceAll("\\.", "/");
       for (String postfix : postfixes) {
         String beanName = type.getSimpleName().toString() + postfix;
         URL file = iocContext.getGenerationContext().getResourceOracle()
-            .findResource(path + "/" + beanName);
+            .findResource(MoreElements.getPackage(type), beanName);
         if (file != null) {
           return new StyleSheet(type.getSimpleName() + postfix, file);
         }
       }
     } else {
       try {
-        String path =
-            MoreElements.getPackage(type).getQualifiedName().toString().replaceAll("\\.", "/") + "/"
-                + templated.stylesheet();
-
-        URL url = iocContext.getGenerationContext().getResourceOracle().findResource(path);
+        URL url = iocContext.getGenerationContext().getResourceOracle()
+            .findResource(MoreElements.getPackage(type), templated.stylesheet());
         if (url != null) {
           return new StyleSheet(templated.stylesheet(), url);
         }
       } catch (IllegalArgumentException e1) {
-        String path =
-            MoreElements.getPackage(type).getQualifiedName().toString().replaceAll("\\.", "/") + "/"
-                + templated.stylesheet();
 
-        throw new GenerationException(path, e1);
       }
       throw new GenerationException(
           String.format("Unable to find stylesheet defined at %s", type.getQualifiedName()));
@@ -871,7 +865,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
             + templateSelector.template;
 
     try {
-      URL url = iocContext.getGenerationContext().getResourceOracle().findResource(fqTemplate);
+      URL url = iocContext.getGenerationContext().getResourceOracle().findResource(type,
+          templateSelector.template);
       if (url == null) {
         abortWithError(type, "Cannot find template \"%s\". Please make sure the template exists.",
             fqTemplate);

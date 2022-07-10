@@ -386,13 +386,40 @@ public class BindableProxyGenerator {
 
     if (!elm.isFinal) {
       sb.append(newLine);
-      sb.append(String.format("public void %s(%s value) {", elm.setter, getType(type, elm)));
+
+      Optional<TypeMirror> returnType = maybeHasReturnType(type, elm);
+      sb.append(String.format("public %s %s(%s value) {",
+          returnType.isPresent() ? returnType.get() : "void", elm.getter, getType(type, elm)));
       sb.append(newLine);
-      sb.append(String.format("  changeAndFire(\"%s\", value);", elm.name));
-      sb.append(newLine);
+      if (returnType.isPresent()) {
+        sb.append(String.format("  %s oldValue = target.%s();", elm.type.toString(), elm.getter));
+        sb.append(newLine);
+        sb.append(String.format("  final %s returnValueOfSetter = target.%s(value);",
+            returnType.get(), elm.setter));
+        sb.append(newLine);
+        sb.append(String.format(
+            "   agent.updateWidgetsAndFireEvent(false, \"%s\", oldValue, value);", elm.name));
+        sb.append(newLine);
+        sb.append("  return returnValueOfSetter;");
+        sb.append(newLine);
+      } else {
+        sb.append(String.format("  changeAndFire(\"%s\", value);", elm.name));
+        sb.append(newLine);
+      }
       sb.append("}");
       sb.append(newLine);
     }
+  }
+
+  private Optional<TypeMirror> maybeHasReturnType(TypeElement type, PropertyHolder elm) {
+    Optional<ExecutableElement> setter = Utils.getAllMethodsIn(elements, type).stream()
+        .filter(m -> m.getSimpleName().toString().equals(elm.setter))
+        .filter(m -> m.getParameters().size() == 1)
+        .filter(m -> types.isSameType(m.getParameters().get(0).asType(), elm.type)).findFirst();
+    if (setter.isPresent()) {
+      return Optional.of(setter.get().getReturnType());
+    }
+    return Optional.empty();
   }
 
   private void equals(String clazzName, StringBuffer sb) {

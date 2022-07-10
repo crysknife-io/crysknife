@@ -14,11 +14,13 @@
 
 package io.crysknife.ui.templates.generator;
 
+import com.google.auto.common.MoreElements;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.processing.FilerException;
+import javax.lang.model.element.PackageElement;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -40,8 +42,12 @@ public class TemplateWidgetGenerator {
   TemplateWidgetGenerator build(boolean isGWT2) {
     if (isGWT2)
       throw new GenerationException("Unsupported operation");
+
+    PackageElement pkg = iocContext.getGenerationContext().getProcessingEnvironment()
+        .getElementUtils().getPackageElement(this.getClass().getPackage().getName());
+
     URL url = iocContext.getGenerationContext().getResourceOracle()
-        .findResource("io/crysknife/ui/templates/generator/TemplateWidget.java.bak");
+        .findResource(MoreElements.getPackage(pkg), "TemplateWidget.java.bak");
 
     if (url == null) {
       throw new GenerationException(
@@ -58,7 +64,7 @@ public class TemplateWidgetGenerator {
   }
 
   void generate() {
-    JavaFileObject builderFile = null;
+    JavaFileObject builderFile;
     try {
       builderFile = iocContext.getGenerationContext().getProcessingEnvironment().getFiler()
           .createSourceFile("org.gwtproject.user.client.ui.TemplateWidget");
