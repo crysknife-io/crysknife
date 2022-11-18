@@ -5,14 +5,14 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.5.1-SNAPSHOT</version>
+  <version>0.5.2-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <properties>
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <elemental2.version>1.1.0</elemental2.version>
-    <j2cl.maven.plugin.version>0.19</j2cl.maven.plugin.version>
+    <j2cl.maven.plugin.version>0.20</j2cl.maven.plugin.version>
     <maven.jetty.plugin.version>9.4.31.v20200723</maven.jetty.plugin.version>
     <maven.tomcat.plugin.version>2.2</maven.tomcat.plugin.version>
     <maven.properties.plugin>1.0.0</maven.properties.plugin>

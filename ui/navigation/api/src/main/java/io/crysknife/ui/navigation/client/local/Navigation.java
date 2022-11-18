@@ -280,7 +280,8 @@ public class Navigation {
       // This is the page which has to be displayed and the browser's history
       // can be updated.
       redirectDepth = 0;
-      if (!hash().equals(request.state.toString())) {
+      if (!hash().equals(request.state.toString())
+          && currentToken.equals(request.state.toString())) {
         HashChangeEvent.HashChangeEventEventInitDictType eventEventInitDictType =
             HashChangeEvent.HashChangeEventEventInitDictType.create();
         eventEventInitDictType.setNewURL(request.state.toString());
