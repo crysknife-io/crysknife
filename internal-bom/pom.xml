@@ -71,7 +71,7 @@
         <javax.inject.version>1</javax.inject.version>
         <lesscss.version>1.10</lesscss.version>
         <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
-        <google.guava.version>28.1-jre</google.guava.version>
+        <google.guava.version>29.0-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
 
         <javaparser.core.version>3.15.18</javaparser.core.version>
