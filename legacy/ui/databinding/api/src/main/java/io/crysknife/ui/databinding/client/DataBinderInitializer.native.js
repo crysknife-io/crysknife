@@ -14,7 +14,7 @@
 
 let DataBinder__Factory = goog.forwardDeclare('io.crysknife.ui.databinding.client.api.DataBinder_Factory$impl');
 
-DataBinderInitializer.m_loadBindableProxies__ = function() {
+DataBinderInitializer.m_loadBindableProxies__void = function() {
     DataBinder__Factory = goog.module.get('io.crysknife.ui.databinding.client.api.DataBinder_Factory$impl');
-    DataBinder__Factory.m_get__();
+    DataBinder__Factory.m_get__io_crysknife_ui_databinding_client_api_DataBinder_Factory();
 };

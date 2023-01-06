@@ -68,6 +68,10 @@
       <artifactId>crysknife-processor</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.treblereel.j2cl.processors</groupId>
+      <artifactId>utils</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.crysknife.ui.templates</groupId>
       <artifactId>api</artifactId>
     </dependency>

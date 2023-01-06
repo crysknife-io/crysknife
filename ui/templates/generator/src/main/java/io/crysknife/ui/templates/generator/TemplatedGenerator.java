@@ -18,7 +18,6 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.type.TypeParameter;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import com.google.common.base.Optional;
@@ -28,13 +27,13 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
+import com.google.j2cl.transpiler.ast.MethodDescriptor;
 import com.inet.lib.less.Less;
 import elemental2.dom.*;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.IsElement;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
@@ -61,6 +60,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
+import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -71,12 +71,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -151,6 +149,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
 
   }
 
+  private final J2CLUtils j2CLUtils;
+
   private ProcessingEnvironment processingEnvironment;
   private Messager messager;
   private BeanDefinition beanDefinition;
@@ -167,6 +167,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);
     dataFieldProcessor = new DataFieldProcessor(iocContext);
     translationServiceGenerator = new TranslationServiceGenerator(iocContext);
+    j2CLUtils = new J2CLUtils(iocContext.getGenerationContext().getProcessingEnvironment());
   }
 
   @Override
@@ -457,10 +458,12 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
                 .setExpression(new LambdaExpr().setEnclosingParameters(true)
                     .setBody(new ExpressionStmt(new NameExpr("fake_root"))))));
 
+
+        String mangleName = getElementMethodMangleName(beanDefinition);
         block.addAndGetStatement(
             new MethodCallExpr(new NameExpr("interceptor"), "addGetMethodInterceptor").addArgument(
                 new MethodCallExpr(new NameExpr(Reflect.class.getCanonicalName()), "objectProperty")
-                    .addArgument(new StringLiteralExpr("m_getElement__"))
+                    .addArgument(new StringLiteralExpr(mangleName))
                     .addArgument(new NameExpr("instance")))
                 .addArgument(lambda));
 
@@ -478,6 +481,28 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
       }
     }
   }
+
+  private String getElementMethodMangleName(BeanDefinition definition) {
+    TypeElement element = MoreTypes.asTypeElement(definition.getType());
+    DeclaredType declaredType = (DeclaredType) definition.getType();
+    return MoreElements.getAllMethods((TypeElement) declaredType.asElement(), types, elements)
+        .stream().filter(m -> m.getSimpleName().toString().equals("getElement"))
+        .filter(e -> e.getReturnType().getKind().equals(TypeKind.DECLARED)
+            || e.getReturnType().getKind().equals(TypeKind.TYPEVAR))
+        .map(m -> {
+          if (m.getReturnType().getKind().equals(TypeKind.DECLARED)) {
+            return j2CLUtils.createDeclarationMethodDescriptor(m).getMangledName();
+          } else {
+            return Utils.getAllMethodsIn(elements, element).stream()
+                .filter(e -> e.getSimpleName().toString().equals("getElement"))
+                .map(e -> MoreTypes.asExecutable(types.asMemberOf(declaredType, e)).getReturnType()
+                    .toString())
+                .map(e -> "m_getElement__" + e.replaceAll("\\.", "_")).findFirst().get();
+          }
+        }).findFirst()
+        .orElseThrow(() -> new GenerationException("No getElement method found at " + element));
+  }
+
 
   private void setStylesheet(ClassBuilder builder, TemplateContext templateContext) {
     if (templateContext.getStylesheet() != null) {
@@ -582,7 +607,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
             "set").addArgument(
                 new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
                     .addArgument(new StringLiteralExpr(
-                        Utils.getJsFieldName(getVariableElement(element.getName()))))
+                        j2CLUtils.createFieldDescriptor(getVariableElement(element.getName()))
+                            .getMangledName()))
                     .addArgument("instance"));
       }
 
@@ -608,7 +634,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
             .addArgument("instance"),
         "get").addArgument(
             new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-                .addArgument(new StringLiteralExpr(Utils.getJsFieldName(field)))
+                .addArgument(
+                    new StringLiteralExpr(j2CLUtils.createFieldDescriptor(field).getMangledName()))
                 .addArgument("instance"));
   }
 

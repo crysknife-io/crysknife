@@ -59,7 +59,6 @@ import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.Dependent;
 import javax.inject.Provider;
 import javax.lang.model.element.ExecutableElement;
@@ -68,7 +67,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;

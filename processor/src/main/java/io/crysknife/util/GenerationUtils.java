@@ -49,6 +49,7 @@ import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import jsinterop.base.Js;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
 import javax.inject.Named;
 import javax.inject.Qualifier;
@@ -65,8 +66,12 @@ public class GenerationUtils {
   private final IOCContext context;
   private final TypeMirror qualifier;
 
+  private final J2CLUtils j2CLUtils;
+
+
   public GenerationUtils(IOCContext context) {
     this.context = context;
+    this.j2CLUtils = new J2CLUtils(context.getGenerationContext().getProcessingEnvironment());
     qualifier = context.getGenerationContext().getElements()
         .getTypeElement(Qualifier.class.getCanonicalName()).asType();
 
@@ -138,7 +143,8 @@ public class GenerationUtils {
             .addArgument("instance"),
         "get").addArgument(
             new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-                .addArgument(new StringLiteralExpr(Utils.getJsFieldName(field)))
+                .addArgument(
+                    new StringLiteralExpr(j2CLUtils.createFieldDescriptor(field).getMangledName()))
                 .addArgument("instance"));
   }
 
@@ -298,15 +304,18 @@ public class GenerationUtils {
       } else {
 
         MethodCallExpr call =
-            new MethodCallExpr(new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
-                "<elemental2.core.Function>uncheckedCast").addArgument(
+            new MethodCallExpr(
+                new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
+                    "<elemental2.core.Function>uncheckedCast").addArgument(
 
-                    new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get")
-                        .addArgument("instance")
-                        .addArgument(new MethodCallExpr(
-                            new NameExpr(Reflect.class.getCanonicalName()), "objectProperty")
-                                .addArgument(new StringLiteralExpr(Utils.getJsMethodName(method)))
-                                .addArgument("instance"))),
+                        new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get")
+                            .addArgument("instance").addArgument(
+                                new MethodCallExpr(new NameExpr(Reflect.class.getCanonicalName()),
+                                    "objectProperty")
+                                        .addArgument(new StringLiteralExpr(
+                                            j2CLUtils.createDeclarationMethodDescriptor(method)
+                                                .getMangledName()))
+                                        .addArgument("instance"))),
                 "bind").addArgument("instance");
 
         for (Expression arg : args) {
@@ -321,7 +330,7 @@ public class GenerationUtils {
   // Closure aggressively inline methods, so if method is private and never called, most likely it
   // ll be removed
   private Statement generatePrivateJ2CLMethodCall(ExecutableElement method, Expression[] args) {
-    String valueName = Utils.getJsMethodName(method);
+    String valueName = j2CLUtils.createDeclarationMethodDescriptor(method).getMangledName();
 
     MethodCallExpr bind = new MethodCallExpr(new EnclosedExpr(new CastExpr(
         new ClassOrInterfaceType().setName("elemental2.core.Function"),

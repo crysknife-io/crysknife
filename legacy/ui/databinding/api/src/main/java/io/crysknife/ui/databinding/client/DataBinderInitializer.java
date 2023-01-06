@@ -30,8 +30,6 @@ public class DataBinderInitializer {
     loadBindableProxies();
   }
 
-  public static native void loadBindableProxies() /*-{
-                                                  @io.crysknife.ui.databinding.client.api.DataBinder_Factory::get()();
-                                                  }-*/;
+  public static void loadBindableProxies() {};
 
 }

@@ -44,7 +44,7 @@
     </organization>
 
     <properties>
-        <gwtproject.version>202203291</gwtproject.version>
+        <gwtproject.version>202301031</gwtproject.version>
     </properties>
 
     <dependencyManagement>
