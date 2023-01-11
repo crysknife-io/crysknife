@@ -16,8 +16,8 @@ package org.treblereel.ui.translation;
 
 import io.crysknife.ui.translation.api.spi.TranslationService;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21

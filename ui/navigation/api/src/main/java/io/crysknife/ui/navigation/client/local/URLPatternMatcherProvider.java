@@ -16,10 +16,10 @@ package io.crysknife.ui.navigation.client.local;
 
 import java.util.Collection;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.local.spi.PageNode;
@@ -27,7 +27,7 @@ import io.crysknife.ui.navigation.client.local.spi.PageNode;
 /**
  * This class is responsible for initializing and providing the {@link URLPatternMatcher} for the
  * app.
- * 
+ *
  * @author Max Barkley <mbarkley@redhat.com>
  * @author Divya Dadlani <ddadlani@redhat.com>
  */

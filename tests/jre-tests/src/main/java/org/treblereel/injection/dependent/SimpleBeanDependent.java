@@ -16,8 +16,8 @@ package org.treblereel.injection.dependent;
 
 import java.util.Random;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.Dependent;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20

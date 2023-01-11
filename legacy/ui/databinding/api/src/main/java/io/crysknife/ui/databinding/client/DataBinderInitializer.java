@@ -14,9 +14,9 @@
 
 package io.crysknife.ui.databinding.client;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Startup;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Startup;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/6/21

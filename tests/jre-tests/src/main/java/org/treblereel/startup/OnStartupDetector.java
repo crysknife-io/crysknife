@@ -14,7 +14,7 @@
 
 package org.treblereel.startup;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/6/21

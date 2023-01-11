@@ -17,7 +17,7 @@ package org.treblereel.produces.typed;
 import elemental2.dom.Element;
 import elemental2.dom.HTMLElement;
 
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/4/21

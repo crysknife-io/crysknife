@@ -14,7 +14,7 @@
 
 package io.crysknife.generator;
 
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.Parameter;

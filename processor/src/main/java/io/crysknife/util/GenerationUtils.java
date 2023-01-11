@@ -51,8 +51,8 @@ import jsinterop.base.Js;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
-import javax.inject.Named;
-import javax.inject.Qualifier;
+import jakarta.inject.Named;
+import jakarta.inject.Qualifier;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Method;

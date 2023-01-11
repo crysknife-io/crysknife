@@ -15,16 +15,13 @@
 package io.crysknife.generator;
 
 import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.internal.AbstractEventFactory;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
@@ -33,15 +30,9 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
-import io.crysknife.util.Utils;
 
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-import java.util.function.BiConsumer;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/31/19
@@ -74,7 +65,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
   @Override
   public Expression generateBeanLookupCall(ClassBuilder classBuilder,
       InjectableVariableDefinition fieldPoint) {
-    classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
+    classBuilder.getClassCompilationUnit().addImport("jakarta.enterprise.event.Event_Factory");
     classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class.getCanonicalName());
     MoreTypes.asDeclared(fieldPoint.getVariableElement().asType()).getTypeArguments();
 
@@ -114,7 +105,7 @@ public class EventProducerGenerator extends ScopedBeanGenerator {
         new AssignExpr().setTarget(new NameExpr("instance")).setValue(newInstance)));
     body.addAndGetStatement(ifStmt);
     body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
-    classBuilder.addField("javax.enterprise.event.Event_Factory", "instance",
+    classBuilder.addField("jakarta.enterprise.event.Event_Factory", "instance",
         Modifier.Keyword.PRIVATE, Modifier.Keyword.STATIC);
   }
 

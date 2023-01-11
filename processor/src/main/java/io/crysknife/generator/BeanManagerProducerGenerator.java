@@ -14,7 +14,7 @@
 
 package io.crysknife.generator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;

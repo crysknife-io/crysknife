@@ -1,7 +1,7 @@
 package org.treblereel.predestroy;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Random;
 
 @ApplicationScoped

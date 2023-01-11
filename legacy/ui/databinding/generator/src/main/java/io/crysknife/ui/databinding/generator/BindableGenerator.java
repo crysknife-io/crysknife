@@ -53,7 +53,7 @@ import io.crysknife.ui.databinding.client.api.DataBinder;
 import io.crysknife.ui.databinding.client.api.DefaultConverter;
 import io.crysknife.util.Utils;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;

@@ -18,8 +18,8 @@ import io.crysknife.client.ManagedInstance;
 import org.treblereel.injection.inheritance.BeanChild;
 import org.treblereel.injection.managedinstance.SimpleBean;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class Child extends Parent<SimpleBean, BeanChild> {

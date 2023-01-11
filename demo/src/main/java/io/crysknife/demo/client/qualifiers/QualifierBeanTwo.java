@@ -14,7 +14,7 @@
 
 package io.crysknife.demo.client.qualifiers;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov

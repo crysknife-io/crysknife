@@ -14,7 +14,7 @@
 
 package org.treblereel.injection.managedinstance;
 
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
 import java.util.Random;
 
 /**

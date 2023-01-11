@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.named;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Named;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Named;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/20/21

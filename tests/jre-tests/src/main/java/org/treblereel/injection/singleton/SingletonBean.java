@@ -16,8 +16,8 @@ package org.treblereel.injection.singleton;
 
 import java.util.Random;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/14/19

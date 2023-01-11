@@ -1,8 +1,8 @@
 package org.treblereel.events;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.event.Observes;
-import javax.inject.Singleton;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Singleton;
 import java.util.HashSet;
 import java.util.Set;
 

@@ -35,9 +35,9 @@ import io.crysknife.logger.TreeLogger;
 import io.crysknife.processor.ProducesProcessor;
 import io.crysknife.util.Utils;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;

@@ -24,7 +24,7 @@ import org.treblereel.injection.qualifiers.QualifierConstructorInjection;
 import org.treblereel.injection.qualifiers.QualifierOne;
 import org.treblereel.injection.qualifiers.QualifierTwo;
 
-import javax.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Instance;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;

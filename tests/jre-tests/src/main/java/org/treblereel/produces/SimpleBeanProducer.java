@@ -16,10 +16,10 @@ package org.treblereel.produces;
 
 import java.util.Random;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20

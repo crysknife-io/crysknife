@@ -18,7 +18,7 @@ import io.crysknife.client.BeanManager;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.enterprise.event.Event;
+import jakarta.enterprise.event.Event;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/4/19

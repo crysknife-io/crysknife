@@ -16,13 +16,13 @@ package io.crysknife.ui.navigation.client.local;
 
 import io.crysknife.client.IsElement;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * Provides new instances of the {@link TransitionAnchorFactory} class, which allows them to be
  * injected.
- * 
+ *
  * @author eric.wittmann@redhat.com
  */
 @Singleton

@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.typed.case2;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Typed;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/25/21

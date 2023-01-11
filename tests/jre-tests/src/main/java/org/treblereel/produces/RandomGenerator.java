@@ -16,7 +16,7 @@ package org.treblereel.produces;
 
 import java.util.Random;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20

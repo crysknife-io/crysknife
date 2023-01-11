@@ -14,7 +14,6 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.google.auto.common.MoreTypes;
@@ -28,7 +27,7 @@ import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import io.crysknife.validation.PreDestroyValidator;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import java.util.List;

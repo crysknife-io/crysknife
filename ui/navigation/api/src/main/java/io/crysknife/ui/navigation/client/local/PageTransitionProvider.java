@@ -16,8 +16,8 @@ package io.crysknife.ui.navigation.client.local;
 
 import io.crysknife.client.IsElement;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class PageTransitionProvider {

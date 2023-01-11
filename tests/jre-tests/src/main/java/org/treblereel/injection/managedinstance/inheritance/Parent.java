@@ -16,7 +16,7 @@ package org.treblereel.injection.managedinstance.inheritance;
 
 import io.crysknife.client.ManagedInstance;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class Parent<G, T> {
 

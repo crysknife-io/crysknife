@@ -16,8 +16,8 @@ package org.treblereel.injection.managedinstance;
 
 import io.crysknife.client.ManagedInstance;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class QualifiedManagedInstanceTestsHolder {

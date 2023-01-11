@@ -14,11 +14,10 @@
 
 package io.crysknife.client;
 
-import java.lang.annotation.Annotation;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Provider;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Instance;
-import javax.inject.Provider;
+import java.lang.annotation.Annotation;
 
 /**
  * This type is like {@code javax.inject.Instance} but with automatic life-cycle management.
@@ -34,7 +33,7 @@ import javax.inject.Provider;
  * when the bean instance in which it is injected is destroyed. In other words, the dynamically
  * created {@link Dependent} scoped instances from a {@code ManagedInstance<T>} have life-cycles
  * bound to the bean that injected the {@code ManagedInstance<T>}.
- * 
+ *
  * @author Max Barkley <mbarkley@redhat.com>
  */
 public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
@@ -55,7 +54,7 @@ public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
    * Calling {@link #destroyAll()} on a child <tt>ManagedInstance</tt> does <b>not</b> destroy
    * instances created by the parent.
    * </p>
-   * 
+   *
    * @param qualifiers the additional required qualifiers
    * @return the child <tt>ManagedInstance</tt>
    * @throws IllegalArgumentException if passed two instances of the same qualifier type, or an
@@ -95,7 +94,7 @@ public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
    * Determines if there is no bean that matches the required type and qualifiers and is eligible
    * for injection into the class into which the parent <tt>Instance</tt> was injected.
    * </p>
-   * 
+   *
    * @return <tt>true</tt> if there is no bean that matches the required type and qualifiers and is
    *         eligible for injection into the class into which the parent <tt>Instance</tt> was
    *         injected, or <tt>false</tt> otherwise.
@@ -107,7 +106,7 @@ public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
    * Determines if there is more than one bean that matches the required type and qualifiers and is
    * eligible for injection into the class into which the parent <tt>Instance</tt> was injected.
    * </p>
-   * 
+   *
    * @return <tt>true</tt> if there is more than one bean that matches the required type and
    *         qualifiers and is eligible for injection into the class into which the parent
    *         <tt>Instance</tt> was injected, or <tt>false</tt> otherwise.
@@ -120,7 +119,7 @@ public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
    * the argument of this method is not a {@link Dependent} scoped bean created by this
    * <tt>ManagedInstance</tt> then this method is a no-op.
    * </p>
-   * 
+   *
    * @param A {@link Dependent} scoped bean instance created by this <tt>ManagedInstance</tt> (or
    *        else this method is a no-op).
    */

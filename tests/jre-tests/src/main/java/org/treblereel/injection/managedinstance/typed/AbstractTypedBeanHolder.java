@@ -16,10 +16,10 @@ package org.treblereel.injection.managedinstance.typed;
 
 import io.crysknife.client.ManagedInstance;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Default;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class AbstractTypedBeanHolder {

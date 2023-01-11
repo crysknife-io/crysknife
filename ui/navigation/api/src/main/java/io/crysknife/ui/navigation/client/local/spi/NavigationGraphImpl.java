@@ -17,7 +17,7 @@ package io.crysknife.ui.navigation.client.local.spi;
 import io.crysknife.client.BeanManager;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 
-import javax.enterprise.event.Event;
+import jakarta.enterprise.event.Event;
 
 /**
  * Fake implementation, ll be excluded on package/install

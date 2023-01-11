@@ -14,7 +14,7 @@
 
 package org.treblereel.injection.generic;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/29/21

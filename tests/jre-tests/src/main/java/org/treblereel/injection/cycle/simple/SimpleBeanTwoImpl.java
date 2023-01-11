@@ -16,9 +16,9 @@ package org.treblereel.injection.cycle.simple;
 
 import io.crysknife.annotation.CircularDependency;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/26/21

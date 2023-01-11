@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.qualifiers;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import io.crysknife.annotation.Lazy;
 

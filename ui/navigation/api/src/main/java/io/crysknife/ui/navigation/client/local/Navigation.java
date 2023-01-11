@@ -20,9 +20,9 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import javax.annotation.PreDestroy;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.annotation.PreDestroy;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import elemental2.core.JsArray;
 import elemental2.core.JsString;
@@ -47,7 +47,7 @@ import static elemental2.dom.DomGlobal.document;
  * application classes. This configuration is gathered at compile time.
  *
  * @author Jonathan Fuerth <jfuerth@gmail.com>
- * 
+ *
  * @see Page
  * @see PageState
  * @see PageShowing
@@ -419,7 +419,7 @@ public class Navigation {
    * Return all PageNode instances that have specified pageRole.
    *
    * @param pageRole the role to find PageNodes by
-   * 
+   *
    * @return All the pageNodes of the pages that have the specific pageRole.
    */
   public Collection<PageNode<?>> getPagesByRole(Class<? extends PageRole> pageRole) {

@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.applicationscoped;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/21/20

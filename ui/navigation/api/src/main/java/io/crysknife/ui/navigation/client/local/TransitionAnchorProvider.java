@@ -14,13 +14,13 @@
 
 package io.crysknife.ui.navigation.client.local;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * Provides new instances of the {@link TransitionAnchor} widget class, which allows them to be
  * injected.
- * 
+ *
  * @author eric.wittmann@redhat.com
  */
 @Singleton

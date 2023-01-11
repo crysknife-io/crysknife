@@ -14,8 +14,8 @@
 
 package org.treblereel.produces.scoped;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/10/21

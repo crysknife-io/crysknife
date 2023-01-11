@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.typed;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Typed;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;

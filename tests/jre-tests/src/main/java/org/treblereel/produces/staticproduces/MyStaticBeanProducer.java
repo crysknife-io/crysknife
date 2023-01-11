@@ -14,7 +14,7 @@
 
 package org.treblereel.produces.staticproduces;
 
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/12/21

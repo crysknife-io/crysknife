@@ -19,9 +19,9 @@ import io.crysknife.annotation.CircularDependency;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.util.Utils;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;

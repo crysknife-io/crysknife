@@ -15,8 +15,8 @@
 package io.crysknife.client.internal;
 
 import io.crysknife.client.IOCBeanDef;
+import jakarta.inject.Named;
 
-import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 

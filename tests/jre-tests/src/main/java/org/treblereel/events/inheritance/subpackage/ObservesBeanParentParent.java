@@ -16,7 +16,7 @@ package org.treblereel.events.inheritance.subpackage;
 
 import org.treblereel.events.SimpleEvent;
 
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.event.Observes;
 import java.util.ArrayList;
 import java.util.List;
 

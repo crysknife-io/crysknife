@@ -15,8 +15,8 @@
 package io.crysknife.client.internal;
 
 import io.crysknife.client.BeanManager;
+import jakarta.enterprise.context.Dependent;
 
-import javax.enterprise.context.Dependent;
 import java.util.function.Supplier;
 
 /**

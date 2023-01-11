@@ -18,7 +18,7 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 import javax.lang.model.element.*;
 import java.util.HashSet;
 import java.util.List;

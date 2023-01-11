@@ -14,8 +14,8 @@
 
 package org.treblereel.events;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.event.Observes;
 import java.util.HashSet;
 import java.util.Set;
 

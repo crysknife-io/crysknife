@@ -14,7 +14,7 @@
 
 package io.crysknife.ui.navigation.generator;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.Expression;

@@ -24,7 +24,7 @@ import io.crysknife.client.ioc.IOCProvider;
 import jsinterop.base.Js;
 import org.gwtproject.user.client.ui.IsWidget;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;

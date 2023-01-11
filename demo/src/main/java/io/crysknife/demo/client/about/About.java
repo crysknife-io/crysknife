@@ -14,8 +14,8 @@
 
 package io.crysknife.demo.client.about;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.HTMLDivElement;
 import io.crysknife.client.IsElement;

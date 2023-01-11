@@ -19,9 +19,9 @@ import io.crysknife.client.ManagedInstance;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.produces.qualifier.QualifierBean;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21

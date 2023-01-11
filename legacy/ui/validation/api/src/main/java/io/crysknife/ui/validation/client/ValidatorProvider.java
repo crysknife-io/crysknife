@@ -16,13 +16,13 @@ package io.crysknife.ui.validation.client;
 
 import io.crysknife.client.ioc.IOCProvider;
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 import javax.validation.Validator;
 
 /**
  * {@link IOCProvider} to make {@link Validator} instances injectable.
- * 
+ *
  * @author Christian Sadilek <csadilek@redhat.com>
  */
 // @IOCProvider

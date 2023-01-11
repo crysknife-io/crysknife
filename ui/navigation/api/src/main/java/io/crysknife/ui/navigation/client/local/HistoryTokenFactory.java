@@ -14,8 +14,8 @@
 
 package io.crysknife.ui.navigation.client.local;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 import io.crysknife.client.internal.collections.Multimap;
@@ -46,7 +46,7 @@ public class HistoryTokenFactory {
    *
    * @param pageName The name of the page. Never null.
    * @param state The map of {@link PageState} keys and values. Never null.
-   * 
+   *
    * @return A HistoryToken with the parsed URL matching information.
    */
   public HistoryToken createHistoryToken(String pageName, Multimap<String, String> state) {
@@ -59,7 +59,7 @@ public class HistoryTokenFactory {
    *
    * @param url The typed URL path. If the browser is pushstate-enabled, this will be the URI path,
    *        otherwise it will be the fragment identifier.
-   * 
+   *
    * @return A HistoryToken with the parsed URL matching information.
    */
   public HistoryToken parseURL(String url) {

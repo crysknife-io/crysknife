@@ -14,8 +14,8 @@
 
 package io.crysknife.ui.navigation.client.local.spi;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
 
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.client.utils.CreationalCallback;

@@ -21,8 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
 
 import io.crysknife.client.IsElement;
 import io.crysknife.client.utils.CreationalCallback;
@@ -72,7 +72,7 @@ public abstract class NavigationGraph {
    * instance will be returned.
    *
    * @param name The page name, as defined by the implementation of page.
-   * 
+   *
    * @return The appropriate instance of the page.
    */
   public <C> PageNode<C> getPage(String name) {
@@ -90,7 +90,7 @@ public abstract class NavigationGraph {
    * instance will be returned.
    *
    * @param type The Class object for the bean that implements the page.
-   * 
+   *
    * @return The appropriate instance of the page.
    */
   public <C> PageNode<C> getPage(Class<C> type) {
@@ -110,7 +110,7 @@ public abstract class NavigationGraph {
    * multiple roles for a page. {@link #getPage(Class)} {@link PageRole}
    *
    * @param role the role used to lookup the pages
-   * 
+   *
    * @return all pages that have the role set.
    */
   public Collection<PageNode<?>> getPagesByRole(Class<? extends PageRole> role) {

@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.enterprise.event.Event;
 import javax.annotation.processing.FilerException;
-import javax.enterprise.event.Event;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -73,7 +73,7 @@ import io.crysknife.util.GenerationUtils;
 
 /**
  * Generates the GeneratedNavigationGraph class based on {@code @Page} annotations.
- * 
+ *
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  */
 public class NavigationGraphGenerator {

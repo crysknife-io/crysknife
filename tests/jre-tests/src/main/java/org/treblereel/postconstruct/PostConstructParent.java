@@ -14,9 +14,9 @@
 
 package org.treblereel.postconstruct;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/13/21

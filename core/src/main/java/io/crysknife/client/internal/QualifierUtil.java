@@ -14,13 +14,12 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
 
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Specializes;
-import javax.enterprise.inject.Typed;
-import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;

@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.inheritance;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/21/21

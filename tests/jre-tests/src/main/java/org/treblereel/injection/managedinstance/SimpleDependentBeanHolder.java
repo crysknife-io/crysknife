@@ -16,8 +16,8 @@ package org.treblereel.injection.managedinstance;
 
 import io.crysknife.client.ManagedInstance;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/27/21

@@ -15,16 +15,15 @@ package io.crysknife.client.internal;
 
 import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.SyncBeanDef;
+import jakarta.enterprise.inject.Instance;
 
-import javax.enterprise.inject.Instance;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
 /**
  * TODO this class must be refactored
- * 
+ *
  * @author Dmitrii Tikhomirov Created by treblereel 3/29/19
  */
 public class InstanceImpl<T> implements Instance<T>, InstanceFactory<T> {

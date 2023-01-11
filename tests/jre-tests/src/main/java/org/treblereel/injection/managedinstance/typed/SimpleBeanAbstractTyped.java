@@ -14,9 +14,9 @@
 
 package org.treblereel.injection.managedinstance.typed;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Typed;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Typed;
 
 @Dependent
 @Typed(SimpleBeanAbstractTyped.class)

@@ -14,8 +14,8 @@
 
 package org.treblereel.produces.registry;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/9/21

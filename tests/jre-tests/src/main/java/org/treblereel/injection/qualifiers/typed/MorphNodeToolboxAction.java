@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.qualifiers.typed;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/25/21

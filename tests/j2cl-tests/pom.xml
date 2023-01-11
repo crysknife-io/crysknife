@@ -13,8 +13,8 @@
     <description>J2CL tests</description>
 
     <properties>
-        <maven.j2cl.plugin>0.19</maven.j2cl.plugin>
-        <j2cl.version>0.10</j2cl.version>
+        <maven.j2cl.plugin>0.20</maven.j2cl.plugin>
+        <j2cl.version>0.10.0-3c97afeac</j2cl.version>
     </properties>
 
     <dependencies>

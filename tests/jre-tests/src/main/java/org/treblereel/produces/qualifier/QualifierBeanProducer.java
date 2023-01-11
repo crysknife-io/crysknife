@@ -14,8 +14,8 @@
 
 package org.treblereel.produces.qualifier;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20

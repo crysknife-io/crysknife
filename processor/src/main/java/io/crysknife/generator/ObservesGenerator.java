@@ -16,9 +16,7 @@ package io.crysknife.generator;
 
 import com.github.javaparser.ast.Modifier.Keyword;
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
@@ -31,9 +29,8 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
 
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.event.Observes;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -79,7 +76,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     }
 
     classBuilder.getClassCompilationUnit().addImport(BiConsumer.class);
-    classBuilder.getClassCompilationUnit().addImport("javax.enterprise.event.Event_Factory");
+    classBuilder.getClassCompilationUnit().addImport("jakarta.enterprise.event.Event_Factory");
 
     VariableElement parameter = method.getParameters().get(0);
     TypeMirror parameterTypeMirror =

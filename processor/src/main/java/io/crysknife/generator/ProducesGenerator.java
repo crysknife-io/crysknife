@@ -23,7 +23,7 @@ import io.crysknife.annotation.Generator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 import javax.lang.model.element.TypeElement;
 
 /**

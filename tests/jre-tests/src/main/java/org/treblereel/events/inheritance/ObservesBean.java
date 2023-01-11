@@ -16,9 +16,9 @@ package org.treblereel.events.inheritance;
 
 import org.treblereel.events.SimpleEvent;
 
-import javax.enterprise.event.Event;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
 public class ObservesBean extends ObservesParent {
 

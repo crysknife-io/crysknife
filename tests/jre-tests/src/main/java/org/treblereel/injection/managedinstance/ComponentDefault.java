@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.managedinstance;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Default;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21

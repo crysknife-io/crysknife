@@ -31,7 +31,7 @@ import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
@@ -76,12 +76,13 @@ public class NavigationGenerator extends SingletonGenerator {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
 
 
-    return generationUtils.wrapCallInstanceImpl(classBuilder, newInstance
-        .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
-        .addArgument(new MethodCallExpr(
-            new NameExpr(BeanManager.class.getPackage().getName() + ".BeanManagerImpl"), "get"))
-        .addArgument(new MethodCallExpr(
-            new MethodCallExpr(new NameExpr("javax.enterprise.event.Event_Factory"), "get"), "get")
-                .addArgument(NavigationEvent.class.getCanonicalName() + ".class")));
+    return generationUtils.wrapCallInstanceImpl(classBuilder,
+        newInstance
+            .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
+            .addArgument(new MethodCallExpr(
+                new NameExpr(BeanManager.class.getPackage().getName() + ".BeanManagerImpl"), "get"))
+            .addArgument(new MethodCallExpr(
+                new MethodCallExpr(new NameExpr("jakarta.enterprise.event.Event_Factory"), "get"),
+                "get").addArgument(NavigationEvent.class.getCanonicalName() + ".class")));
   }
 }

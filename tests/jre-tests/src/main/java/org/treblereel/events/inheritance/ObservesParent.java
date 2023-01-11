@@ -17,7 +17,7 @@ package org.treblereel.events.inheritance;
 import org.treblereel.events.SimpleEvent;
 import org.treblereel.events.inheritance.subpackage.ObservesBeanParentParent;
 
-import javax.enterprise.event.Observes;
+import jakarta.enterprise.event.Observes;
 
 public class ObservesParent extends ObservesBeanParentParent {
 

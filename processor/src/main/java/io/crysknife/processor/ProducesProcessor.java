@@ -25,8 +25,8 @@ import io.crysknife.definition.BeanDefinitionFactory;
 import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.validation.ProducesValidator;
 
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;

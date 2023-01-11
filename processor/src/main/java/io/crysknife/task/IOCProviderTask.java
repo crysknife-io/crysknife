@@ -43,15 +43,14 @@ import io.crysknife.generator.DependentGenerator;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 import io.crysknife.validation.Check;
 import io.crysknife.validation.Validator;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -81,7 +80,7 @@ public class IOCProviderTask implements Task {
     this.contextualTypeProvider = context.getGenerationContext().getTypes()
         .erasure(context.getTypeMirror(ContextualTypeProvider.class));
     this.provider = context.getGenerationContext().getTypes()
-        .erasure(context.getTypeMirror(javax.inject.Provider.class));
+        .erasure(context.getTypeMirror(jakarta.inject.Provider.class));
 
     validator = new ProviderValidator(context);
   }

@@ -14,7 +14,7 @@
 
 package org.treblereel.injection.inheritance.factories;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/24/21

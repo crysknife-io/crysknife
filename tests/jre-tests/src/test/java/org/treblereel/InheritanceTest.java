@@ -22,7 +22,7 @@ import org.treblereel.postconstruct.ChildTwo;
 import org.treblereel.postconstruct.PostConstructChild;
 import org.treblereel.postconstruct.PostConstructParent;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 
 import java.lang.annotation.Annotation;
 

@@ -38,7 +38,6 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.BeanManager;
 import io.crysknife.definition.InjectableVariableDefinition;
@@ -49,7 +48,7 @@ import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
-import javax.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Instance;
 import java.lang.reflect.Field;
 import java.util.function.Supplier;
 

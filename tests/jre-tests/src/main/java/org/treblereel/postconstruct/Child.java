@@ -14,7 +14,7 @@
 
 package org.treblereel.postconstruct;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 
 /**

@@ -14,7 +14,7 @@
 
 package org.treblereel.injection.generic;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/29/21

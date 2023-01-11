@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.managedinstance.select;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/8/21

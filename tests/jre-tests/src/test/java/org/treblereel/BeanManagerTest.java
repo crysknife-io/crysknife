@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.enterprise.inject.Default;
-import javax.inject.Named;
+import jakarta.enterprise.inject.Default;
+import jakarta.inject.Named;
 
 import io.crysknife.client.ManagedInstance;
 import org.junit.Test;

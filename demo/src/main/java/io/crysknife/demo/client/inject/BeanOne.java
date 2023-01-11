@@ -16,10 +16,10 @@ package io.crysknife.demo.client.inject;
 
 import java.util.Random;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
 import io.crysknife.demo.client.inject.named.Vehicle;

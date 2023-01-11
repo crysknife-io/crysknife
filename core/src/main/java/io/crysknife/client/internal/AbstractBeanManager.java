@@ -16,8 +16,8 @@ package io.crysknife.client.internal;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.IOCBeanDef;
 import io.crysknife.client.SyncBeanDef;
+import jakarta.enterprise.inject.Typed;
 
-import javax.enterprise.inject.Typed;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;

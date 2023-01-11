@@ -14,8 +14,8 @@
 
 package org.treblereel.providers.contextualtypeprovider;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21

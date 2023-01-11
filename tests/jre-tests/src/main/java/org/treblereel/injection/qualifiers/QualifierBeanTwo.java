@@ -14,7 +14,7 @@
 
 package org.treblereel.injection.qualifiers;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/13/19

@@ -21,8 +21,9 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 
-import javax.ejb.Startup;
-import javax.enterprise.context.Dependent;
+import jakarta.enterprise.context.Dependent;
+import jakarta.ejb.Startup;
+
 import java.util.stream.Collectors;
 
 /**

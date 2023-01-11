@@ -35,6 +35,29 @@
         <url>https://github.com/treblereel</url>
     </organization>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta</groupId>
+            <artifactId>ejb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta</groupId>
+            <artifactId>enterprise</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta</groupId>
+            <artifactId>inject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.gwt</groupId>
+            <artifactId>utils</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <resources>
             <resource>

@@ -23,7 +23,7 @@ import io.crysknife.logger.TreeLogger;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.util.Utils;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.lang.model.element.VariableElement;
 import java.util.Set;
 import java.util.stream.Collectors;

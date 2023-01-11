@@ -19,11 +19,10 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
-import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsProperty;
 
-import javax.enterprise.context.Dependent;
-import javax.enterprise.inject.Default;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Default;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -145,7 +144,8 @@ public class Utils {
       Element element) {
     List<AnnotationMirror> result = new ArrayList<>();
     for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
-      if (isAnnotationMirrorOfType(annotationMirror, javax.inject.Named.class.getCanonicalName())) {
+      if (isAnnotationMirrorOfType(annotationMirror,
+          jakarta.inject.Named.class.getCanonicalName())) {
         continue;
       }
       if (isAnnotationMirrorOfType(annotationMirror, Default.class.getCanonicalName())) {
@@ -154,7 +154,7 @@ public class Utils {
       for (AnnotationMirror allAnnotationMirror : context.getGenerationContext().getElements()
           .getAllAnnotationMirrors(annotationMirror.getAnnotationType().asElement())) {
         if (isAnnotationMirrorOfType(allAnnotationMirror,
-            javax.inject.Qualifier.class.getCanonicalName())) {
+            jakarta.inject.Qualifier.class.getCanonicalName())) {
           result.add(annotationMirror);
         }
       }

@@ -16,7 +16,7 @@ package org.treblereel.injection.applicationscoped;
 
 import java.util.Random;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 5/21/19

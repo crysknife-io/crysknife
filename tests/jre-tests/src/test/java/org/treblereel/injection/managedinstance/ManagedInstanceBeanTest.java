@@ -29,9 +29,9 @@ import org.treblereel.injection.managedinstance.typed.AbstractTypedBeanHolder;
 import org.treblereel.injection.managedinstance.typed.SimpleBeanAbstractTyped;
 import org.treblereel.produces.qualifier.QualifierBean;
 
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Instance;
-import javax.inject.Named;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.stream.Collectors;

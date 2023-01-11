@@ -21,7 +21,7 @@ import org.treblereel.injection.named.NamedBeanDefault;
 import org.treblereel.injection.named.NamedBeanOne;
 import org.treblereel.injection.named.NamedBeanTwo;
 
-import javax.inject.Named;
+import jakarta.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -77,7 +77,7 @@ public class NamedTest extends AbstractTest {
     Named namedBeanOne = new Named() {
 
       public Class<? extends Annotation> annotationType() {
-        return javax.inject.Named.class;
+        return jakarta.inject.Named.class;
       }
 
       public String value() {
@@ -88,7 +88,7 @@ public class NamedTest extends AbstractTest {
     Named namedBeanTwo = new Named() {
 
       public Class<? extends Annotation> annotationType() {
-        return javax.inject.Named.class;
+        return jakarta.inject.Named.class;
       }
 
       public String value() {

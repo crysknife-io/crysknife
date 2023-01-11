@@ -17,9 +17,9 @@ package io.crysknife.ui.mutationobserver.client.api;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;

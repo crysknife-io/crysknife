@@ -14,8 +14,8 @@
 
 package org.treblereel.injection.named;
 
-import javax.enterprise.inject.Default;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Default;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 12/12/19

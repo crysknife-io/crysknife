@@ -16,9 +16,9 @@ package org.treblereel.injection.qualifiers.specializes;
 
 import org.treblereel.injection.managedinstance.SimpleBean;
 
-import javax.enterprise.inject.Specializes;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/26/21

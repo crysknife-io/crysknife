@@ -16,10 +16,10 @@ package org.treblereel.injection.qualifiers;
 
 import org.treblereel.injection.qualifiers.typed.MorphNodeToolboxAction;
 
-import javax.enterprise.inject.Default;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Default;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/14/19

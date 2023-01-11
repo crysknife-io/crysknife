@@ -17,8 +17,8 @@ package org.treblereel.injection.cycle;
 import io.crysknife.annotation.CircularDependency;
 import io.crysknife.client.ManagedInstance;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/15/21

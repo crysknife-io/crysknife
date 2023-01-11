@@ -16,8 +16,8 @@ package org.treblereel.providers.provider;
 
 import io.crysknife.client.ioc.IOCProvider;
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 12/4/21

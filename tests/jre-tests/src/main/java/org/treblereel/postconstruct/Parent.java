@@ -14,8 +14,8 @@
 
 package org.treblereel.postconstruct;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.Dependent;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.Dependent;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -60,12 +60,12 @@ import io.crysknife.task.Task;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Specializes;
-import javax.enterprise.inject.Typed;
-import javax.inject.Named;
-import javax.inject.Provider;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypesException;
@@ -482,7 +482,7 @@ public class BeanManagerGenerator implements Task {
 
       Expression builderCallExpr =
           new ObjectCreationExpr().setType("Builder").addArgument("BeanManager.class")
-              .addArgument("javax.enterprise.context.ApplicationScoped.class");
+              .addArgument("jakarta.enterprise.context.ApplicationScoped.class");
 
       builderCallExpr = new MethodCallExpr(builderCallExpr, "withAssignableTypes")
           .addArgument(withAssignableTypes);

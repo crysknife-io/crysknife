@@ -26,7 +26,7 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.validation.Validator;
 import java.io.IOException;
 
