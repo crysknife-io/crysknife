@@ -20,6 +20,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.internal.event.EventManager;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.SingletonGenerator;
@@ -75,14 +76,15 @@ public class NavigationGenerator extends SingletonGenerator {
       InjectableVariableDefinition fieldPoint) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
 
+    classBuilder.getClassCompilationUnit().addImport(EventManager.class);
 
     return generationUtils.wrapCallInstanceImpl(classBuilder,
         newInstance
             .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
+            .addArgument("beanManager")
             .addArgument(new MethodCallExpr(
-                new NameExpr(BeanManager.class.getPackage().getName() + ".BeanManagerImpl"), "get"))
-            .addArgument(new MethodCallExpr(
-                new MethodCallExpr(new NameExpr("jakarta.enterprise.event.Event_Factory"), "get"),
+                new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                    .addArgument("EventManager.class"), "getInstance"),
                 "get").addArgument(NavigationEvent.class.getCanonicalName() + ".class")));
   }
 }

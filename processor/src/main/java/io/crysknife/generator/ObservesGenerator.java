@@ -23,6 +23,8 @@ import com.github.javaparser.ast.type.UnknownType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.client.internal.AbstractEventHandler;
+import io.crysknife.client.internal.event.EventManager;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
@@ -31,6 +33,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
 import jakarta.enterprise.event.Observes;
+
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
@@ -75,8 +78,9 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
               (method.getEnclosingElement().toString() + "." + method), parent.getType()));
     }
 
+    classBuilder.getClassCompilationUnit().addImport(AbstractEventHandler.class);
     classBuilder.getClassCompilationUnit().addImport(BiConsumer.class);
-    classBuilder.getClassCompilationUnit().addImport("jakarta.enterprise.event.Event_Factory");
+    classBuilder.getClassCompilationUnit().addImport(EventManager.class);
 
     VariableElement parameter = method.getParameters().get(0);
     TypeMirror parameterTypeMirror =
@@ -98,20 +102,15 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     TypeMirror parameterTypeMirror =
         iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
 
-    MethodCallExpr eventFactory =
-        new MethodCallExpr(new NameExpr("Event_Factory").getNameAsExpression(), "get");
-    MethodCallExpr getEventHandler = new MethodCallExpr(eventFactory, "get")
-        .addArgument(new FieldAccessExpr(new NameExpr(parameterTypeMirror.toString()), "class"));
-
-    EnclosedExpr castToAbstractEventHandler = new EnclosedExpr(new CastExpr(
-        new ClassOrInterfaceType().setName("io.crysknife.client.internal.AbstractEventHandler"),
-        getEventHandler));
-
-    MethodCallExpr addSubscriber =
-        new MethodCallExpr(castToAbstractEventHandler, "removeSubscriber").addArgument("instance")
-            .addArgument(consumer);
-
-    classBuilder.getOnDestroyMethod().getBody().get().addAndGetStatement(addSubscriber);
+    classBuilder.getOnDestroyMethod().getBody().ifPresent(body -> {
+      body.addStatement(new MethodCallExpr(
+          new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("AbstractEventHandler"),
+              new MethodCallExpr(
+                  new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                      .addArgument("EventManager.class"), "getInstance"),
+                  "get").addArgument(parameterTypeMirror.toString() + ".class"))),
+          "removeSubscriber").addArgument("instance").addArgument(consumer));
+    });
   }
 
   private void addSubscriberCall(ClassBuilder classBuilder, VariableElement parameter,
@@ -119,19 +118,15 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     TypeMirror parameterTypeMirror =
         iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
 
-    MethodCallExpr eventFactory =
-        new MethodCallExpr(new NameExpr("Event_Factory").getNameAsExpression(), "get");
-    MethodCallExpr getEventHandler = new MethodCallExpr(eventFactory, "get")
-        .addArgument(new FieldAccessExpr(new NameExpr(parameterTypeMirror.toString()), "class"));
-
-    EnclosedExpr castToAbstractEventHandler = new EnclosedExpr(new CastExpr(
-        new ClassOrInterfaceType().setName("io.crysknife.client.internal.AbstractEventHandler"),
-        getEventHandler));
-
-    MethodCallExpr addSubscriber = new MethodCallExpr(castToAbstractEventHandler, "addSubscriber")
-        .addArgument("instance").addArgument(consumer);
-
-    classBuilder.getInitInstanceMethod().getBody().get().addAndGetStatement(addSubscriber);
+    classBuilder.getInitInstanceMethod().getBody().ifPresent(body -> {
+      body.addStatement(new MethodCallExpr(
+          new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("AbstractEventHandler"),
+              new MethodCallExpr(
+                  new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                      .addArgument("EventManager.class"), "getInstance"),
+                  "get").addArgument(parameterTypeMirror.toString() + ".class"))),
+          "addSubscriber").addArgument("instance").addArgument(consumer));
+    });
   }
 
   private void addConsumerField(ClassBuilder classBuilder, String parameterName,
