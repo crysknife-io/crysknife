@@ -53,7 +53,7 @@
             <artifactId>inject</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.treblereel.gwt</groupId>
+            <groupId>org.treblereel.gwt.jakarta</groupId>
             <artifactId>utils</artifactId>
         </dependency>
     </dependencies>

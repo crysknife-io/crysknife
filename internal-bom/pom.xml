@@ -74,12 +74,7 @@
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
         <org.treblereel.j2cl.processors.version>0.6-SNAPSHOT</org.treblereel.j2cl.processors.version>
-
-        <jakarta.annotations.version>0.2-SNAPSHOT</jakarta.annotations.version>
-        <jakarta.ejb.version>0.2-SNAPSHOT</jakarta.ejb.version>
-        <jakarta.enterprise.version>0.2-SNAPSHOT</jakarta.enterprise.version>
-        <jakarta.inject.version>0.2-SNAPSHOT</jakarta.inject.version>
-        <jakarta.utils.version>0.2-SNAPSHOT</jakarta.utils.version>
+        <gwt.jakarta.version>0.2</gwt.jakarta.version>
 
         <javaparser.core.version>3.15.18</javaparser.core.version>
         <elemental2.version>1.1.0</elemental2.version>
@@ -91,6 +86,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.treblereel.gwt.jakarta</groupId>
+                <artifactId>bom</artifactId>
+                <version>${gwt.jakarta.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
@@ -106,31 +108,6 @@
                 <groupId>com.google.elemental2</groupId>
                 <artifactId>elemental2-dom</artifactId>
                 <version>${elemental2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.treblereel.gwt.jakarta</groupId>
-                <artifactId>annotations</artifactId>
-                <version>${jakarta.annotations.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.treblereel.gwt.jakarta</groupId>
-                <artifactId>ejb</artifactId>
-                <version>${jakarta.ejb.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.treblereel.gwt.jakarta</groupId>
-                <artifactId>enterprise</artifactId>
-                <version>${jakarta.enterprise.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.treblereel.gwt.jakarta</groupId>
-                <artifactId>inject</artifactId>
-                <version>${jakarta.inject.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.treblereel.gwt</groupId>
-                <artifactId>utils</artifactId>
-                <version>${jakarta.utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.auto</groupId>
