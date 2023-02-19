@@ -28,7 +28,7 @@ How to build:
 5. Open in browser: http://127.0.0.1:8080/demo
 5. To build a .war, run 'mvn clean package -Pbuild' within crysknife/demo folder
 
-###Information for Intellij Idea users:
+### Information for Intellij Idea users:
 Project requires maven plugins to build and run, and therefore you should enable option in your IDE:
 1. Open Maven settings in the Maven tool window.
 2. Click Maven and from the list, select Runner.
