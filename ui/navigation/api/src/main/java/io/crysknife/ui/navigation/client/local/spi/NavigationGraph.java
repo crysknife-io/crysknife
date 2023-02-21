@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 
@@ -46,13 +47,16 @@ import io.crysknife.ui.navigation.client.shared.NavigationEvent;
  *
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  */
-public abstract class NavigationGraph {
+@ApplicationScoped
+public class NavigationGraph {
 
   @Inject
   protected BeanManager beanManager;
   @Inject
   protected Event<NavigationEvent> event;
 
+
+  public NavigationGraph() {}
 
   public NavigationGraph(BeanManager beanManager, Event<NavigationEvent> event) {
     this.beanManager = beanManager;

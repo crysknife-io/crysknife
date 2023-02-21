@@ -14,31 +14,21 @@
 
 package io.crysknife.generator.steps;
 
+import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.GenerationUtils;
+import io.crysknife.util.Utils;
 
-public class StepContext {
+public class InitInstanceMethod implements Step<BeanDefinition> {
 
-  final IOCContext iocContext;
-
-  final ClassBuilder clazz;
-  final BeanDefinition beanDefinition;
-
-  final GenerationUtils generationUtils;
-
-  final TreeLogger treeLogger;
-
-
-  public StepContext(IOCContext iocContext, TreeLogger treeLogger, ClassBuilder clazz,
+  @Override
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    this.iocContext = iocContext;
-    this.clazz = clazz;
-    this.beanDefinition = beanDefinition;
-    this.generationUtils = new GenerationUtils(iocContext);
-    this.treeLogger = treeLogger;
+    classBuilder.addInitInstanceMethod().getParameters()
+        .add(new Parameter(
+            new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())),
+            "instance"));
   }
-
 }

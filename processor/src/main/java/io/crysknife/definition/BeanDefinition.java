@@ -116,6 +116,10 @@ public class BeanDefinition implements Definition {
     return MoreTypes.asTypeElement(type).getQualifiedName().toString();
   }
 
+  public String getSimpleClassName() {
+    return Utils.getSimpleClassName(type);
+  }
+
   public Set<IOCGenerator<BeanDefinition>> getDecorators() {
     return decorators;
   }

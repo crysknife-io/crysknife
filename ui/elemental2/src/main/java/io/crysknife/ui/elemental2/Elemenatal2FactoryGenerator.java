@@ -118,6 +118,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   public void register() {
     HTML_ELEMENTS.keySet().forEach(clazz -> {
       iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
+      iocContext.getBuildIn().add(clazz.getCanonicalName());
     });
   }
 

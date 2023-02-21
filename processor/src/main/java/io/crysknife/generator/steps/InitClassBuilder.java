@@ -25,6 +25,7 @@ import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.Utils;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Provider;
@@ -32,16 +33,11 @@ import jakarta.inject.Provider;
 import javax.lang.model.element.TypeElement;
 import java.util.function.Supplier;
 
-public class InitClassBuilderStep extends Step {
-
-  public InitClassBuilderStep(Step next) {
-    super(next);
-  }
+public class InitClassBuilder implements Step<BeanDefinition> {
 
   @Override
-  public void execute(StepContext context) {
-    ClassBuilder clazz = context.clazz;
-    BeanDefinition beanDefinition = context.beanDefinition;
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
     String pkg = beanDefinition.getPackageName();
     String simpleName =
         MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString();
@@ -58,24 +54,24 @@ public class InitClassBuilderStep extends Step {
     sb.append(simpleName);
     sb.append("_Factory");
 
-    clazz.getClassCompilationUnit().setPackageDeclaration(pkg);
-    clazz.getClassCompilationUnit().addImport(BeanFactory.class);
-    clazz.getClassCompilationUnit().addImport(SyncBeanDef.class);
-    clazz.getClassCompilationUnit().addImport(InstanceFactory.class);
-    clazz.getClassCompilationUnit().addImport(Provider.class);
-    clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
-    clazz.getClassCompilationUnit().addImport(Reflect.class);
-    clazz.getClassCompilationUnit().addImport(Supplier.class);
-    clazz.getClassCompilationUnit().addImport(BeanManager.class);
-    clazz.getClassCompilationUnit().addImport(Dependent.class);
+    classBuilder.getClassCompilationUnit().setPackageDeclaration(pkg);
+    classBuilder.getClassCompilationUnit().addImport(BeanFactory.class);
+    classBuilder.getClassCompilationUnit().addImport(SyncBeanDef.class);
+    classBuilder.getClassCompilationUnit().addImport(InstanceFactory.class);
+    classBuilder.getClassCompilationUnit().addImport(Provider.class);
+    classBuilder.getClassCompilationUnit().addImport(OnFieldAccessed.class);
+    classBuilder.getClassCompilationUnit().addImport(Reflect.class);
+    classBuilder.getClassCompilationUnit().addImport(Supplier.class);
+    classBuilder.getClassCompilationUnit().addImport(BeanManager.class);
+    classBuilder.getClassCompilationUnit().addImport(Dependent.class);
 
     String classFactoryName = sb.toString();
-    clazz.setClassName(classFactoryName);
+    classBuilder.setClassName(classFactoryName);
 
     ClassOrInterfaceType factory = new ClassOrInterfaceType();
     factory.setName(BeanFactory.class.getSimpleName());
     factory.setTypeArguments(
         new ClassOrInterfaceType().setName(Utils.getSimpleClassName(beanDefinition.getType())));
-    clazz.getExtendedTypes().add(factory);
+    classBuilder.getExtendedTypes().add(factory);
   }
 }

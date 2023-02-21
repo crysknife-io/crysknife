@@ -196,6 +196,11 @@ public class BeanManagerGenerator implements Task {
 
       Set<TypeMirror> processed = new HashSet<>();
 
+
+      iocContext.getOrderedBeans().forEach(bean -> {
+        // System.out.println("bean = " + bean.toString());
+      });
+
       iocContext.getOrderedBeans().stream()
           .filter(
               field -> (MoreTypes.asTypeElement(field).getAnnotation(Application.class) == null))
@@ -231,8 +236,8 @@ public class BeanManagerGenerator implements Task {
 
                   qualifiers.forEach(type -> qualifiersExpression
                       .add(generationUtils.createQualifierExpression(type)));
-
-                  if (MoreTypes.asTypeElement(bean).getAnnotation(Named.class) != null) {
+                  Named named = MoreTypes.asTypeElement(erased).getAnnotation(Named.class);
+                  if (named != null) {
                     qualifiersExpression
                         .add(new MethodCallExpr(new NameExpr("QualifierUtil"), "createNamed")
                             .addArgument(new StringLiteralExpr(

@@ -15,30 +15,19 @@
 package io.crysknife.generator.steps;
 
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.generator.PreDestroyGenerator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.GenerationUtils;
 
-public class StepContext {
+public class PreDestroyAnnotation implements Step<BeanDefinition> {
 
-  final IOCContext iocContext;
-
-  final ClassBuilder clazz;
-  final BeanDefinition beanDefinition;
-
-  final GenerationUtils generationUtils;
-
-  final TreeLogger treeLogger;
-
-
-  public StepContext(IOCContext iocContext, TreeLogger treeLogger, ClassBuilder clazz,
+  @Override
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    this.iocContext = iocContext;
-    this.clazz = clazz;
-    this.beanDefinition = beanDefinition;
-    this.generationUtils = new GenerationUtils(iocContext);
-    this.treeLogger = treeLogger;
+
+    PreDestroyGenerator preDestroyGenerator = new PreDestroyGenerator(null, iocContext);
+    preDestroyGenerator.generate(beanDefinition, classBuilder);
   }
 
 }

@@ -14,24 +14,29 @@
 
 package io.crysknife.generator.steps;
 
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
+import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.GenerationUtils;
 
-public interface BeanLookupCallGenerator {
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 
-  default Expression generate(ClassBuilder clazz, IOCContext context,
-      InjectableVariableDefinition fieldPoint) {
-    GenerationUtils generationUtils = new GenerationUtils(context);
-    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
-    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
-    return callForProducer;
+public class InstanceGetFieldDecorators implements Step<BeanDefinition> {
+
+  @Override
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+
+    Set<InjectableVariableDefinition> points = new HashSet<>(beanDefinition.getFields());
+    points.addAll(beanDefinition.getConstructorParams());
+
+    points.forEach(point -> point.getDecorators().stream()
+        .sorted(
+            Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
+        .forEach(generator -> generator.generate(classBuilder, point)));
   }
 
 }

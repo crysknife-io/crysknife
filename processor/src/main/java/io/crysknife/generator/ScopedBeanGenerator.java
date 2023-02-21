@@ -106,7 +106,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     write(clazz, beanDefinition);
   }
 
-  private void generateDependantFields(ClassBuilder classBuilder, BeanDefinition definition) {
+  protected void generateDependantFields(ClassBuilder classBuilder, BeanDefinition definition) {
     Set<InjectionParameterDefinition> params = definition.getConstructorParams();
     Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
     while (injectionPointDefinitionIterator.hasNext()) {
@@ -194,7 +194,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     clazz.getExtendedTypes().add(factory);
   }
 
-  private void generateInterceptorFieldDeclaration(ClassBuilder clazz) {
+  protected void generateInterceptorFieldDeclaration(ClassBuilder clazz) {
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
       clazz.getClassCompilationUnit().addImport(Interceptor.class);
       clazz.addField(Interceptor.class.getSimpleName(), "interceptor", Modifier.Keyword.PRIVATE);
@@ -238,10 +238,11 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
                   .setExpression(new NameExpr("instance")))));
       ifStmt.setThenStmt(blockStmt);
 
-      body.addAndGetStatement(new AssignExpr()
-          .setTarget(new VariableDeclarationExpr(new ClassOrInterfaceType().setName(
-              Utils.getSimpleClassName(classBuilder.beanDefinition.getType())), "instance"))
-          .setValue(new MethodCallExpr("createInstanceInternal")));
+      body.addAndGetStatement(
+          new AssignExpr()
+              .setTarget(new VariableDeclarationExpr(new ClassOrInterfaceType()
+                  .setName(classBuilder.beanDefinition.getSimpleClassName()), "instance"))
+              .setValue(new MethodCallExpr("createInstanceInternal")));
 
       body.addAndGetStatement(new MethodCallExpr("initInstance").addArgument("instance"));
       body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
@@ -307,7 +308,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
         .addArgument(onFieldAccessedCreationExpr);
   }
 
-  private void generateInstanceGetFieldDecorators(ClassBuilder clazz,
+  protected void generateInstanceGetFieldDecorators(ClassBuilder clazz,
       BeanDefinition beanDefinition) {
 
     Set<InjectableVariableDefinition> points = new HashSet<>(beanDefinition.getFields());
@@ -321,7 +322,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     });
   }
 
-  private void generateInstanceGetMethodDecorators(ClassBuilder clazz,
+  protected void generateInstanceGetMethodDecorators(ClassBuilder clazz,
       BeanDefinition beanDefinition) {
 
     beanDefinition.getMethods().stream().forEach(method -> {
@@ -346,7 +347,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
             .setExpression(new NameExpr("instance"))));
   }
 
-  private void processPostConstructAnnotation(ClassBuilder classBuilder,
+  protected void processPostConstructAnnotation(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
     LinkedList<ExecutableElement> postConstructs = Utils
         .getAllMethodsIn(iocContext.getGenerationContext().getElements(),

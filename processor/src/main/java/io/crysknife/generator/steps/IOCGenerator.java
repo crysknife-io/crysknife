@@ -1,5 +1,5 @@
 /*
- * Copyright © 2023 Treblereel
+ * Copyright © 2020 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -15,30 +15,35 @@
 package io.crysknife.generator.steps;
 
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 
-public class StepContext {
+/**
+ * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
+ */
+public abstract class IOCGenerator<T extends Definition> {
 
-  final IOCContext iocContext;
+  protected IOCContext iocContext;
+  protected GenerationUtils generationUtils;
+  protected TreeLogger logger;
 
-  final ClassBuilder clazz;
-  final BeanDefinition beanDefinition;
-
-  final GenerationUtils generationUtils;
-
-  final TreeLogger treeLogger;
-
-
-  public StepContext(IOCContext iocContext, TreeLogger treeLogger, ClassBuilder clazz,
-      BeanDefinition beanDefinition) {
+  protected void init(TreeLogger treeLogger, IOCContext iocContext) {
     this.iocContext = iocContext;
-    this.clazz = clazz;
-    this.beanDefinition = beanDefinition;
+    this.logger = treeLogger;
     this.generationUtils = new GenerationUtils(iocContext);
-    this.treeLogger = treeLogger;
   }
+
+  public abstract void register();
+
+  public abstract void generate(IOCContext iocContext, ClassBuilder clazz,
+      BeanDefinition beanDefinition);
+
+
+  public void before() {}
+
+  public void after() {}
 
 }

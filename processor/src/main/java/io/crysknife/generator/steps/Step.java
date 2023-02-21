@@ -14,14 +14,12 @@
 
 package io.crysknife.generator.steps;
 
-public abstract class Step {
+import io.crysknife.definition.Definition;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
 
-  private final Step next;
+public interface Step<T extends Definition> {
 
-  public Step(Step next) {
-    this.next = next;
-  }
-
-  abstract void execute(StepContext context);
+  void execute(IOCContext iocContext, ClassBuilder clazz, T definition);
 
 }

@@ -14,31 +14,27 @@
 
 package io.crysknife.generator.steps;
 
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.GenerationUtils;
+import io.crysknife.util.Utils;
 
-public class StepContext {
+import javax.lang.model.type.TypeMirror;
 
-  final IOCContext iocContext;
+public class InstanceGetMethodReturn implements Step<BeanDefinition> {
 
-  final ClassBuilder clazz;
-  final BeanDefinition beanDefinition;
-
-  final GenerationUtils generationUtils;
-
-  final TreeLogger treeLogger;
-
-
-  public StepContext(IOCContext iocContext, TreeLogger treeLogger, ClassBuilder clazz,
+  @Override
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    this.iocContext = iocContext;
-    this.clazz = clazz;
-    this.beanDefinition = beanDefinition;
-    this.generationUtils = new GenerationUtils(iocContext);
-    this.treeLogger = treeLogger;
+    TypeMirror typeMirror = classBuilder.beanDefinition.getType();
+    String clazzName = Utils.getSimpleClassName(typeMirror);
+    classBuilder.getGetMethodDeclaration().getBody().get().addStatement(
+        new ReturnStmt(new CastExpr().setType(new ClassOrInterfaceType().setName(clazzName))
+            .setExpression(new NameExpr("instance"))));
   }
 
 }

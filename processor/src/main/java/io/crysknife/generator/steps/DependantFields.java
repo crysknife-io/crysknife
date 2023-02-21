@@ -25,42 +25,50 @@ import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.GenerationUtils;
 
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class DependantFieldsStep extends Step {
-
+public class DependantFields implements Step<BeanDefinition> {
   private final BeanLookupCallGenerator beanLookupCallGenerator;
 
-  public DependantFieldsStep(Step next, BeanLookupCallGenerator beanLookupCallGenerator) {
-    super(next);
+  public DependantFields() {
+    this(new BeanLookupCallGenerator() {
+      @Override
+      public Expression generate(ClassBuilder clazz, IOCContext context,
+          InjectableVariableDefinition fieldPoint) {
+        return BeanLookupCallGenerator.super.generate(clazz, context, fieldPoint);
+      }
+    });
+  }
+
+  public DependantFields(BeanLookupCallGenerator beanLookupCallGenerator) {
     this.beanLookupCallGenerator = beanLookupCallGenerator;
   }
 
+
   @Override
-  public void execute(StepContext context) {
-    BeanDefinition beanDefinition = context.beanDefinition;
-    ClassBuilder classBuilder = context.clazz;
-    GenerationUtils generationUtils = context.generationUtils;
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
+      BeanDefinition beanDefinition) {
+    GenerationUtils generationUtils = new GenerationUtils(iocContext);
 
     Set<InjectionParameterDefinition> params = beanDefinition.getConstructorParams();
     Iterator<InjectionParameterDefinition> injectionPointDefinitionIterator = params.iterator();
     while (injectionPointDefinitionIterator.hasNext()) {
       InjectableVariableDefinition argument = injectionPointDefinitionIterator.next();
-      generateFactoryFieldDeclaration(classBuilder, argument, "constructor");
+      generateFactoryFieldDeclaration(iocContext, classBuilder, generationUtils, argument,
+          "constructor");
     }
 
-    beanDefinition.getFields()
-    .forEach(field -> generateFactoryFieldDeclaration(classBuilder, field, "field"));
-
-
+    beanDefinition.getFields().forEach(field -> generateFactoryFieldDeclaration(iocContext,
+        classBuilder, generationUtils, field, "field"));
   }
 
-    private void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
-      InjectableVariableDefinition fieldPoint, String kind) {
+  private void generateFactoryFieldDeclaration(IOCContext iocContext, ClassBuilder classBuilder,
+      GenerationUtils generationUtils, InjectableVariableDefinition fieldPoint, String kind) {
     String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
     ClassOrInterfaceType supplier =
@@ -80,7 +88,7 @@ public class DependantFieldsStep extends Step {
     } else if (fieldPoint.getGenerator().isPresent()) {
       beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
     } else {
-      beanCall = generateBeanLookupCall(classBuilder, fieldPoint);
+      beanCall = beanLookupCallGenerator.generate(classBuilder, iocContext, fieldPoint);
     }
 
     if (beanCall == null) {

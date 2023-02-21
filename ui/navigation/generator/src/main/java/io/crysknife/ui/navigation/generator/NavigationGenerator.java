@@ -29,9 +29,11 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.local.Page;
+import io.crysknife.ui.navigation.client.local.TransitionTo;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
@@ -48,14 +50,12 @@ public class NavigationGenerator extends SingletonGenerator {
 
   @Override
   public void register() {
-
-    iocContext.register(Inject.class, NavigationGraph.class, WiringElementType.FIELD_TYPE, this);
-    iocContext.getOrderedBeans().add(iocContext.getTypeMirror(NavigationGraph.class));
+    iocContext.register(ApplicationScoped.class, NavigationGraph.class, WiringElementType.BEAN,
+        this);
   }
 
   @Override
   public void before() {
-
     Set<TypeElement> pages = iocContext.getTypeElementsByAnnotation(Page.class.getCanonicalName());
     new NavigationGraphGenerator(iocContext, pages)
         .generate(logger.branch(TreeLogger.DEBUG, " starting generating navigation"));
@@ -71,20 +71,4 @@ public class NavigationGenerator extends SingletonGenerator {
     return newInstance;
   }
 
-  @Override
-  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
-      InjectableVariableDefinition fieldPoint) {
-    ObjectCreationExpr newInstance = new ObjectCreationExpr();
-
-    classBuilder.getClassCompilationUnit().addImport(EventManager.class);
-
-    return generationUtils.wrapCallInstanceImpl(classBuilder,
-        newInstance
-            .setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph")
-            .addArgument("beanManager")
-            .addArgument(new MethodCallExpr(
-                new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                    .addArgument("EventManager.class"), "getInstance"),
-                "get").addArgument(NavigationEvent.class.getCanonicalName() + ".class")));
-  }
 }

@@ -92,7 +92,6 @@ public class IOCContext {
       }
       beanDefinition.setIocGenerator(generator);
       getBeans().put(type.asType(), beanDefinition);
-      buildIn.add(exactType.getCanonicalName());
     }
   }
 

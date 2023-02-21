@@ -14,31 +14,31 @@
 
 package io.crysknife.generator.steps;
 
+import io.crysknife.annotation.Generator;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.generator.ProducesGenerator;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.GenerationUtils;
 
-public class StepContext {
+import java.util.Comparator;
 
-  final IOCContext iocContext;
+public class InstanceGetMethodDecorators implements Step<BeanDefinition> {
 
-  final ClassBuilder clazz;
-  final BeanDefinition beanDefinition;
-
-  final GenerationUtils generationUtils;
-
-  final TreeLogger treeLogger;
-
-
-  public StepContext(IOCContext iocContext, TreeLogger treeLogger, ClassBuilder clazz,
+  @Override
+  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    this.iocContext = iocContext;
-    this.clazz = clazz;
-    this.beanDefinition = beanDefinition;
-    this.generationUtils = new GenerationUtils(iocContext);
-    this.treeLogger = treeLogger;
-  }
 
+    beanDefinition.getMethods().stream().forEach(method -> {
+      method.getDecorators().stream()
+          .sorted(
+              Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
+          .forEach(decorator -> {
+            if (decorator instanceof ProducesGenerator) {
+              // TODO Produces
+            } else {
+              decorator.generate(classBuilder, method);
+            }
+          });
+    });
+  }
 }

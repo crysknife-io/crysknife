@@ -54,7 +54,7 @@ public class SingletonGenerator extends ScopedBeanGenerator {
   public void generateInstanceGetMethodBuilder(ClassBuilder builder,
       BeanDefinition beanDefinition) {
     super.generateInstanceGetMethodBuilder(builder, beanDefinition);
-    String clazzName = Utils.getSimpleClassName(beanDefinition.getType());
+    String clazzName = beanDefinition.getSimpleClassName();
     BlockStmt body = builder.getGetMethodDeclaration().getBody().get();
 
     FieldAccessExpr instance = new FieldAccessExpr(new ThisExpr(), "instance");
@@ -65,5 +65,27 @@ public class SingletonGenerator extends ScopedBeanGenerator {
             .setExpression(new NameExpr("instance"))));
     body.addAndGetStatement(ifStmt);
     body.addAndGetStatement(generateInstanceInitializer(builder, beanDefinition));
+  }
+
+  @Override
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
+    initClassBuilder(clazz, beanDefinition);
+    generateDependantFields(clazz, beanDefinition);
+    generateInterceptorFieldDeclaration(clazz);
+    generateNewInstanceMethodBuilder(clazz);
+    generateInitInstanceMethodBuilder(clazz, beanDefinition);
+    generateInstanceGetMethodBuilder(clazz, beanDefinition);
+    generateDependantFieldDeclaration(clazz, beanDefinition);
+    generateInstanceGetFieldDecorators(clazz, beanDefinition);
+    generateInstanceGetMethodDecorators(clazz, beanDefinition);
+    generateInstanceGetMethodReturn(clazz, beanDefinition);
+    processPostConstructAnnotation(clazz, beanDefinition);
+    processPreDestroyAnnotation(clazz, beanDefinition);
+    // write(clazz, beanDefinition);
+
+    SingletonGenerator2 generator = new SingletonGenerator2(iocContext);
+    generator.generate(iocContext, clazz, beanDefinition);
+
+
   }
 }
