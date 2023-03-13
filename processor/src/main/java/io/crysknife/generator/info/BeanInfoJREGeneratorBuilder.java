@@ -41,29 +41,41 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.BeanManager;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.Utils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import jakarta.enterprise.inject.Instance;
+
+import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+
+import static javax.lang.model.element.Modifier.ABSTRACT;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
  */
-public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
+class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
   private BeanDefinition bean;
   private ClassBuilder classBuilder;
   private GenerationUtils generationUtils;
 
+  private InterceptorGenerator interceptorGenerator;
+
   BeanInfoJREGeneratorBuilder(IOCContext iocContext) {
     super(iocContext);
     this.generationUtils = new GenerationUtils(iocContext);
+    this.interceptorGenerator = new InterceptorGenerator(iocContext);
   }
 
   @Override
@@ -74,6 +86,9 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
     addFields();
     addOnInvoke();
     addGetField();
+
+    interceptorGenerator.generate(bean);
+
     return classBuilder.toSourceCode();
   }
 
@@ -106,7 +121,6 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
       String methodName =
           fieldPoint.getVariableElement().getEnclosingElement().toString().replaceAll("\\.", "_")
               + "_" + fieldPoint.getVariableElement().getSimpleName();
-      boolean isLocal = isLocal(bean, fieldPoint);
 
       MethodDeclaration methodDeclaration =
           classBuilder.addMethod(methodName, Modifier.Keyword.PUBLIC);
@@ -116,8 +130,8 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
 
       NormalAnnotationExpr annotationExpr = new NormalAnnotationExpr();
       annotationExpr.setName(new Name("Before"));
-      annotationExpr.getPairs()
-          .add(new MemberValuePair().setName("value").setValue(getAnnotationValue(fieldPoint)));
+      annotationExpr.getPairs().add(
+          new MemberValuePair().setName("value").setValue(getAnnotationValue(bean, fieldPoint)));
       methodDeclaration.addAnnotation(annotationExpr);
 
       Expression _beanCall;
@@ -179,14 +193,22 @@ public class BeanInfoJREGeneratorBuilder extends AbstractBeanInfoGenerator {
   }
 
   private boolean isLocal(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {
-    return bean.getType().equals(fieldPoint.getVariableElement().getEnclosingElement().asType());
+    return generationUtils.isTheSame(fieldPoint.getVariableElement().getEnclosingElement().asType(),
+        bean.getType());
   }
 
-  private StringLiteralExpr getAnnotationValue(InjectableVariableDefinition fieldPoint) {
+  private StringLiteralExpr getAnnotationValue(BeanDefinition beanDefinition,
+      InjectableVariableDefinition fieldPoint) {
+    boolean isLocal = isLocal(bean, fieldPoint);
     StringBuffer sb = new StringBuffer();
-    sb.append("get(").append("*").append(" ")
-        .append(fieldPoint.getVariableElement().getEnclosingElement()).append(".")
-        .append(fieldPoint.getVariableElement().getSimpleName()).append(")");
+    sb.append("get(").append("*").append(" ");
+    if (isLocal) {
+      sb.append(fieldPoint.getVariableElement().getEnclosingElement());
+    } else {
+      sb.append(generationUtils.erase(beanDefinition.getType()));
+    }
+    sb.append(".");
+    sb.append(fieldPoint.getVariableElement().getSimpleName()).append(")");
     return new StringLiteralExpr(sb.toString());
   }
 

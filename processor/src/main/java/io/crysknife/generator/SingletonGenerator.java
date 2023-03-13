@@ -14,6 +14,8 @@
 
 package io.crysknife.generator;
 
+import io.crysknife.generator.api.ClassMetaInfo;
+import io.crysknife.generator.refactoring.SingletonGenerator2;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
@@ -32,7 +34,6 @@ import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
@@ -48,6 +49,7 @@ public class SingletonGenerator extends ScopedBeanGenerator {
   public void register() {
     iocContext.register(Singleton.class, WiringElementType.BEAN, this);
     iocContext.register(ApplicationScoped.class, WiringElementType.BEAN, this);
+
   }
 
   @Override
@@ -69,7 +71,7 @@ public class SingletonGenerator extends ScopedBeanGenerator {
 
   @Override
   public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
-    initClassBuilder(clazz, beanDefinition);
+    /*    initClassBuilder(clazz, beanDefinition);
     generateDependantFields(clazz, beanDefinition);
     generateInterceptorFieldDeclaration(clazz);
     generateNewInstanceMethodBuilder(clazz);
@@ -81,11 +83,18 @@ public class SingletonGenerator extends ScopedBeanGenerator {
     generateInstanceGetMethodReturn(clazz, beanDefinition);
     processPostConstructAnnotation(clazz, beanDefinition);
     processPreDestroyAnnotation(clazz, beanDefinition);
-    // write(clazz, beanDefinition);
+    write(clazz, beanDefinition);*/
 
-    SingletonGenerator2 generator = new SingletonGenerator2(iocContext);
-    generator.generate(iocContext, clazz, beanDefinition);
+    SingletonGenerator2 generator = new SingletonGenerator2();
+    generator.init(logger, iocContext);
+    generator.before();
+    generator.generate(new ClassMetaInfo(), beanDefinition);
+    generator.after();
 
+  }
 
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new UnsupportedOperationException();
   }
 }

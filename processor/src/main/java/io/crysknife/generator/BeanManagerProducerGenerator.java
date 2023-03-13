@@ -14,11 +14,9 @@
 
 package io.crysknife.generator;
 
+import io.crysknife.generator.api.ClassMetaInfo;
 import jakarta.inject.Inject;
 
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.stmt.ReturnStmt;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
 import io.crysknife.generator.api.ClassBuilder;
@@ -39,14 +37,28 @@ public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
   @Override
   public void register() {
     iocContext.register(Inject.class, BeanManager.class, WiringElementType.FIELD_TYPE, this);
+
   }
+
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
+
+  }
+
+
 
   @Override
   public void generateInstanceGetMethodReturn(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {
-    MethodCallExpr methodCallExpr =
+    /*    MethodCallExpr methodCallExpr =
         new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get");
     classBuilder.getGetMethodDeclaration().getBody().get()
-        .addAndGetStatement(new ReturnStmt(methodCallExpr));
+        .addAndGetStatement(new ReturnStmt(methodCallExpr));*/
+
+
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+
   }
 }

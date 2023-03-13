@@ -33,6 +33,8 @@ public class MyIOCSingletonBeanProvider implements ContextualTypeProvider<MyIOCS
   @Inject
   private BeanManager beanManager;
 
+  private MyIOCSingletonBean myIOCBean;
+
   @Override
   public MyIOCSingletonBean provide(Class<?>[] typeargs, Annotation[] qualifiers) {
     if (beanManager == null) {
@@ -42,7 +44,11 @@ public class MyIOCSingletonBeanProvider implements ContextualTypeProvider<MyIOCS
     Class clazz1 = typeargs[0];
     Class clazz2 = typeargs[1];
 
-    MyIOCSingletonBean myIOCBean = new MyIOCSingletonBean(clazz1, clazz2);
+    if(myIOCBean != null) {
+      return myIOCBean;
+    }
+
+    myIOCBean = new MyIOCSingletonBean(clazz1, clazz2);
     return myIOCBean;
   }
 }

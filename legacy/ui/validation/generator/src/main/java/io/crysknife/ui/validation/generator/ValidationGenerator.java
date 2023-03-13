@@ -23,6 +23,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
@@ -62,5 +63,10 @@ public class ValidationGenerator extends BeanIOCGenerator<BeanDefinition> {
       InjectableVariableDefinition fieldPoint) {
     return generationUtils.wrapCallInstanceImpl(classBuilder,
         new ObjectCreationExpr().setType("io.crysknife.ui.validation.client.GwtValidatorImpl"));
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new GenerationException("Not implemented");
   }
 }

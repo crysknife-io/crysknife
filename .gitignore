@@ -5,6 +5,8 @@
 .idea/
 .factorypath
 *.iml
+*.jfr
+.DS_Store
 target
 .vscode/
 .flattened-pom.xml

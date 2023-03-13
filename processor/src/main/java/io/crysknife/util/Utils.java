@@ -63,6 +63,14 @@ public class Utils {
     return MoreElements.getPackage(singleton).getQualifiedName().toString();
   }
 
+  public static TypeElement getEnclosingElement(Element element) {
+    Element enclosingElement = element.getEnclosingElement();
+    if (enclosingElement.getKind().equals(ElementKind.CLASS)) {
+      return MoreElements.asType(enclosingElement);
+    }
+    return getEnclosingElement(enclosingElement);
+  }
+
   public static String getPackageName(TypeMirror type) {
     return getPackageName(MoreTypes.asTypeElement(type));
   }
@@ -97,13 +105,6 @@ public class Utils {
     }
 
     return sb.toString();
-  }
-
-  private static String maybeErase(String className) {
-    if (className.contains("<")) { // type name contains wildcards
-      return className.substring(0, className.indexOf("<"));
-    }
-    return className;
   }
 
   public static Set<Element> getAnnotatedElements(Elements elements, TypeElement type,

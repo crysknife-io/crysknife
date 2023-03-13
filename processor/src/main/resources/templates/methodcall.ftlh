@@ -1,7 +1,8 @@
-<#ftl output_format='HTML'>
+<#if private>
+
+
 
 <#if jre>
-
         try {
             java.lang.reflect.Method method = org.apache.commons.lang3.reflect.MethodUtils.getMatchingMethod(${parent}.class, "${name}");
             method.setAccessible(true);
@@ -9,12 +10,10 @@
         } catch (Exception e) {
             throw new Error(e);
         };
+<#else>
+    OLOLO
+</#if>
 
 <#else>
-    <#if private>
-
-    <#else>
-        instance.init2();
-    </#if>
-    ...
+    instance.${name}();
 </#if>

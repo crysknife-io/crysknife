@@ -20,6 +20,7 @@ import com.google.auto.common.MoreTypes;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
@@ -36,7 +37,7 @@ public class UnscopedBeanDefinition extends BeanDefinition {
     setIocGenerator(new UnscopedIOCGenerator(logger, context));
   }
 
-  private static class UnscopedIOCGenerator extends IOCGenerator {
+  private static class UnscopedIOCGenerator extends IOCGenerator<BeanDefinition> {
 
     private UnscopedIOCGenerator(TreeLogger logger, IOCContext context) {
       super(logger, context);
@@ -48,7 +49,7 @@ public class UnscopedBeanDefinition extends BeanDefinition {
     }
 
     @Override
-    public void generate(ClassBuilder clazz, Definition beanDefinition) {
+    public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
 
     }
 
@@ -63,6 +64,11 @@ public class UnscopedBeanDefinition extends BeanDefinition {
       return new ObjectCreationExpr().setType(InstanceImpl.class)
           .addArgument(new ObjectCreationExpr().setType(clazzName));
 
+    }
+
+    @Override
+    public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+      throw new UnsupportedOperationException();
     }
   }
 

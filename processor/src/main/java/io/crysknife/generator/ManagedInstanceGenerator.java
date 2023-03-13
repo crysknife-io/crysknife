@@ -21,8 +21,11 @@ import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.internal.ManagedInstanceImpl;
 import io.crysknife.client.internal.QualifierUtil;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
@@ -41,7 +44,7 @@ import java.util.List;
  * @author Dmitrii Tikhomirov Created by treblereel 4/27/21
  */
 @Generator
-public class ManagedInstanceGenerator extends BeanIOCGenerator {
+public class ManagedInstanceGenerator extends BeanIOCGenerator<BeanDefinition> {
 
   private final TypeMirror instanceTypeMirror;
   private final TypeMirror managedInstanceTypeMirror;
@@ -57,12 +60,12 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
 
   @Override
   public void register() {
-    iocContext.register(Inject.class, ManagedInstance.class, WiringElementType.FIELD_TYPE, this);
-    iocContext.register(Inject.class, Instance.class, WiringElementType.FIELD_TYPE, this);
+    // iocContext.register(Inject.class, ManagedInstance.class, WiringElementType.FIELD_TYPE, this);
+    // iocContext.register(Inject.class, Instance.class, WiringElementType.FIELD_TYPE, this);
   }
 
   @Override
-  public void generate(ClassBuilder clazz, io.crysknife.definition.Definition beanDefinition) {
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
 
   }
 
@@ -122,4 +125,8 @@ public class ManagedInstanceGenerator extends BeanIOCGenerator {
     return rtrn;
   }
 
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new GenerationException("Not supported");
+  }
 }

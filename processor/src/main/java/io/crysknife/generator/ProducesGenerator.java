@@ -14,23 +14,23 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.LambdaExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.MethodDefinition;
+import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
 import jakarta.enterprise.inject.Produces;
-import javax.lang.model.element.TypeElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/4/19
  */
 @Generator(priority = 500)
-public class ProducesGenerator extends ScopedBeanGenerator {
+@io.crysknife.generator.refactoring.Generator(priority = 500, annotations = Produces.class,
+    elementType = WiringElementType.METHOD_DECORATOR)
+public class ProducesGenerator extends IOCGenerator<MethodDefinition> {
 
   private static final String BEAN_MANAGER_IMPL = "io.crysknife.client.BeanManagerImpl";
 
@@ -43,15 +43,14 @@ public class ProducesGenerator extends ScopedBeanGenerator {
     iocContext.register(Produces.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
-  private Expression getBeanManagerCallExpr(TypeElement instance) {
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(new MethodCallExpr(
-        new MethodCallExpr(
-            new ClassOrInterfaceType().setName(BEAN_MANAGER_IMPL).getNameAsExpression(), "get"),
-        "lookupBean").addArgument(instance.getQualifiedName().toString() + ".class")));
-
-    return lambda;
+  @Override
+  public void generate(ClassBuilder clazz, MethodDefinition beanDefinition) {
+    // throw new UnsupportedOperationException();
   }
 
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, MethodDefinition beanDefinition) {
+    // throw new UnsupportedOperationException();
+  }
 }

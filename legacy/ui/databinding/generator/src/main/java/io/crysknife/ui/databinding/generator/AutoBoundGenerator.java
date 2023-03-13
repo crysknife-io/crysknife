@@ -23,11 +23,14 @@ import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.databinding.client.api.AutoBound;
@@ -207,5 +210,10 @@ public class AutoBoundGenerator extends IOCGenerator<InjectableVariableDefinitio
     } else {
       return new ObjectCreationExpr().setType(bound.converter());
     }
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, InjectableVariableDefinition beanDefinition) {
+    throw new GenerationException("not supported");
   }
 }

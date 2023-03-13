@@ -31,7 +31,8 @@ import javax.lang.model.util.Types;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-public abstract class IOCGenerator<T extends Definition> {
+public abstract class IOCGenerator<T extends Definition>
+    extends io.crysknife.generator.refactoring.IOCGenerator<T> {
 
   protected final IOCContext iocContext;
 
@@ -43,6 +44,7 @@ public abstract class IOCGenerator<T extends Definition> {
   protected final TreeLogger logger;
 
   public IOCGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+
     this.iocContext = iocContext;
     this.logger = treeLogger;
 
@@ -50,6 +52,7 @@ public abstract class IOCGenerator<T extends Definition> {
 
     types = iocContext.getGenerationContext().getTypes();
     elements = iocContext.getGenerationContext().getElements();
+    super.init(treeLogger, iocContext);
   }
 
   public abstract void register();

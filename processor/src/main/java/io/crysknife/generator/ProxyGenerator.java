@@ -40,6 +40,10 @@ import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreTypes;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.annotation.CircularDependency;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.proxy.CircularDependencyProxy;
@@ -48,17 +52,27 @@ import io.crysknife.client.internal.proxy.ProxyBeanFactory;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.refactoring.StringOutputStream;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,7 +80,20 @@ import java.util.stream.Collectors;
  * @author Dmitrii Tikhomirov Created by treblereel 9/30/21
  */
 @Generator
-public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
+@io.crysknife.generator.refactoring.Generator(annotations = {CircularDependency.class},
+    elementType = WiringElementType.CLASS_DECORATOR)
+public class ProxyGenerator extends ScopedBeanGenerator {
+
+  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+
+  {
+    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
+    cfg.setDefaultEncoding("UTF-8");
+    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    cfg.setLogTemplateExceptions(false);
+    cfg.setWrapUncheckedExceptions(true);
+    cfg.setFallbackOnNullLoopVariable(false);
+  }
 
   private static List<String> OBJECT_METHODS = new ArrayList<String>() {
     {
@@ -307,5 +334,105 @@ public class ProxyGenerator extends ScopedBeanGenerator<BeanDefinition> {
     MethodDeclaration dependantBeanReadyMethod =
         builder.addMethod("dependantBeanReady", Modifier.Keyword.PUBLIC);
     dependantBeanReadyMethod.addAndGetParameter(Class.class, "clazz");
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    Map<String, Object> root = new HashMap<>();
+    validate(beanDefinition);
+
+    classMetaInfo.addImport(ProxyBeanFactory.class);
+    root.put("package", beanDefinition.getPackageName());
+    root.put("bean", beanDefinition.getSimpleClassName());
+
+    String nullConstructorParams = null;
+    if (!beanDefinition.getConstructorParams().isEmpty()) {
+      nullConstructorParams =
+          beanDefinition.getConstructorParams().stream().map(p -> p.getVariableElement().asType())
+              .map(f -> String.format("(%s) null", f.toString())).collect(Collectors.joining(","));
+
+    }
+    root.put("nullConstructorParams", nullConstructorParams);
+
+    String params = null;
+    if (!beanDefinition.getConstructorParams().isEmpty()) {
+      params = beanDefinition.getConstructorParams().stream()
+          .map(p -> "_constructor_" + p.getVariableElement().getSimpleName().toString())
+          .map(f -> "this." + f + ".get().getInstance()").collect(Collectors.joining(","));
+    }
+
+    root.put("constructorParams", params);
+
+
+    Set<Method> methods =
+        Utils.getAllMethodsIn(elements, MoreTypes.asTypeElement(beanDefinition.getType())).stream()
+            .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.STATIC))
+            .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE))
+            .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.ABSTRACT))
+            .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.NATIVE))
+            .filter(elm -> !elm.getModifiers().contains(javax.lang.model.element.Modifier.FINAL))
+            .filter(elm -> !OBJECT_METHODS.contains(elm.getSimpleName().toString()))
+            .map(this::addMethod).collect(Collectors.toSet());
+    root.put("methods", methods);
+
+    StringOutputStream os = new StringOutputStream();
+    try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+      Template temp = cfg.getTemplate("proxy.ftlh");
+      temp.process(root, out);
+      classMetaInfo.addToBody(() -> os.toString());
+    } catch (UnsupportedEncodingException | TemplateException e) {
+      throw new GenerationException(e);
+    } catch (IOException e) {
+      throw new GenerationException(e);
+    }
+  }
+
+  private void validate(BeanDefinition beanDefinition) {
+    System.out.println("Validating " + beanDefinition.getType());
+  }
+
+  private Method addMethod(ExecutableElement elm) {
+    Method method = new Method();
+    method.name = elm.getSimpleName().toString();
+    method.returnType = elm.getReturnType().toString();
+    method.isVoid = elm.getReturnType().toString().equals("void");
+    method.parameters = elm.getParameters().stream()
+        .map(p -> (p.asType().getKind().equals(TypeKind.TYPEVAR) ? "Object" : p.asType().toString())
+            + " " + p.getSimpleName().toString())
+        .collect(Collectors.joining(","));
+
+    method.parametersNames = elm.getParameters().stream().map(p -> p.getSimpleName().toString())
+        .collect(Collectors.joining(","));
+
+    return method;
+  }
+
+  public static class Method {
+    private String name;
+    private boolean isVoid;
+    private String returnType;
+    private String parameters;
+
+    private String parametersNames;
+
+    public String getName() {
+      return name;
+    }
+
+    public String getReturnType() {
+      return returnType;
+    }
+
+    public String getParameters() {
+      return parameters;
+    }
+
+    public String getParametersNames() {
+      return parametersNames;
+    }
+
+    public boolean isIsVoid() {
+      return isVoid;
+    }
   }
 }

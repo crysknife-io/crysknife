@@ -27,6 +27,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import org.gwtproject.dom.client.*;
@@ -430,4 +431,8 @@ public class GwtDomFactoryGenerator extends BeanIOCGenerator {
         .addArgument(HTML_ELEMENTS.get(clazz).apply(fieldPoint));
   }
 
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, Definition beanDefinition) {
+    throw new GenerationException("Not supported");
+  }
 }

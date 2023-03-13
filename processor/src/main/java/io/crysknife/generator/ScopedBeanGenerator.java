@@ -55,6 +55,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.refactoring.SingletonGenerator2;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
@@ -76,7 +77,7 @@ import static com.github.javaparser.ast.expr.UnaryExpr.Operator.LOGICAL_COMPLEME
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/3/19
  */
-public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefinition> {
+public abstract class ScopedBeanGenerator extends BeanIOCGenerator<BeanDefinition> {
 
   protected NameExpr instance;
 
@@ -91,7 +92,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   @Override
   public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
-    initClassBuilder(clazz, beanDefinition);
+    /*    initClassBuilder(clazz, beanDefinition);
     generateDependantFields(clazz, beanDefinition);
     generateInterceptorFieldDeclaration(clazz);
     generateNewInstanceMethodBuilder(clazz);
@@ -102,8 +103,15 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     generateInstanceGetMethodDecorators(clazz, beanDefinition);
     generateInstanceGetMethodReturn(clazz, beanDefinition);
     processPostConstructAnnotation(clazz, beanDefinition);
-    processPreDestroyAnnotation(clazz, beanDefinition);
-    write(clazz, beanDefinition);
+    processPreDestroyAnnotation(clazz, beanDefinition);*/
+    // write(clazz, beanDefinition);
+
+
+    SingletonGenerator2 generator = new SingletonGenerator2();
+    generator.init(logger, iocContext);
+    generator.before();
+    // generator.generate(new ClassMetaInfo(), beanDefinition);
+    generator.after();
   }
 
   protected void generateDependantFields(ClassBuilder classBuilder, BeanDefinition definition) {
@@ -121,17 +129,21 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
 
   protected void generateFactoryFieldDeclaration(ClassBuilder classBuilder,
       BeanDefinition definition, InjectableVariableDefinition fieldPoint, String kind) {
-    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
+
+    throw new GenerationException("Not implemented yet " + definition.getQualifiedName() + "."
+        + fieldPoint.getVariableElement().getSimpleName());
+
+    /*    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
     ClassOrInterfaceType supplier =
         new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
-
+    
     ClassOrInterfaceType type = new ClassOrInterfaceType();
     type.setName(InstanceFactory.class.getSimpleName());
     type.setTypeArguments(new ClassOrInterfaceType().setName(typeQualifiedName));
     supplier.setTypeArguments(type);
-
-
+    
+    
     Expression beanCall;
     if (fieldPoint.getImplementation().isPresent()
         && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
@@ -142,15 +154,15 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     } else {
       beanCall = generateBeanLookupCall(classBuilder, fieldPoint);
     }
-
+    
     if (beanCall == null) {
       throw new GenerationException();
     }
-
+    
     LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
     lambda.setBody(new ExpressionStmt(beanCall));
-
-    classBuilder.addFieldWithInitializer(supplier, varName, lambda, Modifier.Keyword.PRIVATE);
+    
+    classBuilder.addFieldWithInitializer(supplier, varName, lambda, Modifier.Keyword.PRIVATE);*/
   }
 
   protected void generateInitInstanceMethodBuilder(ClassBuilder classBuilder,
@@ -221,7 +233,6 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
     getMethodDeclaration.setType(clazzName);
 
     getMethodDeclaration.getBody().ifPresent(body -> {
-
       IfStmt ifStmt = new IfStmt().setCondition(new UnaryExpr(
           new MethodCallExpr(new MethodCallExpr(new NameExpr("beanDef"), "getScope"), "equals")
               .addArgument(new FieldAccessExpr(new NameExpr("Dependent"), "class")),
@@ -247,6 +258,7 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
       body.addAndGetStatement(new MethodCallExpr("initInstance").addArgument("instance"));
       body.addAndGetStatement(new ReturnStmt(new NameExpr("instance")));
     });
+
   }
 
   public void generateDependantFieldDeclaration(ClassBuilder classBuilder,
@@ -330,11 +342,13 @@ public abstract class ScopedBeanGenerator<T> extends BeanIOCGenerator<BeanDefini
           .sorted(
               Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
           .forEach(decorator -> {
-            if (decorator instanceof ProducesGenerator) {
-              // TODO Produces
-            } else {
-              decorator.generate(clazz, method);
-            }
+            // if (decorator instanceof ProducesGenerator) {
+            // TODO Produces
+            // } else {
+
+            System.out.println("decorator " + decorator.getClass().getCanonicalName());
+            decorator.generate(clazz, method);
+            // }
           });
     });
   }

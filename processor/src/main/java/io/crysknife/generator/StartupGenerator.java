@@ -19,6 +19,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 
 import jakarta.enterprise.context.Dependent;

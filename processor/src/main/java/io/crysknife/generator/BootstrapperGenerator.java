@@ -18,12 +18,17 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.google.auto.common.MoreTypes;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.annotation.Application;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.BeanManager;
@@ -35,14 +40,30 @@ import io.crysknife.client.internal.proxy.Interceptor;
 import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.refactoring.BootstrapperGenerator2;
+import io.crysknife.generator.refactoring.SingletonGenerator2;
+import io.crysknife.generator.refactoring.StringOutputStream;
+import io.crysknife.generator.steps.PostConstructAnnotation2;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.Utils;
 
 import jakarta.inject.Provider;
+
+import javax.annotation.processing.FilerException;
+import javax.tools.JavaFileObject;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -53,8 +74,13 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   private String BOOTSTRAP_EXTENSION = "Bootstrap";
 
+  BootstrapperGenerator2 bootstrapperGenerator2 = new BootstrapperGenerator2();
+
   public BootstrapperGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
+
+    bootstrapperGenerator2.init(treeLogger, iocContext);
+    bootstrapperGenerator2.before();
   }
 
   @Override
@@ -64,7 +90,9 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
 
   @Override
   public void generate(ClassBuilder clazz, BeanDefinition definition) {
-    super.generate(clazz, definition);
+    // super.generate(clazz, definition);
+    bootstrapperGenerator2.generate(new ClassMetaInfo(), definition);
+
   }
 
   @Override
@@ -182,4 +210,11 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   @Override
   protected void processPreDestroyAnnotation(ClassBuilder classBuilder,
       BeanDefinition beanDefinition) {}
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+
+  }
+
+
 }

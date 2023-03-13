@@ -22,29 +22,58 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnknownType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.internal.AbstractEventHandler;
 import io.crysknife.client.internal.event.EventManager;
 import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.Definition;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.refactoring.StringOutputStream;
 import io.crysknife.logger.TreeLogger;
 
+import io.crysknife.util.Utils;
 import jakarta.enterprise.event.Observes;
+import jsinterop.base.Js;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/5/19
  */
 @Generator(priority = 1000)
+@io.crysknife.generator.refactoring.Generator(priority = 1000, annotations = Observes.class,
+    elementType = WiringElementType.PARAMETER)
 public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
+
+  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+
+  {
+    cfg.setClassForTemplateLoading(this.getClass(), "/templates/observes/");
+    cfg.setDefaultEncoding("UTF-8");
+    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    cfg.setLogTemplateExceptions(false);
+    cfg.setWrapUncheckedExceptions(true);
+    cfg.setFallbackOnNullLoopVariable(false);
+  }
+
 
   public ObservesGenerator(TreeLogger logger, IOCContext iocContext) {
     super(logger, iocContext);
@@ -154,4 +183,104 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
         Keyword.PRIVATE, Keyword.FINAL);
   }
 
+
+  /*  @Override()
+  protected void onDestroy(org.treblereel.observes.ObservesBean instance) {
+    ((AbstractEventHandler) beanManager.lookupBean(EventManager.class).getInstance().get(org.treblereel.observes.User.class)).removeSubscriber(instance, onUserEvent_org_treblereel_observes_User_org_treblereel_observes_ObservesBean);
+  }
+  
+      public void doInitInstance(ObservesBean instance) {
+        ((AbstractEventHandler) beanManager.lookupBean(EventManager.class).getInstance().get(org.treblereel.observes.User.class)).addSubscriber(instance, onUserEvent_org_treblereel_observes_User_org_treblereel_observes_ObservesBean);
+    }
+  
+      private final java.util.function.BiConsumer<org.treblereel.observes.User, org.treblereel.observes.ObservesBean> onUserEvent_org_treblereel_observes_User_org_treblereel_observes_ObservesBean = (event, instance) -> instance.onUserEvent(jsinterop.base.Js.uncheckedCast(event));
+  
+  */
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition) {
+    classMetaInfo.addImport(AbstractEventHandler.class);
+    classMetaInfo.addImport(BiConsumer.class);
+    classMetaInfo.addImport(EventManager.class);
+    classMetaInfo.addImport(Js.class);
+
+    VariableElement parameter = methodDefinition.getExecutableElement().getParameters().get(0);
+    String consumer = getConsumer(methodDefinition.getExecutableElement(), parameter);
+    String target =
+        iocContext.getGenerationContext().getTypes().erasure(parameter.asType()).toString();
+
+    addConsumerField2(classMetaInfo, methodDefinition, target, consumer);
+    addToOnDestroy(classMetaInfo, target, consumer);
+    doInitInstance(classMetaInfo, target, consumer);
+
+  }
+
+  private void doInitInstance(ClassMetaInfo classMetaInfo, String target, String consumer) {
+    Map<String, Object> root = new HashMap<>();
+    root.put("target", target);
+    root.put("consumer", consumer);
+
+    StringOutputStream os = new StringOutputStream();
+    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
+      Template temp = cfg.getTemplate("subscribe.ftlh");
+      temp.process(root, out);
+      classMetaInfo.addToDoInitInstance(os::toString);
+    } catch (UnsupportedEncodingException | TemplateException e) {
+      throw new GenerationException(e);
+    } catch (IOException e) {
+      throw new GenerationException(e);
+    }
+  }
+
+  private void addConsumerField2(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition,
+      String target, String consumer) {
+    String bean = iocContext.getGenerationContext().getTypes()
+        .erasure(methodDefinition.getExecutableElement().getEnclosingElement().asType()).toString();
+
+    Map<String, Object> root = new HashMap<>();
+    root.put("target", target);
+    root.put("bean", bean);
+    root.put("consumer", consumer);
+    root.put("method", methodDefinition.getExecutableElement().getSimpleName());
+
+    StringOutputStream os = new StringOutputStream();
+    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
+      Template temp = cfg.getTemplate("consumer.ftlh");
+      temp.process(root, out);
+      classMetaInfo.addToBody(os::toString);
+    } catch (UnsupportedEncodingException | TemplateException e) {
+      throw new GenerationException(e);
+    } catch (IOException e) {
+      throw new GenerationException(e);
+    }
+
+  }
+
+  private void addToOnDestroy(ClassMetaInfo classMetaInfo, String target, String consumer) {
+    Map<String, Object> root = new HashMap<>();
+    root.put("target", target);
+    root.put("subscriber", consumer);
+
+    StringOutputStream os = new StringOutputStream();
+    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
+      Template temp = cfg.getTemplate("onDestroy.ftlh");
+      temp.process(root, out);
+      classMetaInfo.addToOnDestroy(os::toString);
+    } catch (UnsupportedEncodingException | TemplateException e) {
+      throw new GenerationException(e);
+    } catch (IOException e) {
+      throw new GenerationException(e);
+    }
+  }
+
+  private String getConsumer(ExecutableElement beanDefinition, VariableElement parameter) {
+    TypeMirror parameterTypeMirror =
+        iocContext.getGenerationContext().getTypes().erasure(parameter.asType());
+
+    String consumer = parameter.getEnclosingElement().getSimpleName().toString() + "_"
+        + parameterTypeMirror.toString().replaceAll("\\.", "_") + "_"
+        + MoreElements.asType(beanDefinition.getEnclosingElement()).getQualifiedName().toString()
+            .replaceAll("\\.", "_");
+    return consumer;
+  }
 }

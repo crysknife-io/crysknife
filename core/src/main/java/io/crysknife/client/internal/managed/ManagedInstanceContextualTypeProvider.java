@@ -23,7 +23,7 @@ import jakarta.inject.Inject;
 
 import java.lang.annotation.Annotation;
 
-// @IOCProvider
+@IOCProvider
 public class ManagedInstanceContextualTypeProvider
     implements ContextualTypeProvider<ManagedInstance> {
 

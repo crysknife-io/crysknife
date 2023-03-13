@@ -35,8 +35,7 @@ public class GenericBeanInjectionTest extends AbstractTest {
         .lookupBean(TypeOneGenericBeansHolder.class).getInstance().tGenericAbstractBean.getClass());
   }
 
-  // TODO fix @AspectJ, it intercepts this as TypeOneGenericAbstractBean
-  // @Test
+  @Test
   public void testTypeTwo() {
     assertEquals(TypeTwoGenericAbstractBean.class, app.beanManager
         .lookupBean(TypeTwoGenericBeansHolder.class).getInstance().tGenericAbstractBean.getClass());

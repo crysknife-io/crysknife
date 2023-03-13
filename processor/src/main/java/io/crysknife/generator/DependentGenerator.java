@@ -28,8 +28,10 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.InjectionParameterDefinition;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.refactoring.SingletonGenerator2;
 import io.crysknife.logger.TreeLogger;
 
 import jakarta.enterprise.context.Dependent;
@@ -97,4 +99,23 @@ public class DependentGenerator extends ScopedBeanGenerator {
     return instanceFieldAssignExpr;
   }
 
+
+
+  @Override
+  public void generate(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
+    // super.generate(classBuilder, beanDefinition);
+
+    SingletonGenerator2 generator = new SingletonGenerator2();
+    generator.init(logger, iocContext);
+    generator.before();
+    generator.generate(new ClassMetaInfo(), beanDefinition);
+    generator.after();
+
+
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new UnsupportedOperationException();
+  }
 }

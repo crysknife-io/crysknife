@@ -14,7 +14,6 @@
 
 package io.crysknife.generator;
 
-import freemarker.core.JavaScriptOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -46,8 +45,6 @@ public class MethodCallGenerator {
     cfg.setLogTemplateExceptions(false);
     cfg.setWrapUncheckedExceptions(true);
     cfg.setFallbackOnNullLoopVariable(false);
-    // cfg.setOutputFormat(JavaScriptOutputFormat.INSTANCE);
-    // cfg.setAutoEscapingPolicy(Configuration.DISABLE_AUTO_ESCAPING_POLICY);
   }
 
   public String generate(TypeMirror parent, ExecutableElement method) {
@@ -56,8 +53,6 @@ public class MethodCallGenerator {
     root.put("private", method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE));
     root.put("name", method.getSimpleName().toString());
     root.put("parent", parent.toString());
-
-
 
     OutputStream os = new OutputStream() {
       private StringBuilder sb = new StringBuilder();
@@ -76,10 +71,6 @@ public class MethodCallGenerator {
       Template temp = cfg.getTemplate("methodcall.ftlh");
       Writer out = new OutputStreamWriter(os, "UTF-8");
       temp.process(root, out);
-
-
-      System.out.println("POST \n" + os.toString());
-
       return os.toString();
     } catch (IOException e) {
       throw new RuntimeException(e);

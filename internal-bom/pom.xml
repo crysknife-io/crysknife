@@ -69,11 +69,11 @@
 
         <jsoup.version>1.11.3</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
-        <freemarker.version>2.3.32</freemarker.version>
+        <freemarker.version>2.3.30</freemarker.version>
         <lesscss.version>1.10</lesscss.version>
         <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
-        <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
+        <classgraph.classgraph.version>4.8.156</classgraph.classgraph.version>
         <org.treblereel.j2cl.processors.version>0.6-SNAPSHOT</org.treblereel.j2cl.processors.version>
         <gwt.jakarta.version>0.2</gwt.jakarta.version>
 

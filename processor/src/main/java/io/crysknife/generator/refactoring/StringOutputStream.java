@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,30 +12,20 @@
  * the License.
  */
 
-package org.treblereel.providers.provider;
+package io.crysknife.generator.refactoring;
 
-import io.crysknife.client.ioc.IOCProvider;
+import java.io.OutputStream;
 
-import jakarta.inject.Provider;
-import jakarta.inject.Singleton;
+public class StringOutputStream extends OutputStream {
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 12/4/21
- */
-@Singleton
-@IOCProvider
-public class SimpleIOCProvider implements Provider<IOCProviderBean> {
-
-  private IOCProviderBean iocProviderBean;
-
+  private StringBuilder builder = new StringBuilder();
 
   @Override
-  public IOCProviderBean get() {
-    if(iocProviderBean != null) {
-      return iocProviderBean;
-    }
+  public void write(int b) {
+    builder.append((char) b);
+  }
 
-    iocProviderBean = new IOCProviderBean();
-    return iocProviderBean;
+  public String toString() {
+    return builder.toString();
   }
 }

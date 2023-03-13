@@ -14,6 +14,7 @@
 
 package io.crysknife.generator;
 
+import io.crysknife.definition.Definition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.GenerationContext;
@@ -31,7 +32,8 @@ import java.io.PrintWriter;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/4/19
  */
-public abstract class BeanIOCGenerator<T extends BeanDefinition> extends IOCGenerator<T> {
+public abstract class BeanIOCGenerator<T extends BeanDefinition>
+    extends IOCGenerator<BeanDefinition> {
 
   public BeanIOCGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);

@@ -38,6 +38,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -1104,4 +1105,8 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     }
   }
 
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new UnsupportedOperationException();
+  }
 }

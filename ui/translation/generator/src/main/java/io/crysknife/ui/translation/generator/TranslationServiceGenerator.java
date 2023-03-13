@@ -25,11 +25,13 @@ import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import io.crysknife.annotation.Generator;
 import io.crysknife.client.InstanceFactory;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.translation.api.spi.TranslationService;
@@ -52,7 +54,7 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, Definition beanDefinition) {
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
 
     new TranslationServiceImplGenerator(iocContext).generate();
 
@@ -93,5 +95,10 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
     factory.setAnonymousClassBody(supplierClassBody);
 
     return factory;
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new UnsupportedOperationException();
   }
 }

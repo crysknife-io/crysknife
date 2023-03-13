@@ -22,6 +22,7 @@ import javax.tools.Diagnostic;
 
 import io.crysknife.generator.context.oracle.ResourceOracle;
 import io.crysknife.generator.context.oracle.ResourceOracleImpl;
+import io.crysknife.logger.TreeLogger;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 
@@ -38,9 +39,18 @@ public class GenerationContext {
 
 
   public GenerationContext(RoundEnvironment roundEnvironment,
-      ProcessingEnvironment processingEnvironment) {
+      ProcessingEnvironment processingEnvironment, TreeLogger logger) {
     this.roundEnvironment = roundEnvironment;
     this.processingEnvironment = processingEnvironment;
+
+    logger.log(TreeLogger.Type.DEBUG,
+        String.format("found classes   : %s", scanResult.getAllClasses().size()));
+    logger.log(TreeLogger.Type.DEBUG,
+        String.format("found resources : %s", scanResult.getAllResources().size()));
+    logger.log(TreeLogger.Type.DEBUG,
+        String.format("found interfaces: %s", scanResult.getAllInterfaces().size()));
+
+
 
     try {
       Class.forName("org.aspectj.lang.ProceedingJoinPoint");

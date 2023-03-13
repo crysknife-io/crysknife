@@ -24,11 +24,13 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import elemental2.dom.*;
 import io.crysknife.annotation.Generator;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.Definition;
 import io.crysknife.logger.TreeLogger;
@@ -44,7 +46,7 @@ import java.util.stream.Collectors;
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator(priority = 100000)
-public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
+public class Elemenatal2FactoryGenerator extends BeanIOCGenerator<BeanDefinition> {
 
   private static final SetMultimap<Class, String> HTML_ELEMENTS = HashMultimap.create();
 
@@ -123,7 +125,7 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, Definition beanDefinition) {
+  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
 
   }
 
@@ -179,5 +181,10 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator {
   public static Set<Map.Entry<Class, String>> getHTMLElementByTag(String tag) {
     return HTML_ELEMENTS.entries().stream().filter(elm -> elm.getValue().equals(tag))
         .collect(Collectors.toSet());
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new UnsupportedOperationException();
   }
 }

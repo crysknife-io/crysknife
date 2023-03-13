@@ -33,11 +33,11 @@ public class InstanceGetMethodDecorators implements Step<BeanDefinition> {
           .sorted(
               Comparator.comparingInt(o -> o.getClass().getAnnotation(Generator.class).priority()))
           .forEach(decorator -> {
-            if (decorator instanceof ProducesGenerator) {
-              // TODO Produces
-            } else {
-              decorator.generate(classBuilder, method);
-            }
+            // if (decorator instanceof ProducesGenerator) {
+            // TODO Produces
+            // } else {
+            decorator.generate(classBuilder, method);
+            // }
           });
     });
   }

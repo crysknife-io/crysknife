@@ -52,8 +52,9 @@ public class ClassBuilder {
   }
 
   public void build() {
-    beanDefinition.getIocGenerator()
-        .ifPresent(iocGenerator -> iocGenerator.generate(this, beanDefinition));
+    beanDefinition.getIocGenerator().ifPresent(iocGenerator -> {
+      iocGenerator.generate(this, beanDefinition);
+    });
   }
 
   public String toSourceCode() {

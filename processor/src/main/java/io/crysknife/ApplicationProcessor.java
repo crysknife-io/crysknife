@@ -62,10 +62,23 @@ public class ApplicationProcessor extends AbstractProcessor {
       return false;
     }
 
-    context = new GenerationContext(roundEnvironment, processingEnv);
+    final TreeLogger logger = new PrintWriterTreeLogger();
+    final long start = System.currentTimeMillis();
+
+    context = new GenerationContext(roundEnvironment, processingEnv,
+        logger.branch(TreeLogger.DEBUG, "start classpath scan ..."));
+
+    final long finished = (System.currentTimeMillis() - start);
+
+    logger.log(TreeLogger.INFO, "classpath processed in " + finished / 1000 + "s");
+    if (finished > 1000) {
+      logger.log(TreeLogger.INFO,
+          "ClassPath scan is slow, reduce the number of jars in the classpath/dependencies.");
+    }
+
+
     iocContext = new IOCContext(context);
 
-    TreeLogger logger = new PrintWriterTreeLogger();
 
     Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
     if (!maybeApplication.isPresent()) {
@@ -92,6 +105,10 @@ public class ApplicationProcessor extends AbstractProcessor {
     taskGroup.addTask(new BeanManagerGenerator(iocContext, logger));
     taskGroup.addTask(new FireAfterTask(iocContext, logger));
     taskGroup.execute();
+
+
+    logger.log(TreeLogger.INFO,
+        "Crysknife generation finished in " + (System.currentTimeMillis() - start) + " ms");
 
     return false;
   }

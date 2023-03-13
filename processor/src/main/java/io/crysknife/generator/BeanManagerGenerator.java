@@ -128,7 +128,7 @@ public class BeanManagerGenerator implements Task {
     }
   }
 
-  public class BeanManagerGeneratorBuilder {
+  private class BeanManagerGeneratorBuilder {
 
     private CompilationUnit clazz = new CompilationUnit();
 
@@ -195,12 +195,6 @@ public class BeanManagerGenerator implements Task {
 
 
       Set<TypeMirror> processed = new HashSet<>();
-
-
-      iocContext.getOrderedBeans().forEach(bean -> {
-        // System.out.println("bean = " + bean.toString());
-      });
-
       iocContext.getOrderedBeans().stream()
           .filter(
               field -> (MoreTypes.asTypeElement(field).getAnnotation(Application.class) == null))

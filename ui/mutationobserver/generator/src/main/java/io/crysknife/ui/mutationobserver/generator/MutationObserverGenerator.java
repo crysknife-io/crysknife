@@ -29,6 +29,7 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.IOCGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
@@ -170,5 +171,10 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
         .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
             .addArgument("instance." + fieldName).addArgument("(ObserverCallback) m -> instance."
                 + definition.getExecutableElement().getSimpleName().toString() + "(m)"));
+  }
+
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, MethodDefinition beanDefinition) {
+    throw new GenerationException("MutationObserverGenerator can't generate bean");
   }
 }

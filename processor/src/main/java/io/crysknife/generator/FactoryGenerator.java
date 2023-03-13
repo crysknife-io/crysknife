@@ -48,6 +48,9 @@ public class FactoryGenerator implements Task {
   public void execute() throws UnableToCompleteException {
     Set<TypeMirror> processed = new HashSet<>();
 
+    System.out.println("FactoryGenerator = " + iocContext.getOrderedBeans().size());
+
+
     for (TypeMirror bean : iocContext.getOrderedBeans()) {
       TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
       if (!processed.contains(bean)) {

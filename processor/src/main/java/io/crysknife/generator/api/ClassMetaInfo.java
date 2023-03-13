@@ -14,16 +14,18 @@
 
 package io.crysknife.generator.api;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
 public class ClassMetaInfo {
 
   private final Set<String> imports = new HashSet<>();
-  private final Set<Supplier<String>> onDestroy = new HashSet<>();
-  private final Set<Supplier<String>> doInitInstance = new HashSet<>();
-  private final Set<Supplier<String>> body = new HashSet<>();
+  private final List<Supplier<String>> onDestroy = new ArrayList<>();
+  private final List<Supplier<String>> doInitInstance = new ArrayList<>();
+  private final List<Supplier<String>> body = new ArrayList<>();
 
 
   public void addImport(String _import) {
@@ -49,4 +51,17 @@ public class ClassMetaInfo {
   public Set<String> getImports() {
     return imports;
   }
+
+  public List<String> getOnDestroy() {
+    return onDestroy.stream().map(Supplier::get).collect(java.util.stream.Collectors.toList());
+  }
+
+  public List<String> getDoInitInstance() {
+    return doInitInstance.stream().map(Supplier::get).collect(java.util.stream.Collectors.toList());
+  }
+
+  public List<String> getBodyStatements() {
+    return body.stream().map(Supplier::get).collect(java.util.stream.Collectors.toList());
+  }
+
 }

@@ -38,6 +38,7 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.ScopedBeanGenerator;
 import io.crysknife.generator.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.databinding.client.BindableProxy;
@@ -246,4 +247,8 @@ public class BindableGenerator extends ScopedBeanGenerator {
     });
   }
 
+  @Override
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 }
