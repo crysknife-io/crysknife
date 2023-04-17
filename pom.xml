@@ -89,6 +89,7 @@
         <module>core</module>
         <module>ui</module>
         <module>tests</module>
+        <module>tests/jre-tests/simple</module>
     </modules>
 
     <dependencyManagement>

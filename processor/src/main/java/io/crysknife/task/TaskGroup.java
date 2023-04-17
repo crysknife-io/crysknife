@@ -38,7 +38,6 @@ public class TaskGroup implements Task {
     Set<UnableToCompleteException> errors = new LinkedHashSet<>();
     for (Task task : tasks) {
       try {
-        System.out.println("Executing task: " + task.getClass().getName());
         task.execute();
       } catch (UnableToCompleteException e) {
         errors.add(e);

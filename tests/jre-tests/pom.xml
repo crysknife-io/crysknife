@@ -2,82 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <artifactId>jre-parent</artifactId>
     <groupId>io.crysknife.tests</groupId>
-    <artifactId>jre-tests</artifactId>
     <version>0.5.2-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
+    <name>Crysknife :: Tests :: JRE</name>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-
-        <aspectj.version>1.9.19</aspectj.version>
-        <aspectj.maven.plugin.version>1.14.0</aspectj.maven.plugin.version>
-        <webappdir>${project.build.directory}/webapp</webappdir>
-        <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
-        <maven.properties.plugin>1.0.0</maven.properties.plugin>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.surfire.plugin>3.0.0-M1</maven.surfire.plugin>
-        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <junit.version>4.13.1</junit.version>
-    </properties>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>io.crysknife</groupId>
-            <artifactId>crysknife-processor</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.crysknife</groupId>
-            <artifactId>crysknife-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>${aspectj.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.crysknife.ui.translation</groupId>
-            <artifactId>api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.crysknife.ui.translation</groupId>
-            <artifactId>generator</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>cdi</module>
+    </modules>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.java</include>
-                    <include>**/*.html</include>
-                    <include>**/*.css</include>
-                    <include>**/*.properties</include>
-                    <include>**/*.less</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -85,42 +20,6 @@
                 <configuration>
                     <skip>true</skip>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>${aspectj.maven.plugin.version}</version>
-                <configuration>
-                    <proc>none</proc>
-                    <Xlint>ignore</Xlint>
-                    <complianceLevel>${maven.compiler.source}</complianceLevel>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
