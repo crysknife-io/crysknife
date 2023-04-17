@@ -20,11 +20,16 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 
+import io.crysknife.annotation.Application;
 import io.crysknife.generator.context.oracle.ResourceOracle;
 import io.crysknife.generator.context.oracle.ResourceOracleImpl;
 import io.crysknife.logger.TreeLogger;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/21/19
@@ -33,15 +38,24 @@ public class GenerationContext {
 
   private final RoundEnvironment roundEnvironment;
   private final ProcessingEnvironment processingEnvironment;
-  private final ScanResult scanResult = new ClassGraph().enableAllInfo().scan();
+  private final ScanResult scanResult;
   private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
   private ExecutionEnv executionEnv = ExecutionEnv.J2CL;
 
 
-  public GenerationContext(RoundEnvironment roundEnvironment,
+  public GenerationContext(Application application, RoundEnvironment roundEnvironment,
       ProcessingEnvironment processingEnvironment, TreeLogger logger) {
     this.roundEnvironment = roundEnvironment;
     this.processingEnvironment = processingEnvironment;
+
+    if (application.packages().length > 0) {
+      List<String> packages = new ArrayList<>(Arrays.asList(application.packages()));
+      packages.add("io.crysknife");
+      scanResult = new ClassGraph().enableAllInfo()
+          .acceptPackages(packages.toArray(new String[packages.size()])).scan();
+    } else {
+      scanResult = new ClassGraph().enableAllInfo().scan();
+    }
 
     logger.log(TreeLogger.Type.DEBUG,
         String.format("found classes   : %s", scanResult.getAllClasses().size()));
@@ -49,8 +63,6 @@ public class GenerationContext {
         String.format("found resources : %s", scanResult.getAllResources().size()));
     logger.log(TreeLogger.Type.DEBUG,
         String.format("found interfaces: %s", scanResult.getAllInterfaces().size()));
-
-
 
     try {
       Class.forName("org.aspectj.lang.ProceedingJoinPoint");
@@ -60,7 +72,7 @@ public class GenerationContext {
     } catch (ClassNotFoundException e) {
 
     }
-    System.out.println("Current generation mode: " + executionEnv);
+    logger.log(TreeLogger.INFO, "Current generation mode: " + executionEnv);
   }
 
   public ExecutionEnv getExecutionEnv() {

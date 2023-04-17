@@ -37,8 +37,8 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
@@ -48,11 +48,6 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes({"io.crysknife.annotation.Application"})
 public class ApplicationProcessor extends AbstractProcessor {
-
-  private IOCContext iocContext;
-  private Set<String> packages;
-  private GenerationContext context;
-  private TypeElement application;
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations,
@@ -64,8 +59,15 @@ public class ApplicationProcessor extends AbstractProcessor {
     final TreeLogger logger = new PrintWriterTreeLogger();
     final long start = System.currentTimeMillis();
 
-    context = new GenerationContext(roundEnvironment, processingEnv,
-        logger.branch(TreeLogger.DEBUG, "start classpath scan ..."));
+    Optional<TypeElement> maybeApplication = processApplicationAnnotation(roundEnvironment, logger);
+    if (!maybeApplication.isPresent()) {
+      return false;
+    }
+
+    TypeElement application = maybeApplication.get();
+    GenerationContext context =
+        new GenerationContext(application.getAnnotation(Application.class), roundEnvironment,
+            processingEnv, logger.branch(TreeLogger.DEBUG, "start classpath scan ..."));
 
     final long finished = (System.currentTimeMillis() - start);
 
@@ -75,13 +77,7 @@ public class ApplicationProcessor extends AbstractProcessor {
           "ClassPath scan is slow, reduce the number of jars in the classpath/dependencies.");
     }
 
-
-    iocContext = new IOCContext(context);
-    Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
-    if (!maybeApplication.isPresent()) {
-      return true;
-    }
-    this.application = maybeApplication.get();
+    IOCContext iocContext = new IOCContext(context);
 
     initAndRegisterGenerators(iocContext, logger);
 
@@ -107,22 +103,37 @@ public class ApplicationProcessor extends AbstractProcessor {
     return false;
   }
 
-  private Optional<TypeElement> processApplicationAnnotation(IOCContext iocContext) {
-    Set<TypeElement> applications = (Set<TypeElement>) iocContext.getGenerationContext()
-        .getRoundEnvironment().getElementsAnnotatedWith(Application.class);
+  private Optional<TypeElement> processApplicationAnnotation(RoundEnvironment roundEnvironment,
+      TreeLogger logger) {
+    Set<Element> applications =
+        (Set<Element>) roundEnvironment.getElementsAnnotatedWith(Application.class);
 
     if (applications.size() == 0) {
-      context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING,
-          "No class annotated with @Application detected\"");
+      logger.log(TreeLogger.ERROR, "No class annotated with @Application detected\"");
       return Optional.empty();
     }
 
     if (applications.size() > 1) {
-      context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.ERROR,
-          "There is must be only one class annotated with @Application\"");
+      logger.log(TreeLogger.ERROR, "There is must be only one class annotated with @Application\"");
       throw new GenerationException();
     }
-    return applications.stream().findFirst();
+
+    Optional<Element> candidate = applications.stream().findFirst();
+
+    if (candidate.isPresent()) {
+      if (!candidate.get().getKind().isClass()) {
+        logger.log(TreeLogger.ERROR, "The class annotated with @Application must be a class\"");
+        throw new GenerationException();
+      }
+
+      if (candidate.get().getModifiers().contains(javax.lang.model.element.Modifier.ABSTRACT)) {
+        logger.log(TreeLogger.ERROR,
+            "The class annotated with @Application must not be abstract\"");
+        throw new GenerationException();
+      }
+      return candidate.map(TypeElement.class::cast);
+    }
+    return Optional.empty();
   }
 
   private void initAndRegisterGenerators(IOCContext iocContext, TreeLogger logger) {
@@ -135,7 +146,7 @@ public class ApplicationProcessor extends AbstractProcessor {
             IOCContext.class);
         ((IOCGenerator) c.newInstance(
             logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
-            this.iocContext)).register();
+            iocContext)).register();
       } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
           | NoSuchMethodException | InvocationTargetException e) {
         throw new GenerationException(e);

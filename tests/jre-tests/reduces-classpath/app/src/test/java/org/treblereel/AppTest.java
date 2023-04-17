@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,16 +12,30 @@
  * the License.
  */
 
-package io.crysknife.annotation;
+package org.treblereel;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.Before;
+import org.junit.Test;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Application {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-  String[] packages() default {};
+public class AppTest {
+
+    private App app = new App();
+
+    @Before
+    public void before() {
+        app.onModuleLoad();
+    }
+
+    @Test
+    public void testApp() {
+        assertTrue(app.started);
+    }
+
+    @Test
+    public void testBeanOne() {
+        assertEquals("x.y.z.BeanOne", app.beanOne.sayHello());
+    }
 }

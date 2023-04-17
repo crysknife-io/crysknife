@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,16 +12,26 @@
  * the License.
  */
 
-package io.crysknife.annotation;
+package org.treblereel;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import io.crysknife.annotation.Application;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import x.y.z.BeanOne;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Application {
+@Application(packages = "org.treblereel")
+public class App {
+    public boolean started;
 
-  String[] packages() default {};
+    @Inject
+    public BeanOne beanOne;
+
+    public void onModuleLoad() {
+        new AppBootstrap(this).initialize();
+    }
+
+    @PostConstruct
+    public void init() {
+        this.started = true;
+    }
 }

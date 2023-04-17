@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,16 +12,15 @@
  * the License.
  */
 
-package io.crysknife.annotation;
+package x.y.z;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Application {
+import jakarta.enterprise.context.ApplicationScoped;
 
-  String[] packages() default {};
+@ApplicationScoped
+public class BeanOne {
+
+    public String sayHello() {
+        return this.getClass().getCanonicalName();
+    }
 }
