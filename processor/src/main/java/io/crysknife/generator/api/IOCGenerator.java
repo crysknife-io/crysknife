@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.crysknife.generator;
+package io.crysknife.generator.api;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -20,7 +20,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
@@ -31,8 +31,7 @@ import javax.lang.model.util.Types;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
-public abstract class IOCGenerator<T extends Definition>
-    extends io.crysknife.generator.refactoring.IOCGenerator<T> {
+public abstract class IOCGenerator<T extends Definition> {
 
   protected final IOCContext iocContext;
 
@@ -44,27 +43,23 @@ public abstract class IOCGenerator<T extends Definition>
   protected final TreeLogger logger;
 
   public IOCGenerator(TreeLogger treeLogger, IOCContext iocContext) {
-
     this.iocContext = iocContext;
     this.logger = treeLogger;
-
     this.generationUtils = new GenerationUtils(iocContext);
-
-    types = iocContext.getGenerationContext().getTypes();
-    elements = iocContext.getGenerationContext().getElements();
-    super.init(treeLogger, iocContext);
+    this.types = iocContext.getGenerationContext().getTypes();
+    this.elements = iocContext.getGenerationContext().getElements();
   }
 
   public abstract void register();
 
-  public abstract void generate(ClassBuilder clazz, T beanDefinition);
+  public void generate(ClassMetaInfo classMetaInfo, T beanDefinition) {
 
-  public Expression generateBeanLookupCall(ClassBuilder clazz,
-      InjectableVariableDefinition fieldPoint) {
+  }
+
+  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
-    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
-    return callForProducer;
+    return new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class")).toString();
   }
 
   public void before() {

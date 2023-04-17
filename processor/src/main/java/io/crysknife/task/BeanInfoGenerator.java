@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.crysknife.generator.info;
+package io.crysknife.task;
 
 import com.google.auto.common.MoreTypes;
 import freemarker.template.Configuration;
@@ -23,14 +23,14 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.context.oracle.BeanOracle;
-import io.crysknife.generator.refactoring.StringOutputStream;
+import io.crysknife.generator.info.AbstractBeanInfoGenerator;
+import io.crysknife.generator.info.BeanInfoJREGeneratorBuilder;
+import io.crysknife.generator.info.InterceptorGenerator;
+import io.crysknife.util.StringOutputStream;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.task.Task;
-import io.crysknife.util.Utils;
 
 import javax.annotation.processing.FilerException;
 import javax.lang.model.type.TypeMirror;
@@ -40,9 +40,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
 

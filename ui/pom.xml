@@ -24,10 +24,13 @@
 
   <modules>
     <module>elemental2</module>
-    <module>templates</module>
-    <module>mutationobserver</module>
     <module>translation</module>
-    <module>navigation</module>
+    <!--
+        <module>templates</module>
+
+        <module>mutationobserver</module>
+        <module>navigation</module>
+    -->
   </modules>
 
   <licenses>

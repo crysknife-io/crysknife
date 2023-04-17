@@ -30,13 +30,13 @@ import com.google.common.escape.Escapers;
 import com.google.j2cl.transpiler.ast.MethodDescriptor;
 import com.inet.lib.less.Less;
 import elemental2.dom.*;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.client.IsElement;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.ExecutionEnv;
@@ -49,7 +49,7 @@ import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.templates.generator.events.EventHandlerGenerator;
 import io.crysknife.ui.templates.generator.events.EventHandlerTemplatedProcessor;
 import io.crysknife.ui.templates.generator.translation.TranslationServiceGenerator;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 import jsinterop.annotations.JsFunction;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
@@ -494,7 +494,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
           if (m.getReturnType().getKind().equals(TypeKind.DECLARED)) {
             return j2CLUtils.createDeclarationMethodDescriptor(m).getMangledName();
           } else {
-            return Utils.getAllMethodsIn(elements, element).stream()
+            return TypeUtils.getAllMethodsIn(elements, element).stream()
                 .filter(e -> e.getSimpleName().toString().equals("getElement"))
                 .map(e -> MoreTypes.asExecutable(types.asMemberOf(declaredType, e)).getReturnType()
                     .toString())
@@ -678,7 +678,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   public VariableElement getVariableElement(String elementName) {
-    return Utils
+    return TypeUtils
         .getAllFieldsIn(iocContext.getGenerationContext().getElements(),
             MoreTypes.asTypeElement(beanDefinition.getType()))
         .stream().filter(elm -> elm.getSimpleName().toString().equals(elementName))
@@ -733,7 +733,7 @@ public class TemplatedGenerator extends IOCGenerator<BeanDefinition> {
     List<DataElementInfo> dataElements = new ArrayList<>();
 
     // fields
-    Utils
+    TypeUtils
         .getAnnotatedElements(iocContext.getGenerationContext().getElements(), type,
             DataField.class)
         .stream().filter(e -> e.getKind().isField()).map(e -> MoreElements.asVariable(e))

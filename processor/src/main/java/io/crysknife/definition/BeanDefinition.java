@@ -16,8 +16,8 @@ package io.crysknife.definition;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.CircularDependency;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.util.Utils;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.util.TypeUtils;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
@@ -92,24 +92,8 @@ public class BeanDefinition implements Definition {
     return MoreTypes.asTypeElement(type).getAnnotation(CircularDependency.class) != null;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    BeanDefinition that = (BeanDefinition) o;
-    return MoreTypes.asTypeElement(type).getQualifiedName().toString()
-        .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
-  }
-
   public String getPackageName() {
-    return Utils.getPackageName(MoreTypes.asTypeElement(type));
+    return TypeUtils.getPackageName(MoreTypes.asTypeElement(type));
   }
 
   public String getQualifiedName() {
@@ -117,7 +101,7 @@ public class BeanDefinition implements Definition {
   }
 
   public String getSimpleClassName() {
-    return Utils.getSimpleClassName(type);
+    return TypeUtils.getSimpleClassName(type);
   }
 
   public Set<IOCGenerator<BeanDefinition>> getDecorators() {
@@ -148,5 +132,21 @@ public class BeanDefinition implements Definition {
 
   public void setHasFactory(boolean hasFactory) {
     this.hasFactory = hasFactory;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    BeanDefinition that = (BeanDefinition) o;
+    return MoreTypes.asTypeElement(type).getQualifiedName().toString()
+        .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
   }
 }

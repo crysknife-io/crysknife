@@ -14,24 +14,13 @@
 
 package io.crysknife.ui.navigation.generator;
 
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import io.crysknife.annotation.Generator;
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.internal.event.EventManager;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.SingletonGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.local.Page;
-import io.crysknife.ui.navigation.client.local.TransitionTo;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
-import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -61,7 +50,7 @@ public class NavigationGenerator extends SingletonGenerator {
         .generate(logger.branch(TreeLogger.DEBUG, " starting generating navigation"));
   }
 
-  @Override
+  /*  @Override
   protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
     newInstance.setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph");
@@ -69,6 +58,6 @@ public class NavigationGenerator extends SingletonGenerator {
     newInstance.addArgument(
         new MethodCallExpr(new MethodCallExpr(new NameExpr("_field_event"), "get"), "getInstance"));
     return newInstance;
-  }
+  }*/
 
 }

@@ -30,5 +30,5 @@ public abstract class AbstractBeanInfoGenerator {
     this.iocContext = iocContext;
   }
 
-  protected abstract String build(BeanDefinition bean) throws IOException;
+  public abstract String build(BeanDefinition bean) throws IOException;
 }

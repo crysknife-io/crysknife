@@ -16,12 +16,12 @@ package io.crysknife.ui.validation.generator;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.*;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanIOCGenerator;
-import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;

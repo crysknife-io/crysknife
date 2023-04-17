@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.crysknife.generator;
+package io.crysknife.task;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -22,34 +22,30 @@ import javax.lang.model.type.TypeMirror;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.task.Task;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/20/19
  */
-public class FactoryGenerator implements Task {
+public class FactoryGeneratorTask implements Task {
 
   private final IOCContext iocContext;
   private final BeanOracle oracle;
 
-  public FactoryGenerator(IOCContext iocContext, TreeLogger logger) {
+  public FactoryGeneratorTask(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
     this.oracle = new BeanOracle(iocContext, logger);
   }
 
   public void execute() throws UnableToCompleteException {
     Set<TypeMirror> processed = new HashSet<>();
-
-    System.out.println("FactoryGenerator = " + iocContext.getOrderedBeans().size());
-
 
     for (TypeMirror bean : iocContext.getOrderedBeans()) {
       TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
@@ -61,10 +57,12 @@ public class FactoryGenerator implements Task {
         }
 
         if (isSuitableBeanDefinition(beanDefinition)) {
-          new ClassBuilder(beanDefinition).build();
+          beanDefinition.getIocGenerator().ifPresent(
+              iocGenerator -> iocGenerator.generate(new ClassMetaInfo(), beanDefinition));
         } else {
           Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
-          maybe.ifPresent(candidate -> new ClassBuilder(candidate).build());
+          maybe.ifPresent(candidate -> candidate.getIocGenerator()
+              .ifPresent(iocGenerator -> iocGenerator.generate(new ClassMetaInfo(), candidate)));
         }
       }
     }

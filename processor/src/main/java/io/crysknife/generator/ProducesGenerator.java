@@ -14,11 +14,10 @@
 
 package io.crysknife.generator;
 
-import io.crysknife.annotation.Generator;
-import io.crysknife.definition.BeanDefinition;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.MethodDefinition;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.api.ClassMetaInfo;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
@@ -28,11 +27,7 @@ import jakarta.enterprise.inject.Produces;
  * @author Dmitrii Tikhomirov Created by treblereel 3/4/19
  */
 @Generator(priority = 500)
-@io.crysknife.generator.refactoring.Generator(priority = 500, annotations = Produces.class,
-    elementType = WiringElementType.METHOD_DECORATOR)
 public class ProducesGenerator extends IOCGenerator<MethodDefinition> {
-
-  private static final String BEAN_MANAGER_IMPL = "io.crysknife.client.BeanManagerImpl";
 
   public ProducesGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
@@ -43,14 +38,4 @@ public class ProducesGenerator extends IOCGenerator<MethodDefinition> {
     iocContext.register(Produces.class, WiringElementType.METHOD_DECORATOR, this);
   }
 
-  @Override
-  public void generate(ClassBuilder clazz, MethodDefinition beanDefinition) {
-    // throw new UnsupportedOperationException();
-  }
-
-
-  @Override
-  public void generate(ClassMetaInfo classMetaInfo, MethodDefinition beanDefinition) {
-    // throw new UnsupportedOperationException();
-  }
 }

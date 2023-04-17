@@ -23,14 +23,12 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.client.InstanceFactory;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.generator.ScopedBeanGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -42,7 +40,7 @@ import jakarta.inject.Inject;
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21
  */
 @Generator(priority = 100002)
-public class TranslationServiceGenerator extends ScopedBeanGenerator {
+public class TranslationServiceGenerator extends IOCGenerator<BeanDefinition> {
 
   public TranslationServiceGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
@@ -54,31 +52,17 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
-
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
     new TranslationServiceImplGenerator(iocContext).generate();
-
-    /*    Set<TypeElement> annotations = new HashSet<>();
-    TypeElement resource = iocContext.getGenerationContext().getElements()
-        .getTypeElement(Resource.class.getCanonicalName());
-    annotations.add(resource);
-    ClientBundleAnnotationProcessor clientBundleAnnotationProcessor =
-        new ClientBundleAnnotationProcessor();
-    clientBundleAnnotationProcessor
-        .init(iocContext.getGenerationContext().getProcessingEnvironment());
-    clientBundleAnnotationProcessor.process(annotations,
-        iocContext.getGenerationContext().getRoundEnvironment());*/
   }
 
   @Override
-  public Expression generateBeanLookupCall(ClassBuilder clazz,
-      InjectableVariableDefinition fieldPoint) {
+  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
     ClassOrInterfaceType type = new ClassOrInterfaceType();
     type.setName(InstanceFactory.class.getCanonicalName());
     type.setTypeArguments(
         new ClassOrInterfaceType().setName(TranslationService.class.getCanonicalName()));
 
-    ObjectCreationExpr factory = new ObjectCreationExpr().setType(type);
     NodeList<BodyDeclaration<?>> supplierClassBody = new NodeList<>();
 
     MethodDeclaration getInstance = new MethodDeclaration();
@@ -92,13 +76,8 @@ public class TranslationServiceGenerator extends ScopedBeanGenerator {
         new NameExpr(TranslationService.class.getCanonicalName() + "Impl"), "INSTANCE")));
     supplierClassBody.add(getInstance);
 
-    factory.setAnonymousClassBody(supplierClassBody);
-
-    return factory;
+    return new ObjectCreationExpr().setType(type).setAnonymousClassBody(supplierClassBody)
+        .toString();
   }
 
-  @Override
-  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
-    throw new UnsupportedOperationException();
-  }
 }

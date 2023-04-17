@@ -29,7 +29,7 @@ import com.google.common.collect.SetMultimap;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 import org.gwtproject.validation.client.GwtValidation;
 
 import javax.lang.model.element.*;
@@ -159,18 +159,18 @@ class GwtValidatorGenerator {
     /*        final ClassStructureBuilder<?> builder =
                 ClassBuilder.define("Gwt" + Validator.class.getSimpleName()).publicScope()
                         .interfaceDefinition().implementsInterface(Validator.class).body();
-    
+
         builder.getClassDefinition().addAnnotation(new GwtValidation() {
             @Override
             public Class<?>[] value() {
                 return filteredBeans.toArray(new Class<?>[0]);
             }
-    
+
             @Override
             public Class<?>[] groups() {
                 return groups.toArray(new Class<?>[0]);
             }
-    
+
             @Override
             public Class<? extends Annotation> annotationType() {
                 return GwtValidation.class;
@@ -239,7 +239,7 @@ class GwtValidatorGenerator {
     final Set<Class<?>> groups = new HashSet<>();
 
     for (final TypeElement instance : constraintAnnotationInstances) {
-      Utils.getAllMethodsIn(context.getGenerationContext().getElements(), instance).stream()
+      TypeUtils.getAllMethodsIn(context.getGenerationContext().getElements(), instance).stream()
           .filter(e -> e.getSimpleName().toString().equals("groups")).forEach(e -> {
             e.getDefaultValue().accept(new SimpleAnnotationValueVisitor8<Boolean, Void>() {
 

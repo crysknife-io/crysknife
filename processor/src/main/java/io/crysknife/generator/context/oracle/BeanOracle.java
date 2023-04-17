@@ -20,7 +20,7 @@ import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.UnscopedBeanDefinition;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Specializes;
@@ -35,7 +35,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import java.util.HashSet;
@@ -218,7 +217,8 @@ public class BeanOracle {
         qualifiers.stream().map(a -> a.getAnnotationType().toString()).toArray(String[]::new);
 
     return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
-        .filter(q -> Utils.containsAnnotation(MoreTypes.asTypeElement(q.getType()), annotations))
+        .filter(
+            q -> TypeUtils.containsAnnotation(MoreTypes.asTypeElement(q.getType()), annotations))
         .findFirst();
 
   }

@@ -16,25 +16,16 @@ package io.crysknife.task;
 
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
 import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
@@ -42,29 +33,22 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.DependentGenerator;
-import io.crysknife.generator.IOCGenerator;
+import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.SingletonGenerator;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 import io.crysknife.validation.Check;
 import io.crysknife.validation.Validator;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
-import jakarta.inject.Singleton;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -106,38 +90,18 @@ public class IOCProviderTask implements Task {
   private void process(TypeElement type) throws UnableToCompleteException {
     for (TypeMirror iface : type.getInterfaces()) {
       if (isContextualTypeProvider(iface) || isProvider(iface)) {
-
-        System.out.println("BEAN " + type);
-
-
         DeclaredType asDeclaredType = (DeclaredType) iface;
         TypeMirror provided = asDeclaredType.getTypeArguments().get(0);
         TypeMirror erased = context.getGenerationContext().getTypes().erasure(provided);
 
         validator.validate(type);
-
         logger.log(TreeLogger.Type.INFO, String.format("registered @IOCProvider for %s", erased));
-
-        boolean isSingleton = Utils.containsAnnotation(type, Singleton.class.getCanonicalName(),
-            jakarta.ejb.Singleton.class.getCanonicalName(),
-            ApplicationScoped.class.getCanonicalName());
 
         BeanDefinition beanDefinitionContextualTypeProvider =
             context.getBeanDefinitionOrCreateAndReturn(type.asType());
-        if (isSingleton) {
-          beanDefinitionContextualTypeProvider
-              .setIocGenerator(new SingletonGenerator(logger, context) {
 
-                @Override
-                public void write(ClassBuilder clazz, BeanDefinition beanDefinition) {
-                  addProxy(clazz, beanDefinition, erased, isSingleton, iface);
-                  super.write(clazz, beanDefinition);
-                }
-              });
-        } else {
-          beanDefinitionContextualTypeProvider
-              .setIocGenerator(new DependentGenerator(logger, context));
-        }
+        beanDefinitionContextualTypeProvider
+            .setIocGenerator(new SingletonGenerator(logger, context));
 
         BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(erased);
         beanDefinition.setHasFactory(false);
@@ -156,73 +120,6 @@ public class IOCProviderTask implements Task {
   private boolean isProvider(TypeMirror iface) {
     return context.getGenerationContext().getTypes().isSameType(provider,
         context.getGenerationContext().getTypes().erasure(iface));
-  }
-
-  private void addProxy(ClassBuilder clazz, BeanDefinition beanDefinition, TypeMirror erased,
-      boolean isSingleton, TypeMirror iface) {
-    ClassOrInterfaceDeclaration wrapper = new ClassOrInterfaceDeclaration();
-    wrapper.setName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString());
-    wrapper.addExtendedType(beanDefinition.getType().toString());
-    wrapper.setModifier(com.github.javaparser.ast.Modifier.Keyword.FINAL, true);
-    clazz.getClassDeclaration().addMember(wrapper);
-
-    wrapper.addField(erased.toString(), "instance",
-        com.github.javaparser.ast.Modifier.Keyword.PRIVATE);
-
-    if (isProvider(iface)) {
-      MethodDeclaration provide =
-          wrapper.addMethod("get", com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-      provide.addAnnotation(Override.class);
-      provide.setType(erased.toString());
-
-      if (isSingleton) {
-        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
-            new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-        BlockStmt blockStmt = new BlockStmt();
-
-        blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
-            .setValue(new MethodCallExpr(new NameExpr("super"), "get")));
-        ifStmt.setThenStmt(blockStmt);
-
-        provide.getBody().get().addAndGetStatement(ifStmt);
-        provide.getBody().get().addAndGetStatement(new ReturnStmt("instance"));
-      } else {
-        provide.getBody().get()
-            .addAndGetStatement(new ReturnStmt(new MethodCallExpr(new NameExpr("super"), "get")));
-      }
-
-    } else {
-
-
-      System.out.println("BEAN " + beanDefinition.getType());
-
-      MethodDeclaration provide =
-          wrapper.addMethod("provide", com.github.javaparser.ast.Modifier.Keyword.PUBLIC);
-      provide.addAnnotation(Override.class);
-      provide.setType(erased.toString());
-      provide.addParameter(new Parameter().setType("Class<?>[]").setName("typeargs"));
-      provide.addParameter(
-          new Parameter().setType("java.lang.annotation.Annotation[]").setName("qualifiers"));
-
-      if (isSingleton) {
-
-        IfStmt ifStmt = new IfStmt().setCondition(new BinaryExpr(new NameExpr("instance"),
-            new NullLiteralExpr(), BinaryExpr.Operator.EQUALS));
-        BlockStmt blockStmt = new BlockStmt();
-
-        blockStmt.addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
-            .setValue(new MethodCallExpr(new NameExpr("super"), "provide").addArgument("typeargs")
-                .addArgument("qualifiers")));
-        ifStmt.setThenStmt(blockStmt);
-
-        provide.getBody().get().addAndGetStatement(ifStmt);
-        provide.getBody().get().addAndGetStatement(new ReturnStmt("instance"));
-      } else {
-        provide.getBody().get()
-            .addAndGetStatement(new ReturnStmt(new MethodCallExpr(new NameExpr("super"), "provide")
-                .addArgument("typeargs").addArgument("qualifiers")));
-      }
-    }
   }
 
   private class ProviderStatelessIOCGenerator
@@ -246,14 +143,7 @@ public class IOCProviderTask implements Task {
     }
 
     @Override
-    public void generate(ClassBuilder clazz,
-        io.crysknife.definition.BeanDefinition beanDefinition) {}
-
-    @Override
-    public Expression generateBeanLookupCall(ClassBuilder clazz,
-        InjectableVariableDefinition fieldPoint) {
-      clazz.getClassCompilationUnit().addImport(Annotation.class.getCanonicalName());
-
+    public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
       if (isProvider(iface)) {
         MethodCallExpr get =
             new MethodCallExpr(
@@ -277,7 +167,7 @@ public class IOCProviderTask implements Task {
         getInstance.getBody().get().addAndGetStatement(new ReturnStmt(get));
         supplierClassBody.add(getInstance);
 
-        return factory.setAnonymousClassBody(supplierClassBody);
+        return factory.setAnonymousClassBody(supplierClassBody).toString();
 
       } else {
         MethodCallExpr methodCallExpr = new MethodCallExpr(
@@ -289,10 +179,10 @@ public class IOCProviderTask implements Task {
 
         TypeMirror fieldEnclosingElement =
             context.getGenerationContext().getProcessingEnvironment().getTypeUtils()
-                .erasure(Utils.getEnclosingElement(fieldPoint.getVariableElement()).asType());
+                .erasure(TypeUtils.getEnclosingElement(fieldPoint.getVariableElement()).asType());
 
         TypeMirror beanEnclosing = context.getGenerationContext().getProcessingEnvironment()
-            .getTypeUtils().erasure(clazz.beanDefinition.getType());
+            .getTypeUtils().erasure(fieldPoint.getEnclosingBeanDefinition().getType());
 
         if (context.getGenerationContext().getProcessingEnvironment().getTypeUtils()
             .isSameType(fieldEnclosingElement, beanEnclosing)) {
@@ -305,15 +195,15 @@ public class IOCProviderTask implements Task {
           for (int i = 0; i < args.size(); i++) {
             TypeMirror type = args.get(i);
             if (type.getKind().equals(TypeKind.TYPEVAR)) {
-              DeclaredType exec =
-                  (DeclaredType) iocContext.getGenerationContext().getProcessingEnvironment()
-                      .getTypeUtils().asMemberOf((DeclaredType) clazz.beanDefinition.getType(),
-                          fieldPoint.getVariableElement());
+              DeclaredType exec = (DeclaredType) iocContext.getGenerationContext()
+                  .getProcessingEnvironment().getTypeUtils()
+                  .asMemberOf((DeclaredType) fieldPoint.getEnclosingBeanDefinition().getType(),
+                      fieldPoint.getVariableElement());
               TypeMirror paramType = exec.getTypeArguments().get(i);
               if (paramType.getKind().equals(TypeKind.TYPEVAR)) {
-                throw new GenerationException(
-                    "Type variable not supported in " + clazz.beanDefinition.getQualifiedName()
-                        + "." + fieldPoint.getVariableElement().getSimpleName());
+                throw new GenerationException("Type variable not supported in "
+                    + fieldPoint.getEnclosingBeanDefinition().getQualifiedName() + "."
+                    + fieldPoint.getVariableElement().getSimpleName());
               } else {
                 withAssignableTypesValues.getValues()
                     .add(new NameExpr(exec.getTypeArguments().get(i) + ".class"));
@@ -329,8 +219,8 @@ public class IOCProviderTask implements Task {
         withAssignableTypes.setInitializer(withAssignableTypesValues);
 
         methodCallExpr.addArgument(withAssignableTypes);
-        List<AnnotationMirror> qualifiers = new ArrayList<>(
-            Utils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
+        List<AnnotationMirror> qualifiers = new ArrayList<>(TypeUtils
+            .getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
         Set<Expression> qualifiersExpression = new HashSet<>();
 
         qualifiers.forEach(
@@ -348,7 +238,7 @@ public class IOCProviderTask implements Task {
         ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
         qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
         ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
-        withQualifiers.setElementType("Annotation[]");
+        withQualifiers.setElementType("java.lang.annotation.Annotation[]");
         withQualifiers.setInitializer(withQualifiersValues);
         methodCallExpr.addArgument(withQualifiers);
 
@@ -370,13 +260,8 @@ public class IOCProviderTask implements Task {
 
         factory.setAnonymousClassBody(supplierClassBody);
 
-        return factory;
+        return factory.toString();
       }
-    }
-
-    @Override
-    public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
-      throw new UnsupportedOperationException();
     }
   }
 

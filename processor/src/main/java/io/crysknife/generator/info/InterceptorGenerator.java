@@ -26,9 +26,8 @@ import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.refactoring.StringOutputStream;
+import io.crysknife.util.StringOutputStream;
 import io.crysknife.util.GenerationUtils;
 
 import javax.annotation.processing.FilerException;
@@ -42,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class InterceptorGenerator {
+public class InterceptorGenerator {
 
   private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
 
@@ -60,12 +59,12 @@ class InterceptorGenerator {
 
   private final IOCContext iocContext;
 
-  InterceptorGenerator(IOCContext iocContext) {
+  public InterceptorGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.generationUtils = new GenerationUtils(iocContext);
   }
 
-  void generate(BeanDefinition beanDefinition) {
+  public void generate(BeanDefinition beanDefinition) {
     String clazz = MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString();
     String pkg = beanDefinition.getPackageName();
     List<InterceptorField> fields = new ArrayList<>();
@@ -81,7 +80,7 @@ class InterceptorGenerator {
           fieldPoint.getVariableElement().getEnclosingElement().toString().replaceAll("\\.", "_")
               + "_" + fieldPoint.getVariableElement().getSimpleName();
       String target = getAnnotationValue(beanDefinition, fieldPoint);
-      String call = getCall(beanDefinition, fieldPoint);
+      String call = getCall(fieldPoint);
       String field = fieldPoint.getVariableElement().getSimpleName().toString();
       fields.add(new InterceptorField(target, methodName, field, call));
     }
@@ -114,22 +113,20 @@ class InterceptorGenerator {
     return sb.toString();
   }
 
-  private String getCall(BeanDefinition beanDefinition, InjectableVariableDefinition fieldPoint) {
-    ClassBuilder classBuilder = new ClassBuilder(beanDefinition);
-
-    Expression _beanCall;
+  private String getCall(InjectableVariableDefinition fieldPoint) {
+    String _beanCall;
     if (fieldPoint.getImplementation().isPresent()
         && fieldPoint.getImplementation().get().getIocGenerator().isPresent()) {
       _beanCall = fieldPoint.getImplementation().get().getIocGenerator().get()
-          .generateBeanLookupCall(classBuilder, fieldPoint);
+          .generateBeanLookupCall(fieldPoint);
     } else if (fieldPoint.getGenerator().isPresent()) {
-      _beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(classBuilder, fieldPoint);
+      _beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(fieldPoint);
     } else {
       String name = generationUtils.getActualQualifiedBeanName(fieldPoint);
       _beanCall = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-          .addArgument(new FieldAccessExpr(new NameExpr(name), "class"));
+          .addArgument(new FieldAccessExpr(new NameExpr(name), "class")).toString();
     }
-    return _beanCall.toString();
+    return _beanCall;
   }
 
   private boolean isLocal(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {

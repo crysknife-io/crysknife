@@ -17,7 +17,7 @@ package io.crysknife.task;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.Application;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.BeanDefinitionFactory;
 import io.crysknife.definition.InjectableVariableDefinition;
@@ -27,13 +27,13 @@ import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.definition.VariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.processor.ProducesProcessor;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
@@ -229,13 +229,12 @@ public class BeanProcessorTask implements Task {
         Optional<IOCGenerator> candidate = iocContext.getGenerator(Inject.class.getCanonicalName(),
             beanTypeElement, WiringElementType.FIELD_TYPE);
 
+        BeanDefinition implementation = oracle.guess(type, point);
         // Case 1: buildin type
         if (candidate.isPresent()) {
           point.setGenerator(candidate.get());
-        } else if (iocContext.getBeans().get(beanTypeMirror) instanceof ProducesBeanDefinition) {
-          // TODO
-        } else {
-          BeanDefinition implementation = oracle.guess(type, point);
+          point.setImplementation(implementation);
+        } else if (!(iocContext.getBeans().get(beanTypeMirror) instanceof ProducesBeanDefinition)) {
           if (implementation != null) {
             point.setImplementation(implementation);
             definition.getDependencies().add(implementation);
@@ -281,7 +280,7 @@ public class BeanProcessorTask implements Task {
         .filter(type -> type.getAnnotation(Application.class) == null) // TODO
         .filter(
             type -> type.getKind().isClass() && !type.getModifiers().contains(Modifier.ABSTRACT))
-        .filter(point -> !Utils.containsAnnotation(point, annotations))
+        .filter(point -> !TypeUtils.containsAnnotation(point, annotations))
         .map(elm -> iocContext.getGenerationContext().getTypes().erasure(elm.asType()))
         .filter(type -> !iocContext.getBeans().containsKey(type)).collect(Collectors.toSet());
 
@@ -295,10 +294,8 @@ public class BeanProcessorTask implements Task {
       } catch (UnableToCompleteException e) {
         throw new GenerationException(e);
       }
-
     }
   }
-
 
   private void processBeans(Set<TypeElement> annotatedScopedBean) {
     List<UnableToCompleteException> errors = new ArrayList<>();

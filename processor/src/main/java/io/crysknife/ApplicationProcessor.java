@@ -16,18 +16,17 @@ package io.crysknife;
 
 import com.google.auto.service.AutoService;
 import io.crysknife.annotation.Application;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.BeanManagerGenerator;
-import io.crysknife.generator.FactoryGenerator;
-import io.crysknife.generator.IOCGenerator;
+import io.crysknife.task.BeanManagerGeneratorTask;
+import io.crysknife.task.FactoryGeneratorTask;
+import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.context.GenerationContext;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.info.BeanInfoGenerator;
+import io.crysknife.task.BeanInfoGenerator;
 import io.crysknife.logger.PrintWriterTreeLogger;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.task.*;
-import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
@@ -78,15 +77,13 @@ public class ApplicationProcessor extends AbstractProcessor {
 
 
     iocContext = new IOCContext(context);
-
-
     Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
     if (!maybeApplication.isPresent()) {
       return true;
     }
     this.application = maybeApplication.get();
 
-    initAndRegisterGenerators(logger);
+    initAndRegisterGenerators(iocContext, logger);
 
     TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
     // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
@@ -94,15 +91,12 @@ public class ApplicationProcessor extends AbstractProcessor {
     taskGroup.addTask(new IOCProviderTask(iocContext, logger));
     taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
     taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
-    // taskGroup.addTask(new FireBeforeTask(iocContext, logger));
     taskGroup.addTask(new ProcessGraphTask(iocContext, logger, application));
     taskGroup.addTask(new CheckCyclesTask(iocContext, logger));
-
     taskGroup.addTask(new MethodParamDecoratorTask(iocContext, logger));
-
-    taskGroup.addTask(new FactoryGenerator(iocContext, logger));
+    taskGroup.addTask(new FactoryGeneratorTask(iocContext, logger));
     taskGroup.addTask(new BeanInfoGenerator(iocContext, logger));
-    taskGroup.addTask(new BeanManagerGenerator(iocContext, logger));
+    taskGroup.addTask(new BeanManagerGeneratorTask(iocContext, logger));
     taskGroup.addTask(new FireAfterTask(iocContext, logger));
     taskGroup.execute();
 
@@ -131,21 +125,20 @@ public class ApplicationProcessor extends AbstractProcessor {
     return applications.stream().findFirst();
   }
 
-  private void initAndRegisterGenerators(TreeLogger logger) {
-    try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
-      ClassInfoList routeClassInfoList =
-          scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
-      for (ClassInfo routeClassInfo : routeClassInfoList) {
-        try {
-          Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(TreeLogger.class,
-              IOCContext.class);
-          ((IOCGenerator) c.newInstance(
-              logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
-              iocContext)).register();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-            | NoSuchMethodException | InvocationTargetException e) {
-          throw new GenerationException(e);
-        }
+  private void initAndRegisterGenerators(IOCContext iocContext, TreeLogger logger) {
+    ScanResult scanResult = iocContext.getGenerationContext().getScanResult();
+    ClassInfoList routeClassInfoList =
+        scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
+    for (ClassInfo routeClassInfo : routeClassInfoList) {
+      try {
+        Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(TreeLogger.class,
+            IOCContext.class);
+        ((IOCGenerator) c.newInstance(
+            logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
+            this.iocContext)).register();
+      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+          | NoSuchMethodException | InvocationTargetException e) {
+        throw new GenerationException(e);
       }
     }
   }

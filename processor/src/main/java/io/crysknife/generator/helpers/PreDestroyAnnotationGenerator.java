@@ -12,19 +12,14 @@
  * the License.
  */
 
-package io.crysknife.generator.steps;
+package io.crysknife.generator.helpers;
 
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.MethodCallGenerator;
-import io.crysknife.generator.PreDestroyGenerator;
-import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 import io.crysknife.validation.PreDestroyValidator;
 import jakarta.annotation.PreDestroy;
 
@@ -34,20 +29,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class PreDestroyAnnotation2 {
+public class PreDestroyAnnotationGenerator {
 
   private final IOCContext iocContext;
   private final PreDestroyValidator validator;
   private final MethodCallGenerator methodCallGenerator;
 
-  public PreDestroyAnnotation2(IOCContext iocContext) {
+  public PreDestroyAnnotationGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.validator = new PreDestroyValidator(iocContext);
     this.methodCallGenerator = new MethodCallGenerator(iocContext);
   }
 
   public Optional<String> generate(BeanDefinition beanDefinition) {
-    List<ExecutableElement> preDestroy = Utils
+    List<ExecutableElement> preDestroy = TypeUtils
         .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
             MoreTypes.asTypeElement(beanDefinition.getType()))
         .stream().filter(elm -> elm.getAnnotation(PreDestroy.class) != null)

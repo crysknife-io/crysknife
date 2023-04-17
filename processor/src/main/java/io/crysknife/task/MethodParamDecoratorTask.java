@@ -20,8 +20,8 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.definition.MethodDefinitionFactory;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 

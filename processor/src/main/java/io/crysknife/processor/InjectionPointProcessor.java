@@ -14,6 +14,7 @@
 
 package io.crysknife.processor;
 
+import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -59,7 +60,7 @@ public abstract class InjectionPointProcessor {
       for (UnableToCompleteException error : errors) {
         logger.log(TreeLogger.ERROR, error.getMessage());
       }
-      throw new UnableToCompleteException();
+      throw new GenerationException();
     }
   }
 

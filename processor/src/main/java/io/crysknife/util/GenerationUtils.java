@@ -47,15 +47,13 @@ import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import jsinterop.base.Js;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
-import jakarta.inject.Named;
-import jakarta.inject.Qualifier;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -99,7 +97,7 @@ public class GenerationUtils {
       }
     } else if (context.getGenerationContext().getTypes().isSameType(
         fieldPoint.getVariableElement().asType(),
-        fieldPoint.getImplementation().orElse(fieldPoint.getBeanDefinition()).getType())) {
+        fieldPoint.getImplementation().orElse(fieldPoint.getEnclosingBeanDefinition()).getType())) {
       typeQualifiedName = fieldPoint.getVariableElement().asType().toString();
     } else {
       if (fieldPoint.getImplementation().isPresent()) {
@@ -199,13 +197,12 @@ public class GenerationUtils {
     return annotation;
   }
 
-  public Expression wrapCallInstanceImpl(ClassBuilder classBuilder, Expression call) {
-    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
+  public Expression wrapCallInstanceImpl(Expression call) {
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);
     lambda.setBody(new ExpressionStmt(call));
-
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(call);
+    return new ObjectCreationExpr().setType(InstanceImpl.class.getCanonicalName())
+        .addArgument(call);
   }
 
   public Statement generateMethodCall(TypeMirror parent, ExecutableElement method,
@@ -219,7 +216,7 @@ public class GenerationUtils {
         return generatePrivateJ2CLMethodCall(method, args);
       }
 
-      throw new Error("Private method calls aren't supported for GWT2");
+      throw new GenerationException("Private method calls aren't supported for GWT2");
     } else {
       if (isTheSame(parent, method.getEnclosingElement().asType())
           || context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
@@ -268,8 +265,8 @@ public class GenerationUtils {
 
     String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
 
-    if (fieldPoint.getBeanDefinition() instanceof ProducesBeanDefinition) {
-      throw new Error(fieldPoint.getVariableElement().getSimpleName().toString());
+    if (fieldPoint.getEnclosingBeanDefinition() instanceof ProducesBeanDefinition) {
+      throw new GenerationException(fieldPoint.getVariableElement().getSimpleName().toString());
     }
 
 
@@ -282,7 +279,7 @@ public class GenerationUtils {
     MethodCallExpr reflect =
         new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
             .addArgument(
-                new StringLiteralExpr(Utils.getJsFieldName(fieldPoint.getVariableElement())))
+                new StringLiteralExpr(TypeUtils.getJsFieldName(fieldPoint.getVariableElement())))
             .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
 
     LambdaExpr lambda = new LambdaExpr();

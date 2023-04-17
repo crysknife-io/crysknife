@@ -45,9 +45,9 @@ import java.util.stream.Collectors;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/21/19
  */
-public class Utils {
+public class TypeUtils {
 
-  private Utils() {
+  private TypeUtils() {
 
   }
 

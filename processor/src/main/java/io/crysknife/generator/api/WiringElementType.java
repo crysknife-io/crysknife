@@ -12,22 +12,11 @@
  * the License.
  */
 
-package io.crysknife.annotation;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+package io.crysknife.generator.api;
 
 /**
- * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
+ * @author Dmitrii Tikhomirov Created by treblereel 3/4/19
  */
-@Target({TYPE})
-@Retention(RUNTIME)
-@Documented
-public @interface Generator {
-
-  int priority() default 10000;
+public enum WiringElementType {
+  BEAN, METHOD_DECORATOR, FIELD_DECORATOR, CLASS_DECORATOR, PRODUCER_ELEMENT, FIELD_TYPE, PARAMETER,
 }

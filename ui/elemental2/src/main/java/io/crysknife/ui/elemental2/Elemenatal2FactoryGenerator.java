@@ -23,16 +23,14 @@ import com.google.auto.common.MoreTypes;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import elemental2.dom.*;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.BeanIOCGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.Definition;
 import io.crysknife.logger.TreeLogger;
 
 import jakarta.inject.Inject;
@@ -46,7 +44,7 @@ import java.util.stream.Collectors;
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
  */
 @Generator(priority = 100000)
-public class Elemenatal2FactoryGenerator extends BeanIOCGenerator<BeanDefinition> {
+public class Elemenatal2FactoryGenerator extends IOCGenerator<BeanDefinition> {
 
   private static final SetMultimap<Class, String> HTML_ELEMENTS = HashMultimap.create();
 
@@ -125,20 +123,10 @@ public class Elemenatal2FactoryGenerator extends BeanIOCGenerator<BeanDefinition
   }
 
   @Override
-  public void generate(ClassBuilder clazz, BeanDefinition beanDefinition) {
-
-  }
-
-  @Override
-  public Expression generateBeanLookupCall(ClassBuilder classBuilder,
-      InjectableVariableDefinition fieldPoint) {
-    classBuilder.getClassCompilationUnit().addImport(DomGlobal.class);
-    classBuilder.getClassCompilationUnit().addImport(MoreTypes
-        .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
-    return generationUtils.wrapCallInstanceImpl(classBuilder,
-        new MethodCallExpr(
-            new FieldAccessExpr(new NameExpr(DomGlobal.class.getSimpleName()), "document"),
-            "createElement").addArgument(getTagFromType(fieldPoint)));
+  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
+    return generationUtils.wrapCallInstanceImpl(new MethodCallExpr(
+        new FieldAccessExpr(new NameExpr(DomGlobal.class.getCanonicalName()), "document"),
+        "createElement").addArgument(getTagFromType(fieldPoint))).toString();
   }
 
   private StringLiteralExpr getTagFromType(InjectableVariableDefinition fieldPoint) {

@@ -12,29 +12,43 @@
  * the License.
  */
 
-package io.crysknife.generator.steps;
+package io.crysknife.generator.helpers;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.generator.PostConstructGenerator;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.Utils;
+import io.crysknife.util.GenerationUtils;
+import io.crysknife.util.TypeUtils;
+import io.crysknife.validation.PostConstructValidator;
 import jakarta.annotation.PostConstruct;
 
 import javax.lang.model.element.ExecutableElement;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class PostConstructAnnotation implements Step<BeanDefinition> {
+public class PostConstructAnnotationGenerator {
 
-  @Override
-  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
+  private PostConstructValidator validator;
+  private GenerationUtils utils;
+  private IOCContext iocContext;
 
-    PostConstructGenerator postConstructGenerator = new PostConstructGenerator(null, iocContext);
-    LinkedList<ExecutableElement> postConstructs = Utils
+  MethodCallGenerator methodCallGenerator;
+
+
+  public PostConstructAnnotationGenerator(IOCContext iocContext) {
+    this.validator = new PostConstructValidator(iocContext);
+    this.utils = new GenerationUtils(iocContext);
+    this.iocContext = iocContext;
+
+    methodCallGenerator = new MethodCallGenerator(iocContext);
+  }
+
+  public void execute(List<String> calls, BeanDefinition beanDefinition) {
+    LinkedList<ExecutableElement> postConstructs = TypeUtils
         .getAllMethodsIn(iocContext.getGenerationContext().getElements(),
             MoreTypes.asTypeElement(beanDefinition.getType()))
         .stream().filter(elm -> elm.getAnnotation(PostConstruct.class) != null)
@@ -42,8 +56,16 @@ public class PostConstructAnnotation implements Step<BeanDefinition> {
 
     Iterator<ExecutableElement> elm = postConstructs.descendingIterator();
     while (elm.hasNext()) {
-      postConstructGenerator.generate(beanDefinition.getType(),
-          classBuilder.getInitInstanceMethod().getBody().get(), elm.next());
+      ExecutableElement executableElement = elm.next();
+
+      try {
+        validator.validate(executableElement);
+      } catch (UnableToCompleteException e) {
+        throw new GenerationException(e);
+      }
+
+      String call = methodCallGenerator.generate(beanDefinition.getType(), executableElement);
+      calls.add(call);
     }
   }
 

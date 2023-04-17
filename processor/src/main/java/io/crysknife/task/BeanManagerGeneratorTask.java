@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.crysknife.generator;
+package io.crysknife.task;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -56,9 +56,8 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.task.Task;
 import io.crysknife.util.GenerationUtils;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Instance;
@@ -87,7 +86,7 @@ import static javax.lang.model.element.Modifier.ABSTRACT;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
  */
-public class BeanManagerGenerator implements Task {
+public class BeanManagerGeneratorTask implements Task {
 
   private final IOCContext iocContext;
 
@@ -99,7 +98,7 @@ public class BeanManagerGenerator implements Task {
 
   private TreeLogger logger;
 
-  public BeanManagerGenerator(IOCContext iocContext, TreeLogger logger) {
+  public BeanManagerGeneratorTask(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
     this.logger = logger;
     this.oracle = new BeanOracle(iocContext, logger);
@@ -214,7 +213,7 @@ public class BeanManagerGenerator implements Task {
                   List<TypeMirror> assignableTypes = new ArrayList<>();
                   assignableTypes.add(erased);
 
-                  Utils.getSuperTypes(iocContext.getGenerationContext().getElements(),
+                  TypeUtils.getSuperTypes(iocContext.getGenerationContext().getElements(),
                       MoreTypes.asTypeElement(erased)).forEach(spr -> {
                         if (!iocContext.getGenerationContext().getTypes().isSameType(spr.asType(),
                             OBJECT)) {
@@ -224,7 +223,7 @@ public class BeanManagerGenerator implements Task {
                       });
 
 
-                  List<AnnotationMirror> qualifiers = new ArrayList<>(Utils
+                  List<AnnotationMirror> qualifiers = new ArrayList<>(TypeUtils
                       .getAllElementQualifierAnnotations(iocContext, MoreTypes.asElement(erased)));
                   Set<Expression> qualifiersExpression = new HashSet<>();
 
@@ -293,7 +292,7 @@ public class BeanManagerGenerator implements Task {
                   }
 
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
-                      new ObjectCreationExpr().setType(Utils.getQualifiedFactoryName(erased))
+                      new ObjectCreationExpr().setType(TypeUtils.getQualifiedFactoryName(erased))
                           .addArgument(new ThisExpr()));
 
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "build");
@@ -321,7 +320,7 @@ public class BeanManagerGenerator implements Task {
       List<TypeMirror> assignableTypes = new ArrayList<>();
       assignableTypes.add(erased);
 
-      Utils.getSuperTypes(iocContext.getGenerationContext().getElements(),
+      TypeUtils.getSuperTypes(iocContext.getGenerationContext().getElements(),
           MoreTypes.asTypeElement(erased)).forEach(spr -> {
             if (!iocContext.getGenerationContext().getTypes().isSameType(spr.asType(), OBJECT)) {
               assignableTypes
@@ -425,7 +424,7 @@ public class BeanManagerGenerator implements Task {
       if (producesBeanDefinition.getMethod().getModifiers()
           .contains(javax.lang.model.element.Modifier.STATIC)) {
         getNewInstance = new MethodCallExpr(
-            new NameExpr(Utils.getQualifiedName(producesBeanDefinition.getProducer())),
+            new NameExpr(TypeUtils.getQualifiedName(producesBeanDefinition.getProducer())),
             producesBeanDefinition.getMethod().getSimpleName().toString());
       } else {
         getNewInstance = new MethodCallExpr(new EnclosedExpr(new CastExpr(

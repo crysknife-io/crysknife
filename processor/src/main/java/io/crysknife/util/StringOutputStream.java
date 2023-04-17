@@ -12,22 +12,20 @@
  * the License.
  */
 
-package io.crysknife.generator.steps;
+package io.crysknife.util;
 
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.generator.PreDestroyGenerator;
-import io.crysknife.generator.api.ClassBuilder;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
+import java.io.OutputStream;
 
-public class PreDestroyAnnotation implements Step<BeanDefinition> {
+public class StringOutputStream extends OutputStream {
+
+  private StringBuilder builder = new StringBuilder();
 
   @Override
-  public void execute(IOCContext iocContext, ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-
-    PreDestroyGenerator preDestroyGenerator = new PreDestroyGenerator(null, iocContext);
-    preDestroyGenerator.generate(beanDefinition, classBuilder);
+  public void write(int b) {
+    builder.append((char) b);
   }
 
+  public String toString() {
+    return builder.toString();
+  }
 }

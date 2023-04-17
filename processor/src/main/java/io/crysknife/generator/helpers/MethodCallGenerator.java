@@ -12,12 +12,13 @@
  * the License.
  */
 
-package io.crysknife.generator;
+package io.crysknife.generator.helpers;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 
@@ -73,9 +74,9 @@ public class MethodCallGenerator {
       temp.process(root, out);
       return os.toString();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new GenerationException(e);
     } catch (TemplateException e) {
-      throw new RuntimeException(e);
+      throw new GenerationException(e);
     }
   }
 }
