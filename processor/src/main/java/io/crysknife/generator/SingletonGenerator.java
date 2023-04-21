@@ -257,7 +257,6 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   protected void write(IOCContext iocContext, String fileName, String source) throws IOException {
-
     try {
       JavaFileObject sourceFile = iocContext.getGenerationContext().getProcessingEnvironment()
           .getFiler().createSourceFile(fileName);
@@ -265,7 +264,8 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
         writer.write(source);
       }
     } catch (FilerException e) {
+      System.out.println("FilerException: " + e.getMessage());
+      throw new GenerationException(e);
     }
   }
-
 }

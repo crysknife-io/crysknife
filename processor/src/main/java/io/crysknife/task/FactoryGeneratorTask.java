@@ -14,18 +14,15 @@
 
 package io.crysknife.task;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.lang.model.type.TypeMirror;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
 
@@ -39,39 +36,39 @@ public class FactoryGeneratorTask implements Task {
   private final IOCContext iocContext;
   private final BeanOracle oracle;
 
+  private final TreeLogger logger;
+
   public FactoryGeneratorTask(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
+    this.logger = logger;
     this.oracle = new BeanOracle(iocContext, logger);
   }
 
   public void execute() throws UnableToCompleteException {
-    Set<TypeMirror> processed = new HashSet<>();
+    Map<String, BeanDefinition> beans =
+        iocContext.getOrderedBeans().stream().map(erased -> iocContext.getBean(erased))
+            .filter(beanDefinition -> beanDefinition.hasFactory())
+            .filter(beanDefinition -> beanDefinition.getIocGenerator().isPresent())
+            .collect(Collectors.toMap(BeanDefinition::getQualifiedName, Function.identity(),
+                (existing, replacement) -> existing));
 
-    for (TypeMirror bean : iocContext.getOrderedBeans()) {
-      TypeMirror erased = iocContext.getGenerationContext().getTypes().erasure(bean);
-      if (!processed.contains(bean)) {
-        processed.add(bean);
-        BeanDefinition beanDefinition = iocContext.getBean(erased);
-        if (beanDefinition instanceof ProducesBeanDefinition) {
-          continue;
-        }
-
-        if (isSuitableBeanDefinition(beanDefinition)) {
-          beanDefinition.getIocGenerator().ifPresent(
-              iocGenerator -> iocGenerator.generate(new ClassMetaInfo(), beanDefinition));
-        } else {
-          Optional<BeanDefinition> maybe = oracle.guessDefaultImpl(erased);
-          maybe.ifPresent(candidate -> candidate.getIocGenerator()
-              .ifPresent(iocGenerator -> iocGenerator.generate(new ClassMetaInfo(), candidate)));
-        }
-      }
+    for (BeanDefinition bean : beans.values()) {
+      generate(bean);
     }
   }
 
+  private void generate(BeanDefinition beanDefinition) {
+    beanDefinition.getIocGenerator().ifPresent(iocGenerator -> {
+      long start = System.currentTimeMillis();
+      iocGenerator.generate(new ClassMetaInfo(), beanDefinition);
+      logger.log(TreeLogger.INFO,
+          "FactoryGeneratorTask " + iocGenerator.getClass().getSimpleName() + " "
+              + beanDefinition.getQualifiedName() + " in " + (System.currentTimeMillis() - start)
+              + "ms");
+    });
+  }
+
   private boolean isSuitableBeanDefinition(BeanDefinition beanDefinition) {
-    if (beanDefinition.getIocGenerator().isPresent()) {
-      return true;
-    }
     return MoreTypes.asTypeElement(beanDefinition.getType()).getKind().isClass()
         && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT);
   }

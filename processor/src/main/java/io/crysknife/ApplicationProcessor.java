@@ -16,6 +16,12 @@ package io.crysknife;
 
 import com.google.auto.service.AutoService;
 import io.crysknife.annotation.Application;
+import io.crysknife.generator.BeanManagerProducerGenerator;
+import io.crysknife.generator.BootstrapperGenerator;
+import io.crysknife.generator.ObservesGenerator;
+import io.crysknife.generator.ProducesGenerator;
+import io.crysknife.generator.ProxyGenerator;
+import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.task.BeanManagerGeneratorTask;
@@ -41,8 +47,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -64,6 +74,8 @@ public class ApplicationProcessor extends AbstractProcessor {
       return false;
     }
 
+    logger.log(TreeLogger.INFO, "Crysknife generation started ...");
+
     TypeElement application = maybeApplication.get();
     GenerationContext context =
         new GenerationContext(application.getAnnotation(Application.class), roundEnvironment,
@@ -78,8 +90,15 @@ public class ApplicationProcessor extends AbstractProcessor {
     }
 
     IOCContext iocContext = new IOCContext(context);
+    logger.log(TreeLogger.INFO,
+        "IOCContext created in " + (System.currentTimeMillis() - start) + " ms");
 
-    initAndRegisterGenerators(iocContext, logger);
+    long startgen = System.currentTimeMillis();
+
+    initAndRegisterGenerators(iocContext, logger.branch(TreeLogger.DEBUG, "start generators scan"));
+
+    logger.log(TreeLogger.INFO,
+        "Generators registered in  " + (System.currentTimeMillis() - startgen) + " ms");
 
     TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
     // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
@@ -109,7 +128,7 @@ public class ApplicationProcessor extends AbstractProcessor {
         (Set<Element>) roundEnvironment.getElementsAnnotatedWith(Application.class);
 
     if (applications.size() == 0) {
-      logger.log(TreeLogger.ERROR, "No class annotated with @Application detected\"");
+      logger.log(TreeLogger.ERROR, "No classes annotated with @Application detected");
       return Optional.empty();
     }
 
@@ -137,20 +156,52 @@ public class ApplicationProcessor extends AbstractProcessor {
   }
 
   private void initAndRegisterGenerators(IOCContext iocContext, TreeLogger logger) {
+    // buildin
+
+    Set<IOCGenerator> buildIn = new HashSet<>();
+    buildIn.add(new BeanManagerProducerGenerator(logger, iocContext));
+    buildIn.add(new BootstrapperGenerator(logger, iocContext));
+    buildIn.add(new ObservesGenerator(logger, iocContext));
+    buildIn.add(new ProducesGenerator(logger, iocContext));
+    buildIn.add(new ProxyGenerator(logger, iocContext));
+    buildIn.add(new SingletonGenerator(logger, iocContext));
+
     ScanResult scanResult = iocContext.getGenerationContext().getScanResult();
+
     ClassInfoList routeClassInfoList =
         scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
+
     for (ClassInfo routeClassInfo : routeClassInfoList) {
       try {
+
+        long start = System.currentTimeMillis();
+
         Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(TreeLogger.class,
             IOCContext.class);
-        ((IOCGenerator) c.newInstance(
+
+        logger.log(TreeLogger.INFO, "CONSTRUCTOR: " + routeClassInfo.getName() + " in "
+            + (System.currentTimeMillis() - start) + " ms");
+
+        IOCGenerator generator = ((IOCGenerator) c.newInstance(
             logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
-            iocContext)).register();
+            iocContext));
+
+        buildIn.add(generator);
       } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
           | NoSuchMethodException | InvocationTargetException e) {
         throw new GenerationException(e);
       }
     }
+    for (IOCGenerator generator : buildIn) {
+      registerGenerator(generator, logger);
+    }
   }
+
+  private void registerGenerator(IOCGenerator generator, TreeLogger logger) {
+    long start = System.currentTimeMillis();
+    generator.register();
+    logger.log(TreeLogger.INFO, "REGISTER: " + generator.getClass().getName() + " in "
+        + (System.currentTimeMillis() - start) + " ms");
+  }
+
 }

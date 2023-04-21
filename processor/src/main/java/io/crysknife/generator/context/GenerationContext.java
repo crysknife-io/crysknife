@@ -42,6 +42,11 @@ public class GenerationContext {
   private final ResourceOracle resourceOracle = new ResourceOracleImpl(this);
   private ExecutionEnv executionEnv = ExecutionEnv.J2CL;
 
+  private final String[] disabled = {"io.crysknife.generator", "io.crysknife.validation",
+      "io.crysknife.util", "io.crysknife.task", "io.crysknife.processor", "io.crysknife.logger",
+      "io.crysknife.definition", "io.crysknife.com.google", "io.crysknife.client.utils"};
+
+  private final String[] enabled = {"io.crysknife"};
 
   public GenerationContext(Application application, RoundEnvironment roundEnvironment,
       ProcessingEnvironment processingEnvironment, TreeLogger logger) {
@@ -50,12 +55,19 @@ public class GenerationContext {
 
     if (application.packages().length > 0) {
       List<String> packages = new ArrayList<>(Arrays.asList(application.packages()));
-      packages.add("io.crysknife");
-      scanResult = new ClassGraph().enableAllInfo()
-          .acceptPackages(packages.toArray(new String[packages.size()])).scan();
+      packages.addAll(Arrays.asList(enabled));
+      scanResult = new ClassGraph().acceptPackages(packages.toArray(new String[packages.size()]))
+          .rejectPackages(disabled).enableMethodInfo().enableFieldInfo().enableClassInfo()
+          .enableAnnotationInfo().scan();
     } else {
-      scanResult = new ClassGraph().enableAllInfo().scan();
+      scanResult = new ClassGraph().enableMethodInfo().enableFieldInfo().enableClassInfo()
+          .enableAnnotationInfo().rejectPackages(disabled).scan();
     }
+
+    /*    scanResult.getAllClasses().stream().forEach(classInfo -> {
+      logger.branch(TreeLogger.Type.INFO, classInfo.getName());
+    });*/
+
 
     logger.log(TreeLogger.Type.DEBUG,
         String.format("found classes   : %s", scanResult.getAllClasses().size()));

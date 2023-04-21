@@ -173,9 +173,7 @@ public class BeanProcessorTask implements Task {
                       .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toSet());
 
               elements.stream().forEach(e -> {
-                TypeMirror erased = iocContext.getGenerationContext().getTypes()
-                    .erasure(e.getEnclosingElement().asType());
-                BeanDefinition bean = iocContext.getBean(erased);
+                BeanDefinition bean = iocContext.getBean(e.getEnclosingElement().asType());
                 ExecutableType methodType = (ExecutableType) e.asType();
                 bean.getMethods().stream()
                     .filter(mmethod -> MoreTypes
@@ -191,9 +189,10 @@ public class BeanProcessorTask implements Task {
   private void findProduces() {
     ProducesProcessor producesProcessor = new ProducesProcessor(iocContext, logger);
 
-    Set<Element> produces = (Set<Element>) iocContext.getGenerationContext().getRoundEnvironment()
+    Set<Element> foundByAPT = (Set<Element>) iocContext.getGenerationContext().getRoundEnvironment()
         .getElementsAnnotatedWith(Produces.class);
 
+    Set<Element> produces = new HashSet<>(foundByAPT);
     produces.addAll(iocContext.getMethodsByAnnotation(Produces.class.getCanonicalName()));
     List<UnableToCompleteException> errors = new ArrayList<>();
 
