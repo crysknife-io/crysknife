@@ -44,10 +44,8 @@ public class BeanDefinitionFactory {
   public BeanDefinition of(TypeMirror type) throws UnableToCompleteException {
     validateBean(type);
     BeanDefinition bean = new BeanDefinition(type);
-
     fieldProcessor.process(bean);
     constructorInjectionPointProcessor.process(bean);
-
     return bean;
   }
 
@@ -57,6 +55,6 @@ public class BeanDefinitionFactory {
   }
 
   private void validateBean(TypeMirror type) {
-
+    // TODO
   }
 }

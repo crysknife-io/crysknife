@@ -61,7 +61,7 @@ public class FactoryGeneratorTask implements Task {
     beanDefinition.getIocGenerator().ifPresent(iocGenerator -> {
       long start = System.currentTimeMillis();
       iocGenerator.generate(new ClassMetaInfo(), beanDefinition);
-      logger.log(TreeLogger.INFO,
+      logger.branch(TreeLogger.DEBUG,
           "FactoryGeneratorTask " + iocGenerator.getClass().getSimpleName() + " "
               + beanDefinition.getQualifiedName() + " in " + (System.currentTimeMillis() - start)
               + "ms");

@@ -45,8 +45,8 @@ public class ConstructorInjectionPointProcessor extends InjectionPointProcessor 
     List<ExecutableElement> constructors = context.getGenerationContext().getElements()
         .getAllMembers(MoreTypes.asTypeElement(bean.getType())).stream()
         .filter(field -> field.getKind().equals(ElementKind.CONSTRUCTOR))
-        .filter(elm -> elm.getAnnotation(Inject.class) != null)
-        .map(elm -> MoreElements.asExecutable(elm)).collect(Collectors.toList());
+        .filter(elm -> elm.getAnnotation(Inject.class) != null).map(MoreElements::asExecutable)
+        .collect(Collectors.toList());
 
     if (constructors.isEmpty()) {
       return;
@@ -59,7 +59,6 @@ public class ConstructorInjectionPointProcessor extends InjectionPointProcessor 
     ExecutableElement constructor = constructors.iterator().next();
     for (int i = 0; i < constructor.getParameters().size(); i++) {
       process(bean, constructor.getParameters().get(i));
-
     }
   }
 

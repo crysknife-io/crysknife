@@ -276,10 +276,11 @@ public class GenerationUtils {
     }
 
     FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
+    String jsFieldName =
+        j2CLUtils.createFieldDescriptor(fieldPoint.getVariableElement()).getMangledName();
     MethodCallExpr reflect =
         new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-            .addArgument(
-                new StringLiteralExpr(TypeUtils.getJsFieldName(fieldPoint.getVariableElement())))
+            .addArgument(new StringLiteralExpr(jsFieldName))
             .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
 
     LambdaExpr lambda = new LambdaExpr();

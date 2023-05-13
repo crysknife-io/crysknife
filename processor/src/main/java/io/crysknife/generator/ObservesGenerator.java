@@ -54,6 +54,10 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
   private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
 
+  private Template tempSubscribe;
+  private Template tempConsumer;
+  private Template tempOnDestroy;
+
   {
     cfg.setClassForTemplateLoading(this.getClass(), "/templates/observes/");
     cfg.setDefaultEncoding("UTF-8");
@@ -121,8 +125,10 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      Template temp = cfg.getTemplate("subscribe.ftlh");
-      temp.process(root, out);
+      if (tempSubscribe == null) {
+        tempSubscribe = cfg.getTemplate("subscribe.ftlh");
+      }
+      tempSubscribe.process(root, out);
       classMetaInfo.addToDoInitInstance(os::toString);
     } catch (UnsupportedEncodingException | TemplateException e) {
       throw new GenerationException(e);
@@ -144,8 +150,10 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      Template temp = cfg.getTemplate("consumer.ftlh");
-      temp.process(root, out);
+      if (tempConsumer == null) {
+        tempConsumer = cfg.getTemplate("consumer.ftlh");
+      }
+      tempConsumer.process(root, out);
       classMetaInfo.addToBody(os::toString);
     } catch (UnsupportedEncodingException | TemplateException e) {
       throw new GenerationException(e);
@@ -162,8 +170,10 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      Template temp = cfg.getTemplate("onDestroy.ftlh");
-      temp.process(root, out);
+      if (tempOnDestroy == null) {
+        tempOnDestroy = cfg.getTemplate("onDestroy.ftlh");
+      }
+      tempOnDestroy.process(root, out);
       classMetaInfo.addToOnDestroy(os::toString);
     } catch (UnsupportedEncodingException | TemplateException e) {
       throw new GenerationException(e);

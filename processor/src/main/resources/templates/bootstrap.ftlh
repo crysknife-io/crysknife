@@ -10,7 +10,17 @@ import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.InstanceFactory;
 
+<#if !jre>
+import io.crysknife.client.internal.proxy.Interceptor;
+import io.crysknife.client.internal.proxy.OnFieldAccessed;
+import io.crysknife.client.Reflect;
+</#if>
+
 public class ${bean}Bootstrap {
+
+<#if !jre>
+    private Interceptor interceptor;
+</#if>
 
     private final BeanManager beanManager = io.crysknife.client.BeanManagerImpl.get();
 
@@ -41,6 +51,9 @@ public class ${bean}Bootstrap {
     }
 
     void initialize() {
+<#if !jre>
+        initInterceptors();
+</#if>
         runOnStartup();
         doInitInstance(instance);
     }
@@ -52,5 +65,15 @@ public class ${bean}Bootstrap {
     </#list>
 </#if>
     }
+
+<#if !jre>
+    private void initInterceptors() {
+        this.interceptor = new Interceptor(instance);
+        instance = interceptor.getProxy();
+<#list fieldInterceptors as call>
+        ${call?no_esc};
+</#list>
+    }
+</#if>
 
 }

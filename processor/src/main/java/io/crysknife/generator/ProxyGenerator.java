@@ -53,6 +53,8 @@ import java.util.stream.Collectors;
 @Generator
 public class ProxyGenerator extends IOCGenerator<BeanDefinition> {
 
+  private Template temp;
+
   private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
 
   {
@@ -119,7 +121,9 @@ public class ProxyGenerator extends IOCGenerator<BeanDefinition> {
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-      Template temp = cfg.getTemplate("proxy.ftlh");
+      if (temp == null) {
+        temp = cfg.getTemplate("proxy.ftlh");
+      }
       temp.process(root, out);
       classMetaInfo.addToBody(() -> os.toString());
     } catch (UnsupportedEncodingException | TemplateException e) {

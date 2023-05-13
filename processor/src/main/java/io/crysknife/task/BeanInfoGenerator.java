@@ -53,6 +53,8 @@ public class BeanInfoGenerator implements Task {
 
   private InterceptorGenerator interceptorGenerator;
 
+  private Template temp;
+
 
   public BeanInfoGenerator(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
@@ -117,7 +119,9 @@ public class BeanInfoGenerator implements Task {
     private void generate() {
       StringOutputStream os = new StringOutputStream();
       try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-        Template temp = cfg.getTemplate("jre/parent.ftlh");
+        if (temp == null) {
+          temp = cfg.getTemplate("jre/parent.ftlh");
+        }
         temp.process(new Object(), out);
         String fileName = "io.crysknife.generator.info.Info";
         write(iocContext, fileName, os.toString());

@@ -15,43 +15,66 @@ import io.crysknife.client.internal.BeanFactory;
 import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.client.internal.QualifierUtil;
 
-
-<#if imports?? && imports?size != 0>
-    <#list imports as import>
-import ${import};
-    </#list>
+<#if !jre>
+import io.crysknife.client.internal.proxy.Interceptor;
+import io.crysknife.client.internal.proxy.OnFieldAccessed;
+import io.crysknife.client.Reflect;
 </#if>
+
+
+<#list imports as import>
+import ${import};
+</#list>
 
 public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean}> {
 
-<#if fields?? && fields?size != 0>
-    <#list fields as call>
-        ${call?no_esc}
-    </#list>
+<#if !jre>
+    private Interceptor interceptor;
 </#if>
 
-<#if deps?? && deps?size != 0>
-    <#list deps as dep>
+<#list fields as call>
+        ${call?no_esc}
+</#list>
+
+<#list deps as dep>
     private Supplier<InstanceFactory<${dep.fqdn}>> ${dep.fieldName} = ${dep.call?no_esc};
-    </#list>
-</#if>
+</#list>
 
     @Override()
     public ${bean} createInstance() {
-<#if isDependent>
-    instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+<#if !jre>
+    <#if isDependent>
+        this.interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+    <#else>
+        <#if isProxy>
+            this.interceptor = new Interceptor(new Proxy${bean}());
+        <#else>
+            if (this.instance != null) {
+            return (${bean}) instance;
+            }
+            this.interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+        </#if>
+    </#if>
+    instance = this.interceptor.getProxy();
+    <#list fieldInterceptors as call>
+        ${call?no_esc};
+    </#list>
 <#else>
-  <#if isProxy>
-      this.instance = new Proxy${bean}();
+
+  <#if isDependent>
+    instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
   <#else>
+    <#if isProxy>
+      this.instance = new Proxy${bean}();
+    <#else>
       if (this.instance != null) {
         return (${bean}) instance;
       }
       instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
-
+    </#if>
   </#if>
-
 </#if>
+
     return (${bean}) instance;
 }
 
@@ -68,16 +91,12 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
 
     @Override()
     public void doInitInstance(${bean} instance) {
-<#if postConstruct?? && postConstruct?size != 0>
-    <#list postConstruct as call>
+<#list postConstruct as call>
         ${call?no_esc};
-    </#list>
-</#if>
-<#if doInitInstance?? && doInitInstance?size != 0>
-    <#list doInitInstance as call>
+</#list>
+<#list doInitInstance as call>
         ${call?no_esc}
-    </#list>
-</#if>
+</#list>
     }
 <#if isDependent>
     @Override()
@@ -112,7 +131,7 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
 
 </#if>
 
-<#if preDestroy?? && preDestroy?size != 0>
+<#if preDestroy??>
     @Override()
     protected void onDestroy(${bean} instance) {
     <#list preDestroy as call>

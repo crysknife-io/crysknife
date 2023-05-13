@@ -198,10 +198,7 @@ public class ApplicationProcessor extends AbstractProcessor {
   }
 
   private void registerGenerator(IOCGenerator generator, TreeLogger logger) {
-    long start = System.currentTimeMillis();
     generator.register();
-    logger.log(TreeLogger.INFO, "REGISTER: " + generator.getClass().getName() + " in "
-        + (System.currentTimeMillis() - start) + " ms");
   }
 
 }

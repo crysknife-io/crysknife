@@ -14,6 +14,7 @@
 
 package io.crysknife.generator;
 
+import com.github.javaparser.ast.expr.Expression;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import io.crysknife.annotation.Application;
@@ -73,6 +74,7 @@ public class BootstrapperGenerator extends SingletonGenerator {
 
     deps(beanDefinition, fields);
     fieldDecorators(beanDefinition, classMetaInfo);
+    initInterceptors(beanDefinition, root);
     methodDecorators(beanDefinition, classMetaInfo);
     postConstruct(beanDefinition, root);
     runOnStartup(root);
@@ -95,6 +97,19 @@ public class BootstrapperGenerator extends SingletonGenerator {
       throw new GenerationException(e);
     }
 
+  }
+
+  private void initInterceptors(BeanDefinition beanDefinition, Map<String, Object> root) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+        List<String> fieldInterceptors = new ArrayList<>();
+        root.put("fieldInterceptors", fieldInterceptors);
+        beanDefinition.getFields().forEach(fieldPoint -> {
+          Expression expr = generationUtils.getFieldAccessorExpression(fieldPoint, "field");
+          fieldInterceptors.add(expr.toString());
+        });
+      }
+    }
   }
 
   private void runOnStartup(Map<String, Object> root) {

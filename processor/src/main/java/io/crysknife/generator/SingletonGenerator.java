@@ -16,10 +16,8 @@ package io.crysknife.generator;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -67,6 +65,9 @@ import java.util.stream.Collectors;
 public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
 
   protected final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+
+  private Template temp;
+
   private PreDestroyAnnotationGenerator preDestroyAnnotation =
       new PreDestroyAnnotationGenerator(iocContext);
   private PostConstructAnnotationGenerator postConstructAnnotation =
@@ -111,12 +112,11 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
     deps(beanDefinition, fields);
 
     fieldDecorators(beanDefinition, classMetaInfo);
+    interceptorFieldDecorators(beanDefinition, root);
     methodDecorators(beanDefinition, classMetaInfo);
     classDecorators(beanDefinition, classMetaInfo);
-
     postConstruct(beanDefinition, root);
     preDestroy(classMetaInfo, beanDefinition);
-
     root.put("fields", classMetaInfo.getBodyStatements());
     root.put("preDestroy", classMetaInfo.getOnDestroy());
     root.put("doInitInstance", classMetaInfo.getDoInitInstance());
@@ -124,7 +124,9 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      Template temp = cfg.getTemplate("test.ftlh");
+      if (temp == null) {
+        temp = cfg.getTemplate("singleton.ftlh");
+      }
       temp.process(root, out);
       String fileName = TypeUtils.getQualifiedFactoryName(beanDefinition.getType());
       write(iocContext, fileName, os.toString());
@@ -132,6 +134,18 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
       throw new GenerationException(e);
     } catch (IOException e) {
       throw new GenerationException(e);
+    }
+  }
+
+  private void interceptorFieldDecorators(BeanDefinition beanDefinition, Map<String, Object> root) {
+
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+      List<String> fieldInterceptors = new ArrayList<>();
+      root.put("fieldInterceptors", fieldInterceptors);
+      beanDefinition.getFields().forEach(fieldPoint -> {
+        Expression expr = generationUtils.getFieldAccessorExpression(fieldPoint, "field");
+        fieldInterceptors.add(expr.toString());
+      });
     }
   }
 
@@ -167,7 +181,7 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   protected void deps(BeanDefinition beanDefinition, List<Dep> fields) {
-    beanDefinition.getFields().stream().map(field -> processField(beanDefinition, field, "field"))
+    beanDefinition.getFields().stream().map(field -> processField(field, "field"))
         .forEach(fields::add);
   }
 
@@ -180,26 +194,25 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
           .map(f -> "this." + f + ".get().getInstance()").collect(Collectors.joining(","));
 
       beanDefinition.getConstructorParams().stream()
-          .map(field -> processField(beanDefinition, field, "constructor")).forEach(fields::add);
+          .map(field -> processField(field, "constructor")).forEach(fields::add);
 
     }
     root.put("constructorParams", params);
   }
 
-  protected Dep processField(BeanDefinition beanDefinition, InjectableVariableDefinition fieldPoint,
-      String kind) {
+  protected Dep processField(InjectableVariableDefinition fieldPoint, String kind) {
     Dep dependency = new Dep();
     String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
     dependency.fieldName = varName;
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
 
-    Expression expression = generateFactoryFieldDeclaration2(fieldPoint);
-    dependency.call = expression.toString();
+    String expression = generateFactoryFieldDeclaration(fieldPoint);
+    dependency.call = expression;
     dependency.fqdn = typeQualifiedName;
     return dependency;
   }
 
-  protected LambdaExpr generateFactoryFieldDeclaration2(InjectableVariableDefinition fieldPoint) {
+  protected String generateFactoryFieldDeclaration(InjectableVariableDefinition fieldPoint) {
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
     ClassOrInterfaceType supplier =
         new ClassOrInterfaceType().setName(Supplier.class.getSimpleName());
@@ -226,9 +239,7 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
       throw new GenerationException("No bean call for " + fieldPoint.getVariableElement().asType());
     }
 
-    LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(new NameExpr(beanCall)));
-    return lambda;
+    return String.format("() -> %s", beanCall);
   }
 
   public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {

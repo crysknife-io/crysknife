@@ -80,48 +80,20 @@ public class IOCContext {
 
   public void register(final Class annotation, Class exactType,
       final WiringElementType wiringElementType, final IOCGenerator generator) {
-
-    System.out.println("         register 1 : " + generator.getClass().getCanonicalName() + " "
-        + exactType.getCanonicalName());
-
-    long started = System.currentTimeMillis();
-
     TypeElement type =
         getGenerationContext().getElements().getTypeElement(exactType.getCanonicalName());
-
-    System.out.println("         register 2 : " + (System.currentTimeMillis() - started) + "ms");
-    started = System.currentTimeMillis();
-
     generators.put(new IOCGeneratorMeta(annotation.getCanonicalName(), type, wiringElementType),
         generator);
-
-    System.out.println("         register 3 : " + (System.currentTimeMillis() - started) + "ms");
-    started = System.currentTimeMillis();
-
-
-
     if (!exactType.equals(Object.class)) {
       BeanDefinition beanDefinition = null;
       try {
-
-        long started2 = System.currentTimeMillis();
-
-
         beanDefinition = getBeanDefinitionOrCreateAndReturn(type.asType());
-
-
-        System.out
-            .println("         register 3.5 : " + (System.currentTimeMillis() - started2) + "ms");
-
-
       } catch (UnableToCompleteException e) {
         e.printStackTrace();
       }
       beanDefinition.setIocGenerator(generator);
       beans.put(type.asType(), beanDefinition);
     }
-
-    System.out.println("         register 4 : " + (System.currentTimeMillis() - started) + "ms");
   }
 
   public GenerationContext getGenerationContext() {
@@ -131,9 +103,6 @@ public class IOCContext {
 
   public BeanDefinition getBeanDefinitionOrCreateAndReturn(TypeMirror typeElement)
       throws UnableToCompleteException {
-
-    long started = System.currentTimeMillis();
-
     TypeMirror candidate = generationContext.getTypes().erasure(typeElement);
     BeanDefinition beanDefinition;
     if (beans.containsKey(candidate)) {
@@ -141,12 +110,7 @@ public class IOCContext {
     } else {
       beanDefinition = beanDefinitionFactory.of(candidate);
       beans.put(candidate, beanDefinition);
-      // beanDefinition.processInjections(this);
     }
-
-    System.out.println("                          GET: " + typeElement + " "
-        + (System.currentTimeMillis() - started) + "ms");
-
     return beanDefinition;
   }
 
@@ -199,8 +163,8 @@ public class IOCContext {
   }
 
   private Set<Element> getElementsByAnnotation(String annotation) {
-    Elements elements = getGenerationContext().getElements();
-    return (Set<Element>) getGenerationContext().getRoundEnvironment()
+    Elements elements = generationContext.getElements();
+    return (Set<Element>) generationContext.getRoundEnvironment()
         .getElementsAnnotatedWith(elements.getTypeElement(annotation));
   }
 

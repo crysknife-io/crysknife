@@ -47,6 +47,8 @@ public class InterceptorGenerator {
 
   private final GenerationUtils generationUtils;
 
+  private Template temp;
+
 
   {
     cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
@@ -87,7 +89,9 @@ public class InterceptorGenerator {
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      Template temp = cfg.getTemplate("jre/aspect.ftlh");
+      if (temp == null) {
+        temp = cfg.getTemplate("jre/aspect.ftlh");
+      }
       temp.process(root, out);
       String fileName = pkg + "." + clazz + "Info";
       write(iocContext, fileName, os.toString());

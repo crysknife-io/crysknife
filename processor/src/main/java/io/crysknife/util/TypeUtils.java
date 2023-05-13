@@ -23,6 +23,8 @@ import jsinterop.annotations.JsProperty;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Default;
+import org.treblereel.j2cl.processors.utils.J2CLUtils;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -88,23 +90,6 @@ public class TypeUtils {
   public static String getSimpleClassName(TypeElement bean) {
     return (bean.getEnclosingElement().getKind().equals(ElementKind.PACKAGE) ? ""
         : (bean.getEnclosingElement().getSimpleName() + ".")) + bean.getSimpleName().toString();
-  }
-
-  public static String getJsFieldName(VariableElement field) {
-    if (field.getAnnotation(JsProperty.class) != null) {
-      return field.getSimpleName().toString();
-    }
-    StringBuffer sb = new StringBuffer();
-    sb.append("f_");
-    sb.append(field.getSimpleName().toString());
-    sb.append("__");
-    sb.append(((TypeElement) field.getEnclosingElement()).getQualifiedName().toString()
-        .replaceAll("\\.", "_"));
-    if (field.getModifiers().contains(Modifier.PRIVATE)) {
-      sb.append("_");
-    }
-
-    return sb.toString();
   }
 
   public static Set<Element> getAnnotatedElements(Elements elements, TypeElement type,

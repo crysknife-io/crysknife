@@ -37,6 +37,8 @@ public class MethodCallGenerator {
 
   private final IOCContext iocContext;
 
+  Template temp;
+
   public MethodCallGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
 
@@ -69,7 +71,10 @@ public class MethodCallGenerator {
     };
 
     try {
-      Template temp = cfg.getTemplate("methodcall.ftlh");
+      if (temp == null) {
+        temp = cfg.getTemplate("methodcall.ftlh");
+      }
+
       Writer out = new OutputStreamWriter(os, "UTF-8");
       temp.process(root, out);
       return os.toString();
