@@ -39,31 +39,11 @@ public class TemplatedGeneratorUtils {
 
   private ProcessingEnvironment processingEnvironment;
 
-  public TypeElement isWidgetType;
-
   public TypeElement widgetType;
 
   public TemplatedGeneratorUtils(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.processingEnvironment = iocContext.getGenerationContext().getProcessingEnvironment();
-
-    isWidgetType = iocContext.getGenerationContext().getElements()
-        .getTypeElement("org.gwtproject.user.client.ui.IsWidget");
-    widgetType = iocContext.getGenerationContext().getElements()
-        .getTypeElement("org.gwtproject.user.client.ui.Widget");
-  }
-
-  public boolean maybeGwtWidget(TypeMirror dataElementType) {
-    if (isWidgetType == null) {
-      return false;
-    }
-    return isAssignable(dataElementType, isWidgetType.asType());
-  }
-
-  public boolean maybeGwtDom(TypeMirror dataElementType) {
-    TypeElement element = iocContext.getGenerationContext().getElements()
-        .getTypeElement("org.gwtproject.dom.client.Element");
-    return isAssignable(dataElementType, element.asType());
   }
 
   public String getGetRootElementMethodName(TemplateContext templateContext) {
@@ -74,8 +54,6 @@ public class TemplatedGeneratorUtils {
   public String getGetRootElementMethodName(DataElementInfo.Kind kind) {
     if (kind.equals(DataElementInfo.Kind.IsElement)) {
       return "getElement";
-    } else if (kind.equals(DataElementInfo.Kind.IsWidget)) {
-      return "getElement";
     }
     throw new GenerationException("Unable to find type of " + kind);
   }
@@ -85,12 +63,7 @@ public class TemplatedGeneratorUtils {
   }
 
   public Expression getInstanceMethodName(DataElementInfo.Kind kind) {
-    MethodCallExpr expr =
-        new MethodCallExpr(new NameExpr("instance"), getGetRootElementMethodName(kind));
-    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
-      uncheckedCastCall(expr, isWidgetType.toString());
-    }
-    return expr;
+    return new MethodCallExpr(new NameExpr("instance"), getGetRootElementMethodName(kind));
   }
 
   public Expression uncheckedCastCall(Expression target, String clazz) {
@@ -100,12 +73,7 @@ public class TemplatedGeneratorUtils {
 
   public Expression getInstanceCallExpression(TemplateContext templateContext) {
     DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
-    Expression instance = getInstanceMethodName(kind);
-
-    if (kind.equals(DataElementInfo.Kind.IsWidget)) {
-      return uncheckedCastCall(instance, HTMLElement.class.getCanonicalName());
-    }
-    return instance;
+    return getInstanceMethodName(kind);
   }
 
   public DataElementInfo.Kind getDataElementInfoKind(TypeMirror dataElementType) {
@@ -113,10 +81,6 @@ public class TemplatedGeneratorUtils {
       return DataElementInfo.Kind.HTMLElement;
     } else if (isAssignable(dataElementType, io.crysknife.client.IsElement.class)) {
       return DataElementInfo.Kind.IsElement;
-    } else if (maybeGwtWidget(dataElementType)) {
-      return DataElementInfo.Kind.IsWidget;
-    } else if (maybeGwtDom(dataElementType)) {
-      return DataElementInfo.Kind.GWT_DOM;
     } else {
       return DataElementInfo.Kind.Custom;
     }

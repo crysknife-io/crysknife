@@ -33,7 +33,7 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
 </#if>
 
 <#list fields as call>
-        ${call?no_esc}
+    ${call?no_esc}
 </#list>
 
 <#list deps as dep>
@@ -44,41 +44,42 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
     public ${bean} createInstance() {
 <#if !jre>
     <#if isDependent>
-        this.interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+        interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
     <#else>
         <#if isProxy>
-            this.interceptor = new Interceptor(new Proxy${bean}());
+            interceptor = new Interceptor(new Proxy${bean}());
         <#else>
-            if (this.instance != null) {
+        if (this.instance != null) {
             return (${bean}) instance;
-            }
-            this.interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+        }
+        interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
         </#if>
     </#if>
-    instance = this.interceptor.getProxy();
+        instance = interceptor.getProxy();
     <#list fieldInterceptors as call>
         ${call?no_esc};
     </#list>
 <#else>
 
   <#if isDependent>
-    instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+        instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
   <#else>
     <#if isProxy>
-      this.instance = new Proxy${bean}();
+        instance = new Proxy${bean}();
     <#else>
-      if (this.instance != null) {
-        return (${bean}) instance;
-      }
-      instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+        if (this.instance != null) {
+          return (${bean}) instance;
+        }
+        instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
     </#if>
   </#if>
 </#if>
 
-    return (${bean}) instance;
-}
-
-
+    <#list doCreateInstance as call>
+        ${call?no_esc};
+    </#list>
+        return (${bean}) instance;
+    }
 <#--<#if jre>
 <#else>
         this.interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
@@ -87,15 +88,13 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
         this.interceptor.addGetPropertyInterceptor(Reflect.objectProperty("f_buttonElement__io_crysknife_demo_client_Elemental2Bean_", this.instance), new OnFieldAccessed(() -> this._field_buttonElement.get()));
 </#if>-->
 
-
-
     @Override()
     public void doInitInstance(${bean} instance) {
-<#list postConstruct as call>
-        ${call?no_esc};
-</#list>
 <#list doInitInstance as call>
         ${call?no_esc}
+</#list>
+<#list postConstruct as call>
+    ${call?no_esc}
 </#list>
     }
 <#if isDependent>

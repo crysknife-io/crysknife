@@ -34,8 +34,6 @@ import java.util.Set;
 
 public class EventHandlerValidator extends Validator<ExecutableElement> {
 
-  private Set<Check> checks = new HashSet<>();
-
   public EventHandlerValidator(IOCContext context) {
     super(context);
 
@@ -100,7 +98,6 @@ public class EventHandlerValidator extends Validator<ExecutableElement> {
         if (!(MoreElements.isAnnotationPresent(method, SinkNative.class)
             && MoreElements.isAnnotationPresent(parameter, ForEvent.class))) {
           // TODO add better validation
-
         }
       }
     });

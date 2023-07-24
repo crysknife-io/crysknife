@@ -275,7 +275,6 @@ public class GenerationUtils {
           new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
     }
 
-    FieldAccessExpr fieldAccessExpr = new FieldAccessExpr(new ThisExpr(), "interceptor");
     String jsFieldName =
         j2CLUtils.createFieldDescriptor(fieldPoint.getVariableElement()).getMangledName();
     MethodCallExpr reflect =
@@ -292,8 +291,8 @@ public class GenerationUtils {
     onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
     onFieldAccessedCreationExpr.addArgument(lambda);
 
-    return new MethodCallExpr(fieldAccessExpr, "addGetPropertyInterceptor").addArgument(reflect)
-        .addArgument(onFieldAccessedCreationExpr);
+    return new MethodCallExpr(new NameExpr("interceptor"), "addGetPropertyInterceptor")
+        .addArgument(reflect).addArgument(onFieldAccessedCreationExpr);
   }
 
   // Closure aggressively inline methods, so if method is private and never called, most likely it

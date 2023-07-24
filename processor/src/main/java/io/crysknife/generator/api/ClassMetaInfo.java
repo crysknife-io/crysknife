@@ -15,16 +15,17 @@
 package io.crysknife.generator.api;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 
 public class ClassMetaInfo {
 
-  private final Set<String> imports = new HashSet<>();
+  private final Set<String> imports = new TreeSet<>();
   private final List<Supplier<String>> onDestroy = new ArrayList<>();
   private final List<Supplier<String>> doInitInstance = new ArrayList<>();
+  private final List<Supplier<String>> doCreateInstance = new ArrayList<>();
   private final List<Supplier<String>> body = new ArrayList<>();
 
 
@@ -48,6 +49,10 @@ public class ClassMetaInfo {
     doInitInstance.add(supplier);
   }
 
+  public void addToDoCreateInstance(Supplier<String> supplier) {
+    doCreateInstance.add(supplier);
+  }
+
   public Set<String> getImports() {
     return imports;
   }
@@ -62,6 +67,11 @@ public class ClassMetaInfo {
 
   public List<String> getBodyStatements() {
     return body.stream().map(Supplier::get).collect(java.util.stream.Collectors.toList());
+  }
+
+  public List<String> getDoCreateInstance() {
+    return doCreateInstance.stream().map(Supplier::get)
+        .collect(java.util.stream.Collectors.toList());
   }
 
 }

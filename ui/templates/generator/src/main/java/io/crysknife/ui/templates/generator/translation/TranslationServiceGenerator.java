@@ -17,14 +17,18 @@
  */
 package io.crysknife.ui.templates.generator.translation;
 
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
-import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.generator.TemplatedGeneratorUtils;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
@@ -32,9 +36,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.NodeVisitor;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class TranslationServiceGenerator {
 
@@ -58,7 +59,7 @@ public class TranslationServiceGenerator {
     }
   }
 
-  public void process(ClassBuilder builder, TemplateContext context) {
+  public void process(ClassMetaInfo builder, TemplateContext context) {
     if (isEnabled) {
       String html = context.getRoot().getInnerHtml();
       if (html == null || html.isEmpty()) {
@@ -74,33 +75,30 @@ public class TranslationServiceGenerator {
     }
   }
 
-  private void addI18nTranslationCall(ClassBuilder builder, TemplateContext context) {
+  private void addI18nTranslationCall(ClassMetaInfo builder, TemplateContext context) {
     LambdaExpr lambda = new LambdaExpr().setEnclosingParameters(true);
     lambda.getParameters().add(new Parameter().setName("s").setType("String"));
     lambda.setBody(new ExpressionStmt(new MethodCallExpr("getI18nValue").addArgument("s")));
 
-    builder.getInitInstanceMethod().getBody().get().addAndGetStatement(
-        new MethodCallExpr(new NameExpr("io.crysknife.client.utils.dom.DomVisit"), "visit")
+    builder.addToDoInitInstance(
+        () -> new MethodCallExpr(new NameExpr("io.crysknife.client.utils.dom.DomVisit"), "visit")
             .addArgument(templatedGeneratorUtils.getInstanceCallExpression(context))
             .addArgument(new ObjectCreationExpr()
                 .setType(new ClassOrInterfaceType()
                     .setName("io.crysknife.ui.templates.client.TemplateTranslationVisitor"))
                 .addArgument(new StringLiteralExpr(getI18nPrefix(context.getTemplateFileName())))
-                .addArgument(lambda)));
-
+                .addArgument(lambda))
+            .toString());
   }
 
-  private void addGetI18nValue(ClassBuilder builder) {
-    builder.addFieldWithInitializer(TRANSLATION_SERVICE, "translationService",
-        new NameExpr(TRANSLATION_SERVICE + "Impl.INSTANCE"), Modifier.Keyword.PRIVATE);
+  private void addGetI18nValue(ClassMetaInfo builder) {
+    String translationService =
+        "private io.crysknife.ui.translation.api.spi.TranslationService translationService = new io.crysknife.ui.translation.api.spi.TranslationServiceImpl.INSTANCE;";
+    builder.addToBody(() -> translationService);
 
-    MethodDeclaration method = builder.addMethod("getI18nValue", Modifier.Keyword.PRIVATE);
-    method.addParameter(
-        new Parameter(new ClassOrInterfaceType().setName("String"), "translationKey"));
-    method.setType("String");
-    method.getBody().get().addAndGetStatement(
-        new ReturnStmt(new MethodCallExpr(new NameExpr("translationService"), "getTranslation")
-            .addArgument("translationKey")));
+    String getI18nValue =
+        "private String getI18nValue(String translationKey) { return translationService.getTranslation(translationKey); }";
+    builder.addToBody(() -> getI18nValue);
   }
 
   private static class I18NKeyVisitor implements NodeVisitor {

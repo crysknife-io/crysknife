@@ -14,23 +14,31 @@
 
 package org.jboss.gwt.elemento.processor.context;
 
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
 import com.google.common.base.Strings;
 import elemental2.dom.HTMLElement;
-
-import javax.lang.model.type.TypeMirror;
 
 public class DataElementInfo {
 
   public enum Kind {
     // Name them after the related type for nicer error messages
-    HTMLElement, IsElement, IsWidget, Custom, GWT_DOM
+    HTMLElement, IsElement, Custom
   }
+
+  private VariableElement field;
 
   private final TypeMirror type;
   private final String name;
   private final String selector;
   private final Kind kind;
   private final boolean returnedByMethod;
+
+  public DataElementInfo(final VariableElement field, final String selector, final Kind kind) {
+    this(field.asType(), field.getSimpleName().toString(), selector, kind, false);
+    this.field = field;
+  }
 
   public DataElementInfo(final TypeMirror type, final String name, final String selector,
       final Kind kind, boolean returnedByMethod) {
@@ -41,10 +49,8 @@ public class DataElementInfo {
     this.returnedByMethod = returnedByMethod;
   }
 
-  @Override
-  public String toString() {
-    return "@DataElement " + type + " " + name + " " + selector + " (" + kind
-        + (returnedByMethod ? ", return by method" : "") + ")";
+  public VariableElement getField() {
+    return field;
   }
 
   public TypeMirror getType() {
@@ -63,15 +69,13 @@ public class DataElementInfo {
     return kind;
   }
 
-  public boolean isReturnedByMethod() {
-    return returnedByMethod;
-  }
-
-  public String getFieldOrMethod() {
-    return returnedByMethod ? name + "()" : name;
-  }
-
   public boolean needsCast() {
     return kind == Kind.HTMLElement && !type.equals(HTMLElement.class.getName());
+  }
+
+  @Override
+  public String toString() {
+    return "@DataElement " + type + " " + name + " " + selector + " (" + kind
+        + (returnedByMethod ? ", return by method" : "") + ")";
   }
 }

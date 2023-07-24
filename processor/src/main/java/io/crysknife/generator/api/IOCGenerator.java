@@ -14,13 +14,11 @@
 
 package io.crysknife.generator.api;
 
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;

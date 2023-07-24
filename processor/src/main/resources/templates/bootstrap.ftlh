@@ -1,5 +1,6 @@
 package ${package};
 
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import jakarta.inject.Provider;
 

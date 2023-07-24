@@ -120,6 +120,7 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
     root.put("fields", classMetaInfo.getBodyStatements());
     root.put("preDestroy", classMetaInfo.getOnDestroy());
     root.put("doInitInstance", classMetaInfo.getDoInitInstance());
+    root.put("doCreateInstance", classMetaInfo.getDoCreateInstance());
 
 
     StringOutputStream os = new StringOutputStream();

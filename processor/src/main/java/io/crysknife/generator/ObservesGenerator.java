@@ -28,6 +28,7 @@ import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.util.StringOutputStream;
 import io.crysknife.logger.TreeLogger;
 
@@ -43,6 +44,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -57,6 +59,8 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
   private Template tempSubscribe;
   private Template tempConsumer;
   private Template tempOnDestroy;
+
+  private final MethodCallGenerator methodCallGenerator = new MethodCallGenerator(iocContext);
 
   {
     cfg.setClassForTemplateLoading(this.getClass(), "/templates/observes/");
@@ -90,7 +94,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     String target =
         iocContext.getGenerationContext().getTypes().erasure(parameter.asType()).toString();
 
-    addConsumerField2(classMetaInfo, methodDefinition, target, consumer);
+    addConsumerField(classMetaInfo, methodDefinition, target, consumer);
     addToOnDestroy(classMetaInfo, target, consumer);
     doInitInstance(classMetaInfo, target, consumer);
 
@@ -137,7 +141,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     }
   }
 
-  private void addConsumerField2(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition,
+  private void addConsumerField(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition,
       String target, String consumer) {
     String bean = iocContext.getGenerationContext().getTypes()
         .erasure(methodDefinition.getExecutableElement().getEnclosingElement().asType()).toString();
@@ -146,7 +150,9 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     root.put("target", target);
     root.put("bean", bean);
     root.put("consumer", consumer);
-    root.put("method", methodDefinition.getExecutableElement().getSimpleName());
+    String call = methodCallGenerator.generate(methodDefinition.getBeanDefinition().getType(),
+        methodDefinition.getExecutableElement(), List.of("event"));
+    root.put("call", call);
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {

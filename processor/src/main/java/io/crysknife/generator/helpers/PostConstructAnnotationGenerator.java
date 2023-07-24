@@ -19,7 +19,6 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.TypeUtils;
 import io.crysknife.validation.PostConstructValidator;
 import jakarta.annotation.PostConstruct;
@@ -33,7 +32,6 @@ import java.util.stream.Collectors;
 public class PostConstructAnnotationGenerator {
 
   private PostConstructValidator validator;
-  private GenerationUtils utils;
   private IOCContext iocContext;
 
   MethodCallGenerator methodCallGenerator;
@@ -41,7 +39,6 @@ public class PostConstructAnnotationGenerator {
 
   public PostConstructAnnotationGenerator(IOCContext iocContext) {
     this.validator = new PostConstructValidator(iocContext);
-    this.utils = new GenerationUtils(iocContext);
     this.iocContext = iocContext;
 
     methodCallGenerator = new MethodCallGenerator(iocContext);

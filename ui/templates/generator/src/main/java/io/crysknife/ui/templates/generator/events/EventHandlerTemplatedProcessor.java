@@ -14,6 +14,20 @@
 
 package io.crysknife.ui.templates.generator.events;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
+
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.GenerationException;
@@ -25,19 +39,6 @@ import org.jboss.gwt.elemento.processor.AbortProcessingException;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static io.crysknife.ui.templates.generator.events.Elemental2EventsMapping.EVENTS;
 
@@ -111,8 +112,12 @@ public class EventHandlerTemplatedProcessor {
     throw new AbortProcessingException();
   }
 
+
+  // todo
   public void error(Element element, String msg, Object... args) {
-    this.iocContext.getGenerationContext().getProcessingEnvironment().getMessager()
-        .printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
+    System.out.println(
+        "ERROR: " + String.format(msg, args) + " " + element.getEnclosingElement() + "." + element);
+    // this.iocContext.getGenerationContext().getProcessingEnvironment().getMessager()
+    // .printMessage(Kind.ERROR, String.format(msg, args), element);
   }
 }
