@@ -25,8 +25,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
@@ -39,8 +37,6 @@ import org.jboss.gwt.elemento.processor.AbortProcessingException;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
-
-import static io.crysknife.ui.templates.generator.events.Elemental2EventsMapping.EVENTS;
 
 public class EventHandlerTemplatedProcessor {
 
@@ -102,9 +98,9 @@ public class EventHandlerTemplatedProcessor {
     if (parameter.getAnnotation(ForEvent.class) != null) {
       return parameter.getAnnotation(ForEvent.class).value();
     }
-    String[] result = new String[1];
-    result[0] = EVENTS.get(MoreTypes.asDeclared(parameter.asType()).toString());
-    return result;
+    throw new GenerationException("Parameter " + parameter
+        + " must be annotated with @ForEvent annotation at " + parameter.getEnclosingElement() + "."
+        + parameter.getEnclosingElement().getEnclosingElement() + "." + parameter);
   }
 
   private void abortWithError(Element element, String msg, Object... args) {

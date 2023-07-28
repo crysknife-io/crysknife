@@ -14,44 +14,7 @@
 
 package io.crysknife.ui.templates.generator;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.annotation.processing.Messager;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
-
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.BinaryExpr;
-import com.github.javaparser.ast.expr.CastExpr;
-import com.github.javaparser.ast.expr.EnclosedExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.NullLiteralExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -64,6 +27,10 @@ import com.google.common.escape.Escapers;
 import com.inet.lib.less.Less;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.client.IsElement;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
@@ -75,27 +42,26 @@ import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.DataField;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
+import io.crysknife.ui.templates.client.annotation.SinkNative;
 import io.crysknife.ui.templates.client.annotation.Templated;
+import io.crysknife.ui.templates.generator.dto.Event;
+import io.crysknife.ui.templates.generator.dto.TemplateDefinition;
 import io.crysknife.ui.templates.generator.events.EventHandlerGenerator;
 import io.crysknife.ui.templates.generator.events.EventHandlerTemplatedProcessor;
+import io.crysknife.ui.templates.generator.events.EventHandlerValidator;
 import io.crysknife.ui.templates.generator.translation.TranslationServiceGenerator;
+import io.crysknife.util.StringOutputStream;
 import io.crysknife.util.TypeUtils;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
-import org.jboss.gwt.elemento.processor.AbortProcessingException;
-import org.jboss.gwt.elemento.processor.ExpressionParser;
-import org.jboss.gwt.elemento.processor.ProcessingException;
-import org.jboss.gwt.elemento.processor.TemplateSelector;
-import org.jboss.gwt.elemento.processor.TypeSimplifier;
-import org.jboss.gwt.elemento.processor.context.DataElementInfo;
-import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
-import org.jboss.gwt.elemento.processor.context.RootElementInfo;
-import org.jboss.gwt.elemento.processor.context.StyleSheet;
-import org.jboss.gwt.elemento.processor.context.TemplateContext;
+import org.jboss.gwt.elemento.processor.*;
+import org.jboss.gwt.elemento.processor.context.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -103,10 +69,26 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
-import static java.util.stream.Collectors.joining;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.google.auto.common.MoreTypes.*;
+import static com.google.auto.common.MoreTypes.asElement;
 import static io.crysknife.ui.elemental2.ElmToTagMapping.HTML_ELEMENTS;
+import static java.util.stream.Collectors.joining;
 
 @Generator
 public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
@@ -114,7 +96,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private static final String QUOTE = "\"";
   private static final Escaper JAVA_STRING_ESCAPER =
       Escapers.builder().addEscape('"', "\\\"").addEscape('\n', "").addEscape('\r', "").build();
-
+  protected final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
   private final TypeMirror htmlElement;
   private final TypeElement isElement;
   private final J2CLUtils j2CLUtils;
@@ -127,6 +109,20 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private final TemplatedGeneratorUtils templatedGeneratorUtils;
   private final EventHandlerGenerator eventHandlerGenerator;
 
+  private final EventHandlerValidator eventHandlerValidator;
+
+  private final MethodCallGenerator methodCallGenerator;
+  private Template temp;
+
+  {
+    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
+    cfg.setDefaultEncoding("UTF-8");
+    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    cfg.setLogTemplateExceptions(false);
+    cfg.setWrapUncheckedExceptions(true);
+    cfg.setFallbackOnNullLoopVariable(false);
+  }
+
   public TemplateGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
     this.j2CLUtils = new J2CLUtils(iocContext.getGenerationContext().getProcessingEnvironment());
@@ -138,7 +134,8 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     this.translationServiceGenerator = new TranslationServiceGenerator(iocContext);
     this.templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
     this.eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);
-
+    this.eventHandlerValidator = new EventHandlerValidator(iocContext);
+    this.methodCallGenerator = new MethodCallGenerator(iocContext);
 
     htmlElement = iocContext.getGenerationContext().getElements()
         .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
@@ -160,12 +157,10 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
       throw new GenerationException(e);
     }
 
-    classMetaInfo.addImport(DomGlobal.class);
-    classMetaInfo.addImport(TemplateUtil.class);
-    classMetaInfo.addImport(Js.class);
 
+    TemplateDefinition templateDefinition = new TemplateDefinition();
     StringBuffer body = new StringBuffer();
-    body.append("        private void setAndInitTemplate() {\n");
+    // body.append(" private void setAndInitTemplate() {\n");
 
     if (!hasGetElement(beanDefinition)) {
       Optional<ExecutableElement> executableElement = ElementFilter
@@ -174,17 +169,21 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
           .filter(method -> method.getModifiers().contains(Modifier.DEFAULT)).findFirst();
 
       if (executableElement.isPresent()) {
-        body.append(
-            "elemental2.core.Reflect.set(instance, \"__root_element__\", elemental2.dom.DomGlobal.document.createElement(\"div\"));\n");
+        templateDefinition.setInitRootElement(true);
 
-        classMetaInfo.addToBody(() -> "@jsinterop.annotations.JsFunction\n"
+        // body.append(
+        // "elemental2.core.Reflect.set(instance, \"__root_element__\",
+        // elemental2.dom.DomGlobal.document.createElement(\"div\"));\n");
+
+        /*        classMetaInfo.addToBody(() -> "@jsinterop.annotations.JsFunction\n"
             + "    private interface HTMLElementAccessor {\n"
-            + "        elemental2.dom.HTMLElement getElement();\n" + "    }");
+            + "        elemental2.dom.HTMLElement getElement();\n" + "    }");*/
 
         String valueName =
             j2CLUtils.createDeclarationMethodDescriptor(executableElement.get()).getMangledName();
+        templateDefinition.setRootElementPropertyName(valueName);
 
-        body.append(String.format(
+        /*        body.append(String.format(
             "interceptor.addGetMethodInterceptor(Reflect.objectProperty(\"%s\", instance), new java.util.function.BiFunction<Object, String, Object>() {\n"
                 + "            @Override\n"
                 + "            public Object apply(Object o, String s) {\n"
@@ -194,15 +193,15 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
                 + "                        return (elemental2.dom.HTMLElement) elemental2.core.Reflect.get(instance, \"__root_element__\");\n"
                 + "                    }\n" + "                };\n" + "            }\n"
                 + "        });\n",
-            valueName));
+            valueName));*/
       }
     }
     classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
-    setAndInitTemplate(classMetaInfo, body, beanDefinition);
+    setAndInitTemplate(classMetaInfo, body, beanDefinition, templateDefinition);
   }
 
   private void setAndInitTemplate(ClassMetaInfo classMetaInfo, StringBuffer body,
-      BeanDefinition beanDefinition) {
+      BeanDefinition beanDefinition, TemplateDefinition templateDefinition) {
     TypeElement type = MoreTypes.asTypeElement(beanDefinition.getType());
     String isElementTypeParameter = getIsElementTypeParameter(type.getInterfaces());
     Templated templated = type.getAnnotation(Templated.class);
@@ -232,12 +231,27 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     context.setStylesheet(getStylesheet(type, templated));
 
     // generate code
-    code(classMetaInfo, body, beanDefinition, context);
+    code(classMetaInfo, body, beanDefinition, context, templateDefinition);
 
     // maybe add translation
     translationServiceGenerator.process(classMetaInfo, context);
 
-    body.append("        }\n");
+
+    StringOutputStream os = new StringOutputStream();
+    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
+      if (temp == null) {
+        temp = cfg.getTemplate("ui.ftlh");
+      }
+      temp.process(templateDefinition, out);
+      body.append(os);
+
+    } catch (UnsupportedEncodingException | TemplateException e) {
+      throw new GenerationException(e);
+    } catch (IOException e) {
+      throw new GenerationException(e);
+    }
+
+
     classMetaInfo.addToBody(body::toString);
 
     info("Generated templated implementation [%s] for [%s]", context.getSubclass(),
@@ -245,40 +259,33 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   private void code(ClassMetaInfo builder, StringBuffer body, BeanDefinition beanDefinition,
-      TemplateContext templateContext) {
+      TemplateContext templateContext, TemplateDefinition templateDefinition) {
     addImports(builder);
-    setStylesheet(builder, body, templateContext);
+    setStylesheet(builder, templateContext, templateDefinition);
 
-    setAttributes(builder, body, templateContext);
-    setInnerHTML(builder, body, templateContext);
+    setAttributes(templateContext, templateDefinition);
+    setInnerHTML(templateContext, templateDefinition);
 
-    processDataFields(builder, body, beanDefinition, templateContext);
-    processEventHandlers(builder, body, beanDefinition, templateContext);
+    processDataFields(templateContext, templateDefinition);
+    processEventHandlers(beanDefinition, templateContext, templateDefinition);
   }
 
   private void addImports(ClassMetaInfo builder) {
     builder.addImport(DomGlobal.class);
-    builder.addImport(TemplateUtil.class);
     builder.addImport(Js.class);
     builder.addImport(Reflect.class);
+    builder.addImport(TemplateUtil.class);
   }
 
-  private void setInnerHTML(ClassMetaInfo builder, StringBuffer body,
-      TemplateContext templateContext) {
+  private void setInnerHTML(TemplateContext templateContext,
+      TemplateDefinition templateDefinition) {
     if (templateContext.getRoot().getInnerHtml() != null
         && !templateContext.getRoot().getInnerHtml().isEmpty()) {
-      body.append(new AssignExpr()
-          .setTarget(new FieldAccessExpr(new MethodCallExpr(new NameExpr("instance"), "getElement"),
-              "innerHTML"))
-          .setValue(new StringLiteralExpr(templateContext.getRoot().getInnerHtml())).toString());
-      body.append(";\n");
+      templateDefinition.setHtml(templateContext.getRoot().getInnerHtml());
     }
   }
 
-  private void processDataFields(ClassMetaInfo builder, StringBuffer body,
-      BeanDefinition beanDefinition, TemplateContext templateContext) {
-    DataElementInfo.Kind kind =
-        templatedGeneratorUtils.getDataElementInfoKind(beanDefinition.getType());
+  private void processDataFields(TemplateContext templateContext, TemplateDefinition templateDefinition) {
     Expression instance = new NameExpr("instance");
     instance = new MethodCallExpr(instance, "getElement");
 
@@ -323,17 +330,50 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
               .addArgument(new StringLiteralExpr(element.getSelector()))
               .addArgument(getInstanceByElementKind(element, fieldAccessCallExpr))));
 
-      body.append(ifStmt);
+      // body.append(ifStmt);
+
+      io.crysknife.ui.templates.generator.dto.Element elementDto =
+          new io.crysknife.ui.templates.generator.dto.Element(element.getSelector(), mangleName,
+              element.getType().toString(), element.needsCast());
+
+      templateDefinition.getElements().add(elementDto);
+
     }
   }
 
-  private void processEventHandlers(ClassMetaInfo builder, StringBuffer body,
-      BeanDefinition beanDefinition, TemplateContext templateContext) {
-    eventHandlerGenerator.generate(builder, body, beanDefinition, templateContext);
+  private void processEventHandlers(BeanDefinition beanDefinition, TemplateContext templateContext,
+      TemplateDefinition templateDefinition) {
+
+    for (EventHandlerInfo eventHandlerInfo : templateContext.getEvents()) {
+      try {
+        eventHandlerValidator.validate(eventHandlerInfo.getMethod());
+        if (MoreElements.isAnnotationPresent(eventHandlerInfo.getMethod(), SinkNative.class)) {
+          throw new GenerationException(
+              String.format("Method %s annotated with @SinkNative must be static",
+                  eventHandlerInfo.getMethod().getSimpleName()));
+        } else {
+          String[] eventTypes = eventHandlerInfo.getMethod().getParameters().get(0)
+              .getAnnotation(ForEvent.class).value();
+          String clazz = iocContext.getGenerationContext().getTypes()
+              .erasure(eventHandlerInfo.getMethod().getParameters().get(0).asType()).toString();
+          String mangleName = j2CLUtils.createFieldDescriptor(eventHandlerInfo.getInfo().getField(),
+              beanDefinition.getType()).getMangledName();
+          String call = methodCallGenerator.generate(beanDefinition.getType(),
+              eventHandlerInfo.getMethod(), List.of("e"));
+          Event event = new Event(eventTypes, mangleName, clazz, call);
+          templateDefinition.getEvents().add(event);
+        }
+      } catch (UnableToCompleteException e) {
+        throw new GenerationException(e);
+      }
+    }
+
+    // TODO events
+    // eventHandlerGenerator.generate(builder, body, beanDefinition, templateContext);
   }
 
-  private void setStylesheet(ClassMetaInfo builder, StringBuffer body,
-      TemplateContext templateContext) {
+  private void setStylesheet(ClassMetaInfo builder, TemplateContext templateContext,
+      TemplateDefinition templateDefinition) {
     if (templateContext.getStylesheet() != null) {
       builder.addImport(StyleInjector.class);
 
@@ -363,15 +403,16 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
           throw new GenerationException(
               "Unable to process Css/Gss :" + templateContext.getStylesheet(), e);
         }
-
-        body.append("StyleInjector.fromString(\"" + escape(css) + "\").inject();");
+        templateDefinition.setCss(escape(css));
+        // body.append("StyleInjector.fromString(\"" + escape(css) + "\").inject();");
       } else {
         try {
           String less =
               IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
           Less.compile(null, less, false);
           final String compiledCss = Less.compile(null, less, false);
-          body.append("StyleInjector.fromString(\"" + escape(compiledCss) + "\").inject();");
+          templateDefinition.setCss(escape(compiledCss));
+          // body.append("StyleInjector.fromString(\"" + escape(compiledCss) + "\").inject();");
         } catch (IOException e) {
           throw new GenerationException(
               "Unable to process Less " + templateContext.getStylesheet());
@@ -439,25 +480,12 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     }
   }
 
-  private void setAttributes(ClassMetaInfo builder, StringBuffer body,
-      TemplateContext templateContext) {
-    templateContext.getRoot().getAttributes()
-        .forEach(attribute -> body
-            .append(new MethodCallExpr(new MethodCallExpr(new NameExpr("instance"), "getElement"),
-                "setAttribute").addArgument(new StringLiteralExpr(attribute.getKey()))
-                    .addArgument(new StringLiteralExpr(attribute.getValue())).toString())
-            .append(";\n"));
-  }
-
-  private String generatedClassName(TypeElement type, String prefix, String suffix) {
-    StringBuilder name = new StringBuilder(type.getSimpleName().toString());
-    while (type.getEnclosingElement() instanceof TypeElement) {
-      type = (TypeElement) type.getEnclosingElement();
-      name.insert(0, type.getSimpleName() + "_");
-    }
-    String pkg = TypeSimplifier.packageNameOf(type);
-    String dot = pkg.isEmpty() ? "" : ".";
-    return pkg + dot + prefix + name + suffix;
+  private void setAttributes(TemplateContext templateContext,
+      TemplateDefinition templateDefinition) {
+    templateContext.getRoot().getAttributes().stream()
+        .map(attr -> new io.crysknife.ui.templates.generator.dto.Attribute(attr.getKey(),
+            attr.getValue()))
+        .forEach(a -> templateDefinition.getAttributes().add(a));
   }
 
   // ------------------------------------------------------ @DataElement fields and methods
@@ -545,8 +573,6 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private void verifyHTMLElement(String htmlType, String selector, Element element,
       TemplateSelector templateSelector, org.jsoup.nodes.Element root) {
     // make sure the HTMLElement subtype maps to the right HTML tag
-
-
     Set<String> tags = Elemental2TagMapping.HTML_ELEMENTS.get(htmlType);
     if (!tags.isEmpty()) {
       Elements elements = root.getElementsByAttributeValue("data-field", selector);

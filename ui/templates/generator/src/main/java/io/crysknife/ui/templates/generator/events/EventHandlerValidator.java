@@ -29,8 +29,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import java.util.HashSet;
-import java.util.Set;
 
 public class EventHandlerValidator extends Validator<ExecutableElement> {
 
@@ -94,7 +92,6 @@ public class EventHandlerValidator extends Validator<ExecutableElement> {
         }
 
         DeclaredType declaredType = MoreTypes.asDeclared(parameter.asType());
-
         if (!(MoreElements.isAnnotationPresent(method, SinkNative.class)
             && MoreElements.isAnnotationPresent(parameter, ForEvent.class))) {
           // TODO add better validation

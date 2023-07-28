@@ -17,38 +17,21 @@ package io.crysknife.ui.templates.generator;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.google.auto.common.MoreTypes;
 import elemental2.dom.HTMLElement;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
-import jsinterop.base.Js;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import java.util.Optional;
 
 public class TemplatedGeneratorUtils {
 
-  private IOCContext iocContext;
-
   private ProcessingEnvironment processingEnvironment;
 
-  public TypeElement widgetType;
-
   public TemplatedGeneratorUtils(IOCContext iocContext) {
-    this.iocContext = iocContext;
     this.processingEnvironment = iocContext.getGenerationContext().getProcessingEnvironment();
-  }
-
-  public String getGetRootElementMethodName(TemplateContext templateContext) {
-    DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
-    return getGetRootElementMethodName(kind);
   }
 
   public String getGetRootElementMethodName(DataElementInfo.Kind kind) {
@@ -58,18 +41,11 @@ public class TemplatedGeneratorUtils {
     throw new GenerationException("Unable to find type of " + kind);
   }
 
-  public String getGetRootElementMethodName(DataElementInfo element) {
-    return getGetRootElementMethodName(element.getKind());
-  }
 
   public Expression getInstanceMethodName(DataElementInfo.Kind kind) {
     return new MethodCallExpr(new NameExpr("instance"), getGetRootElementMethodName(kind));
   }
 
-  public Expression uncheckedCastCall(Expression target, String clazz) {
-    return new MethodCallExpr(new NameExpr(Js.class.getCanonicalName()),
-        "<" + clazz + ">uncheckedCast").addArgument(target);
-  }
 
   public Expression getInstanceCallExpression(TemplateContext templateContext) {
     DataElementInfo.Kind kind = getDataElementInfoKind(templateContext.getDataElementType());
@@ -86,17 +62,6 @@ public class TemplatedGeneratorUtils {
     }
   }
 
-  public boolean implementsIsElement(TemplateContext templateContext) {
-    return ElementFilter
-        .methodsIn(MoreTypes.asElement(templateContext.getDataElementType()).getEnclosedElements())
-        .stream().filter(elm -> elm.getSimpleName().toString().equals("getElement"))
-        .filter(elm -> elm.getParameters().isEmpty())
-        .filter(elm -> elm.getModifiers().contains(Modifier.PUBLIC)).findFirst().isPresent();
-  }
-
-  public boolean isAssignable(TypeElement subType, Class<?> baseType) {
-    return isAssignable(subType.asType(), baseType);
-  }
 
   public boolean isAssignable(TypeMirror subType, Class<?> baseType) {
     return isAssignable(subType, getTypeMirror(baseType));

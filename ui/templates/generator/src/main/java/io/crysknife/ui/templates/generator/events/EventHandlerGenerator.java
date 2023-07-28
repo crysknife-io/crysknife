@@ -17,7 +17,6 @@ package io.crysknife.ui.templates.generator.events;
 import java.util.Optional;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import com.github.javaparser.ast.expr.CastExpr;
@@ -76,8 +75,10 @@ public class EventHandlerGenerator {
 
   public void generate(ClassMetaInfo builder, StringBuffer body, BeanDefinition beanDefinition,
       TemplateContext templateContext) {
-    templateContext.getEvents().forEach(event -> getGenerator(event).ifPresent(
-        generator -> generator.generate(builder, body, templateContext, event, beanDefinition)));
+
+
+    // templateContext.getEvents().forEach(event -> getGenerator(event).ifPresent(
+    // generator -> generator.generate(builder, body, templateContext, event, beanDefinition)));
   }
 
   Optional<Generator> getGenerator(EventHandlerInfo eventHandlerInfo) {
@@ -171,11 +172,6 @@ public class EventHandlerGenerator {
         }
       }
     }
-  }
-
-  private boolean isElemental2Event(DeclaredType declaredType) {
-    return iocContext.getGenerationContext().getTypes().isSubtype(declaredType,
-        elemental2Event.asType());
   }
 
   public Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
