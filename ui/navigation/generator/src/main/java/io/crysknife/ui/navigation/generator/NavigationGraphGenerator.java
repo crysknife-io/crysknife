@@ -14,6 +14,42 @@
 
 package io.crysknife.ui.navigation.generator;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.ReturnStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreElements;
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.IsElement;
+import io.crysknife.client.internal.collections.BiMap;
+import io.crysknife.client.utils.CreationalCallback;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.context.GenerationContext;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
+import io.crysknife.ui.navigation.client.local.*;
+import io.crysknife.ui.navigation.client.local.api.NavigationControl;
+import io.crysknife.ui.navigation.client.local.api.PageRequest;
+import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
+import io.crysknife.ui.navigation.client.local.spi.PageNode;
+import io.crysknife.ui.navigation.client.shared.NavigationEvent;
+import io.crysknife.util.GenerationUtils;
+import jakarta.enterprise.event.Event;
+
+import javax.annotation.processing.FilerException;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.MirroredTypesException;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
@@ -23,59 +59,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.enterprise.event.Event;
-import javax.annotation.processing.FilerException;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.MirroredTypesException;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.tools.JavaFileObject;
-
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.StringLiteralExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.stmt.ReturnStmt;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.google.auto.common.MoreElements;
-import io.crysknife.client.IsElement;
-import io.crysknife.client.utils.CreationalCallback;
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.internal.collections.BiMap;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.context.GenerationContext;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.ui.navigation.client.local.DefaultPage;
-import io.crysknife.ui.navigation.client.local.HistoryToken;
-import io.crysknife.ui.navigation.client.local.Page;
-import io.crysknife.ui.navigation.client.local.PageHidden;
-import io.crysknife.ui.navigation.client.local.PageHiding;
-import io.crysknife.ui.navigation.client.local.PageShowing;
-import io.crysknife.ui.navigation.client.local.PageShown;
-import io.crysknife.ui.navigation.client.local.api.NavigationControl;
-import io.crysknife.ui.navigation.client.local.api.PageRequest;
-import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
-import io.crysknife.ui.navigation.client.local.spi.PageNode;
-import io.crysknife.ui.navigation.client.shared.NavigationEvent;
-import io.crysknife.util.GenerationUtils;
-
 /**
  * Generates the GeneratedNavigationGraph class based on {@code @Page} annotations.
  *
  * @author Jonathan Fuerth <jfuerth@gmail.com>
  */
+// TODO this class must be refactored
 public class NavigationGraphGenerator {
 
   public static final String PACKAGE_NAME = NavigationGraph.class.getPackage().getName();
@@ -125,6 +114,16 @@ public class NavigationGraphGenerator {
     ConstructorDeclaration constructorDeclaration =
         classDeclaration.addConstructor(Modifier.Keyword.PUBLIC);
     constructorDeclaration.addParameter(BeanManager.class.getSimpleName(), "beanManager");
+
+    MethodCallExpr constrCall = new MethodCallExpr("this").addArgument("beanManager");
+    constrCall.addArgument(new FieldAccessExpr(
+        new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+            .addArgument("NavigationGraph.class"), "getInstance"),
+        "event"));
+    constructorDeclaration.getBody().addAndGetStatement(constrCall);
+
+    constructorDeclaration = classDeclaration.addConstructor(Modifier.Keyword.PUBLIC);
+    constructorDeclaration.addParameter(BeanManager.class.getSimpleName(), "beanManager");
     constructorDeclaration.addParameter("Event<NavigationEvent>", "event");
 
     MethodCallExpr superExpr =
@@ -155,11 +154,10 @@ public class NavigationGraphGenerator {
       throws IOException {
     JavaFileObject builderFile =
         context.getProcessingEnvironment().getFiler().createSourceFile(fileName);
-
     try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
       out.append(source);
     } catch (FilerException e) {
-      throw new Error(e);
+      throw new GenerationException(e);
     }
   }
 
@@ -281,7 +279,8 @@ public class NavigationGraphGenerator {
     method.setModifiers(Modifier.Keyword.PUBLIC);
     method.setName("name");
     method.setType(new ClassOrInterfaceType().setName("String"));
-    method.getBody().get().addAndGetStatement(new ReturnStmt(new StringLiteralExpr(pageName)));
+    method.getBody().ifPresent(
+        body -> body.addAndGetStatement(new ReturnStmt(new StringLiteralExpr(pageName))));
     anonymousClassBody.add(method);
   }
 
@@ -290,7 +289,8 @@ public class NavigationGraphGenerator {
     method.setModifiers(Modifier.Keyword.PUBLIC);
     method.setName("toString");
     method.setType(new ClassOrInterfaceType().setName("String"));
-    method.getBody().get().addAndGetStatement(new ReturnStmt(new StringLiteralExpr(pageName)));
+    method.getBody().ifPresent(
+        body -> body.addAndGetStatement(new ReturnStmt(new StringLiteralExpr(pageName))));
     anonymousClassBody.add(method);
   }
 
@@ -300,8 +300,8 @@ public class NavigationGraphGenerator {
     method.setModifiers(Modifier.Keyword.PUBLIC);
     method.setName("getURL");
     method.setType(new ClassOrInterfaceType().setName("String"));
-    method.getBody().get()
-        .addAndGetStatement(new ReturnStmt(new StringLiteralExpr(getPageURL(page, pageName))));
+    method.getBody().ifPresent(body -> body
+        .addAndGetStatement(new ReturnStmt(new StringLiteralExpr(getPageURL(page, pageName)))));
     anonymousClassBody.add(method);
   }
 
@@ -311,8 +311,8 @@ public class NavigationGraphGenerator {
     method.setModifiers(Modifier.Keyword.PUBLIC);
     method.setName("contentType");
     method.setType(new ClassOrInterfaceType().setName("Class"));
-    method.getBody().get()
-        .addAndGetStatement(new ReturnStmt(new NameExpr(page.getQualifiedName() + ".class")));
+    method.getBody().ifPresent(body -> body
+        .addAndGetStatement(new ReturnStmt(new NameExpr(page.getQualifiedName() + ".class"))));
     anonymousClassBody.add(method);
   }
 
@@ -323,13 +323,11 @@ public class NavigationGraphGenerator {
     method.setModifiers(Modifier.Keyword.PUBLIC);
     method.setName("produceContent");
     method.setType("void");
-
-    method.getBody().get().addAndGetStatement(
-
-        new MethodCallExpr(new NameExpr("callback"), "callback").addArgument(
-            new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                .addArgument(page.getQualifiedName() + ".class"), "getInstance")));
-
+    method.getBody()
+        .ifPresent(body -> body.addAndGetStatement(
+            new MethodCallExpr(new NameExpr("callback"), "callback").addArgument(
+                new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                    .addArgument(page.getQualifiedName() + ".class"), "getInstance"))));
     anonymousClassBody.add(method);
   }
 
@@ -344,11 +342,11 @@ public class NavigationGraphGenerator {
 
     ExecutableElement executableElement = checkMethod(page, PageHiding.class);
     if (executableElement != null) {
-      method.getBody().get().addAndGetStatement(
-          generationUtils.generateMethodCall(navigationGraph, executableElement));
+      method.getBody().ifPresent(body -> body.addAndGetStatement(
+          generationUtils.generateMethodCall(navigationGraph, executableElement)));
     }
-    method.getBody().get()
-        .addAndGetStatement(new MethodCallExpr(new NameExpr("control"), "proceed"));
+    method.getBody().ifPresent(
+        body -> body.addAndGetStatement(new MethodCallExpr(new NameExpr("control"), "proceed")));
     anonymousClassBody.add(method);
   }
 
@@ -361,8 +359,8 @@ public class NavigationGraphGenerator {
     method.setName("pageHidden");
     ExecutableElement executableElement = checkMethod(page, PageHidden.class);
     if (executableElement != null) {
-      method.getBody().get().addAndGetStatement(
-          generationUtils.generateMethodCall(navigationGraph, executableElement));
+      method.getBody().ifPresent(body -> body.addAndGetStatement(
+          generationUtils.generateMethodCall(navigationGraph, executableElement)));
     }
     anonymousClassBody.add(method);
   }
@@ -381,11 +379,12 @@ public class NavigationGraphGenerator {
     ObjectCreationExpr mapCreationExpr = new ObjectCreationExpr()
         .setType(new ClassOrInterfaceType().setName(HashMap.class.getSimpleName()));
 
-    method.getBody().get()
-        .addAndGetStatement(new AssignExpr()
+
+    method.getBody()
+        .ifPresent(body -> body.addAndGetStatement(new AssignExpr()
             .setTarget(new VariableDeclarationExpr(
                 new ClassOrInterfaceType().setName(Map.class.getSimpleName()), "pageState"))
-            .setValue(mapCreationExpr));
+            .setValue(mapCreationExpr)));
     ObjectCreationExpr pageRequest = new ObjectCreationExpr()
         .setType(new ClassOrInterfaceType().setName(PageRequest.class.getSimpleName()))
         .addArgument(new StringLiteralExpr(pageName)).addArgument("pageState");
@@ -399,11 +398,11 @@ public class NavigationGraphGenerator {
 
     ExecutableElement executableElement = checkMethod(page, PageShowing.class);
     if (executableElement != null) {
-      method.getBody().get().addAndGetStatement(
-          generationUtils.generateMethodCall(navigationGraph, executableElement));
+      method.getBody().ifPresent(body -> body.addAndGetStatement(
+          generationUtils.generateMethodCall(navigationGraph, executableElement)));
     }
-    method.getBody().get()
-        .addAndGetStatement(new MethodCallExpr(new NameExpr("control"), "proceed"));
+    method.getBody().ifPresent(
+        body -> body.addAndGetStatement(new MethodCallExpr(new NameExpr("control"), "proceed")));
     anonymousClassBody.add(method);
   }
 
@@ -419,17 +418,15 @@ public class NavigationGraphGenerator {
 
     ObjectCreationExpr mapCreationExpr = new ObjectCreationExpr()
         .setType(new ClassOrInterfaceType().setName(HashMap.class.getSimpleName()));
-
-    method.getBody().get()
-        .addAndGetStatement(new AssignExpr()
+    method.getBody()
+        .ifPresent(body -> body.addAndGetStatement(new AssignExpr()
             .setTarget(new VariableDeclarationExpr(
                 new ClassOrInterfaceType().setName(Map.class.getSimpleName()), "pageState"))
-            .setValue(mapCreationExpr));
-
+            .setValue(mapCreationExpr)));
     ExecutableElement executableElement = checkMethod(page, PageShown.class);
     if (executableElement != null) {
-      method.getBody().get().addAndGetStatement(
-          generationUtils.generateMethodCall(navigationGraph, executableElement));
+      method.getBody().ifPresent(body -> body.addAndGetStatement(
+          generationUtils.generateMethodCall(navigationGraph, executableElement)));
     }
     anonymousClassBody.add(method);
   }
@@ -446,12 +443,11 @@ public class NavigationGraphGenerator {
 
     ObjectCreationExpr mapCreationExpr = new ObjectCreationExpr()
         .setType(new ClassOrInterfaceType().setName(HashMap.class.getSimpleName()));
-
-    method.getBody().get()
-        .addAndGetStatement(new AssignExpr()
+    method.getBody()
+        .ifPresent(body -> body.addAndGetStatement(new AssignExpr()
             .setTarget(new VariableDeclarationExpr(
                 new ClassOrInterfaceType().setName(Map.class.getSimpleName()), "pageState"))
-            .setValue(mapCreationExpr));
+            .setValue(mapCreationExpr)));
     anonymousClassBody.add(method);
   }
 
@@ -462,9 +458,8 @@ public class NavigationGraphGenerator {
     method.setModifiers(Modifier.Keyword.PUBLIC);
     method.setName("destroy");
     method.setType("void");
-
-    method.getBody().get().addAndGetStatement(
-        new MethodCallExpr(new NameExpr("beanManager"), "destroyBean").addArgument("instance"));
+    method.getBody().ifPresent(body -> body.addAndGetStatement(
+        new MethodCallExpr(new NameExpr("beanManager"), "destroyBean").addArgument("instance")));
     anonymousClassBody.add(method);
   }
 

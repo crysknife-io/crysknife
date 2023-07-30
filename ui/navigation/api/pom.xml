@@ -62,6 +62,7 @@
         <directory>src/main/java</directory>
         <includes>
           <include>**/*.java</include>
+          <include>**/*.js</include>
           <include>**/*.xml</include>
         </includes>
         <excludes>

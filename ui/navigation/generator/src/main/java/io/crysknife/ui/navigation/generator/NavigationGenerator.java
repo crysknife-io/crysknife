@@ -14,6 +14,8 @@
 
 package io.crysknife.ui.navigation.generator;
 
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.SingletonGenerator;
 import io.crysknife.generator.api.WiringElementType;
@@ -23,13 +25,13 @@ import io.crysknife.ui.navigation.client.local.Page;
 import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import javax.lang.model.element.TypeElement;
 import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
  */
+// TODO this class must be refactored
 @Generator
 public class NavigationGenerator extends SingletonGenerator {
 
@@ -50,14 +52,12 @@ public class NavigationGenerator extends SingletonGenerator {
         .generate(logger.branch(TreeLogger.DEBUG, " starting generating navigation"));
   }
 
-  /*  @Override
-  protected ObjectCreationExpr generateNewInstanceCreationExpr(BeanDefinition definition) {
+  @Override
+  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
     ObjectCreationExpr newInstance = new ObjectCreationExpr();
     newInstance.setType(NavigationGraph.class.getPackage().getName() + ".GeneratedNavigationGraph");
     newInstance.addArgument("beanManager");
-    newInstance.addArgument(
-        new MethodCallExpr(new MethodCallExpr(new NameExpr("_field_event"), "get"), "getInstance"));
-    return newInstance;
-  }*/
+    return "() -> " + newInstance;
+  }
 
 }
