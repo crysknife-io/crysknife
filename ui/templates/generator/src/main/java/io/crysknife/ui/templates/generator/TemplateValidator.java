@@ -24,8 +24,9 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.validation.Check;
+import io.crysknife.validation.Validator;
 
-public class TemplateValidator extends io.crysknife.validation.Validator<TypeElement> {
+public class TemplateValidator extends Validator<TypeElement> {
 
   private final TypeMirror isElement;
   private final Types types;
@@ -48,12 +49,30 @@ public class TemplateValidator extends io.crysknife.validation.Validator<TypeEle
         }
       }
     });
+    addCheck(new Check<>() {
+      @Override
+      public void check(TypeElement element) throws UnableToCompleteException {
+        if (!element.getKind().isClass()) {
+          log(element, "Element, annotated with @Templated, must be a class [" + element + "]");
+        }
+      }
+    });
+
+    addCheck(new Check<>() {
+      @Override
+      public void check(TypeElement element) throws UnableToCompleteException {
+        if (element.getModifiers().contains(javax.lang.model.element.Modifier.ABSTRACT)) {
+          log(element, "Class, annotated with @Templated, must not be abstract [" + element + "]");
+        }
+      }
+    });
+
 
     addCheck(new Check<>() {
       @Override
       public void check(TypeElement element) throws UnableToCompleteException {
         if (!types.isSubtype(element.asType(), isElement)) {
-          log(element, "Templated class must implement IsElement");
+          log(element, "Templated class must implements IsElement [" + element + "]");
         }
       }
     });

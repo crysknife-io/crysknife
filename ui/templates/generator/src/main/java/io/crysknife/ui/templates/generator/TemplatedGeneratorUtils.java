@@ -76,4 +76,54 @@ public class TemplatedGeneratorUtils {
   private TypeMirror getTypeMirror(Class<?> c) {
     return processingEnvironment.getElementUtils().getTypeElement(c.getName()).asType();
   }
+
+  public String escape(String unescaped) {
+    int extra = 0;
+    for (int in = 0, n = unescaped.length(); in < n; ++in) {
+      switch (unescaped.charAt(in)) {
+        case '\0':
+        case '\n':
+        case '\r':
+        case '\"':
+        case '\\':
+          ++extra;
+          break;
+      }
+    }
+
+    if (extra == 0) {
+      return unescaped;
+    }
+
+    char[] oldChars = unescaped.toCharArray();
+    char[] newChars = new char[oldChars.length + extra];
+    for (int in = 0, out = 0, n = oldChars.length; in < n; ++in, ++out) {
+      char c = oldChars[in];
+      switch (c) {
+        case '\0':
+          newChars[out++] = '\\';
+          c = '0';
+          break;
+        case '\n':
+          newChars[out++] = '\\';
+          c = 'n';
+          break;
+        case '\r':
+          newChars[out++] = '\\';
+          c = 'r';
+          break;
+        case '\"':
+          newChars[out++] = '\\';
+          c = '"';
+          break;
+        case '\\':
+          newChars[out++] = '\\';
+          c = '\\';
+          break;
+      }
+      newChars[out] = c;
+    }
+
+    return String.valueOf(newChars);
+  }
 }

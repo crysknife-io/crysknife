@@ -28,13 +28,16 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import io.crysknife.client.utils.dom.DomVisit;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.ui.templates.client.TemplateTranslationVisitor;
 import io.crysknife.ui.templates.generator.TemplatedGeneratorUtils;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
 
 public class TranslationServiceGenerator {
@@ -42,13 +45,10 @@ public class TranslationServiceGenerator {
   private final static String TRANSLATION_SERVICE =
       "io.crysknife.ui.translation.api.spi.TranslationService";
   private final static String DATA_I18N_KEY = "data-i18n-key";
-  private final IOCContext iocContext;
   private boolean isEnabled;
   private TemplatedGeneratorUtils templatedGeneratorUtils;
 
   public TranslationServiceGenerator(IOCContext iocContext) {
-    this.iocContext = iocContext;
-
     templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
 
     try {
@@ -67,7 +67,7 @@ public class TranslationServiceGenerator {
       }
       Document document = Jsoup.parse(html);
       I18NKeyVisitor i18NKeyVisitor = new I18NKeyVisitor();
-      org.jsoup.select.NodeTraversor.traverse(i18NKeyVisitor, document);
+      NodeTraversor.traverse(i18NKeyVisitor, document);
       if (!i18NKeyVisitor.result.isEmpty()) {
         addGetI18nValue(builder);
         addI18nTranslationCall(builder, context);
@@ -81,11 +81,11 @@ public class TranslationServiceGenerator {
     lambda.setBody(new ExpressionStmt(new MethodCallExpr("getI18nValue").addArgument("s")));
 
     builder.addToDoInitInstance(
-        () -> new MethodCallExpr(new NameExpr("io.crysknife.client.utils.dom.DomVisit"), "visit")
+        () -> new MethodCallExpr(new NameExpr(DomVisit.class.getCanonicalName()), "visit")
             .addArgument(templatedGeneratorUtils.getInstanceCallExpression(context))
             .addArgument(new ObjectCreationExpr()
                 .setType(new ClassOrInterfaceType()
-                    .setName("io.crysknife.ui.templates.client.TemplateTranslationVisitor"))
+                    .setName(TemplateTranslationVisitor.class.getCanonicalName()))
                 .addArgument(new StringLiteralExpr(getI18nPrefix(context.getTemplateFileName())))
                 .addArgument(lambda))
             .toString());

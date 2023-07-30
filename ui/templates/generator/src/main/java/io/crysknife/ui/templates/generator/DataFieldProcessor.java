@@ -14,14 +14,14 @@
 
 package io.crysknife.ui.templates.generator;
 
-import com.google.auto.common.MoreTypes;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
 import org.jsoup.nodes.Node;
+import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
 
-import javax.tools.Diagnostic;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,32 +31,26 @@ import java.util.Map;
 public class DataFieldProcessor {
 
   private final IOCContext context;
+  private final TreeLogger treeLogger;
 
-  DataFieldProcessor(IOCContext context) {
+  DataFieldProcessor(IOCContext context, TreeLogger treeLogger) {
     this.context = context;
+    this.treeLogger = treeLogger;
   }
 
   List<DataElementInfo> process(List<DataElementInfo> dataElements, TemplateContext templateContext,
       org.jsoup.nodes.Element root) {
-    LinkedList<DataElementInfo> result = new LinkedList<>();
-    result.addAll(dataElements);
-    Map<String, DataElementInfo> dataElementInfoMap = new HashMap<>();
-
-    dataElements.forEach(de -> {
-      dataElementInfoMap.put(de.getSelector(), de);
-    });
-
-    org.jsoup.select.NodeTraversor.traverse(new NodeVisitor() {
+    LinkedList<DataElementInfo> result = new LinkedList<>(dataElements);
+    Map<String, DataElementInfo> dataElementInfoMap = dataElements.stream().collect(HashMap::new,
+        (m, v) -> m.put(v.getSelector(), v), HashMap::putAll);
+    NodeTraversor.traverse(new NodeVisitor() {
       @Override
       public void head(Node node, int i) {
         if (node.hasAttr("data-field")) {
           String selector = node.attr("data-field");
           if (!dataElementInfoMap.containsKey(selector)) {
-            context.getGenerationContext().getProcessingEnvironment().getMessager().printMessage(
-                Diagnostic.Kind.NOTE,
-                String.format("Unknown [data-field=%s] at %s, ignoring", selector,
-                    templateContext.getDataElementType()),
-                MoreTypes.asTypeElement(templateContext.getDataElementType()));
+            treeLogger.log(TreeLogger.INFO, String.format("Unknown [data-field=%s] at %s, ignoring",
+                templateContext.getDataElementType(), selector));
           } else {
             DataElementInfo temp = dataElementInfoMap.get(node.attr("data-field"));
             result.remove(temp);

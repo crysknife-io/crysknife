@@ -14,7 +14,14 @@
 
 package io.crysknife.ui.templates.generator;
 
-import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.expr.BinaryExpr;
+import com.github.javaparser.ast.expr.CastExpr;
+import com.github.javaparser.ast.expr.EnclosedExpr;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.NullLiteralExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -52,7 +59,6 @@ import io.crysknife.ui.templates.client.annotation.SinkNative;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.templates.generator.dto.Event;
 import io.crysknife.ui.templates.generator.dto.TemplateDefinition;
-import io.crysknife.ui.templates.generator.events.EventHandlerGenerator;
 import io.crysknife.ui.templates.generator.events.EventHandlerTemplatedProcessor;
 import io.crysknife.ui.templates.generator.events.EventHandlerValidator;
 import io.crysknife.ui.templates.generator.translation.TranslationServiceGenerator;
@@ -60,34 +66,48 @@ import io.crysknife.util.StringOutputStream;
 import io.crysknife.util.TypeUtils;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
-import org.jboss.gwt.elemento.processor.*;
-import org.jboss.gwt.elemento.processor.context.*;
+import org.jboss.gwt.elemento.processor.AbortProcessingException;
+import org.jboss.gwt.elemento.processor.ExpressionParser;
+import org.jboss.gwt.elemento.processor.TemplateSelector;
+import org.jboss.gwt.elemento.processor.TypeSimplifier;
+import org.jboss.gwt.elemento.processor.context.DataElementInfo;
+import org.jboss.gwt.elemento.processor.context.EventHandlerInfo;
+import org.jboss.gwt.elemento.processor.context.RootElementInfo;
+import org.jboss.gwt.elemento.processor.context.StyleSheet;
+import org.jboss.gwt.elemento.processor.context.TemplateContext;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.jsoup.select.NodeVisitor;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
-import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.auto.common.MoreTypes.asElement;
-import static io.crysknife.ui.elemental2.ElmToTagMapping.HTML_ELEMENTS;
 import static java.util.stream.Collectors.joining;
 
 @Generator
@@ -97,17 +117,14 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private static final Escaper JAVA_STRING_ESCAPER =
       Escapers.builder().addEscape('"', "\\\"").addEscape('\n', "").addEscape('\r', "").build();
   protected final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
-  private final TypeMirror htmlElement;
   private final TypeElement isElement;
   private final J2CLUtils j2CLUtils;
   private final TemplateValidator templateValidator;
   private final ProcessingEnvironment processingEnvironment;
-  private final Messager messager;
   private final DataFieldProcessor dataFieldProcessor;
   private final EventHandlerTemplatedProcessor eventHandlerTemplatedProcessor;
   private final TranslationServiceGenerator translationServiceGenerator;
   private final TemplatedGeneratorUtils templatedGeneratorUtils;
-  private final EventHandlerGenerator eventHandlerGenerator;
 
   private final EventHandlerValidator eventHandlerValidator;
 
@@ -127,18 +144,14 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     super(treeLogger, iocContext);
     this.j2CLUtils = new J2CLUtils(iocContext.getGenerationContext().getProcessingEnvironment());
     this.processingEnvironment = iocContext.getGenerationContext().getProcessingEnvironment();
-    this.messager = processingEnvironment.getMessager();
-    this.dataFieldProcessor = new DataFieldProcessor(iocContext);
+    this.dataFieldProcessor = new DataFieldProcessor(iocContext, treeLogger);
     this.templateValidator = new TemplateValidator(iocContext);
     this.eventHandlerTemplatedProcessor = new EventHandlerTemplatedProcessor(iocContext);
     this.translationServiceGenerator = new TranslationServiceGenerator(iocContext);
     this.templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
-    this.eventHandlerGenerator = new EventHandlerGenerator(iocContext, this);
     this.eventHandlerValidator = new EventHandlerValidator(iocContext);
     this.methodCallGenerator = new MethodCallGenerator(iocContext);
 
-    htmlElement = iocContext.getGenerationContext().getElements()
-        .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
     isElement = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils()
         .getTypeElement(IsElement.class.getCanonicalName());
   }
@@ -157,10 +170,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
       throw new GenerationException(e);
     }
 
-
     TemplateDefinition templateDefinition = new TemplateDefinition();
-    StringBuffer body = new StringBuffer();
-    // body.append(" private void setAndInitTemplate() {\n");
 
     if (!hasGetElement(beanDefinition)) {
       Optional<ExecutableElement> executableElement = ElementFilter
@@ -170,38 +180,17 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
       if (executableElement.isPresent()) {
         templateDefinition.setInitRootElement(true);
-
-        // body.append(
-        // "elemental2.core.Reflect.set(instance, \"__root_element__\",
-        // elemental2.dom.DomGlobal.document.createElement(\"div\"));\n");
-
-        /*        classMetaInfo.addToBody(() -> "@jsinterop.annotations.JsFunction\n"
-            + "    private interface HTMLElementAccessor {\n"
-            + "        elemental2.dom.HTMLElement getElement();\n" + "    }");*/
-
         String valueName =
             j2CLUtils.createDeclarationMethodDescriptor(executableElement.get()).getMangledName();
         templateDefinition.setRootElementPropertyName(valueName);
-
-        /*        body.append(String.format(
-            "interceptor.addGetMethodInterceptor(Reflect.objectProperty(\"%s\", instance), new java.util.function.BiFunction<Object, String, Object>() {\n"
-                + "            @Override\n"
-                + "            public Object apply(Object o, String s) {\n"
-                + "                return new HTMLElementAccessor() {\n"
-                + "                    @Override\n"
-                + "                    public elemental2.dom.HTMLElement getElement() {\n"
-                + "                        return (elemental2.dom.HTMLElement) elemental2.core.Reflect.get(instance, \"__root_element__\");\n"
-                + "                    }\n" + "                };\n" + "            }\n"
-                + "        });\n",
-            valueName));*/
       }
     }
     classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
-    setAndInitTemplate(classMetaInfo, body, beanDefinition, templateDefinition);
+    setAndInitTemplate(classMetaInfo, beanDefinition, templateDefinition);
   }
 
-  private void setAndInitTemplate(ClassMetaInfo classMetaInfo, StringBuffer body,
-      BeanDefinition beanDefinition, TemplateDefinition templateDefinition) {
+  private void setAndInitTemplate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition,
+      TemplateDefinition templateDefinition) {
     TypeElement type = MoreTypes.asTypeElement(beanDefinition.getType());
     String isElementTypeParameter = getIsElementTypeParameter(type.getInterfaces());
     Templated templated = type.getAnnotation(Templated.class);
@@ -231,11 +220,10 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     context.setStylesheet(getStylesheet(type, templated));
 
     // generate code
-    code(classMetaInfo, body, beanDefinition, context, templateDefinition);
+    code(classMetaInfo, beanDefinition, context, templateDefinition);
 
     // maybe add translation
     translationServiceGenerator.process(classMetaInfo, context);
-
 
     StringOutputStream os = new StringOutputStream();
     try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
@@ -243,22 +231,15 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
         temp = cfg.getTemplate("ui.ftlh");
       }
       temp.process(templateDefinition, out);
-      body.append(os);
-
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
-    } catch (IOException e) {
+    } catch (TemplateException | IOException e) {
       throw new GenerationException(e);
     }
-
-
-    classMetaInfo.addToBody(body::toString);
-
-    info("Generated templated implementation [%s] for [%s]", context.getSubclass(),
-        context.getBase());
+    classMetaInfo.addToBody(os::toString);
+    logger.log(TreeLogger.Type.INFO, "Generated templated implementation [" + context.getSubclass()
+        + "] for [" + context.getBase() + "]");
   }
 
-  private void code(ClassMetaInfo builder, StringBuffer body, BeanDefinition beanDefinition,
+  private void code(ClassMetaInfo builder, BeanDefinition beanDefinition,
       TemplateContext templateContext, TemplateDefinition templateDefinition) {
     addImports(builder);
     setStylesheet(builder, templateContext, templateDefinition);
@@ -285,7 +266,8 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     }
   }
 
-  private void processDataFields(TemplateContext templateContext, TemplateDefinition templateDefinition) {
+  private void processDataFields(TemplateContext templateContext,
+      TemplateDefinition templateDefinition) {
     Expression instance = new NameExpr("instance");
     instance = new MethodCallExpr(instance, "getElement");
 
@@ -308,19 +290,13 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
             "resolveElement").addArgument(instance)
                 .addArgument(new StringLiteralExpr(element.getName()));
       }
-
-      MethodCallExpr fieldSetCallExpr = null;
-
       String mangleName = j2CLUtils.createFieldDescriptor(element.getField()).getMangledName();
-
-      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
-        fieldSetCallExpr = new MethodCallExpr(
+      MethodCallExpr fieldSetCallExpr = new MethodCallExpr(
             new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
                 .addArgument("instance"),
             "set").addArgument(
                 new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
                     .addArgument(new StringLiteralExpr(mangleName)).addArgument("instance"));
-      }
 
       ifStmt.setThenStmt(
           new BlockStmt().addAndGetStatement(fieldSetCallExpr.addArgument(resolveElement)));
@@ -329,8 +305,6 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
           "replaceElement").addArgument(instance)
               .addArgument(new StringLiteralExpr(element.getSelector()))
               .addArgument(getInstanceByElementKind(element, fieldAccessCallExpr))));
-
-      // body.append(ifStmt);
 
       io.crysknife.ui.templates.generator.dto.Element elementDto =
           new io.crysknife.ui.templates.generator.dto.Element(element.getSelector(), mangleName,
@@ -367,55 +341,31 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
         throw new GenerationException(e);
       }
     }
-
-    // TODO events
-    // eventHandlerGenerator.generate(builder, body, beanDefinition, templateContext);
   }
 
   private void setStylesheet(ClassMetaInfo builder, TemplateContext templateContext,
       TemplateDefinition templateDefinition) {
     if (templateContext.getStylesheet() != null) {
       builder.addImport(StyleInjector.class);
-
-      if (!templateContext.getStylesheet().isLess()) {
-        /*
-         * builder.getClassCompilationUnit().addImport(CssResource.class);
-         * builder.getClassCompilationUnit().addImport(CssResource.NotStrict.class);
-         * builder.getClassCompilationUnit().addImport(Resource.class);
-         * builder.getClassCompilationUnit().addImport(ClientBundle.Source.class);
-         *
-         * ClassOrInterfaceDeclaration inner = new ClassOrInterfaceDeclaration();
-         * inner.setName("Stylesheet"); inner.setInterface(true); inner.addAnnotation("Resource");
-         *
-         * new JavaParser().parseBodyDeclaration("@Source(\"" +
-         * templateContext.getStylesheet().getStyle() +
-         * "\") @NotStrict CssResource getStyle();").ifSuccessful(inner::addMember);
-         * builder.getClassDeclaration().addMember(inner);
-         *
-         * String theName = Utils.getFactoryClassName(beanDefinition.getType()) + "_StylesheetImpl";
-         */
-
-        String css;
-        try {
-          css =
-              IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
-        } catch (IOException e) {
-          throw new GenerationException(
-              "Unable to process Css/Gss :" + templateContext.getStylesheet(), e);
-        }
-        templateDefinition.setCss(escape(css));
-        // body.append("StyleInjector.fromString(\"" + escape(css) + "\").inject();");
-      } else {
+      if (templateContext.getStylesheet().isLess()) {
         try {
           String less =
               IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
           Less.compile(null, less, false);
           final String compiledCss = Less.compile(null, less, false);
-          templateDefinition.setCss(escape(compiledCss));
-          // body.append("StyleInjector.fromString(\"" + escape(compiledCss) + "\").inject();");
+          templateDefinition.setCss(templatedGeneratorUtils.escape(compiledCss));
         } catch (IOException e) {
           throw new GenerationException(
               "Unable to process Less " + templateContext.getStylesheet());
+        }
+      } else {
+        try {
+          String css =
+              IOUtils.toString(templateContext.getStylesheet().getFile(), Charset.defaultCharset());
+          templateDefinition.setCss(templatedGeneratorUtils.escape(css));
+        } catch (IOException e) {
+          throw new GenerationException(
+              "Unable to process Css/Gss :" + templateContext.getStylesheet(), e);
         }
       }
     }
@@ -497,9 +447,8 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     TypeUtils
         .getAnnotatedElements(iocContext.getGenerationContext().getElements(), type,
             DataField.class)
-        .stream().filter(e -> e.getKind().isField()).map(e -> MoreElements.asVariable(e))
+        .stream().filter(e -> e.getKind().isField()).map(MoreElements::asVariable)
         .forEach(field -> {
-
           // verify the field
           if (field.getModifiers().contains(Modifier.STATIC)) {
             abortWithError(field, "@%s member must not be static", DataField.class.getSimpleName());
@@ -524,49 +473,6 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
           // create info class for template processing
           dataElements.add(new DataElementInfo(field, selector, kind));
         });
-
-    // methods TODO
-    ElementFilter.methodsIn(type.getEnclosedElements()).stream()
-        .filter(method -> MoreElements.isAnnotationPresent(method, DataField.class))
-        .forEach(method -> {
-
-          // verify method
-          if (method.getModifiers().contains(Modifier.PRIVATE)) {
-            abortWithError(method,
-                "@%s method must not be private " + method.getEnclosingElement() + ".",
-                DataField.class.getSimpleName());
-          }
-          if (method.getModifiers().contains(Modifier.STATIC)) {
-            abortWithError(method, "@%s method must not be static",
-                DataField.class.getSimpleName());
-          }
-          DataElementInfo.Kind kind =
-              templatedGeneratorUtils.getDataElementInfoKind(method.getReturnType());
-          if (kind == DataElementInfo.Kind.Custom) {
-            warning(method, "Unknown return type %s. Consider using one of %s.",
-                method.getReceiverType(),
-                EnumSet.complementOf(EnumSet.of(DataElementInfo.Kind.Custom)));
-          }
-          if (!method.getParameters().isEmpty()) {
-            abortWithError(method, "@%s method must not have parameters",
-                DataField.class.getSimpleName());
-          }
-
-          // verify the selector
-          String selector = getSelector(method);
-          verifySelector(selector, method, templateSelector, root);
-
-          // verify the HTMLElement type
-          String typeName =
-              MoreTypes.asTypeElement(method.getReturnType()).getQualifiedName().toString();
-          if (kind == DataElementInfo.Kind.HTMLElement) {
-            verifyHTMLElement(typeName, selector, method, templateSelector, root);
-          }
-          // create info class for template processing
-          dataElements.add(new DataElementInfo(method.getReturnType(),
-              method.getSimpleName().toString(), selector, kind, true));
-        });
-
     return dataElements;
   }
 
@@ -593,7 +499,6 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private void verifySelector(String selector, Element element, TemplateSelector templateSelector,
       org.jsoup.nodes.Element root) {
     // make sure to use the same logic for finding matching elements as in TemplateUtils!
-
     if (root.getElementById(selector) != null) {
       return;
     }
@@ -614,13 +519,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   }
 
   public Expression getInstanceByElementKind(DataElementInfo element, Expression instance) {
-    return getInstanceByElementKind(element.getKind(), element.getType(), instance);
-  }
-
-  // TODO this method must be refactored
-  public Expression getInstanceByElementKind(DataElementInfo.Kind kind, TypeMirror element,
-      Expression instance) {
-    if (kind.equals(DataElementInfo.Kind.IsElement)) {
+    if (element.getKind().equals(DataElementInfo.Kind.IsElement)) {
       instance = new MethodCallExpr(
           new EnclosedExpr(new CastExpr(new ClassOrInterfaceType()
               .setName(io.crysknife.client.IsElement.class.getCanonicalName()), instance)),
@@ -648,10 +547,8 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
   private String getSelector(Element element) {
     String selector = null;
-
-    // noinspection Guava
-    com.google.common.base.Optional<AnnotationMirror> annotationMirror =
-        MoreElements.getAnnotationMirror(element, DataField.class);
+    Optional<AnnotationMirror> annotationMirror =
+        MoreElements.getAnnotationMirror(element, DataField.class).toJavaUtil();
     if (annotationMirror.isPresent()) {
       Map<? extends ExecutableElement, ? extends AnnotationValue> values = processingEnvironment
           .getElementUtils().getElementValuesWithDefaults(annotationMirror.get());
@@ -682,7 +579,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
       TemplateSelector templateSelector) {
     org.jsoup.nodes.Element root = null;
     String fqTemplate =
-        org.jboss.gwt.elemento.processor.TypeSimplifier.packageNameOf(type).replace('.', '/') + "/"
+        MoreElements.getPackage(type).getQualifiedName().toString().replace('.', '/') + "/"
             + templateSelector.template;
 
     try {
@@ -730,21 +627,6 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
         .anyMatch(method -> method.getParameters().isEmpty());
   }
 
-  private boolean ancestorIsTemplated(TypeElement type) {
-    while (true) {
-      TypeMirror parentMirror = type.getSuperclass();
-      if (parentMirror.getKind() == TypeKind.NONE) {
-        return false;
-      }
-      TypeElement parentElement =
-          (TypeElement) processingEnvironment.getTypeUtils().asElement(parentMirror);
-      if (parentElement.getAnnotation(Templated.class) != null) {
-        return true;
-      }
-      type = parentElement;
-    }
-  }
-
   /**
    * Issue a compilation error and abandon the processing of this template. This does not prevent
    * the processing of other templates.
@@ -754,128 +636,16 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     throw new AbortProcessingException();
   }
 
-  public void debug(String msg, Object... args) {
-    if (this.processingEnvironment.getOptions().containsKey("debug")) {
-      this.messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args));
-    }
-  }
-
-  public void info(String msg, Object... args) {
-    this.messager.printMessage(Diagnostic.Kind.NOTE, String.format(msg, args));
-  }
-
   public void warning(Element element, String msg, Object... args) {
-    this.messager.printMessage(Diagnostic.Kind.MANDATORY_WARNING, String.format(msg, args),
-        element);
-  }
-
-  public void error(String msg, Object... args) {
-    this.messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args));
+    logger.log(TreeLogger.Type.WARN, "Warning at " + element.getEnclosingElement() + "."
+        + element.getSimpleName() + " : " + String.format(msg, args));
   }
 
   public void error(Element element, String msg, Object... args) {
-    StringBuffer sb = new StringBuffer();
-    sb.append("Error at ").append(element.getEnclosingElement()).append(".")
-        .append(element.getSimpleName()).append(" : ").append(String.format(msg, args));
-    System.out.println(sb);
-    this.messager.printMessage(Diagnostic.Kind.ERROR, String.format(msg, args), element);
+    String message = "Error at " + element.getEnclosingElement() + "." + element.getSimpleName()
+        + " : " + String.format(msg, args);
+    logger.log(TreeLogger.Type.ERROR, message);
+    throw new GenerationException();
   }
 
-  public void error(ProcessingException processingException) {
-    if (processingException.getElement() != null) {
-      this.messager.printMessage(Diagnostic.Kind.ERROR, processingException.getMessage(),
-          processingException.getElement());
-    } else {
-      this.messager.printMessage(Diagnostic.Kind.ERROR, processingException.getMessage());
-    }
-  }
-
-  private String getElementFromTag(TemplateContext context) {
-    java.util.Optional<Map.Entry<Class<? extends HTMLElement>, Collection<String>>> result =
-        HTML_ELEMENTS.asMap().entrySet().stream()
-            .filter(e -> e.getValue().contains(context.getRoot().getTag())).findFirst();
-    if (result.isPresent()) {
-      return result.get().getKey().getCanonicalName();
-    }
-    return "elemental2.dom.HTMLElement";
-  }
-
-  private String escape(String unescaped) {
-    int extra = 0;
-    for (int in = 0, n = unescaped.length(); in < n; ++in) {
-      switch (unescaped.charAt(in)) {
-        case '\0':
-        case '\n':
-        case '\r':
-        case '\"':
-        case '\\':
-          ++extra;
-          break;
-      }
-    }
-
-    if (extra == 0) {
-      return unescaped;
-    }
-
-    char[] oldChars = unescaped.toCharArray();
-    char[] newChars = new char[oldChars.length + extra];
-    for (int in = 0, out = 0, n = oldChars.length; in < n; ++in, ++out) {
-      char c = oldChars[in];
-      switch (c) {
-        case '\0':
-          newChars[out++] = '\\';
-          c = '0';
-          break;
-        case '\n':
-          newChars[out++] = '\\';
-          c = 'n';
-          break;
-        case '\r':
-          newChars[out++] = '\\';
-          c = 'r';
-          break;
-        case '\"':
-          newChars[out++] = '\\';
-          c = '"';
-          break;
-        case '\\':
-          newChars[out++] = '\\';
-          c = '\\';
-          break;
-      }
-      newChars[out] = c;
-    }
-
-    return String.valueOf(newChars);
-  }
-
-  private static class RootNodeVisitor implements NodeVisitor {
-
-    private org.jsoup.nodes.Element result;
-
-    private String selector;
-
-    private RootNodeVisitor(String selector) {
-      this.selector = selector;
-    }
-
-    @Override
-    public void head(org.jsoup.nodes.Node node, int i) {
-      if (node.hasAttr("data-field")) {
-        if (node.attr("data-field").equals(selector)) {
-          result = (org.jsoup.nodes.Element) node;
-        }
-      } else if (node.hasAttr("id")) {
-        if (node.attr("id").equals(selector)) {
-          result = (org.jsoup.nodes.Element) node;
-        }
-      }
-    }
-
-    @Override
-    public void tail(org.jsoup.nodes.Node node, int i) {
-
-    }
-  }
 }
