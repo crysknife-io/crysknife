@@ -75,6 +75,11 @@
       <groupId>io.crysknife.ui.templates</groupId>
       <artifactId>api</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>elemental2-generator</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <resources>
@@ -83,6 +88,9 @@
         <includes>
           <include>**/*.bak</include>
         </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
       </resource>
     </resources>
     <plugins>

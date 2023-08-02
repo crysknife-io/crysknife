@@ -16,8 +16,8 @@ package io.crysknife.processor;
 
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.definition.BeanDefinition;

@@ -20,7 +20,7 @@ import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.definition.UnscopedBeanDefinition;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
+import io.crysknife.util.TypeUtils;
 
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Specializes;
@@ -35,12 +35,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -218,7 +219,8 @@ public class BeanOracle {
         qualifiers.stream().map(a -> a.getAnnotationType().toString()).toArray(String[]::new);
 
     return subclasses.stream().filter(bean -> !isInterfaceOrAbstractClass(bean.getType()))
-        .filter(q -> Utils.containsAnnotation(MoreTypes.asTypeElement(q.getType()), annotations))
+        .filter(
+            q -> TypeUtils.containsAnnotation(MoreTypes.asTypeElement(q.getType()), annotations))
         .findFirst();
 
   }
@@ -233,23 +235,20 @@ public class BeanOracle {
   }
 
   private Set<BeanDefinition> getSubClasses(TypeMirror point) {
-    TypeMirror beanTypeMirror = context.getGenerationContext().getTypes().erasure(point);
-    BeanDefinition type = context.getBean(beanTypeMirror);
-    Set<BeanDefinition> subclasses = new HashSet<>(type.getSubclasses());
-    getAllSubtypes(type, subclasses);
-    type.getSubclasses().addAll(subclasses);
-    return subclasses;
+    BeanDefinition type = context.getBean(point);
+    return getSubClasses(type);
   }
 
-  private Set<BeanDefinition> getAllSubtypes(BeanDefinition beanDefinition,
-      Set<BeanDefinition> subclasses) {
-    if (!beanDefinition.getSubclasses().isEmpty()) {
-      for (BeanDefinition subclass : beanDefinition.getSubclasses()) {
-        subclasses.add(subclass);
-        getAllSubtypes(subclass, subclasses);
-      }
+  private Set<BeanDefinition> getSubClasses(BeanDefinition beanDefinition) {
+    Set<BeanDefinition> result = new HashSet<>();
+    Queue<BeanDefinition> queue = new LinkedList<>();
+    queue.addAll(beanDefinition.getSubclasses());
+    while (!queue.isEmpty()) {
+      BeanDefinition poll = queue.poll();
+      result.add(poll);
+      queue.addAll(poll.getSubclasses());
     }
-    return subclasses;
+    return result;
   }
 
   private boolean isInterfaceOrAbstractClass(TypeMirror type) {

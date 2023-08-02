@@ -14,7 +14,7 @@
 
 package io.crysknife.definition;
 
-import io.crysknife.generator.IOCGenerator;
+import io.crysknife.generator.api.IOCGenerator;
 
 import javax.lang.model.element.VariableElement;
 import java.util.Optional;

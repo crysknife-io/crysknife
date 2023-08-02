@@ -16,10 +16,11 @@ package io.crysknife.generator.context;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import io.crysknife.definition.Definition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.BeanDefinitionFactory;
 import io.github.classgraph.ClassInfo;
@@ -32,8 +33,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.tools.JavaFileObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -47,13 +50,13 @@ import java.util.stream.Collectors;
  */
 public class IOCContext {
 
-  private final SetMultimap<IOCGeneratorMeta, IOCGenerator> generators = HashMultimap.create();
+  private final SetMultimap<IOCGeneratorMeta, IOCGenerator<?>> generators = HashMultimap.create();
 
   private final Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
 
   private final GenerationContext generationContext;
 
-  private final List<TypeMirror> orderedBeans = new LinkedList<>();
+  private final Set<TypeMirror> orderedBeans = new LinkedHashSet<>();
 
   private final List<String> buildIn = new ArrayList<>();
 
@@ -66,6 +69,8 @@ public class IOCContext {
   private final Map<String, Set<VariableElement>> parametersByAnnotation = new HashMap<>();
 
   private final BeanDefinitionFactory beanDefinitionFactory;
+
+  private final Set<Runnable> tasks = new LinkedHashSet<>();
 
   public IOCContext(GenerationContext generationContext) {
     this.generationContext = generationContext;
@@ -91,8 +96,7 @@ public class IOCContext {
         e.printStackTrace();
       }
       beanDefinition.setIocGenerator(generator);
-      getBeans().put(type.asType(), beanDefinition);
-      buildIn.add(exactType.getCanonicalName());
+      beans.put(type.asType(), beanDefinition);
     }
   }
 
@@ -110,9 +114,7 @@ public class IOCContext {
     } else {
       beanDefinition = beanDefinitionFactory.of(candidate);
       beans.put(candidate, beanDefinition);
-      // beanDefinition.processInjections(this);
     }
-
     return beanDefinition;
   }
 
@@ -130,11 +132,11 @@ public class IOCContext {
     return beans.get(erased);
   }
 
-  public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
+  public SetMultimap<IOCGeneratorMeta, IOCGenerator<?>> getGenerators() {
     return generators;
   }
 
-  public List<TypeMirror> getOrderedBeans() {
+  public Set<TypeMirror> getOrderedBeans() {
     return orderedBeans;
   }
 
@@ -148,7 +150,6 @@ public class IOCContext {
       return classesByAnnotation.get(annotation);
     }
 
-    Elements elements = getGenerationContext().getElements();
     Set<TypeElement> results =
         getElementsByAnnotation(annotation).stream().filter(elm -> (elm instanceof TypeElement))
             .map(element -> ((TypeElement) element)).collect(Collectors.toSet());
@@ -156,7 +157,7 @@ public class IOCContext {
     ClassInfoList routeClassInfoList =
         generationContext.getScanResult().getClassesWithAnnotation(annotation);
     for (ClassInfo routeClassInfo : routeClassInfoList) {
-      TypeElement type = elements.getTypeElement(routeClassInfo.getName());
+      TypeElement type = generationContext.getElements().getTypeElement(routeClassInfo.getName());
       if (type != null) {
         results.add(type);
       }
@@ -166,8 +167,8 @@ public class IOCContext {
   }
 
   private Set<Element> getElementsByAnnotation(String annotation) {
-    Elements elements = getGenerationContext().getElements();
-    return (Set<Element>) getGenerationContext().getRoundEnvironment()
+    Elements elements = generationContext.getElements();
+    return (Set<Element>) generationContext.getRoundEnvironment()
         .getElementsAnnotatedWith(elements.getTypeElement(annotation));
   }
 
@@ -266,11 +267,19 @@ public class IOCContext {
     return results;
   }
 
+  public void addTask(Runnable task) {
+    tasks.add(task);
+  }
+
+  public void runTasks() {
+    tasks.forEach(Runnable::run);
+  }
+
   public Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
       WiringElementType wiringElementType) {
     IOCContext.IOCGeneratorMeta meta =
         new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);
-    Iterable<IOCGenerator> generators = getGenerators().get(meta);
+    Iterable<IOCGenerator<?>> generators = getGenerators().get(meta);
     if (generators.iterator().hasNext()) {
       return Optional.of(generators.iterator().next());
     }

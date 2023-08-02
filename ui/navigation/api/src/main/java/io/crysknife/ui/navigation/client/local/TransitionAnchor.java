@@ -32,7 +32,6 @@ import io.crysknife.ui.navigation.client.local.spi.PageNode;
  * Instances of this class are immutable.
  *
  * @param <P> The type of the target page ("to page")
- * 
  * @author eric.wittmann@redhat.com
  */
 public final class TransitionAnchor<P> implements EventListener {
@@ -49,7 +48,6 @@ public final class TransitionAnchor<P> implements EventListener {
    *
    * @param navigation The navigation system this page transition participates in.
    * @param toPage The page type this transition goes to. Not null.
-   * 
    * @throws NullPointerException if any of the arguments are null.
    */
   TransitionAnchor(Navigation navigation, final Class<P> toPage, HistoryTokenFactory htFactory) {
@@ -62,7 +60,6 @@ public final class TransitionAnchor<P> implements EventListener {
    * @param navigation The navigation system this page transition participates in.
    * @param toPage The page type this transition goes to. Not null.
    * @param state The page state. Cannot be null (but can be an empty multimap)
-   * 
    * @throws NullPointerException if any of the arguments are null.
    */
   TransitionAnchor(Navigation navigation, final Class<P> toPage,
@@ -71,15 +68,9 @@ public final class TransitionAnchor<P> implements EventListener {
     this.toPageWidgetType = Assert.notNull(toPage);
     this.state = Assert.notNull(state);
     this.htFactory = Assert.notNull(htFactory);
-    anchor.addEventListener("click", this);
+    this.anchor.addEventListener("click", this);
 
-    throw new UnsupportedOperationException();
-    /*
-     * addAttachHandler(new AttachEvent.Handler() {
-     * 
-     * @Override public void onAttachOrDetach(AttachEvent event) { if (event.isAttached())
-     * initHref(toPage, state); } });
-     */
+    this.initHref(toPage, state);
   }
 
   /**
@@ -111,7 +102,7 @@ public final class TransitionAnchor<P> implements EventListener {
 
   /**
    * Programmatically click on the anchor (with alternate page state).
-   * 
+   *
    * @param state
    */
   public void click(Multimap<String, String> state) {
@@ -120,11 +111,8 @@ public final class TransitionAnchor<P> implements EventListener {
 
   @Override
   public void handleEvent(Event evt) {
-    throw new UnsupportedOperationException();
-    /*
-     * navigation.goTo(toPageWidgetType, this.state);
-     * 
-     * event.stopPropagation(); event.preventDefault();
-     */
+    navigation.goTo(toPageWidgetType, this.state);
+    evt.stopPropagation();
+    evt.preventDefault();
   }
 }

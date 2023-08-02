@@ -22,13 +22,13 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.MutationRecord;
-import io.crysknife.annotation.Generator;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.WiringElementType;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
+import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
@@ -66,7 +66,7 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
         .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
   }
 
-  public void generate(ClassBuilder builder, MethodDefinition mutationObserver) {
+  public void generate(ClassMetaInfo builder, MethodDefinition mutationObserver) {
     ifValid(mutationObserver);
     VariableElement target = findField(mutationObserver);
     isValid(target);
@@ -148,9 +148,10 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
     }
   }
 
-  public void generateCallback(ClassBuilder builder, MethodDefinition definition) {
-    builder.getClassCompilationUnit().addImport(MutationObserver.class);
-    builder.getClassCompilationUnit().addImport(ObserverCallback.class);
+  // TODO replace with template
+  public void generateCallback(ClassMetaInfo builder, MethodDefinition definition) {
+    builder.addImport(MutationObserver.class);
+    builder.addImport(ObserverCallback.class);
 
     String callbackMethodName =
         definition.getExecutableElement().getAnnotation(OnAttach.class) != null
@@ -166,9 +167,12 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
             new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
                 .addArgument("MutationObserver.class"), "getInstance")));
 
-    builder.getInitInstanceMethod().getBody().get()
-        .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
-            .addArgument("instance." + fieldName).addArgument("(ObserverCallback) m -> instance."
-                + definition.getExecutableElement().getSimpleName().toString() + "(m)"));
+    builder.addToDoInitInstance(
+        () -> new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
+            .addArgument("instance." + fieldName)
+            .addArgument("(ObserverCallback) m -> instance."
+                + definition.getExecutableElement().getSimpleName().toString() + "(m)")
+            .toString() + ";");
   }
+
 }

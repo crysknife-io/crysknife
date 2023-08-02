@@ -76,6 +76,10 @@
       <artifactId>utils</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.freemarker</groupId>
+      <artifactId>freemarker</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -137,6 +141,12 @@
                   <excludes>
                     <exclude>jsinterop/base/**</exclude>
                   </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.freemarker:freemarker</artifact>
+                  <includes>
+                    <include>**</include>
+                  </includes>
                 </filter>
               </filters>
               <relocations>

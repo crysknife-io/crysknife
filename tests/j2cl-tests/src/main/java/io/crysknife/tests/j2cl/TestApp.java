@@ -15,10 +15,8 @@
 package io.crysknife.tests.j2cl;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
 
 import io.crysknife.annotation.Application;
-import io.crysknife.client.BeanManager;
 
 @Application
 public class TestApp {

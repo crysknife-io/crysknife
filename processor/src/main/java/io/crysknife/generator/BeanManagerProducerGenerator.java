@@ -14,23 +14,25 @@
 
 package io.crysknife.generator;
 
-import jakarta.inject.Inject;
-
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.stmt.ReturnStmt;
-import io.crysknife.annotation.Generator;
+import io.crysknife.definition.Definition;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.api.WiringElementType;
+import jakarta.inject.Inject;
+
+import io.crysknife.generator.api.Generator;
 import io.crysknife.client.BeanManager;
-import io.crysknife.generator.api.ClassBuilder;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
 import io.crysknife.logger.TreeLogger;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/30/19
  */
 @Generator()
-public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
+public class BeanManagerProducerGenerator extends IOCGenerator<Definition> {
 
   public BeanManagerProducerGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
@@ -41,12 +43,9 @@ public class BeanManagerProducerGenerator extends ScopedBeanGenerator {
     iocContext.register(Inject.class, BeanManager.class, WiringElementType.FIELD_TYPE, this);
   }
 
-  @Override
-  public void generateInstanceGetMethodReturn(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    MethodCallExpr methodCallExpr =
-        new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get");
-    classBuilder.getGetMethodDeclaration().getBody().get()
-        .addAndGetStatement(new ReturnStmt(methodCallExpr));
+  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
+    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
+    return new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class")).toString();
   }
 }

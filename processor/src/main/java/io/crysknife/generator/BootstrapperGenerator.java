@@ -14,44 +14,42 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.ThisExpr;
-import com.google.auto.common.MoreTypes;
+import com.github.javaparser.ast.expr.Expression;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import io.crysknife.annotation.Application;
-import io.crysknife.annotation.Generator;
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.Reflect;
-import io.crysknife.client.SyncBeanDef;
-import io.crysknife.client.internal.BeanFactory;
-import io.crysknife.client.internal.proxy.Interceptor;
-import io.crysknife.client.internal.proxy.OnFieldAccessed;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.api.ClassMetaInfo;
+import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
+import io.crysknife.util.StringOutputStream;
+import jakarta.ejb.Startup;
 
-import jakarta.inject.Provider;
 import java.io.IOException;
-import java.util.function.Supplier;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static io.crysknife.util.TypeUtils.isDependent;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/5/19
  */
 @Generator(priority = 100000)
-public class BootstrapperGenerator extends ScopedBeanGenerator {
+public class BootstrapperGenerator extends SingletonGenerator {
 
-  private String BOOTSTRAP_EXTENSION = "Bootstrap";
+  private final String BOOTSTRAP_EXTENSION = "Bootstrap";
+
 
   public BootstrapperGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
@@ -63,123 +61,68 @@ public class BootstrapperGenerator extends ScopedBeanGenerator {
   }
 
   @Override
-  public void generate(ClassBuilder clazz, BeanDefinition definition) {
-    super.generate(clazz, definition);
-  }
+  public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
+    Map<String, Object> root = new HashMap<>();
+    List<Dep> fields = new ArrayList<>();
 
-  @Override
-  public void initClassBuilder(ClassBuilder clazz, BeanDefinition beanDefinition) {
-    String pkg = Utils.getPackageName(MoreTypes.asTypeElement(beanDefinition.getType()));
+    root.put("jre", iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE));
+    root.put("package", beanDefinition.getPackageName());
+    root.put("bean", beanDefinition.getSimpleClassName());
+    root.put("imports", classMetaInfo.getImports());
+    root.put("deps", fields);
 
-    clazz.getClassCompilationUnit().setPackageDeclaration(pkg);
-    clazz.getClassCompilationUnit().addImport(OnFieldAccessed.class);
-    clazz.getClassCompilationUnit().addImport(Reflect.class);
-    clazz.getClassCompilationUnit().addImport(SyncBeanDef.class);
-    clazz.getClassCompilationUnit().addImport(BeanFactory.class);
-    clazz.getClassCompilationUnit().addImport(Supplier.class);
-    clazz.getClassCompilationUnit().addImport(Provider.class);
-    clazz.getClassCompilationUnit().addImport(BeanManager.class);
-    clazz.getClassCompilationUnit().addImport(InstanceFactory.class);
 
-    clazz.setClassName(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString()
-        + BOOTSTRAP_EXTENSION);
+    deps(beanDefinition, fields);
+    fieldDecorators(beanDefinition, classMetaInfo);
+    initInterceptors(beanDefinition, root);
+    methodDecorators(beanDefinition, classMetaInfo);
+    postConstruct(beanDefinition, root);
+    runOnStartup(root);
 
-    clazz.addField(MoreTypes.asTypeElement(beanDefinition.getType()).getQualifiedName().toString(),
-        "instance", Modifier.Keyword.PRIVATE);
 
-    clazz.addFieldWithInitializer(BeanManager.class.getSimpleName(), "beanManager",
-        new MethodCallExpr(new NameExpr(BeanManager.class.getCanonicalName() + "Impl"), "get"),
-        Modifier.Keyword.PRIVATE, Modifier.Keyword.FINAL);
+    root.put("fields", classMetaInfo.getBodyStatements());
+    root.put("preDestroy", classMetaInfo.getOnDestroy());
+    root.put("doInitInstance", classMetaInfo.getDoInitInstance());
 
-  }
-
-  @Override
-  public void generateNewInstanceMethodBuilder(ClassBuilder classBuilder) {
-
-  }
-
-  @Override
-  public void generateInstanceGetMethodBuilder(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    classBuilder.addConstructorDeclaration();
-
-    MethodDeclaration getMethodDeclaration = classBuilder.addMethod("initialize");
-    classBuilder.setGetMethodDeclaration(getMethodDeclaration);
-
-    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("runOnStartup"));
-    getMethodDeclaration.getBody().get().addAndGetStatement(new MethodCallExpr("doProxyInstance"));
-    getMethodDeclaration.getBody().get()
-        .addAndGetStatement(new MethodCallExpr("doInitInstance").addArgument("instance"));
-
-    setDoProxyInstance(classBuilder, beanDefinition);
-    setRunOnStartup(classBuilder);
-  }
-
-  private void setRunOnStartup(ClassBuilder classBuilder) {
-    MethodDeclaration runOnStartup =
-        classBuilder.addMethod("runOnStartup", Modifier.Keyword.PRIVATE);
-    new StartupGenerator(iocContext).generate(runOnStartup);
-  }
-
-  private void setDoProxyInstance(ClassBuilder classBuilder, BeanDefinition beanDefinition) {
-    MethodDeclaration doProxyInstance =
-        classBuilder.addMethod("doProxyInstance", Modifier.Keyword.PRIVATE);
-
-    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
-      ObjectCreationExpr interceptorCreationExpr = new ObjectCreationExpr();
-      interceptorCreationExpr.setType(Interceptor.class.getSimpleName());
-      interceptorCreationExpr.addArgument(new NameExpr("instance"));
-
-      doProxyInstance.getBody().get().addAndGetStatement(new AssignExpr()
-          .setTarget(new NameExpr("interceptor")).setValue(interceptorCreationExpr));
-
-      doProxyInstance.getBody().get()
-          .addAndGetStatement(new AssignExpr().setTarget(new NameExpr("instance"))
-              .setValue(new MethodCallExpr(new NameExpr("interceptor"), "getProxy")));
+    StringOutputStream os = new StringOutputStream();
+    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
+      Template temp = cfg.getTemplate("bootstrap.ftlh");
+      temp.process(root, out);
+      String fileName = beanDefinition.getPackageName() + "." + beanDefinition.getSimpleClassName()
+          + BOOTSTRAP_EXTENSION;
+      writeJavaFile(fileName, os.toString());
+    } catch (UnsupportedEncodingException | TemplateException e) {
+      throw new GenerationException(e);
+    } catch (IOException e) {
+      throw new GenerationException(e);
     }
 
-    if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
-      for (InjectableVariableDefinition fieldPoint : beanDefinition.getFields()) {
-        doProxyInstance.getBody().get().addStatement(
-            getFieldAccessorExpression(classBuilder, beanDefinition, fieldPoint, "field"));
+  }
+
+  private void initInterceptors(BeanDefinition beanDefinition, Map<String, Object> root) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+      if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+        List<String> fieldInterceptors = new ArrayList<>();
+        root.put("fieldInterceptors", fieldInterceptors);
+        beanDefinition.getFields().forEach(fieldPoint -> {
+          Expression expr = generationUtils.getFieldAccessorExpression(fieldPoint, "field");
+          fieldInterceptors.add(expr.toString());
+        });
       }
     }
   }
 
-  @Override
-  public void generateDependantFieldDeclaration(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-    classBuilder.addConstructorDeclaration();
-    Parameter arg = new Parameter();
-    arg.setName("application");
-    arg.setType(MoreTypes.asTypeElement(beanDefinition.getType()).getSimpleName().toString());
-
-    classBuilder.addParametersToConstructor(arg);
-
-    AssignExpr assign = new AssignExpr().setTarget(new FieldAccessExpr(new ThisExpr(), "instance"))
-        .setValue(new NameExpr("application"));
-    classBuilder.addStatementToConstructor(assign);
+  private void runOnStartup(Map<String, Object> root) {
+    Set<String> onStartup = iocContext.getTypeElementsByAnnotation(Startup.class.getCanonicalName())
+        .stream().map(type -> {
+          if (isDependent(iocContext.getBean(type.asType()))) {
+            throw new GenerationException(
+                "Bean, annotated with @Startup, must be @Singleton or @ApplicationScoped : "
+                    + type);
+          }
+          return type.asType().toString();
+        }).collect(Collectors.toSet());
+    root.put("onStartup", onStartup);
   }
 
-  @Override
-  public void generateInstanceGetMethodReturn(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {
-
-  }
-
-  @Override
-  public void write(ClassBuilder clazz, BeanDefinition beanDefinition) {
-    try {
-      String fileName = Utils.getQualifiedName(MoreTypes.asElement(beanDefinition.getType()))
-          + BOOTSTRAP_EXTENSION;
-      String source = clazz.toSourceCode();
-      build(fileName, source);
-    } catch (IOException e1) {
-      // throw new GenerationException(e1);
-    }
-  }
-
-  @Override
-  protected void processPreDestroyAnnotation(ClassBuilder classBuilder,
-      BeanDefinition beanDefinition) {}
 }

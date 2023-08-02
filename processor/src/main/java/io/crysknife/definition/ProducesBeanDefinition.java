@@ -33,6 +33,7 @@ public class ProducesBeanDefinition extends BeanDefinition {
   public ProducesBeanDefinition(ExecutableElement method) {
     super(method.getReturnType());
     this.method = method;
+    setHasFactory(false);
   }
 
   public ExecutableElement getMethod() {

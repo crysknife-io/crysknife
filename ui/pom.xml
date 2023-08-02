@@ -24,9 +24,9 @@
 
   <modules>
     <module>elemental2</module>
+    <module>translation</module>
     <module>templates</module>
     <module>mutationobserver</module>
-    <module>translation</module>
     <module>navigation</module>
   </modules>
 

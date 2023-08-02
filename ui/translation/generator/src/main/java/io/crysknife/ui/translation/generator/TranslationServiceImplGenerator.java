@@ -15,20 +15,15 @@
 package io.crysknife.ui.translation.generator;
 
 import com.google.auto.common.MoreElements;
-import io.crysknife.client.internal.Pair;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.translation.api.annotations.Bundle;
 import io.crysknife.ui.translation.api.annotations.TranslationKey;
-import io.crysknife.util.Utils;
-import org.apache.commons.io.IOUtils;
 
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.JavaFileObject;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
 

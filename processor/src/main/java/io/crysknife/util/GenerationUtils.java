@@ -29,6 +29,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.CatchClause;
@@ -42,18 +43,19 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.definition.ProducesBeanDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import jsinterop.base.Js;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
-import jakarta.inject.Named;
-import jakarta.inject.Qualifier;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -64,43 +66,19 @@ import java.util.List;
 public class GenerationUtils {
 
   private final IOCContext context;
-  private final TypeMirror qualifier;
-
   private final J2CLUtils j2CLUtils;
-
 
   public GenerationUtils(IOCContext context) {
     this.context = context;
     this.j2CLUtils = new J2CLUtils(context.getGenerationContext().getProcessingEnvironment());
-    qualifier = context.getGenerationContext().getElements()
-        .getTypeElement(Qualifier.class.getCanonicalName()).asType();
-
   }
 
-  public boolean isAccessible(TypeMirror caller, ExecutableElement method) {
-    TypeMirror methodEnclosingElement = method.getEnclosingElement().asType();
-
-    if (!context.getGenerationContext().getTypes().isAssignable(erase(caller),
-        erase(methodEnclosingElement))) {
-      return false;
-    }
-
-    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PUBLIC)) {
-      return true;
-    }
-
-    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
-      return false;
-    }
-
-    PackageElement methodPackageElement = MoreElements.getPackage(method);
-    PackageElement callerElement = MoreElements.getPackage(MoreTypes.asTypeElement(caller));
-
-    return callerElement.equals(methodPackageElement);
-  }
-
-  private TypeMirror erase(TypeMirror mirror) {
+  public TypeMirror erase(TypeMirror mirror) {
     return context.getGenerationContext().getTypes().erasure(mirror);
+  }
+
+  public TypeMirror asMemberOf(DeclaredType containing, Element element) {
+    return context.getGenerationContext().getTypes().asMemberOf(containing, element);
   }
 
   public String getActualQualifiedBeanName(InjectableVariableDefinition fieldPoint) {
@@ -119,7 +97,7 @@ public class GenerationUtils {
       }
     } else if (context.getGenerationContext().getTypes().isSameType(
         fieldPoint.getVariableElement().asType(),
-        fieldPoint.getImplementation().orElse(fieldPoint.getBeanDefinition()).getType())) {
+        fieldPoint.getImplementation().orElse(fieldPoint.getEnclosingBeanDefinition()).getType())) {
       typeQualifiedName = fieldPoint.getVariableElement().asType().toString();
     } else {
       if (fieldPoint.getImplementation().isPresent()) {
@@ -148,60 +126,32 @@ public class GenerationUtils {
                 .addArgument("instance"));
   }
 
-  private boolean isTheSame(TypeMirror parent, TypeMirror child) {
+  public boolean isTheSame(TypeMirror parent, TypeMirror child) {
     parent = context.getGenerationContext().getTypes().erasure(parent);
     child = context.getGenerationContext().getTypes().erasure(child);
     return context.getGenerationContext().getTypes().isSameType(parent, child);
   }
 
-  public Expression beanManagerLookupBeanCall(InjectableVariableDefinition fieldPoint) {
-    MethodCallExpr callForProducer = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(new NameExpr(MoreTypes
-            .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString()),
-            "class"));
+  public boolean isAccessible(TypeMirror caller, ExecutableElement method) {
+    TypeMirror methodEnclosingElement = method.getEnclosingElement().asType();
 
-    maybeAddQualifiers(context, callForProducer, fieldPoint);
-    return callForProducer;
-  }
-
-  public void maybeAddQualifiers(IOCContext context, MethodCallExpr call,
-      InjectableVariableDefinition field) {
-
-    String annotationName = null;
-
-    if (field.getVariableElement().getAnnotation(Named.class) != null) {
-      annotationName = Named.class.getCanonicalName();
-    } else if (isQualifier(field) != null) {
-      annotationName = isQualifier(field);
+    if (!context.getGenerationContext().getTypes().isAssignable(erase(caller),
+        erase(methodEnclosingElement))) {
+      return false;
     }
 
-    if (annotationName != null) {
-      ObjectCreationExpr annotation = new ObjectCreationExpr();
-      annotation.setType(new ClassOrInterfaceType().setName(annotationName));
-      NodeList<BodyDeclaration<?>> anonymousClassBody = new NodeList<>();
-
-      MethodDeclaration annotationType = new MethodDeclaration();
-      annotationType.setModifiers(Modifier.Keyword.PUBLIC);
-      annotationType.setName("annotationType");
-      annotationType.setType(
-          new ClassOrInterfaceType().setName("Class<? extends java.lang.annotation.Annotation>"));
-      annotationType.getBody().get()
-          .addAndGetStatement(new ReturnStmt(new NameExpr(annotationName + ".class")));
-      anonymousClassBody.add(annotationType);
-
-      if (field.getVariableElement().getAnnotation(Named.class) != null) {
-        MethodDeclaration value = new MethodDeclaration();
-        value.setModifiers(Modifier.Keyword.PUBLIC);
-        value.setName("value");
-        value.setType(new ClassOrInterfaceType().setName("String"));
-        value.getBody().get().addAndGetStatement(new ReturnStmt(
-            new StringLiteralExpr(field.getVariableElement().getAnnotation(Named.class).value())));
-        anonymousClassBody.add(value);
-      }
-
-      annotation.setAnonymousClassBody(anonymousClassBody);
-      call.addArgument(annotation);
+    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+      return true;
     }
+
+    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
+      return false;
+    }
+
+    PackageElement methodPackageElement = MoreElements.getPackage(method);
+    PackageElement callerElement = MoreElements.getPackage(MoreTypes.asTypeElement(caller));
+
+    return callerElement.equals(methodPackageElement);
   }
 
   public boolean isAssignableFrom(TypeMirror typeMirror, Class<?> targetClass) {
@@ -247,28 +197,12 @@ public class GenerationUtils {
     return annotation;
   }
 
-  public String isQualifier(InjectableVariableDefinition field) {
-    for (AnnotationMirror ann : field.getVariableElement().getAnnotationMirrors()) {
-      for (AnnotationMirror e : context.getGenerationContext().getProcessingEnvironment()
-          .getElementUtils()
-          .getAllAnnotationMirrors(MoreTypes.asElement(ann.getAnnotationType()))) {
-        boolean same =
-            context.getGenerationContext().getTypes().isSameType(e.getAnnotationType(), qualifier);
-        if (same) {
-          return ann.getAnnotationType().toString();
-        }
-      }
-    }
-    return null;
-  }
-
-  public Expression wrapCallInstanceImpl(ClassBuilder classBuilder, Expression call) {
-    classBuilder.getClassCompilationUnit().addImport(InstanceImpl.class);
+  public Expression wrapCallInstanceImpl(Expression call) {
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);
     lambda.setBody(new ExpressionStmt(call));
-
-    return new ObjectCreationExpr().setType(InstanceImpl.class).addArgument(call);
+    return new ObjectCreationExpr().setType(InstanceImpl.class.getCanonicalName())
+        .addArgument(call);
   }
 
   public Statement generateMethodCall(TypeMirror parent, ExecutableElement method,
@@ -282,7 +216,7 @@ public class GenerationUtils {
         return generatePrivateJ2CLMethodCall(method, args);
       }
 
-      throw new Error("Private method calls aren't supported for GWT2");
+      throw new GenerationException("Private method calls aren't supported for GWT2");
     } else {
       if (isTheSame(parent, method.getEnclosingElement().asType())
           || context.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
@@ -326,6 +260,40 @@ public class GenerationUtils {
     }
   }
 
+  public Expression getFieldAccessorExpression(InjectableVariableDefinition fieldPoint,
+      String kind) {
+
+    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
+
+    if (fieldPoint.getEnclosingBeanDefinition() instanceof ProducesBeanDefinition) {
+      throw new GenerationException(fieldPoint.getVariableElement().getSimpleName().toString());
+    }
+
+
+    if (kind.equals("constructor")) {
+      return new MethodCallExpr(
+          new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
+    }
+
+    String jsFieldName =
+        j2CLUtils.createFieldDescriptor(fieldPoint.getVariableElement()).getMangledName();
+    MethodCallExpr reflect =
+        new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+            .addArgument(new StringLiteralExpr(jsFieldName))
+            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(
+        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
+
+    ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
+    onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
+    onFieldAccessedCreationExpr.addArgument(lambda);
+
+    return new MethodCallExpr(new NameExpr("interceptor"), "addGetPropertyInterceptor")
+        .addArgument(reflect).addArgument(onFieldAccessedCreationExpr);
+  }
 
   // Closure aggressively inline methods, so if method is private and never called, most likely it
   // ll be removed
