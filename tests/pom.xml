@@ -13,6 +13,13 @@
   <version>0.5.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <modules>
+    <module>jre-tests</module>
+<!--
+    <module>j2cl-tests</module>
+-->
+  </modules>
+
   <build>
     <plugins>
       <plugin>
@@ -40,27 +47,27 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
 <!--
-    DO NOT CHANGE THE *ORDER* IN WHICH THESE PROFILES ARE DEFINED!
--->
-    <profile>
-      <id>J2CL</id>
-      <modules>
-        <module>jre-tests</module>
-        <module>j2cl-tests</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>default</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>jre-tests</module>
-      </modules>
-    </profile>
-  </profiles>
+    <profiles>
 
+      DO NOT CHANGE THE *ORDER* IN WHICH THESE PROFILES ARE DEFINED!
+
+      <profile>
+        <id>J2CL</id>
+        <modules>
+          <module>jre-tests</module>
+          <module>j2cl-tests</module>
+        </modules>
+      </profile>
+      <profile>
+        <id>default</id>
+        <activation>
+          <activeByDefault>true</activeByDefault>
+        </activation>
+        <modules>
+          <module>jre-tests</module>
+        </modules>
+      </profile>
+    </profiles>
+-->
 </project>

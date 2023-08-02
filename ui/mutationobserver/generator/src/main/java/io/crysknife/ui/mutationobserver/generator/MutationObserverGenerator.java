@@ -148,9 +148,10 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
     }
   }
 
+  // TODO replace with template
   public void generateCallback(ClassMetaInfo builder, MethodDefinition definition) {
-    builder.getClassCompilationUnit().addImport(MutationObserver.class);
-    builder.getClassCompilationUnit().addImport(ObserverCallback.class);
+    builder.addImport(MutationObserver.class);
+    builder.addImport(ObserverCallback.class);
 
     String callbackMethodName =
         definition.getExecutableElement().getAnnotation(OnAttach.class) != null
@@ -166,14 +167,12 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
             new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
                 .addArgument("MutationObserver.class"), "getInstance")));
 
-    builder.getInitInstanceMethod().getBody().get()
-        .addAndGetStatement(new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
-            .addArgument("instance." + fieldName).addArgument("(ObserverCallback) m -> instance."
-                + definition.getExecutableElement().getSimpleName().toString() + "(m)"));
+    builder.addToDoInitInstance(
+        () -> new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
+            .addArgument("instance." + fieldName)
+            .addArgument("(ObserverCallback) m -> instance."
+                + definition.getExecutableElement().getSimpleName().toString() + "(m)")
+            .toString() + ";");
   }
 
-  @Override
-  public void generate(ClassMetaInfo classMetaInfo, MethodDefinition beanDefinition) {
-    throw new GenerationException("MutationObserverGenerator can't generate bean");
-  }
 }

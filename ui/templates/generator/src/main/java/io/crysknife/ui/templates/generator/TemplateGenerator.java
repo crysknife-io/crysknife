@@ -291,12 +291,13 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
                 .addArgument(new StringLiteralExpr(element.getName()));
       }
       String mangleName = j2CLUtils.createFieldDescriptor(element.getField()).getMangledName();
-      MethodCallExpr fieldSetCallExpr = new MethodCallExpr(
-            new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
-                .addArgument("instance"),
-            "set").addArgument(
-                new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-                    .addArgument(new StringLiteralExpr(mangleName)).addArgument("instance"));
+      MethodCallExpr fieldSetCallExpr =
+          new MethodCallExpr(
+              new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
+                  .addArgument("instance"),
+              "set").addArgument(
+                  new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+                      .addArgument(new StringLiteralExpr(mangleName)).addArgument("instance"));
 
       ifStmt.setThenStmt(
           new BlockStmt().addAndGetStatement(fieldSetCallExpr.addArgument(resolveElement)));

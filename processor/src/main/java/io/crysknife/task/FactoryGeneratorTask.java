@@ -52,19 +52,14 @@ public class FactoryGeneratorTask implements Task {
             .collect(Collectors.toMap(BeanDefinition::getQualifiedName, Function.identity(),
                 (existing, replacement) -> existing));
 
-    for (BeanDefinition bean : beans.values()) {
-      generate(bean);
-    }
+    beans.values().stream().filter(bean -> !bean.isFactoryGenerationFinished())
+        .forEach(this::generate);
   }
 
-  private void generate(BeanDefinition beanDefinition) {
+  public void generate(BeanDefinition beanDefinition) {
     beanDefinition.getIocGenerator().ifPresent(iocGenerator -> {
-      long start = System.currentTimeMillis();
       iocGenerator.generate(new ClassMetaInfo(), beanDefinition);
-      logger.branch(TreeLogger.DEBUG,
-          "FactoryGeneratorTask " + iocGenerator.getClass().getSimpleName() + " "
-              + beanDefinition.getQualifiedName() + " in " + (System.currentTimeMillis() - start)
-              + "ms");
+      beanDefinition.setFactoryGenerationFinished(true);
     });
   }
 

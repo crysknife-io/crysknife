@@ -16,6 +16,7 @@ package io.crysknife.generator.context;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -36,6 +37,7 @@ import java.util.List;
  */
 public class GenerationContext {
 
+  private final TypeElement application;
   private final RoundEnvironment roundEnvironment;
   private final ProcessingEnvironment processingEnvironment;
   private final ScanResult scanResult;
@@ -48,13 +50,16 @@ public class GenerationContext {
 
   private final String[] enabled = {"io.crysknife"};
 
-  public GenerationContext(Application application, RoundEnvironment roundEnvironment,
+  public GenerationContext(TypeElement application, RoundEnvironment roundEnvironment,
       ProcessingEnvironment processingEnvironment, TreeLogger logger) {
+    this.application = application;
     this.roundEnvironment = roundEnvironment;
     this.processingEnvironment = processingEnvironment;
 
-    if (application.packages().length > 0) {
-      List<String> packages = new ArrayList<>(Arrays.asList(application.packages()));
+    Application applicationAnnotation = application.getAnnotation(Application.class);
+
+    if (applicationAnnotation.packages().length > 0) {
+      List<String> packages = new ArrayList<>(Arrays.asList(applicationAnnotation.packages()));
       packages.addAll(Arrays.asList(enabled));
       scanResult = new ClassGraph().acceptPackages(packages.toArray(new String[packages.size()]))
           .rejectPackages(disabled).enableMethodInfo().enableFieldInfo().enableClassInfo()
@@ -113,5 +118,9 @@ public class GenerationContext {
 
   public ScanResult getScanResult() {
     return scanResult;
+  }
+
+  public TypeElement getApplication() {
+    return application;
   }
 }

@@ -125,9 +125,7 @@ public class BeanInfoGenerator implements Task {
         temp.process(new Object(), out);
         String fileName = "io.crysknife.generator.info.Info";
         write(iocContext, fileName, os.toString());
-      } catch (UnsupportedEncodingException | TemplateException e) {
-        throw new GenerationException(e);
-      } catch (IOException e) {
+      } catch (TemplateException | IOException e) {
         throw new GenerationException(e);
       }
     }

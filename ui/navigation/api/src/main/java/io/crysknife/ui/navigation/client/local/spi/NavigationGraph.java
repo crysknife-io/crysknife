@@ -22,19 +22,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Event;
-import jakarta.inject.Inject;
 
 import io.crysknife.client.IsElement;
 import io.crysknife.client.utils.CreationalCallback;
-import io.crysknife.client.BeanManager;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.local.PageRole;
 import io.crysknife.ui.navigation.client.local.UniquePageRole;
 import io.crysknife.ui.navigation.client.local.api.MissingPageRoleException;
 import io.crysknife.ui.navigation.client.local.api.PageNotFoundException;
 import io.crysknife.ui.navigation.client.local.api.TransitionTo;
-import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 
 /**
  * The NavigationGraph is responsible for creating or retrieving instances of Page and
@@ -49,19 +45,6 @@ import io.crysknife.ui.navigation.client.shared.NavigationEvent;
  */
 @ApplicationScoped
 public class NavigationGraph {
-
-  @Inject
-  protected BeanManager beanManager;
-  @Inject
-  protected Event<NavigationEvent> event;
-
-
-  public NavigationGraph() {}
-
-  public NavigationGraph(BeanManager beanManager, Event<NavigationEvent> event) {
-    this.beanManager = beanManager;
-    this.event = event;
-  }
 
   /**
    * Maps page names to the classes that implement them. The subclass's constructor is responsible
@@ -155,7 +138,7 @@ public class NavigationGraph {
    */
   public Collection<PageNode<?>> getAllPages() {
     Collection<PageNode<?>> values = pagesByName.values();
-    return Collections.unmodifiableCollection(new HashSet<PageNode<?>>(values));
+    return Collections.unmodifiableCollection(new HashSet<>(values));
   }
 
 }

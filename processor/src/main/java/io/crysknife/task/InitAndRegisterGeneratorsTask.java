@@ -59,7 +59,7 @@ public class InitAndRegisterGeneratorsTask implements Task {
             context.getGenerationContext().getElements().getTypeElement(generator);
         generatorValidator.validate(typeElement);
         Constructor c = Class.forName(generator).getConstructor(TreeLogger.class, IOCContext.class);
-        ((IOCGenerator) c.newInstance(
+        ((IOCGenerator<?>) c.newInstance(
             logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
             this.context)).register();
       } catch (ClassNotFoundException | InstantiationException | IllegalAccessException

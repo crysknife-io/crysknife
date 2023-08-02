@@ -65,10 +65,6 @@
           <include>**/*.js</include>
           <include>**/*.xml</include>
         </includes>
-        <excludes>
-          <exclude>**/NavigationGraphImpl.java</exclude>
-          <exclude>**/BeanManagerImpl.java</exclude>
-        </excludes>
       </resource>
       <resource>
         <directory>src/main/resources</directory>

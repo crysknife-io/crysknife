@@ -12,22 +12,24 @@
  * the License.
  */
 
-package org.treblereel.events;
+package io.crysknife.task;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 
-@Singleton
-public class TesterWithSingletonEventListener {
+public class RunContextTask implements Task {
 
-    public AnotherPersonSingletonEventHolder holder;
+  private IOCContext context;
+  private TreeLogger logger;
 
-    @Inject
-    public TesterWithSingletonEventListener(AnotherPersonSingletonEventHolder holder) {
-        this.holder = holder;
-    }
+  public RunContextTask(IOCContext context, TreeLogger logger) {
+    this.context = context;
+    this.logger = logger;
+  }
 
-    public void destroy() {
-        this.holder = null;
-    }
+  @Override
+  public void execute() throws UnableToCompleteException {
+    context.runTasks();
+  }
 }

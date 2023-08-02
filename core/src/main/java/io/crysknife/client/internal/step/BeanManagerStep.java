@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,21 +12,14 @@
  * the License.
  */
 
-package io.crysknife.ui.navigation.client.local.spi;
+package io.crysknife.client.internal.step;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.ui.navigation.client.shared.NavigationEvent;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import jakarta.enterprise.event.Event;
-
-/**
- * Fake implementation, ll be excluded on package/install
- *
- * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
- */
-public class NavigationGraphImpl extends NavigationGraph {
-
-  public NavigationGraphImpl(BeanManager beanManager, Event<NavigationEvent> event) {
-    super(beanManager, event);
-  }
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BeanManagerStep {
 }

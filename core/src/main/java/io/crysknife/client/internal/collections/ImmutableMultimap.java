@@ -49,7 +49,7 @@ public class ImmutableMultimap<K, V> extends Multimap<K, V> {
   }
 
   public Collection<V> values() {
-    return values().stream().collect(Collectors.toSet());
+    return Collections.unmodifiableCollection(super.values());
   }
 
   public List<V> get(K key) {
@@ -61,11 +61,11 @@ public class ImmutableMultimap<K, V> extends Multimap<K, V> {
   }
 
   public Collection<K> keys() {
-    return super.keySet().stream().collect(Collectors.toSet());
+    return Collections.unmodifiableCollection(super.keySet());
   }
 
   public Set<K> keySet() {
-    return super.keySet().stream().collect(Collectors.toSet());
+    return Collections.unmodifiableSet(super.keySet());
   }
 
   public void clear() {
@@ -77,10 +77,6 @@ public class ImmutableMultimap<K, V> extends Multimap<K, V> {
   }
 
   public Collection<Map.Entry<K, V>> entries() {
-    Map<K, V> map = new TreeMap<>();
-    super.keys().forEach(key -> {
-      super.get(key).stream().forEach(v -> map.put(key, v));
-    });
-    return map.entrySet();
+    return Collections.unmodifiableCollection(super.entries());
   }
 }

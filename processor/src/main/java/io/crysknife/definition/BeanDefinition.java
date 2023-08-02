@@ -38,15 +38,17 @@ public class BeanDefinition implements Definition {
 
   private final TypeMirror type;
 
-  private Set<InjectableVariableDefinition> fields = new LinkedHashSet<>();
-  private Set<InjectionParameterDefinition> constructorParams = new LinkedHashSet<>();
-  private Set<MethodDefinition> methods = new LinkedHashSet<>();
-  private Set<BeanDefinition> dependencies = new LinkedHashSet<>();
-  private Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
+  private final Set<InjectableVariableDefinition> fields = new LinkedHashSet<>();
+  private final Set<InjectionParameterDefinition> constructorParams = new LinkedHashSet<>();
+  private final Set<MethodDefinition> methods = new LinkedHashSet<>();
+  private final Set<BeanDefinition> dependencies = new LinkedHashSet<>();
+  private final Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
   private Optional<IOCGenerator<BeanDefinition>> iocGenerator = Optional.empty();
   private boolean hasFactory = true;
 
-  private Set<BeanDefinition> subclasses = new LinkedHashSet<>();
+  private boolean factoryGenerationFinished = false;
+
+  private final Set<BeanDefinition> subclasses = new LinkedHashSet<>();
 
   public BeanDefinition(TypeMirror type) {
     this.type = type;
@@ -113,6 +115,10 @@ public class BeanDefinition implements Definition {
       return MoreTypes.asTypeElement(type).getAnnotation(Singleton.class);
     }
 
+    if (MoreTypes.asTypeElement(type).getAnnotation(jakarta.ejb.Singleton.class) != null) {
+      return MoreTypes.asTypeElement(type).getAnnotation(jakarta.ejb.Singleton.class);
+    }
+
     if (MoreTypes.asTypeElement(type).getAnnotation(ApplicationScoped.class) != null) {
       return MoreTypes.asTypeElement(type).getAnnotation(ApplicationScoped.class);
     }
@@ -148,5 +154,13 @@ public class BeanDefinition implements Definition {
     BeanDefinition that = (BeanDefinition) o;
     return MoreTypes.asTypeElement(type).getQualifiedName().toString()
         .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
+  }
+
+  public boolean isFactoryGenerationFinished() {
+    return factoryGenerationFinished;
+  }
+
+  public void setFactoryGenerationFinished(boolean factoryGenerationFinished) {
+    this.factoryGenerationFinished = factoryGenerationFinished;
   }
 }

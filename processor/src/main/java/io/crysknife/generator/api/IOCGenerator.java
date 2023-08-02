@@ -19,12 +19,17 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import io.crysknife.definition.Definition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 
+import javax.annotation.processing.FilerException;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
@@ -58,6 +63,24 @@ public abstract class IOCGenerator<T extends Definition> {
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
     return new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
         .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class")).toString();
+  }
+
+  protected void writeJavaFile(String fileName, String source) {
+    iocContext.addTask(() -> {
+      try {
+        JavaFileObject sourceFile = iocContext.getGenerationContext().getProcessingEnvironment()
+            .getFiler().createSourceFile(fileName);
+        try (Writer writer = sourceFile.openWriter()) {
+          writer.write(source);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      } catch (FilerException e) {
+        // ignore
+      } catch (IOException e) {
+        throw new GenerationException(e);
+      }
+    });
   }
 
   public void before() {

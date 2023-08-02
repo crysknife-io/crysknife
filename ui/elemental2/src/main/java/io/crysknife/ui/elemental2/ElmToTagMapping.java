@@ -14,14 +14,61 @@
 
 package io.crysknife.ui.elemental2;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-import elemental2.dom.*;
+import elemental2.dom.HTMLAnchorElement;
+import elemental2.dom.HTMLAreaElement;
+import elemental2.dom.HTMLAudioElement;
+import elemental2.dom.HTMLBRElement;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLCanvasElement;
+import elemental2.dom.HTMLDListElement;
+import elemental2.dom.HTMLDataListElement;
+import elemental2.dom.HTMLDetailsElement;
+import elemental2.dom.HTMLDialogElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLEmbedElement;
+import elemental2.dom.HTMLFieldSetElement;
+import elemental2.dom.HTMLFormElement;
+import elemental2.dom.HTMLHRElement;
+import elemental2.dom.HTMLHeadingElement;
+import elemental2.dom.HTMLImageElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLLIElement;
+import elemental2.dom.HTMLLabelElement;
+import elemental2.dom.HTMLLegendElement;
+import elemental2.dom.HTMLMapElement;
+import elemental2.dom.HTMLMenuElement;
+import elemental2.dom.HTMLMenuItemElement;
+import elemental2.dom.HTMLMeterElement;
+import elemental2.dom.HTMLOListElement;
+import elemental2.dom.HTMLObjectElement;
+import elemental2.dom.HTMLOptGroupElement;
+import elemental2.dom.HTMLOptionElement;
+import elemental2.dom.HTMLOutputElement;
+import elemental2.dom.HTMLParagraphElement;
+import elemental2.dom.HTMLParamElement;
+import elemental2.dom.HTMLPreElement;
+import elemental2.dom.HTMLProgressElement;
+import elemental2.dom.HTMLQuoteElement;
+import elemental2.dom.HTMLScriptElement;
+import elemental2.dom.HTMLSelectElement;
+import elemental2.dom.HTMLSourceElement;
+import elemental2.dom.HTMLTableCaptionElement;
+import elemental2.dom.HTMLTableCellElement;
+import elemental2.dom.HTMLTableColElement;
+import elemental2.dom.HTMLTableElement;
+import elemental2.dom.HTMLTableRowElement;
+import elemental2.dom.HTMLTableSectionElement;
+import elemental2.dom.HTMLTextAreaElement;
+import elemental2.dom.HTMLTrackElement;
+import elemental2.dom.HTMLUListElement;
+import elemental2.dom.HTMLVideoElement;
+import io.crysknife.client.internal.collections.Multimap;
 
 public class ElmToTagMapping {
 
-  public static final SetMultimap<Class<? extends HTMLElement>, String> HTML_ELEMENTS =
-      HashMultimap.create();
+  public static final Multimap<Class<? extends HTMLElement>, String> HTML_ELEMENTS =
+      new Multimap<>();
 
   static {
     HTML_ELEMENTS.put(HTMLAnchorElement.class, "a");

@@ -3,7 +3,7 @@
         try {
             java.lang.reflect.Method method = org.apache.commons.lang3.reflect.MethodUtils.getMatchingMethod(${parent}.class, "${name}");
             method.setAccessible(true);
-            method.invoke(instance, <#if args??>, ${args}</#if>);
+            method.invoke(instance<#if args??>, ${args}</#if>);
         } catch (Exception e) {
             throw new Error(e);
         };

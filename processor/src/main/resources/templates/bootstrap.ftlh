@@ -17,6 +17,10 @@ import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.client.Reflect;
 </#if>
 
+<#list imports as import>
+    import ${import};
+</#list>
+
 public class ${bean}Bootstrap {
 
 <#if !jre>
@@ -40,6 +44,9 @@ public class ${bean}Bootstrap {
     private ${package}.${bean} instance;
 
     public void doInitInstance(${bean} instance) {
+<#list doInitInstance as call>
+    ${call?no_esc}
+</#list>
 <#if postConstruct?? && postConstruct?size != 0>
     <#list postConstruct as call>
         ${call?no_esc};

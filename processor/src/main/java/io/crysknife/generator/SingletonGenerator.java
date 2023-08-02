@@ -130,7 +130,7 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
       }
       temp.process(root, out);
       String fileName = TypeUtils.getQualifiedFactoryName(beanDefinition.getType());
-      write(iocContext, fileName, os.toString());
+      writeJavaFile(fileName, os.toString());
     } catch (UnsupportedEncodingException | TemplateException e) {
       throw new GenerationException(e);
     } catch (IOException e) {
@@ -265,19 +265,6 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
 
     public String getCall() {
       return call;
-    }
-  }
-
-  protected void write(IOCContext iocContext, String fileName, String source) throws IOException {
-    try {
-      JavaFileObject sourceFile = iocContext.getGenerationContext().getProcessingEnvironment()
-          .getFiler().createSourceFile(fileName);
-      try (Writer writer = sourceFile.openWriter()) {
-        writer.write(source);
-      }
-    } catch (FilerException e) {
-      System.out.println("FilerException: " + e.getMessage());
-      throw new GenerationException(e);
     }
   }
 }

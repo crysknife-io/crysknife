@@ -12,22 +12,36 @@
  * the License.
  */
 
-package org.treblereel.events;
+package io.crysknife;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 
-@Singleton
-public class TesterWithSingletonEventListener {
+import io.crysknife.generator.context.IOCContext;
 
-    public AnotherPersonSingletonEventHolder holder;
+public class ContextHolder {
 
-    @Inject
-    public TesterWithSingletonEventListener(AnotherPersonSingletonEventHolder holder) {
-        this.holder = holder;
+  private static volatile ContextHolder instance;
+
+  private IOCContext context;
+
+  private ContextHolder() {}
+
+  public static ContextHolder getInstance() {
+    if (instance == null) {
+      synchronized (ContextHolder.class) {
+        if (instance == null) {
+          instance = new ContextHolder();
+        }
+      }
     }
+    return instance;
+  }
 
-    public void destroy() {
-        this.holder = null;
-    }
+  IOCContext getContext() {
+    return context;
+  }
+
+  void setContext(IOCContext context) {
+    this.context = context;
+  }
+
 }

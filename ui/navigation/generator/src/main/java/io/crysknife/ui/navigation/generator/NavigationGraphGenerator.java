@@ -40,7 +40,10 @@ import io.crysknife.ui.navigation.client.local.spi.NavigationGraph;
 import io.crysknife.ui.navigation.client.local.spi.PageNode;
 import io.crysknife.ui.navigation.client.shared.NavigationEvent;
 import io.crysknife.util.GenerationUtils;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Default;
+import jakarta.inject.Inject;
 
 import javax.annotation.processing.FilerException;
 import javax.lang.model.element.ElementKind;
@@ -109,27 +112,27 @@ public class NavigationGraphGenerator {
     compilationUnit.addImport(NavigationControl.class);
     compilationUnit.addImport(BeanManager.class);
     compilationUnit.addImport(Event.class);
+    compilationUnit.addImport(ApplicationScoped.class);
+    compilationUnit.addImport(Default.class);
+
+
     classDeclaration.getExtendedTypes().add(new ClassOrInterfaceType().setName("NavigationGraph"));
+    classDeclaration.addAnnotation(ApplicationScoped.class);
+    classDeclaration.addAnnotation(Default.class);
+
 
     ConstructorDeclaration constructorDeclaration =
         classDeclaration.addConstructor(Modifier.Keyword.PUBLIC);
-    constructorDeclaration.addParameter(BeanManager.class.getSimpleName(), "beanManager");
+    generatePages(constructorDeclaration);
 
-    MethodCallExpr constrCall = new MethodCallExpr("this").addArgument("beanManager");
-    constrCall.addArgument(new FieldAccessExpr(
-        new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-            .addArgument("NavigationGraph.class"), "getInstance"),
-        "event"));
-    constructorDeclaration.getBody().addAndGetStatement(constrCall);
-
-    constructorDeclaration = classDeclaration.addConstructor(Modifier.Keyword.PUBLIC);
-    constructorDeclaration.addParameter(BeanManager.class.getSimpleName(), "beanManager");
+    constructorDeclaration.addAnnotation(Inject.class);
+    constructorDeclaration.addParameter(BeanManager.class, "beanManager");
     constructorDeclaration.addParameter("Event<NavigationEvent>", "event");
 
-    MethodCallExpr superExpr =
-        new MethodCallExpr("super").addArgument("beanManager").addArgument("event");
-    constructorDeclaration.getBody().addAndGetStatement(superExpr);
-    generatePages(constructorDeclaration);
+    classDeclaration.addField(BeanManager.class, "beanManager", Modifier.Keyword.PRIVATE)
+        .addAnnotation(Inject.class);
+    classDeclaration.addField("Event<NavigationEvent>", "event", Modifier.Keyword.PRIVATE)
+        .addAnnotation(Inject.class);
 
     try {
       String fileName = fqcn;
@@ -138,7 +141,7 @@ public class NavigationGraphGenerator {
     } catch (javax.annotation.processing.FilerException e1) {
       // just ignore it
     } catch (IOException e1) {
-      throw new Error(e1);
+      throw new GenerationException(e1);
     }
 
     return classDeclaration.toString();

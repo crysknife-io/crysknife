@@ -16,6 +16,7 @@ package io.crysknife.generator.context;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import io.crysknife.definition.Definition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.api.IOCGenerator;
@@ -32,6 +33,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.tools.JavaFileObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -48,7 +50,7 @@ import java.util.stream.Collectors;
  */
 public class IOCContext {
 
-  private final SetMultimap<IOCGeneratorMeta, IOCGenerator> generators = HashMultimap.create();
+  private final SetMultimap<IOCGeneratorMeta, IOCGenerator<?>> generators = HashMultimap.create();
 
   private final Map<TypeMirror, BeanDefinition> beans = new HashMap<>();
 
@@ -67,6 +69,8 @@ public class IOCContext {
   private final Map<String, Set<VariableElement>> parametersByAnnotation = new HashMap<>();
 
   private final BeanDefinitionFactory beanDefinitionFactory;
+
+  private final Set<Runnable> tasks = new LinkedHashSet<>();
 
   public IOCContext(GenerationContext generationContext) {
     this.generationContext = generationContext;
@@ -128,7 +132,7 @@ public class IOCContext {
     return beans.get(erased);
   }
 
-  public SetMultimap<IOCGeneratorMeta, IOCGenerator> getGenerators() {
+  public SetMultimap<IOCGeneratorMeta, IOCGenerator<?>> getGenerators() {
     return generators;
   }
 
@@ -263,11 +267,19 @@ public class IOCContext {
     return results;
   }
 
+  public void addTask(Runnable task) {
+    tasks.add(task);
+  }
+
+  public void runTasks() {
+    tasks.forEach(Runnable::run);
+  }
+
   public Optional<IOCGenerator> getGenerator(String annotation, TypeElement type,
       WiringElementType wiringElementType) {
     IOCContext.IOCGeneratorMeta meta =
         new IOCContext.IOCGeneratorMeta(annotation, type, wiringElementType);
-    Iterable<IOCGenerator> generators = getGenerators().get(meta);
+    Iterable<IOCGenerator<?>> generators = getGenerators().get(meta);
     if (generators.iterator().hasNext()) {
       return Optional.of(generators.iterator().next());
     }

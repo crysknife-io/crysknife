@@ -230,6 +230,7 @@
                         <exclude>**/.factorypath</exclude>
                         <exclude>**/*.properties</exclude>
                         <exclude>**/*.gwt.xml</exclude>
+                        <exclude>**/*.native.js</exclude>
                     </excludes>
                     <properties>
                         <year>${project.inceptionYear}</year>

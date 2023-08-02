@@ -90,7 +90,7 @@ public class BootstrapperGenerator extends SingletonGenerator {
       temp.process(root, out);
       String fileName = beanDefinition.getPackageName() + "." + beanDefinition.getSimpleClassName()
           + BOOTSTRAP_EXTENSION;
-      write(iocContext, fileName, os.toString());
+      writeJavaFile(fileName, os.toString());
     } catch (UnsupportedEncodingException | TemplateException e) {
       throw new GenerationException(e);
     } catch (IOException e) {

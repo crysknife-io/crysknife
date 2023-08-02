@@ -12,22 +12,14 @@
  * the License.
  */
 
-package org.treblereel.events;
+package io.crysknife.client.internal.step;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Singleton
-public class TesterWithSingletonEventListener {
-
-    public AnotherPersonSingletonEventHolder holder;
-
-    @Inject
-    public TesterWithSingletonEventListener(AnotherPersonSingletonEventHolder holder) {
-        this.holder = holder;
-    }
-
-    public void destroy() {
-        this.holder = null;
-    }
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AfterBurnFactoryStep {
 }
