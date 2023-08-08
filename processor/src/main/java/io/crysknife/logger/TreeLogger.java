@@ -52,13 +52,13 @@ public abstract class TreeLogger {
     WARN(true),
 
     /** Logs information. */
-    INFO(false),
+    INFO(true),
 
     /** Logs information related to lower-level operation. */
     TRACE(false),
 
     /** Logs detailed information that could be useful during debugging. */
-    DEBUG(false),
+    DEBUG(true),
 
     /**
      * Logs extremely verbose and detailed information that is typically useful only to product
@@ -98,7 +98,7 @@ public abstract class TreeLogger {
      * Determines whether this log type is of lower priority than some other log type.
      *
      * @param other the other log type
-     * 
+     *
      * @return <code>true</code> if this log type is lower priority
      */
     public boolean isLowerPriorityThan(Type other) {
@@ -204,7 +204,7 @@ public abstract class TreeLogger {
    *        being logged
    * @param helpInfo extra information that might be used by the logger to provide extended
    *        information to the user
-   * 
+   *
    * @return an instance of {@link TreeLogger} representing the new branch of the log; may be the
    *         same instance on which this method is called
    */

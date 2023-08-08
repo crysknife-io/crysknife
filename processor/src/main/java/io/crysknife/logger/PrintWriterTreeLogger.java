@@ -64,14 +64,13 @@ public final class PrintWriterTreeLogger extends AbstractTreeLogger {
   @Override
   protected void doLog(int indexOfLogEntryWithinParentLogger, Type type, String msg,
       Throwable caught, HelpInfo helpInfo) {
-    synchronized (mutex) { // ensure thread interleaving...
-      out.print(indent);
+    synchronized (mutex) {
       if (type.needsAttention()) {
         out.print("[");
         out.print(type.getLabel());
         out.print("] ");
       }
-
+      out.print(indent);
       out.println(msg);
       if (helpInfo != null) {
         URL url = helpInfo.getURL();
