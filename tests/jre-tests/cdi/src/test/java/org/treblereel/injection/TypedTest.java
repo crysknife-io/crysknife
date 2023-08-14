@@ -20,10 +20,6 @@ import org.treblereel.injection.qualifiers.typed.AbstractCanvasHandler;
 import org.treblereel.injection.qualifiers.typed.ApplicationCommandManager;
 import org.treblereel.injection.qualifiers.typed.RegistryAwareCommandManager;
 import org.treblereel.injection.qualifiers.typed.SessionCommandManager;
-import org.treblereel.injection.typed.DefaultDefinitionsCacheRegistry;
-import org.treblereel.injection.typed.DefinitionUtils;
-import org.treblereel.injection.typed.DefinitionsCacheRegistry;
-import org.treblereel.injection.typed.SimpleDefinitionsCacheRegistry;
 import org.treblereel.injection.typed.case2.BeanOne;
 import org.treblereel.injection.typed.case2.BeanTwo;
 import org.treblereel.injection.typed.case2.Iface;
@@ -37,6 +33,8 @@ public class TypedTest extends AbstractTest {
 
   @Test
   public void testQualifierFieldInjectionBean() {
+    assertEquals(ApplicationCommandManager.class, app.beanManager.lookupBean(SessionCommandManager.class).getInstance().getClass());
+
     SessionCommandManager<AbstractCanvasHandler> sessionCommandManager =
         app.qualifierFieldInjection.morphNodeToolboxAction.sessionCommandManager;
 

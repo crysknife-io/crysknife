@@ -14,8 +14,6 @@
 
 package org.treblereel.injection.qualifiers.typed;
 
-import io.crysknife.client.ManagedInstance;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Typed;
 import jakarta.inject.Inject;

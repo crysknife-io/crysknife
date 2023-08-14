@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import io.crysknife.client.SyncBeanDef;
 import jakarta.enterprise.inject.Default;
 import jakarta.inject.Named;
 
@@ -123,8 +124,6 @@ public class BeanManagerTest extends AbstractTest {
         StreamSupport.stream(super.app.beanManager
             .lookupBeans(ComponentIface.class, componentQualifierOne, componentQualifierTwo)
             .spliterator(), false).count());
-
-
   }
 
   @Test
@@ -224,7 +223,6 @@ public class BeanManagerTest extends AbstractTest {
         StreamSupport
             .stream(super.app.beanManager.lookupBeans(NamedBean.class, named2).spliterator(), false)
             .count());
-
 
     NamedBean _componentQualifierTwo =
         super.app.beanManager.lookupBeans(NamedBean.class, named2).iterator().next().getInstance();

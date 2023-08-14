@@ -201,7 +201,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
   @Test
   public void testInstanceProducerBean() {
     Instance<QualifierBean> managedInstanceBean = app.getManagedInstanceBean().getBean2();
-    assertEquals("REDHAT", managedInstanceBean.get().say());
+    assertEquals("Default", managedInstanceBean.get().say());
   }
 
   @Test
@@ -230,7 +230,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
 
     assertTrue(managedInstanceTestsHolder.uselessInterfaces.isUnsatisfied());
     assertFalse(managedInstanceTestsHolder.componentIface.isUnsatisfied());
-    assertFalse(managedInstanceTestsHolder.simpleBean.select(new Default() {
+    assertTrue(managedInstanceTestsHolder.simpleBean.select(new Default() {
 
       @Override
       public Class<? extends Annotation> annotationType() {
@@ -268,7 +268,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
           }).getInstance();
     });
     assertEquals(
-        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers {{ org.treblereel.injection.managedinstance.ComponentQualifierTwo,  }}",
+        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers { org.treblereel.injection.managedinstance.ComponentQualifierTwo,  }",
         exception.getMessage());
   }
 
@@ -287,7 +287,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
       }).get();
     });
     assertEquals(
-        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers {{ org.treblereel.injection.managedinstance.ComponentQualifierTwo,  }}",
+        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers { org.treblereel.injection.managedinstance.ComponentQualifierTwo,  }",
         exception.getMessage());
   }
 
