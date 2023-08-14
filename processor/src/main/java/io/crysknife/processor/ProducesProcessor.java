@@ -76,10 +76,17 @@ public class ProducesProcessor {
 
     if (generator.isPresent()) {
       ProducesBeanDefinition beanDefinition = beanDefinitionFactory.of(method);
-      beanDefinition.setIocGenerator(generator.get());
+      generator.ifPresent(beanDefinition::setIocGenerator);
       TypeMirror beanTypeMirror =
           iocContext.getGenerationContext().getTypes().erasure(method.getReturnType());
-      iocContext.getBeans().put(beanTypeMirror, beanDefinition);
+      // TODO this must be refactored
+      if (iocContext.getBeans().containsKey(beanTypeMirror)
+          && iocContext.getBeans().get(beanTypeMirror) instanceof ProducesBeanDefinition) {
+        ((ProducesBeanDefinition) iocContext.getBeans().get(beanTypeMirror))
+            .addSubtype(beanDefinition);
+      } else {
+        iocContext.getBeans().put(beanTypeMirror, beanDefinition);
+      }
     }
 
   }

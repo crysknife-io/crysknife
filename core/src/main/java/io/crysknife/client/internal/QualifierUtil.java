@@ -100,9 +100,9 @@ public class QualifierUtil {
    *        collection is empty, then it represents the universal qualifier that satisfies all other
    *        qualifiers. This is unambiguous since it is otherwise impossible to have no qualifiers
    *        (everything has {@link Any}).
-   * @return If {@code in} is non-empty then this returns true iff every annotation in
-   *         {@code allOff} contains an equal annotation in {@code in}. If {@code in} is empty, then
-   *         this returns true.
+   * @return If {@code in} is non-empty then this returns true if every annotation in {@code allOff}
+   *         contains an equal annotation in {@code in}. If {@code in} is empty, then this returns
+   *         true.
    */
   public static boolean matches(final Collection<Annotation> allOf,
       final Collection<Annotation> in) {
@@ -116,7 +116,7 @@ public class QualifierUtil {
   public static boolean contains(final Collection<Annotation> allOf,
       final Collection<Annotation> in) {
     if (allOf.isEmpty())
-      return true;
+      return false;
 
     final Map<String, Annotation> allOfMap = new HashMap<>();
     final Map<String, Annotation> inMap = new HashMap<>();

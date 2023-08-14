@@ -47,7 +47,6 @@ import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
-import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.logger.TreeLogger;
@@ -151,8 +150,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     this.templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
     this.eventHandlerValidator = new EventHandlerValidator(iocContext);
     this.methodCallGenerator = new MethodCallGenerator(iocContext);
-
-    isElement = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils()
+    this.isElement = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils()
         .getTypeElement(IsElement.class.getCanonicalName());
   }
 
@@ -172,6 +170,13 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
     TemplateDefinition templateDefinition = new TemplateDefinition();
 
+    maybeHasNotGetMethod(beanDefinition, templateDefinition);
+    classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
+    setAndInitTemplate(classMetaInfo, beanDefinition, templateDefinition);
+  }
+
+  private void maybeHasNotGetMethod(BeanDefinition beanDefinition,
+      TemplateDefinition templateDefinition) {
     if (!hasGetElement(beanDefinition)) {
       Optional<ExecutableElement> executableElement = ElementFilter
           .methodsIn(isElement.getEnclosedElements()).stream().map(MoreElements::asExecutable)
@@ -180,13 +185,11 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
       if (executableElement.isPresent()) {
         templateDefinition.setInitRootElement(true);
-        String valueName =
+        String mangledName =
             j2CLUtils.createDeclarationMethodDescriptor(executableElement.get()).getMangledName();
-        templateDefinition.setRootElementPropertyName(valueName);
+        templateDefinition.setRootElementPropertyName(mangledName);
       }
     }
-    classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
-    setAndInitTemplate(classMetaInfo, beanDefinition, templateDefinition);
   }
 
   private void setAndInitTemplate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition,

@@ -37,18 +37,17 @@ import java.util.Set;
 public class BeanDefinition implements Definition {
 
   private final TypeMirror type;
-
   private final Set<InjectableVariableDefinition> fields = new LinkedHashSet<>();
   private final Set<InjectionParameterDefinition> constructorParams = new LinkedHashSet<>();
   private final Set<MethodDefinition> methods = new LinkedHashSet<>();
   private final Set<BeanDefinition> dependencies = new LinkedHashSet<>();
   private final Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
   private Optional<IOCGenerator<BeanDefinition>> iocGenerator = Optional.empty();
+  private final Set<BeanDefinition> subclasses = new LinkedHashSet<>();
   private boolean hasFactory = true;
 
   private boolean factoryGenerationFinished = false;
 
-  private final Set<BeanDefinition> subclasses = new LinkedHashSet<>();
 
   public BeanDefinition(TypeMirror type) {
     this.type = type;
@@ -140,6 +139,15 @@ public class BeanDefinition implements Definition {
     this.hasFactory = hasFactory;
   }
 
+
+  public boolean isFactoryGenerationFinished() {
+    return factoryGenerationFinished;
+  }
+
+  public void setFactoryGenerationFinished(boolean factoryGenerationFinished) {
+    this.factoryGenerationFinished = factoryGenerationFinished;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
@@ -154,13 +162,5 @@ public class BeanDefinition implements Definition {
     BeanDefinition that = (BeanDefinition) o;
     return MoreTypes.asTypeElement(type).getQualifiedName().toString()
         .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
-  }
-
-  public boolean isFactoryGenerationFinished() {
-    return factoryGenerationFinished;
-  }
-
-  public void setFactoryGenerationFinished(boolean factoryGenerationFinished) {
-    this.factoryGenerationFinished = factoryGenerationFinished;
   }
 }

@@ -155,10 +155,6 @@ public class BeanOracle {
     return false;
   }
 
-  public Optional<BeanDefinition> guessDefaultImpl(TypeMirror point) {
-    return asInterfaceOrAbstractClass(point);
-  }
-
   private Optional<BeanDefinition> asInterfaceOrAbstractClass(TypeMirror point) {
     Set<BeanDefinition> subclasses = getSubClasses(point);
 
@@ -189,14 +185,16 @@ public class BeanOracle {
           .collect(Collectors.toSet());
       if (!maybeTyped.isEmpty()) {
         TypeMirror mirror = context.getGenerationContext().getTypes().erasure(point);
-        for (BeanDefinition typed : maybeTyped) {
+        return Optional.of(context.getBean(mirror));
+
+        /*        for (BeanDefinition typed : maybeTyped) {
           Optional<List<TypeMirror>> annotations = getTypedAnnotationValues(typed.getType());
           if (annotations.isPresent()) {
             if (annotations.get().contains(mirror)) {
               return Optional.of(typed);
             }
           }
-        }
+        }*/
       }
     }
     return Optional.empty();

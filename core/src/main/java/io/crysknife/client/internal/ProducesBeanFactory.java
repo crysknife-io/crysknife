@@ -29,6 +29,10 @@ public class ProducesBeanFactory<T> extends BeanFactory<T> {
   public ProducesBeanFactory(BeanManager beanManager, Supplier<T> producer) {
     super(beanManager);
     this.producer = producer;
+
+    // beanManager.register(new SyncBeanDefImpl(beanManager,
+    // beanManager.getOrCreateBean(producer.get().getClass()))));
+
   }
 
   @Override()

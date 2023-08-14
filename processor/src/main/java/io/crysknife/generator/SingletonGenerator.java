@@ -18,6 +18,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -36,6 +37,7 @@ import io.crysknife.generator.helpers.PreDestroyAnnotationGenerator;
 import io.crysknife.util.TypeUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import io.crysknife.generator.api.Generator;
@@ -44,6 +46,7 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.logger.TreeLogger;
 
 import javax.annotation.processing.FilerException;
+import javax.lang.model.element.AnnotationMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -233,9 +236,6 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
     } else {
       beanCall = generateBeanLookupCall(fieldPoint);
     }
-
-    // Expression beanCall = fieldPoint.generate(iocContext);
-
     if (beanCall == null) {
       throw new GenerationException("No bean call for " + fieldPoint.getVariableElement().asType());
     }
@@ -245,8 +245,25 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
 
   public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
     String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
-    return new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class")).toString();
+
+    MethodCallExpr call = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
+
+    if (fieldPoint.getImplementation().isEmpty()) {
+      List<AnnotationMirror> qualifiers = new ArrayList<>(
+          TypeUtils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
+      for (AnnotationMirror qualifier : qualifiers) {
+        call.addArgument(generationUtils.createQualifierExpression(qualifier));
+      }
+      Named named = fieldPoint.getVariableElement().getAnnotation(Named.class);
+      if (named != null) {
+        call.addArgument(new MethodCallExpr(
+            new NameExpr("io.crysknife.client.internal.QualifierUtil"), "createNamed")
+                .addArgument(new StringLiteralExpr(
+                    fieldPoint.getVariableElement().getAnnotation(Named.class).value())));
+      }
+    }
+    return call.toString();
   }
 
   public static class Dep {
