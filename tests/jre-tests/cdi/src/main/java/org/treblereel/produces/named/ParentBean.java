@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,22 +12,9 @@
  * the License.
  */
 
-package org.treblereel.produces.qualifier;
+package org.treblereel.produces.named;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
+public interface ParentBean {
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
- */
-@Singleton
-public class QualifierBeanProducerTest {
-
-  @Inject
-  private QualifierBean qualifierBean;
-
-  public QualifierBean getQualifierBean() {
-    return qualifierBean;
-  }
-
+    String getType();
 }

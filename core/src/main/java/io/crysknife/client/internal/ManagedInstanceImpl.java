@@ -15,14 +15,12 @@
 package io.crysknife.client.internal;
 
 import io.crysknife.client.BeanManager;
-import io.crysknife.client.IOCBeanDef;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -52,7 +50,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public <U extends T> ManagedInstance<U> select(Class<U> subtype, Annotation... qualifiers) {
-    return new ManagedInstanceImpl(beanManager, subtype, qualifiers);
+    return new ManagedInstanceImpl<>(beanManager, subtype, qualifiers);
   }
 
   @Override
@@ -61,14 +59,12 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
       qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
     }
 
-    Collection<IOCBeanDef<T>> result =
-        ((AbstractBeanManager) beanManager).doLookupBean(type, qualifiers);
-    return result.size() != 1;
+    return beanManager.lookupBeans(type, qualifiers).size() != 1;
   }
 
   @Override
   public boolean isAmbiguous() {
-    return beanManager.lookupBeans(type, qualifiers).stream().count() > 1;
+    return beanManager.lookupBeans(type, qualifiers).size() > 1;
   }
 
   @Override
@@ -110,8 +106,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
     @Override
     public T next() {
       final SyncBeanDef<T> bean = delegate.next();
-      final T instance = bean.getInstance();
-      return instance;
+      return bean.getInstance();
     }
   }
 }

@@ -45,7 +45,7 @@ public abstract class BeanFactory<T> {
     incompleteInstance = instance;
   }
 
-  public abstract <T> T getInstance();
+  public abstract T getInstance();
 
   public void initInstance(T instance) {
     if (beanDef.getScope().equals(Dependent.class) || !initialized) {
@@ -58,19 +58,19 @@ public abstract class BeanFactory<T> {
 
   }
 
-  public <T> T createNewInstance() {
+  public T createNewInstance() {
     if (instance != null) {
       createInstance();
     }
-    return (T) instance;
+    return instance;
   }
 
-  protected <T> T createInstance() {
+  protected T createInstance() {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");
   }
 
-  protected <T> T createInstanceInternal() {
+  protected T createInstanceInternal() {
     T instance = createInstance();
     return addBeanInstanceToPool(instance, this);
   }
@@ -90,8 +90,8 @@ public abstract class BeanFactory<T> {
     initialized = false;
   }
 
-  protected <T> T addBeanInstanceToPool(Object instance, BeanFactory factory) {
-    return (T) beanManager.addBeanInstanceToPool(instance, factory);
+  T addBeanInstanceToPool(T instance, BeanFactory<T> factory) {
+    return beanManager.addBeanInstanceToPool(instance, factory);
   }
 
 }

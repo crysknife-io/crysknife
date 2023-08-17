@@ -28,7 +28,19 @@ public class QualifierBeanProducer {
     return new QualifierBean() {
       @Override
       public String say() {
-        return "REDHAT";
+        return "Default";
+      }
+    };
+  }
+
+  @Produces
+  @Dependent
+  @QualifierOne
+  public QualifierBean getSimpleQualifierBeanQualifierOne() {
+    return new QualifierBean() {
+      @Override
+      public String say() {
+        return "QualifierOne";
       }
     };
   }

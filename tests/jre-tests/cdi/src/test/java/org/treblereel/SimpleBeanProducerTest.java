@@ -44,7 +44,7 @@ public class SimpleBeanProducerTest extends AbstractTest {
   @Test
   public void testQualifierBeanProducerTest() {
     assertNotNull(app.getQualifierBeanProducerTest().getQualifierBean());
-    assertEquals("REDHAT", app.getQualifierBeanProducerTest().getQualifierBean().say());
+    assertEquals("Default", app.getQualifierBeanProducerTest().getQualifierBean().say());
   }
 
   @Test

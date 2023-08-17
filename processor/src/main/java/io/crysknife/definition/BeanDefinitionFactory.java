@@ -19,9 +19,12 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.processor.ConstructorInjectionPointProcessor;
 import io.crysknife.processor.FieldProcessor;
+import io.crysknife.util.TypeUtils;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21
@@ -50,8 +53,9 @@ public class BeanDefinitionFactory {
   }
 
   public ProducesBeanDefinition of(ExecutableElement produces) throws UnableToCompleteException {
-    ProducesBeanDefinition bean = new ProducesBeanDefinition(produces);
-    return bean;
+    List<AnnotationMirror> qualifiers =
+        TypeUtils.getAllElementQualifierAnnotations(context, produces);
+    return new ProducesBeanDefinition(produces, qualifiers);
   }
 
   private void validateBean(TypeMirror type) {

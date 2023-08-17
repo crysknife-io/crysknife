@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.crysknife.demo.client;
+package io.crysknife.demo.client.qualifiers;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;

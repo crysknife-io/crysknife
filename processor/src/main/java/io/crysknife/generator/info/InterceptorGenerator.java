@@ -17,6 +17,7 @@ package io.crysknife.generator.info;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.google.auto.common.MoreTypes;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -24,12 +25,16 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.StringOutputStream;
 import io.crysknife.util.GenerationUtils;
+import io.crysknife.util.TypeUtils;
+import jakarta.inject.Named;
 
 import javax.annotation.processing.FilerException;
+import javax.lang.model.element.AnnotationMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -126,8 +131,23 @@ public class InterceptorGenerator {
       _beanCall = fieldPoint.getGenerator().get().generateBeanLookupCall(fieldPoint);
     } else {
       String name = generationUtils.getActualQualifiedBeanName(fieldPoint);
-      _beanCall = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-          .addArgument(new FieldAccessExpr(new NameExpr(name), "class")).toString();
+      MethodCallExpr call = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+          .addArgument(new FieldAccessExpr(new NameExpr(name), "class"));
+      if (fieldPoint.getImplementation().isEmpty()) {
+        List<AnnotationMirror> qualifiers = new ArrayList<>(TypeUtils
+            .getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
+        for (AnnotationMirror qualifier : qualifiers) {
+          call.addArgument(generationUtils.createQualifierExpression(qualifier));
+        }
+        Named named = fieldPoint.getVariableElement().getAnnotation(Named.class);
+        if (named != null) {
+          call.addArgument(new MethodCallExpr(
+              new NameExpr("io.crysknife.client.internal.QualifierUtil"), "createNamed")
+                  .addArgument(new StringLiteralExpr(
+                      fieldPoint.getVariableElement().getAnnotation(Named.class).value())));
+        }
+      }
+      _beanCall = call.toString();
     }
     return _beanCall;
   }

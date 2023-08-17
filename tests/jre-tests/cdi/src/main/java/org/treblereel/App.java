@@ -34,7 +34,7 @@ import org.treblereel.injection.singleton.SimpleBeanSingleton;
 import org.treblereel.injection.singleton.SimpleSingletonTest;
 import org.treblereel.postconstruct.PostConstructs;
 import org.treblereel.produces.SimpleBeanProducerTest;
-import org.treblereel.produces.qualifier.QualifierBeanProducerTest;
+import org.treblereel.produces.qualifier.QualifierBeanProducerHolder;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/21/20
@@ -65,7 +65,7 @@ public class App {
   private SimpleBeanProducerTest simpleBeanProducerTest;
 
   @Inject
-  private QualifierBeanProducerTest qualifierBeanProducerTest;
+  private QualifierBeanProducerHolder qualifierBeanProducerTest;
 
   @Inject
   private ManagedInstanceBean managedInstanceBean;
@@ -130,7 +130,7 @@ public class App {
     this.simpleBeanProducerTest = simpleBeanProducerTest;
   }
 
-  public QualifierBeanProducerTest getQualifierBeanProducerTest() {
+  public QualifierBeanProducerHolder getQualifierBeanProducerTest() {
     return qualifierBeanProducerTest;
   }
 

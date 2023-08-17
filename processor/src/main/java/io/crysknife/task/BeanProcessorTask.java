@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -312,10 +311,8 @@ public class BeanProcessorTask implements Task {
   }
 
   private void setBeanDefinitionGenerator(BeanDefinition bean) {
-    Set<String> annotations = bean.getAnnotationMirrors().stream()
+    Set<String> intersection = bean.getAnnotationMirrors().stream()
         .map(anno -> anno.getAnnotationType().toString()).collect(Collectors.toSet());
-
-    Set<String> intersection = new HashSet<>(annotations);
     intersection.retainAll(scoped);
 
     if (!intersection.isEmpty()) {

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21
@@ -77,7 +78,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     return scope;
   }
 
-  @Override
+  @Override // TODO: this is not correct
   public Collection<Annotation> getQualifiers() {
     Set<Annotation> temp = new HashSet<>(defaultQualifiers);
     if (qualifiers != null)
@@ -95,13 +96,19 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   }
 
   @Override
-  public Optional<BeanFactory<T>> getFactory() {
-    return factory;
-  }
-
-  @Override
   public boolean matches(Set<Annotation> annotations) {
-    return QualifierUtil.matches(annotations, getQualifiers());
+    if (annotations.isEmpty()) {
+      return true;
+    }
+    if (getActualQualifiers().isEmpty()) {
+      return false;
+    }
+
+    Collection<String> actualQualifiers = getActualQualifiers().stream()
+        .map(BeanManagerUtil::qualifierToString).collect(Collectors.toCollection(HashSet::new));
+    Collection<String> qualifiers = annotations.stream().map(BeanManagerUtil::qualifierToString)
+        .collect(Collectors.toCollection(HashSet::new));
+    return actualQualifiers.containsAll(qualifiers);
   }
 
   @Override
@@ -115,21 +122,9 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   }
 
   @Override
-  public String toString() {
-    String qualifiers = "";
-    if (this.qualifiers != null) {
-      qualifiers = BeanManagerUtil
-          .qualifiersToString(this.qualifiers.toArray(new Annotation[this.qualifiers.size()]));
-    }
-
-    return "[type=" + actualType + ", scope=" + scope.getSimpleName() + ", qualifiers=" + qualifiers
-        + "]";
-  }
-
-  @Override
   public T getInstance() {
-    if (!factory.isPresent()) {
-      BeanManagerUtil.noFactoryResolutionException(actualType,
+    if (factory.isEmpty()) {
+      throw BeanManagerUtil.noFactoryResolutionException(actualType,
           qualifiers.toArray(new Annotation[qualifiers.size()]));
     }
     return factory.get().getInstance();
@@ -137,15 +132,25 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
   @Override
   public T newInstance() {
-    if (!factory.isPresent()) {
-      BeanManagerUtil.noFactoryResolutionException(actualType,
+    if (factory.isEmpty()) {
+      throw BeanManagerUtil.noFactoryResolutionException(actualType,
           qualifiers.toArray(new Annotation[qualifiers.size()]));
     }
     return factory.get().createInstance();
   }
 
+  @Override
+  public Optional<BeanFactory<T>> getFactory() {
+    return factory;
+  }
+
   public Optional<Typed> getTyped() {
     return typed;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(actualType);
   }
 
   @Override
@@ -159,8 +164,20 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(actualType);
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("SyncBeanDefImpl [actualType=");
+    builder.append(actualType).append(", scope=");
+    builder.append(scope).append(",");
+    if (this.qualifiers != null) {
+      String qualifiers = BeanManagerUtil
+          .qualifiersToString(this.qualifiers.toArray(new Annotation[this.qualifiers.size()]));
+      builder.append("qualifiers=");
+      builder.append(qualifiers).append(",");
+    }
+    builder.append("assignableTypes=").append(assignableTypes);
+    builder.append(", factory=").append(factory).append("]");
+    return builder.toString();
   }
 
   public static class Builder {
@@ -197,6 +214,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       return this;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> SyncBeanDefImpl<T> build() {
       SyncBeanDefImpl<T> definition = new SyncBeanDefImpl(actualType, scope);
       if (qualifiers != null) {

@@ -29,10 +29,12 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 import com.inet.lib.less.Less;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.EventListener;
 import elemental2.dom.HTMLElement;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -47,10 +49,11 @@ import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
-import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.logger.TreeLogger;
+import io.crysknife.ui.templates.client.EventHandlerHolder;
+import io.crysknife.ui.templates.client.EventHandlerRegistration;
 import io.crysknife.ui.templates.client.StyleInjector;
 import io.crysknife.ui.templates.client.TemplateUtil;
 import io.crysknife.ui.templates.client.annotation.DataField;
@@ -151,8 +154,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     this.templatedGeneratorUtils = new TemplatedGeneratorUtils(iocContext);
     this.eventHandlerValidator = new EventHandlerValidator(iocContext);
     this.methodCallGenerator = new MethodCallGenerator(iocContext);
-
-    isElement = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils()
+    this.isElement = iocContext.getGenerationContext().getProcessingEnvironment().getElementUtils()
         .getTypeElement(IsElement.class.getCanonicalName());
   }
 
@@ -172,6 +174,13 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
     TemplateDefinition templateDefinition = new TemplateDefinition();
 
+    maybeHasNotGetMethod(beanDefinition, templateDefinition);
+    classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
+    setAndInitTemplate(classMetaInfo, beanDefinition, templateDefinition);
+  }
+
+  private void maybeHasNotGetMethod(BeanDefinition beanDefinition,
+      TemplateDefinition templateDefinition) {
     if (!hasGetElement(beanDefinition)) {
       Optional<ExecutableElement> executableElement = ElementFilter
           .methodsIn(isElement.getEnclosedElements()).stream().map(MoreElements::asExecutable)
@@ -180,13 +189,11 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
       if (executableElement.isPresent()) {
         templateDefinition.setInitRootElement(true);
-        String valueName =
+        String mangledName =
             j2CLUtils.createDeclarationMethodDescriptor(executableElement.get()).getMangledName();
-        templateDefinition.setRootElementPropertyName(valueName);
+        templateDefinition.setRootElementPropertyName(mangledName);
       }
     }
-    classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
-    setAndInitTemplate(classMetaInfo, beanDefinition, templateDefinition);
   }
 
   private void setAndInitTemplate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition,
@@ -249,6 +256,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
     processDataFields(templateContext, templateDefinition);
     processEventHandlers(beanDefinition, templateContext, templateDefinition);
+    processOnDestroy(builder);
   }
 
   private void addImports(ClassMetaInfo builder) {
@@ -256,6 +264,9 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     builder.addImport(Js.class);
     builder.addImport(Reflect.class);
     builder.addImport(TemplateUtil.class);
+    builder.addImport(EventListener.class);
+    builder.addImport(EventHandlerHolder.class);
+    builder.addImport(EventHandlerRegistration.class);
   }
 
   private void setInnerHTML(TemplateContext templateContext,
@@ -342,6 +353,10 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
         throw new GenerationException(e);
       }
     }
+  }
+
+  private void processOnDestroy(ClassMetaInfo builder) {
+    builder.addToOnDestroy((Supplier<String>) () -> "eventHandlerRegistration.clear(instance);");
   }
 
   private void setStylesheet(ClassMetaInfo builder, TemplateContext templateContext,

@@ -4,11 +4,11 @@ private interface HTMLElementAccessor {
     elemental2.dom.HTMLElement getElement();
 }
 </#if>
+private final EventHandlerRegistration eventHandlerRegistration = new EventHandlerRegistration();
 
-
-private void setAndInitTemplate() {
+    private void setAndInitTemplate() {
 <#if css??>
-            StyleInjector.fromString("${css?no_esc}").inject();
+        StyleInjector.fromString("${css?no_esc}").inject();
 </#if>
 <#if initRootElement>
     elemental2.core.Reflect.set(instance, "__root_element__", elemental2.dom.DomGlobal.document.createElement("div"));
@@ -44,9 +44,9 @@ private void setAndInitTemplate() {
 
 <#list events as event>
     <#list event.eventTypes as type>
-            ((elemental2.dom.HTMLElement) Js.asPropertyMap(instance).get(Reflect.objectProperty("${event.mangleName}", instance))).addEventListener("${type}", (e) -> {
+            eventHandlerRegistration.add(instance, new EventHandlerHolder("${type}", ((elemental2.dom.HTMLElement) Js.asPropertyMap(instance).get(Reflect.objectProperty("${event.mangleName}", instance))), (e) -> {
                 ${event.call?no_esc}
-            });
+            }));
     </#list>
 </#list>
     }

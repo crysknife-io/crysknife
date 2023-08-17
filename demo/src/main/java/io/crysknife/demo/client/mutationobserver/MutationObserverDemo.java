@@ -15,6 +15,7 @@
 package io.crysknife.demo.client.mutationobserver;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
@@ -131,5 +132,11 @@ public class MutationObserverDemo implements IsElement<HTMLDivElement> {
     @Override
     public HTMLDivElement getElement() {
         return mutationobserverdemo;
+    }
+
+    @PreDestroy
+    public void onDestroy() {
+        observer.disconnect();
+        DomGlobal.console.log("onDestroy");
     }
 }

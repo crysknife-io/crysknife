@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.crysknife.demo.client;
+package io.crysknife.demo.client.transitive;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -65,4 +65,3 @@ public class TransitiveInjection implements IsElement<HTMLDivElement> {
         setText(injector.callBeanTwo());
     }
 }
-

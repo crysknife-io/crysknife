@@ -17,6 +17,7 @@ package io.crysknife.demo.client.inject;
 import java.util.Random;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -64,5 +65,10 @@ public class DependentBean {
 
     public int getRandom() {
         return random;
+    }
+
+    @PreDestroy
+    private void onDetach() {
+        DomGlobal.console.log(this.getClass().getCanonicalName() + " destroyed");
     }
 }
