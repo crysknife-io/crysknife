@@ -14,6 +14,7 @@
 
 package io.crysknife.demo.client;
 
+import elemental2.dom.HTMLBodyElement;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
@@ -25,7 +26,7 @@ import io.crysknife.demo.client.events.User;
 import io.crysknife.annotation.Application;
 import org.treblereel.j2cl.processors.annotations.GWT3EntryPoint;
 
-@Application
+@Application(packages = {"io.crysknife"})
 public class App {
 
     @Inject
