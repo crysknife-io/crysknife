@@ -14,7 +14,7 @@
 
 package org.treblereel.ui.translation;
 
-import io.crysknife.ui.translation.api.annotations.TranslationKey;
+import io.crysknife.ui.translation.client.annotation.TranslationKey;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 11/5/21

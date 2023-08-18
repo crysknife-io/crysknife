@@ -14,6 +14,7 @@
 
 package io.crysknife.demo.client.singletonbeans;
 
+import io.crysknife.ui.navigation.client.annotation.Page;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -28,7 +29,6 @@ import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov

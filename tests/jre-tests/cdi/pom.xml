@@ -24,19 +24,38 @@
         <junit.version>4.13.1</junit.version>
     </properties>
 
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.crysknife</groupId>
+                <artifactId>bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-processor</artifactId>
-            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-core</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.crysknife.ui</groupId>
+            <artifactId>crysknife-ui-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.crysknife.ui</groupId>
+            <artifactId>crysknife-ui-generator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -48,16 +67,6 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.crysknife.ui.translation</groupId>
-            <artifactId>api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.crysknife.ui.translation</groupId>
-            <artifactId>generator</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

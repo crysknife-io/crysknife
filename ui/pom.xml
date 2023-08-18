@@ -8,8 +8,8 @@
     <version>0.5.2-SNAPSHOT</version>
   </parent>
 
-  <artifactId>ui-parent</artifactId>
   <groupId>io.crysknife.ui</groupId>
+  <artifactId>parent</artifactId>
   <name>UI parent</name>
   <description>UI parent</description>
   <packaging>pom</packaging>
@@ -23,11 +23,8 @@
   </developers>
 
   <modules>
-    <module>elemental2</module>
-    <module>translation</module>
-    <module>templates</module>
-    <module>mutationobserver</module>
-    <module>navigation</module>
+    <module>core</module>
+    <module>generator</module>
   </modules>
 
   <licenses>

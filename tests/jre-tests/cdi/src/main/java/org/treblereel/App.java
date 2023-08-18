@@ -14,12 +14,12 @@
 
 package org.treblereel;
 
+import io.crysknife.ui.translation.client.annotation.Bundle;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
 import io.crysknife.annotation.Application;
 import io.crysknife.client.BeanManager;
-import io.crysknife.ui.translation.api.annotations.Bundle;
 import org.treblereel.injection.applicationscoped.SimpleBeanApplicationScoped;
 import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.dependent.SimpleDependentTest;

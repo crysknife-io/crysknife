@@ -14,8 +14,7 @@
 
 package org.treblereel.ui.translation;
 
-import io.crysknife.ui.translation.api.spi.TranslationService;
-
+import io.crysknife.ui.translation.client.TranslationService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 

@@ -14,7 +14,6 @@
 
 package io.crysknife.demo.client;
 
-import elemental2.dom.HTMLBodyElement;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;

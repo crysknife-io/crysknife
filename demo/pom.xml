@@ -25,63 +25,37 @@
     <org.treblereel.j2cl.processors.version>0.6-SNAPSHOT</org.treblereel.j2cl.processors.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.crysknife</groupId>
+        <artifactId>bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-processor</artifactId>
-      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.crysknife.ui</groupId>
-      <artifactId>elemental2-generator</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.ui.templates</groupId>
-      <artifactId>api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.ui.templates</groupId>
-      <artifactId>generator</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.ui.mutationobserver</groupId>
-      <artifactId>api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.ui.mutationobserver</groupId>
-      <artifactId>generator</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.crysknife.ui.navigation</groupId>
-      <artifactId>api</artifactId>
-      <version>${project.version}</version>
+      <artifactId>crysknife-ui-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.crysknife.ui.navigation</groupId>
-      <artifactId>generator</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-generator</artifactId>
     </dependency>
 
     <dependency>
@@ -96,7 +70,6 @@
       <version>${org.treblereel.j2cl.processors.version}</version>
       <scope>provided</scope>
     </dependency>
-
   </dependencies>
 
   <build>

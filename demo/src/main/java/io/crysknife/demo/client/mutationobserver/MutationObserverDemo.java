@@ -14,6 +14,9 @@
 
 package io.crysknife.demo.client.mutationobserver;
 
+import io.crysknife.ui.mutationobserver.client.MutationObserver;
+import io.crysknife.ui.mutationobserver.client.OnAttach;
+import io.crysknife.ui.mutationobserver.client.OnDetach;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
@@ -31,10 +34,8 @@ import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.client.BeanManager;
-import io.crysknife.ui.mutationobserver.client.api.MutationObserver;
-import io.crysknife.ui.mutationobserver.client.api.OnAttach;
-import io.crysknife.ui.mutationobserver.client.api.OnDetach;
-import io.crysknife.ui.navigation.client.local.Page;
+import io.crysknife.ui.navigation.client.annotation.Page;
+
 
 /**
  * @author Dmitrii Tikhomirov

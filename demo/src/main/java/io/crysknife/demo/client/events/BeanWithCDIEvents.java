@@ -15,11 +15,11 @@
 package io.crysknife.demo.client.events;
 
 import java.util.Random;
-import java.util.function.BiConsumer;
 
-import elemental2.core.Function;
-import elemental2.dom.*;
-import io.crysknife.client.Reflect;
+import elemental2.dom.HTMLButtonElement;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLInputElement;
+import elemental2.dom.MouseEvent;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.Observes;
@@ -27,13 +27,11 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import io.crysknife.client.IsElement;
+import io.crysknife.ui.navigation.client.annotation.Page;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.Page;
-import jsinterop.base.Js;
-import jsinterop.base.JsForEachCallbackFn;
 
 /**
  * @author Dmitrii Tikhomirov

@@ -14,7 +14,7 @@
 
 package org.treblereel.ui.translation;
 
-import io.crysknife.ui.translation.api.spi.TranslationService;
+import io.crysknife.ui.translation.client.TranslationService;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 

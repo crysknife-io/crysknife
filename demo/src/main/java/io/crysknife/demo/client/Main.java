@@ -14,6 +14,7 @@
 
 package io.crysknife.demo.client;
 
+import io.crysknife.ui.navigation.client.Navigation;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -24,7 +25,6 @@ import elemental2.dom.HTMLElement;
 import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.Navigation;
 
 /**
  * @author Dmitrii Tikhomirov
