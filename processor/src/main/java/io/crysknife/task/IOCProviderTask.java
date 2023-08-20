@@ -34,7 +34,7 @@ import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.api.IOCGenerator;
-import io.crysknife.generator.SingletonGenerator;
+import io.crysknife.generator.ManagedBeanGenerator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.TypeUtils;
@@ -101,7 +101,7 @@ public class IOCProviderTask implements Task {
             context.getBeanDefinitionOrCreateAndReturn(type.asType());
 
         beanDefinitionContextualTypeProvider
-            .setIocGenerator(new SingletonGenerator(logger, context));
+            .setIocGenerator(new ManagedBeanGenerator(logger, context));
 
         BeanDefinition beanDefinition = context.getBeanDefinitionOrCreateAndReturn(erased);
         beanDefinition.setHasFactory(false);

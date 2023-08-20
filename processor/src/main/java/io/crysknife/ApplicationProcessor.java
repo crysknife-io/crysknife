@@ -21,7 +21,7 @@ import io.crysknife.generator.BootstrapperGenerator;
 import io.crysknife.generator.ObservesGenerator;
 import io.crysknife.generator.ProducesGenerator;
 import io.crysknife.generator.ProxyGenerator;
-import io.crysknife.generator.SingletonGenerator;
+import io.crysknife.generator.ManagedBeanGenerator;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.task.AfterBurnFactoryStepTask;
@@ -166,7 +166,7 @@ public class ApplicationProcessor extends AbstractProcessor {
     buildIn.add(new ObservesGenerator(logger, iocContext));
     buildIn.add(new ProducesGenerator(logger, iocContext));
     buildIn.add(new ProxyGenerator(logger, iocContext));
-    buildIn.add(new SingletonGenerator(logger, iocContext));
+    buildIn.add(new ManagedBeanGenerator(logger, iocContext));
 
     ScanResult scanResult = iocContext.getGenerationContext().getScanResult();
 

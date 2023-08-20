@@ -14,21 +14,12 @@
 
 package io.crysknife.generator.helpers;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
-import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,25 +28,15 @@ import java.util.stream.Collectors;
 
 public class MethodCallGenerator {
 
-  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
-
+  private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+      new FreemarkerTemplateGenerator("methodcall.ftlh");
   private final IOCContext iocContext;
 
   private final J2CLUtils j2CLUtils;
 
-
-  Template temp;
-
   public MethodCallGenerator(IOCContext iocContext) {
     this.iocContext = iocContext;
     this.j2CLUtils = new J2CLUtils(iocContext.getGenerationContext().getProcessingEnvironment());
-
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
   }
 
   public String generate(TypeMirror parent, ExecutableElement method) {
@@ -89,32 +70,6 @@ public class MethodCallGenerator {
       }
     }
     root.put("parent", parent.toString());
-
-    OutputStream os = new OutputStream() {
-      private StringBuilder sb = new StringBuilder();
-
-      @Override
-      public void write(int b) {
-        sb.append((char) b);
-      }
-
-      public String toString() {
-        return sb.toString();
-      }
-    };
-
-    try {
-      if (temp == null) {
-        temp = cfg.getTemplate("methodcall.ftlh");
-      }
-
-      Writer out = new OutputStreamWriter(os, "UTF-8");
-      temp.process(root, out);
-      return os.toString();
-    } catch (IOException e) {
-      throw new GenerationException(e);
-    } catch (TemplateException e) {
-      throw new GenerationException(e);
-    }
+    return freemarkerTemplateGenerator.toSource(root);
   }
 }

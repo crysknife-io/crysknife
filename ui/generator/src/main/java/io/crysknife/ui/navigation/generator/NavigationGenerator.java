@@ -14,7 +14,7 @@
 
 package io.crysknife.ui.navigation.generator;
 
-import io.crysknife.generator.SingletonGenerator;
+import io.crysknife.generator.ManagedBeanGenerator;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
@@ -30,7 +30,7 @@ import java.util.Set;
  * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
  */
 @Generator
-public class NavigationGenerator extends SingletonGenerator {
+public class NavigationGenerator extends ManagedBeanGenerator {
 
   public NavigationGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);

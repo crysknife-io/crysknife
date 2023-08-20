@@ -15,30 +15,22 @@
 package io.crysknife.task;
 
 import com.google.auto.common.MoreTypes;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.info.AbstractBeanInfoGenerator;
 import io.crysknife.generator.info.BeanInfoJREGeneratorBuilder;
 import io.crysknife.generator.info.InterceptorGenerator;
-import io.crysknife.util.StringOutputStream;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.task.Task;
 
 import javax.annotation.processing.FilerException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
@@ -52,8 +44,6 @@ public class BeanInfoGenerator implements Task {
   private AbstractBeanInfoGenerator generator;
 
   private InterceptorGenerator interceptorGenerator;
-
-  private Template temp;
 
 
   public BeanInfoGenerator(IOCContext iocContext, TreeLogger logger) {
@@ -78,9 +68,8 @@ public class BeanInfoGenerator implements Task {
         continue;
       }
       if (isSuitableBeanDefinition(beanDefinition)) {
-        beanDefinition.getIocGenerator().ifPresent(iocGenerator -> {
-          interceptorGenerator.generate(beanDefinition);
-        });
+        beanDefinition.getIocGenerator()
+            .ifPresent(iocGenerator -> interceptorGenerator.generate(beanDefinition));
       }
     }
   }
@@ -93,39 +82,18 @@ public class BeanInfoGenerator implements Task {
         && !MoreTypes.asTypeElement(beanDefinition.getType()).getModifiers().contains(ABSTRACT);
   }
 
-  private void generate(BeanDefinition bean) throws IOException {
-    if (!bean.getFields().isEmpty()) {
-      JavaFileObject builderFile = iocContext.getGenerationContext().getProcessingEnvironment()
-          .getFiler().createSourceFile(bean.getQualifiedName() + "Info");
-      try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
-        out.append(generator.build(bean));
-      }
-    }
-  }
-
   private class InfoGenerator {
 
-    private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
-
-    {
-      cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-      cfg.setDefaultEncoding("UTF-8");
-      cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-      cfg.setLogTemplateExceptions(false);
-      cfg.setWrapUncheckedExceptions(true);
-      cfg.setFallbackOnNullLoopVariable(false);
-    }
+    private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+        new FreemarkerTemplateGenerator("jre/parent.ftlh");
 
     private void generate() {
-      StringOutputStream os = new StringOutputStream();
-      try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-        if (temp == null) {
-          temp = cfg.getTemplate("jre/parent.ftlh");
-        }
-        temp.process(new Object(), out);
+
+      try {
+        String source = freemarkerTemplateGenerator.toSource(new Object());
         String fileName = "io.crysknife.generator.info.Info";
-        write(iocContext, fileName, os.toString());
-      } catch (TemplateException | IOException e) {
+        write(iocContext, fileName, source);
+      } catch (IOException e) {
         throw new GenerationException(e);
       }
     }
@@ -138,7 +106,7 @@ public class BeanInfoGenerator implements Task {
         try (Writer writer = sourceFile.openWriter()) {
           writer.write(source);
         }
-      } catch (FilerException e) {
+      } catch (FilerException ignored) {
       }
     }
   }

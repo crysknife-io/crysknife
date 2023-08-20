@@ -43,8 +43,6 @@ public class ProducesProcessor {
   private final BeanDefinitionFactory beanDefinitionFactory;
   private final TypeMirror objectTypeMirror;
 
-
-
   public ProducesProcessor(IOCContext iocContext, TreeLogger logger) {
     this.iocContext = iocContext;
     this.logger = logger;

@@ -14,38 +14,22 @@
 
 package io.crysknife.task;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.StringOutputStream;
 
 import javax.annotation.processing.FilerException;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class BeanManagerGeneratorStepTask implements Task {
 
-  protected final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
-
-  private Template temp;
-
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
+  private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+      new FreemarkerTemplateGenerator("beanmanagergeneratorsteptask.ftlh");
 
   private final IOCContext iocContext;
 
@@ -58,15 +42,11 @@ public class BeanManagerGeneratorStepTask implements Task {
 
   @Override
   public void execute() throws UnableToCompleteException {
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-      if (temp == null) {
-        temp = cfg.getTemplate("beanmanagergeneratorsteptask.ftlh");
-      }
-      temp.process(new HashMap<>(), out);
+    String source = freemarkerTemplateGenerator.toSource(new HashMap<>());
+    try {
       String fileName = "io.crysknife.client.internal.BeanManagerGeneratorStepTaskMarker";
-      write(iocContext, fileName, os.toString());
-    } catch (TemplateException | IOException e) {
+      write(iocContext, fileName, source);
+    } catch (IOException e) {
       throw new GenerationException(e);
     }
   }

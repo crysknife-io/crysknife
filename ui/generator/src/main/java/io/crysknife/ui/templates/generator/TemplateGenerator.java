@@ -36,10 +36,6 @@ import com.inet.lib.less.Less;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.EventListener;
 import elemental2.dom.HTMLElement;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.client.IsElement;
 import io.crysknife.client.Reflect;
 import io.crysknife.definition.BeanDefinition;
@@ -50,6 +46,7 @@ import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.common.client.injectors.StyleInjector;
@@ -65,7 +62,6 @@ import io.crysknife.ui.templates.generator.dto.TemplateDefinition;
 import io.crysknife.ui.templates.generator.events.EventHandlerTemplatedProcessor;
 import io.crysknife.ui.templates.generator.events.EventHandlerValidator;
 import io.crysknife.ui.templates.generator.translation.TranslationServiceGenerator;
-import io.crysknife.util.StringOutputStream;
 import io.crysknife.util.TypeUtils;
 import jsinterop.base.Js;
 import org.apache.commons.io.IOUtils;
@@ -96,8 +92,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -119,7 +113,6 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private static final String QUOTE = "\"";
   private static final Escaper JAVA_STRING_ESCAPER =
       Escapers.builder().addEscape('"', "\\\"").addEscape('\n', "").addEscape('\r', "").build();
-  protected final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
   private final TypeElement isElement;
   private final J2CLUtils j2CLUtils;
   private final TemplateValidator templateValidator;
@@ -132,16 +125,9 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
   private final EventHandlerValidator eventHandlerValidator;
 
   private final MethodCallGenerator methodCallGenerator;
-  private Template temp;
 
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
+  private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+      new FreemarkerTemplateGenerator("ui.ftlh");
 
   public TemplateGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
@@ -231,17 +217,8 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
 
     // maybe add translation
     translationServiceGenerator.process(classMetaInfo, context);
-
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      if (temp == null) {
-        temp = cfg.getTemplate("ui.ftlh");
-      }
-      temp.process(templateDefinition, out);
-    } catch (TemplateException | IOException e) {
-      throw new GenerationException(e);
-    }
-    classMetaInfo.addToBody(os::toString);
+    String source = freemarkerTemplateGenerator.toSource(templateDefinition);
+    classMetaInfo.addToBody(() -> source);
     logger.log(TreeLogger.Type.INFO, "Generated templated implementation [" + context.getSubclass()
         + "] for [" + context.getBase() + "]");
   }

@@ -20,10 +20,6 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.client.InstanceFactory;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
@@ -31,7 +27,7 @@ import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.ExecutionEnv;
-import io.crysknife.util.StringOutputStream;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.helpers.PostConstructAnnotationGenerator;
 import io.crysknife.generator.helpers.PreDestroyAnnotationGenerator;
 import io.crysknife.util.TypeUtils;
@@ -45,13 +41,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.logger.TreeLogger;
 
-import javax.annotation.processing.FilerException;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -65,27 +55,17 @@ import java.util.stream.Collectors;
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19
  */
 @Generator(priority = 1)
-public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
+public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
 
-  protected final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
-
-  private Template temp;
+  private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+      new FreemarkerTemplateGenerator("managedbean.ftlh");
 
   private PreDestroyAnnotationGenerator preDestroyAnnotation =
       new PreDestroyAnnotationGenerator(iocContext);
   private PostConstructAnnotationGenerator postConstructAnnotation =
       new PostConstructAnnotationGenerator(iocContext);
 
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
-
-  public SingletonGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+  public ManagedBeanGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
   }
 
@@ -120,25 +100,15 @@ public class SingletonGenerator extends IOCGenerator<BeanDefinition> {
     classDecorators(beanDefinition, classMetaInfo);
     postConstruct(beanDefinition, root);
     preDestroy(classMetaInfo, beanDefinition);
+
     root.put("fields", classMetaInfo.getBodyStatements());
     root.put("preDestroy", classMetaInfo.getOnDestroy());
     root.put("doInitInstance", classMetaInfo.getDoInitInstance());
     root.put("doCreateInstance", classMetaInfo.getDoCreateInstance());
 
-
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      if (temp == null) {
-        temp = cfg.getTemplate("singleton.ftlh");
-      }
-      temp.process(root, out);
-      String fileName = TypeUtils.getQualifiedFactoryName(beanDefinition.getType());
-      writeJavaFile(fileName, os.toString());
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
-    } catch (IOException e) {
-      throw new GenerationException(e);
-    }
+    String source = freemarkerTemplateGenerator.toSource(root);
+    String fileName = TypeUtils.getQualifiedFactoryName(beanDefinition.getType());
+    writeJavaFile(fileName, source);
   }
 
   private void interceptorFieldDecorators(BeanDefinition beanDefinition, Map<String, Object> root) {

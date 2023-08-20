@@ -19,16 +19,11 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.google.auto.common.MoreTypes;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.definition.ProducesBeanDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.StringOutputStream;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.TypeUtils;
 import jakarta.inject.Named;
@@ -37,8 +32,6 @@ import javax.annotation.processing.FilerException;
 import javax.lang.model.element.AnnotationMirror;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,21 +40,10 @@ import java.util.Map;
 
 public class InterceptorGenerator {
 
-  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+  private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+      new FreemarkerTemplateGenerator("jre/aspect.ftlh");
 
   private final GenerationUtils generationUtils;
-
-  private Template temp;
-
-
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
 
   private final IOCContext iocContext;
 
@@ -91,23 +73,17 @@ public class InterceptorGenerator {
       fields.add(new InterceptorField(target, methodName, field, call));
     }
 
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      if (temp == null) {
-        temp = cfg.getTemplate("jre/aspect.ftlh");
-      }
-      temp.process(root, out);
-      String fileName = pkg + "." + clazz + "Info";
-      write(iocContext, fileName, os.toString());
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
+    String source = freemarkerTemplateGenerator.toSource(root);
+    String fileName = pkg + "." + clazz + "Info";
+    try {
+      write(iocContext, fileName, source);
     } catch (IOException e) {
       throw new GenerationException(e);
     }
   }
 
   private String getAnnotationValue(BeanDefinition bean, InjectableVariableDefinition fieldPoint) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("get(").append("*").append(" ");
     sb.append(fieldPoint.getVariableElement().getEnclosingElement());
     sb.append(".");

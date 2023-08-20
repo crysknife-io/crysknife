@@ -15,10 +15,6 @@
 package io.crysknife.generator;
 
 import com.google.auto.common.MoreElements;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.client.internal.AbstractEventHandler;
 import io.crysknife.client.internal.event.EventManager;
@@ -28,8 +24,8 @@ import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.helpers.MethodCallGenerator;
-import io.crysknife.util.StringOutputStream;
 import io.crysknife.logger.TreeLogger;
 
 import jakarta.enterprise.event.Observes;
@@ -39,10 +35,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,23 +46,16 @@ import java.util.function.BiConsumer;
 @Generator(priority = 1000)
 public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
-  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+  private final FreemarkerTemplateGenerator freemarkerTemplateSubscribeGenerator =
+      new FreemarkerTemplateGenerator("observes/subscribe.ftlh");
 
-  private Template tempSubscribe;
-  private Template tempConsumer;
-  private Template tempOnDestroy;
+  private final FreemarkerTemplateGenerator freemarkerTemplateConsumereGenerator =
+      new FreemarkerTemplateGenerator("observes/consumer.ftlh");
+
+  private final FreemarkerTemplateGenerator freemarkerTemplateOnDestroyGenerator =
+      new FreemarkerTemplateGenerator("observes/onDestroy.ftlh");
 
   private final MethodCallGenerator methodCallGenerator = new MethodCallGenerator(iocContext);
-
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/observes/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
-
 
   public ObservesGenerator(TreeLogger logger, IOCContext iocContext) {
     super(logger, iocContext);
@@ -127,18 +112,8 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     root.put("target", target);
     root.put("consumer", consumer);
 
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      if (tempSubscribe == null) {
-        tempSubscribe = cfg.getTemplate("subscribe.ftlh");
-      }
-      tempSubscribe.process(root, out);
-      classMetaInfo.addToDoInitInstance(os::toString);
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
-    } catch (IOException e) {
-      throw new GenerationException(e);
-    }
+    String source = freemarkerTemplateSubscribeGenerator.toSource(root);
+    classMetaInfo.addToDoInitInstance(() -> source);
   }
 
   private void addConsumerField(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition,
@@ -154,19 +129,8 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
         methodDefinition.getExecutableElement(), List.of("event"));
     root.put("call", call);
 
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      if (tempConsumer == null) {
-        tempConsumer = cfg.getTemplate("consumer.ftlh");
-      }
-      tempConsumer.process(root, out);
-      classMetaInfo.addToBody(os::toString);
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
-    } catch (IOException e) {
-      throw new GenerationException(e);
-    }
-
+    String source = freemarkerTemplateConsumereGenerator.toSource(root);
+    classMetaInfo.addToBody(() -> source);
   }
 
   private void addToOnDestroy(ClassMetaInfo classMetaInfo, String target, String consumer) {
@@ -174,18 +138,8 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     root.put("target", target);
     root.put("subscriber", consumer);
 
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, "UTF-8")) {
-      if (tempOnDestroy == null) {
-        tempOnDestroy = cfg.getTemplate("onDestroy.ftlh");
-      }
-      tempOnDestroy.process(root, out);
-      classMetaInfo.addToOnDestroy(os::toString);
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
-    } catch (IOException e) {
-      throw new GenerationException(e);
-    }
+    String source = freemarkerTemplateOnDestroyGenerator.toSource(root);
+    classMetaInfo.addToOnDestroy(() -> source);
   }
 
   private String getConsumer(ExecutableElement beanDefinition, VariableElement parameter) {

@@ -16,30 +16,20 @@
 package io.crysknife.generator;
 
 import com.google.auto.common.MoreTypes;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.annotation.CircularDependency;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.client.internal.proxy.ProxyBeanFactory;
 import io.crysknife.definition.BeanDefinition;
-import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.StringOutputStream;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.TypeUtils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,18 +43,8 @@ import java.util.stream.Collectors;
 @Generator
 public class ProxyGenerator extends IOCGenerator<BeanDefinition> {
 
-  private Template temp;
-
-  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
-
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
+  private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
+      new FreemarkerTemplateGenerator("proxy.ftlh");
 
   private static List<String> OBJECT_METHODS = new ArrayList<>() {
     {
@@ -119,18 +99,8 @@ public class ProxyGenerator extends IOCGenerator<BeanDefinition> {
         .map(this::addMethod).collect(Collectors.toSet());
     root.put("methods", methods);
 
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-      if (temp == null) {
-        temp = cfg.getTemplate("proxy.ftlh");
-      }
-      temp.process(root, out);
-      classMetaInfo.addToBody(() -> os.toString());
-    } catch (UnsupportedEncodingException | TemplateException e) {
-      throw new GenerationException(e);
-    } catch (IOException e) {
-      throw new GenerationException(e);
-    }
+    String source = freemarkerTemplateGenerator.toSource(root);
+    classMetaInfo.addToBody(() -> source);
   }
 
   private void validate(BeanDefinition beanDefinition) {
