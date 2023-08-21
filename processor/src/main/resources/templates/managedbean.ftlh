@@ -80,13 +80,6 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
     </#list>
         return (${bean}) instance;
     }
-<#--<#if jre>
-<#else>
-        this.interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
-        instance = this.interceptor.getProxy();
-        this.interceptor.addGetPropertyInterceptor(Reflect.objectProperty("f_headingElement__io_crysknife_demo_client_Elemental2Bean_", this.instance), new OnFieldAccessed(() -> this._field_headingElement.get()));
-        this.interceptor.addGetPropertyInterceptor(Reflect.objectProperty("f_buttonElement__io_crysknife_demo_client_Elemental2Bean_", this.instance), new OnFieldAccessed(() -> this._field_buttonElement.get()));
-</#if>-->
 
     @Override()
     public void doInitInstance(${bean} instance) {
@@ -143,5 +136,18 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
         super(beanManager);
     }
 
+<#if !jre>
+    <#if privateMethods?? && privateMethods?size != 0>
+    @JsType(isNative=true, namespace="${package}", name="${bean}")
+    public static class ${bean}Proxy {
+        <#list privateMethods as mangle>
+            @JsProperty(name="${mangle}")
+            public Function ${mangle};
+        </#list>
+    }
+    </#if>
+
+
+</#if>
 
 }

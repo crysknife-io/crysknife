@@ -20,34 +20,41 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.google.auto.common.MoreTypes;
+import elemental2.core.Function;
 import io.crysknife.client.InstanceFactory;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassMetaInfo;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.ExecutionEnv;
+import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.helpers.PostConstructAnnotationGenerator;
 import io.crysknife.generator.helpers.PreDestroyAnnotationGenerator;
+import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.TypeUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-
-import io.crysknife.generator.api.Generator;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.logger.TreeLogger;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.util.ElementFilter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -59,7 +66,7 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
 
   private final FreemarkerTemplateGenerator freemarkerTemplateGenerator =
       new FreemarkerTemplateGenerator("managedbean.ftlh");
-
+  private final J2CLUtils j2CLUtils;
   private PreDestroyAnnotationGenerator preDestroyAnnotation =
       new PreDestroyAnnotationGenerator(iocContext);
   private PostConstructAnnotationGenerator postConstructAnnotation =
@@ -67,6 +74,7 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
 
   public ManagedBeanGenerator(TreeLogger treeLogger, IOCContext iocContext) {
     super(treeLogger, iocContext);
+    this.j2CLUtils = new J2CLUtils(iocContext.getGenerationContext().getProcessingEnvironment());
   }
 
   @Override
@@ -79,36 +87,79 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
 
   @Override
   public void generate(ClassMetaInfo classMetaInfo, BeanDefinition beanDefinition) {
-    Map<String, Object> root = new HashMap<>();
+    Map<String, Object> beanDTO = new HashMap<>();
     List<Dep> fields = new ArrayList<>();
 
-    root.put("jre", iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE));
-    root.put("package", beanDefinition.getPackageName());
-    root.put("clazz", beanDefinition.getSimpleClassName().replaceAll("\\.", "_"));
-    root.put("bean", beanDefinition.getSimpleClassName());
-    root.put("isDependent", TypeUtils.isDependent(beanDefinition));
-    root.put("imports", classMetaInfo.getImports());
-    root.put("deps", fields);
-    root.put("isProxy", beanDefinition.isProxy());
+    beanDTO.put("jre",
+        iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE));
+    beanDTO.put("package", beanDefinition.getPackageName());
+    beanDTO.put("clazz", beanDefinition.getSimpleClassName().replaceAll("\\.", "_"));
+    beanDTO.put("bean", beanDefinition.getSimpleClassName());
+    beanDTO.put("isDependent", TypeUtils.isDependent(beanDefinition));
+    beanDTO.put("imports", classMetaInfo.getImports());
+    beanDTO.put("deps", fields);
+    beanDTO.put("isProxy", beanDefinition.isProxy());
 
-    constructor(beanDefinition, root, fields);
+    constructor(beanDefinition, beanDTO, fields);
     deps(beanDefinition, fields);
 
+    privateMethods(beanDefinition, classMetaInfo, beanDTO);
     fieldDecorators(beanDefinition, classMetaInfo);
-    interceptorFieldDecorators(beanDefinition, root);
+    interceptorFieldDecorators(beanDefinition, beanDTO);
     methodDecorators(beanDefinition, classMetaInfo);
     classDecorators(beanDefinition, classMetaInfo);
-    postConstruct(beanDefinition, root);
+    postConstruct(beanDefinition, beanDTO);
     preDestroy(classMetaInfo, beanDefinition);
 
-    root.put("fields", classMetaInfo.getBodyStatements());
-    root.put("preDestroy", classMetaInfo.getOnDestroy());
-    root.put("doInitInstance", classMetaInfo.getDoInitInstance());
-    root.put("doCreateInstance", classMetaInfo.getDoCreateInstance());
+    beanDTO.put("fields", classMetaInfo.getBodyStatements());
+    beanDTO.put("preDestroy", classMetaInfo.getOnDestroy());
+    beanDTO.put("doInitInstance", classMetaInfo.getDoInitInstance());
+    beanDTO.put("doCreateInstance", classMetaInfo.getDoCreateInstance());
 
-    String source = freemarkerTemplateGenerator.toSource(root);
+    String source = freemarkerTemplateGenerator.toSource(beanDTO);
     String fileName = TypeUtils.getQualifiedFactoryName(beanDefinition.getType());
     writeJavaFile(fileName, source);
+  }
+
+  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
+    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
+
+    MethodCallExpr call = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
+
+    if (fieldPoint.getImplementation().isEmpty()) {
+      List<AnnotationMirror> qualifiers = new ArrayList<>(
+          TypeUtils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
+      for (AnnotationMirror qualifier : qualifiers) {
+        call.addArgument(generationUtils.createQualifierExpression(qualifier));
+      }
+      Named named = fieldPoint.getVariableElement().getAnnotation(Named.class);
+      if (named != null) {
+        call.addArgument(new MethodCallExpr(
+            new NameExpr("io.crysknife.client.internal.QualifierUtil"), "createNamed")
+                .addArgument(new StringLiteralExpr(
+                    fieldPoint.getVariableElement().getAnnotation(Named.class).value())));
+      }
+    }
+    return call.toString();
+  }
+
+  private void privateMethods(BeanDefinition beanDefinition, ClassMetaInfo classMetaInfo,
+      Map<String, Object> root) {
+    if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+      Set<String> methods = ElementFilter
+          .methodsIn(MoreTypes.asTypeElement(beanDefinition.getType()).getEnclosedElements())
+          .stream().filter(method -> method.getModifiers().contains(Modifier.PRIVATE))
+          .filter(method -> !method.getModifiers().contains(Modifier.NATIVE))
+          .map(method -> j2CLUtils.createDeclarationMethodDescriptor(method).getMangledName())
+          .collect(Collectors.toSet());
+      if (!methods.isEmpty()) {
+        classMetaInfo.addImport(JsType.class);
+        classMetaInfo.addImport(JsProperty.class);
+        classMetaInfo.addImport(Function.class);
+        root.put("privateMethods", methods);
+      }
+    }
   }
 
   private void interceptorFieldDecorators(BeanDefinition beanDefinition, Map<String, Object> root) {
@@ -211,29 +262,6 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
     }
 
     return String.format("() -> %s", beanCall);
-  }
-
-  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
-    String typeQualifiedName = generationUtils.getActualQualifiedBeanName(fieldPoint);
-
-    MethodCallExpr call = new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-        .addArgument(new FieldAccessExpr(new NameExpr(typeQualifiedName), "class"));
-
-    if (fieldPoint.getImplementation().isEmpty()) {
-      List<AnnotationMirror> qualifiers = new ArrayList<>(
-          TypeUtils.getAllElementQualifierAnnotations(iocContext, fieldPoint.getVariableElement()));
-      for (AnnotationMirror qualifier : qualifiers) {
-        call.addArgument(generationUtils.createQualifierExpression(qualifier));
-      }
-      Named named = fieldPoint.getVariableElement().getAnnotation(Named.class);
-      if (named != null) {
-        call.addArgument(new MethodCallExpr(
-            new NameExpr("io.crysknife.client.internal.QualifierUtil"), "createNamed")
-                .addArgument(new StringLiteralExpr(
-                    fieldPoint.getVariableElement().getAnnotation(Named.class).value())));
-      }
-    }
-    return call.toString();
   }
 
   public static class Dep {

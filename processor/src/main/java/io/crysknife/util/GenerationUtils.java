@@ -54,7 +54,14 @@ import jsinterop.base.Js;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import java.lang.reflect.Method;
@@ -71,10 +78,6 @@ public class GenerationUtils {
   public GenerationUtils(IOCContext context) {
     this.context = context;
     this.j2CLUtils = new J2CLUtils(context.getGenerationContext().getProcessingEnvironment());
-  }
-
-  public TypeMirror erase(TypeMirror mirror) {
-    return context.getGenerationContext().getTypes().erasure(mirror);
   }
 
   public TypeMirror asMemberOf(DeclaredType containing, Element element) {
@@ -109,7 +112,6 @@ public class GenerationUtils {
     return typeQualifiedName;
   }
 
-
   public Expression getFieldAccessCallExpr(BeanDefinition beanDefinition, VariableElement field) {
     if (!field.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
       if (isTheSame(beanDefinition.getType(), field.getEnclosingElement().asType())) {
@@ -130,28 +132,6 @@ public class GenerationUtils {
     parent = context.getGenerationContext().getTypes().erasure(parent);
     child = context.getGenerationContext().getTypes().erasure(child);
     return context.getGenerationContext().getTypes().isSameType(parent, child);
-  }
-
-  public boolean isAccessible(TypeMirror caller, ExecutableElement method) {
-    TypeMirror methodEnclosingElement = method.getEnclosingElement().asType();
-
-    if (!context.getGenerationContext().getTypes().isAssignable(erase(caller),
-        erase(methodEnclosingElement))) {
-      return false;
-    }
-
-    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PUBLIC)) {
-      return true;
-    }
-
-    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
-      return false;
-    }
-
-    PackageElement methodPackageElement = MoreElements.getPackage(method);
-    PackageElement callerElement = MoreElements.getPackage(MoreTypes.asTypeElement(caller));
-
-    return callerElement.equals(methodPackageElement);
   }
 
   public boolean isAssignableFrom(TypeMirror typeMirror, Class<?> targetClass) {
@@ -260,61 +240,6 @@ public class GenerationUtils {
     }
   }
 
-  public Expression getFieldAccessorExpression(InjectableVariableDefinition fieldPoint,
-      String kind) {
-
-    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
-
-    if (fieldPoint.getEnclosingBeanDefinition() instanceof ProducesBeanDefinition) {
-      throw new GenerationException(fieldPoint.getVariableElement().getSimpleName().toString());
-    }
-
-
-    if (kind.equals("constructor")) {
-      return new MethodCallExpr(
-          new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
-    }
-
-    String jsFieldName =
-        j2CLUtils.createFieldDescriptor(fieldPoint.getVariableElement()).getMangledName();
-    MethodCallExpr reflect =
-        new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
-            .addArgument(new StringLiteralExpr(jsFieldName))
-            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
-
-    LambdaExpr lambda = new LambdaExpr();
-    lambda.setEnclosingParameters(true);
-    lambda.setBody(new ExpressionStmt(
-        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
-
-    ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
-    onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
-    onFieldAccessedCreationExpr.addArgument(lambda);
-
-    return new MethodCallExpr(new NameExpr("interceptor"), "addGetPropertyInterceptor")
-        .addArgument(reflect).addArgument(onFieldAccessedCreationExpr);
-  }
-
-  // Closure aggressively inline methods, so if method is private and never called, most likely it
-  // ll be removed
-  private Statement generatePrivateJ2CLMethodCall(ExecutableElement method, Expression[] args) {
-    String valueName = j2CLUtils.createDeclarationMethodDescriptor(method).getMangledName();
-
-    MethodCallExpr bind = new MethodCallExpr(new EnclosedExpr(new CastExpr(
-        new ClassOrInterfaceType().setName("elemental2.core.Function"),
-        new MethodCallExpr(new NameExpr("elemental2.core.Reflect"), "get").addArgument("instance")
-            .addArgument(
-                new MethodCallExpr(new NameExpr("io.crysknife.client.Reflect"), "objectProperty")
-                    .addArgument(new StringLiteralExpr(valueName)).addArgument("instance")))),
-        "bind").addArgument("instance");
-
-    for (Expression arg : args) {
-      bind.addArgument(arg);
-    }
-
-    return new ExpressionStmt(new MethodCallExpr(bind, "call"));
-  }
-
   private TryStmt generatePrivateJREMethodCall(ExecutableElement method, Expression[] args) {
     ThrowStmt throwStmt = new ThrowStmt(new ObjectCreationExpr()
         .setType(new ClassOrInterfaceType().setName("Error")).addArgument("e"));
@@ -353,5 +278,84 @@ public class GenerationUtils {
     ts.setTryBlock(blockStmt);
 
     return ts;
+  }
+
+  private Statement generatePrivateJ2CLMethodCall(ExecutableElement method, Expression[] args) {
+    String mangleName = j2CLUtils.createDeclarationMethodDescriptor(method).getMangledName();
+    TypeMirror parent =
+        context.getGenerationContext().getTypes().erasure(method.getEnclosingElement().asType());
+    String factoryName = TypeUtils.getQualifiedFactoryName(parent);
+
+    MethodCallExpr bind = new MethodCallExpr(new FieldAccessExpr(new EnclosedExpr(new CastExpr(
+        new ClassOrInterfaceType().setName(factoryName + "."
+            + MoreTypes.asTypeElement(parent).getSimpleName().toString() + "Proxy"),
+        new MethodCallExpr(new NameExpr("jsinterop.base.Js"), "uncheckedCast")
+            .addArgument("instance"))),
+        mangleName), "bind").addArgument("instance");
+    for (Expression arg : args) {
+      bind.addArgument(arg);
+    }
+
+    return new ExpressionStmt(new MethodCallExpr(bind, "call"));
+  }
+
+  public boolean isAccessible(TypeMirror caller, ExecutableElement method) {
+    TypeMirror methodEnclosingElement = method.getEnclosingElement().asType();
+
+    if (!context.getGenerationContext().getTypes().isAssignable(erase(caller),
+        erase(methodEnclosingElement))) {
+      return false;
+    }
+
+    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PUBLIC)) {
+      return true;
+    }
+
+    if (method.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
+      return false;
+    }
+
+    PackageElement methodPackageElement = MoreElements.getPackage(method);
+    PackageElement callerElement = MoreElements.getPackage(MoreTypes.asTypeElement(caller));
+
+    return callerElement.equals(methodPackageElement);
+  }
+
+  public TypeMirror erase(TypeMirror mirror) {
+    return context.getGenerationContext().getTypes().erasure(mirror);
+  }
+
+  public Expression getFieldAccessorExpression(InjectableVariableDefinition fieldPoint,
+      String kind) {
+
+    String varName = "_" + kind + "_" + fieldPoint.getVariableElement().getSimpleName().toString();
+
+    if (fieldPoint.getEnclosingBeanDefinition() instanceof ProducesBeanDefinition) {
+      throw new GenerationException(fieldPoint.getVariableElement().getSimpleName().toString());
+    }
+
+    if (kind.equals("constructor")) {
+      return new MethodCallExpr(
+          new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get"), "getInstance");
+    }
+
+    String jsFieldName =
+        j2CLUtils.createFieldDescriptor(fieldPoint.getVariableElement()).getMangledName();
+    MethodCallExpr reflect =
+        new MethodCallExpr(new NameExpr(Reflect.class.getSimpleName()), "objectProperty")
+            .addArgument(new StringLiteralExpr(jsFieldName))
+            .addArgument(new FieldAccessExpr(new ThisExpr(), "instance"));
+
+    LambdaExpr lambda = new LambdaExpr();
+    lambda.setEnclosingParameters(true);
+    lambda.setBody(new ExpressionStmt(
+        new MethodCallExpr(new FieldAccessExpr(new ThisExpr(), varName), "get")));
+
+    ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
+    onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
+    onFieldAccessedCreationExpr.addArgument(lambda);
+
+    return new MethodCallExpr(new NameExpr("interceptor"), "addGetPropertyInterceptor")
+        .addArgument(reflect).addArgument(onFieldAccessedCreationExpr);
   }
 }
