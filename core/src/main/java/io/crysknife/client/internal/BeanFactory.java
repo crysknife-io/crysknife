@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21
@@ -76,8 +77,6 @@ public abstract class BeanFactory<T> {
 
   protected T createInstanceInternal() {
     T instance = createInstance();
-    dependentBeans.put(instance, new HashSet<>(tempDependentBeans));
-    tempDependentBeans.clear();
     return addBeanInstanceToPool(instance, this);
   }
 
@@ -106,22 +105,41 @@ public abstract class BeanFactory<T> {
     return beanManager.addBeanInstanceToPool(instance, factory);
   }
 
-  public <D> D addDependencyConstructor(InstanceFactory<D> factory) {
-    return addDependency(factory, tempDependentBeans);
+  private final Predicate<InstanceFactory> isDependent = factory -> {
+    if (factory instanceof SyncBeanDef) {
+      SyncBeanDef<?> beanDef = (SyncBeanDef<?>) factory;
+      return beanDef.getFactory().isPresent() && beanDef.getScope().equals(Dependent.class);
+    }
+    return false;
+  };
+
+  public <D> D addDependencyConstructor(InstanceFactory<D> factory, Set<Object> deps) {
+    D instance = factory.getInstance();
+    if (isDependent.test(factory)) {
+      deps.add(instance);
+    }
+    return instance;
+  }
+
+  public void addDependencyConstructor(T instance, Set<Object> deps) {
+    if (!dependentBeans.containsKey(instance)) {
+      dependentBeans.put(instance, new HashSet<>());
+    }
+    dependentBeans.get(instance).addAll(deps);
   }
 
   public <D> D addDependencyField(T instance, InstanceFactory<D> factory) {
+    if (!dependentBeans.containsKey(instance)) {
+      dependentBeans.put(instance, new HashSet<>());
+    }
     return addDependency(factory, dependentBeans.get(instance));
   }
 
   // TODO use disposable interface
   private <D> D addDependency(InstanceFactory<D> factory, Set<Object> holder) {
     D instance = factory.getInstance();
-    if (factory instanceof SyncBeanDef) {
-      SyncBeanDef<D> beanDef = (SyncBeanDef<D>) factory;
-      if (beanDef.getFactory().isPresent() && beanDef.getScope().equals(Dependent.class)) {
-        holder.add(instance);
-      }
+    if (isDependent.test(factory)) {
+      holder.add(instance);
     }
     return instance;
   }

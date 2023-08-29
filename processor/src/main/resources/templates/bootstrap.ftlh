@@ -11,13 +11,14 @@ import io.crysknife.client.BeanManager;
 import io.crysknife.client.InstanceFactory;
 
 <#if !jre>
+import java.util.function.BiFunction;
 import io.crysknife.client.internal.proxy.Interceptor;
 import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.client.Reflect;
 </#if>
 
 <#list imports as import>
-    import ${import};
+import ${import};
 </#list>
 
 public class ${bean}Bootstrap {
@@ -78,7 +79,7 @@ public class ${bean}Bootstrap {
         this.interceptor = new Interceptor(instance);
         instance = interceptor.getProxy();
 <#list fieldInterceptors as call>
-        ${call.getInstance()?no_esc};
+        ${call?no_esc};
 </#list>
     }
 </#if>
@@ -88,16 +89,16 @@ public class ${bean}Bootstrap {
 
         private final Supplier<InstanceFactory> supplier;
 
-        public OnFieldAccessed(Supplier<InstanceFactory> supplier) {
+        public OnFieldAccessed(${bean}Bootstrap appbootstrap, Supplier<InstanceFactory> supplier) {
             this.supplier = supplier;
         }
 
         @Override
         public Object apply(Object o, String propertyKey) {
-            if (Reflect.get(o, propertyKey) == null) {
-                Reflect.set(o, propertyKey, supplier.get().getInstance());
+            if (elemental2.core.Reflect.get(o, propertyKey) == null) {
+              elemental2.core.Reflect.set(o, propertyKey, supplier.get().getInstance());
             }
-            return Reflect.get(o, propertyKey);
+            return elemental2.core.Reflect.get(o, propertyKey);
        }
     }
 </#if>

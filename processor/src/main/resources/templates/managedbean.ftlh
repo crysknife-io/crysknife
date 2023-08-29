@@ -2,6 +2,8 @@ package ${package};
 
 import java.lang.annotation.Annotation;
 import java.util.function.Supplier;
+import java.util.Set;
+import java.util.HashSet;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Provider;
 
@@ -27,28 +29,29 @@ import ${import};
 
 public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean}> {
 
-<#list fields as call>
+    <#list fields as call>
     ${call?no_esc}
-</#list>
+    </#list>
 
-<#list deps as dep>
+    <#list deps as dep>
     private Supplier<InstanceFactory<${dep.fqdn}>> ${dep.fieldName} = ${dep.call?no_esc};
-</#list>
+    </#list>
 
     @Override()
     public ${bean} createInstance() {
-<#if !jre>
+        Set deps = new HashSet();
+    <#if !jre>
     <#if isDependent>
         final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
     <#else>
-        <#if isProxy>
+            <#if isProxy>
             interceptor = new Interceptor(new Proxy${bean}());
-        <#else>
-        if (this.instance != null) {
-            return (${bean}) instance;
-        }
-        final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
-        </#if>
+            <#else>
+            if (this.instance != null) {
+                return (${bean}) instance;
+            }
+            final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+            </#if>
     </#if>
         <#if isDependent>${bean} </#if>instance = interceptor.getProxy();
     <#list fieldInterceptors as call>
@@ -69,7 +72,8 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
     </#if>
   </#if>
 </#if>
-
+        addDependencyConstructor(instance, deps);
+        deps.clear();
     <#list doCreateInstance as call>
         ${call?no_esc};
     </#list>

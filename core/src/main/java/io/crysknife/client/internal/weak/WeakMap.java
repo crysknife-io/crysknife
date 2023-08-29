@@ -15,6 +15,7 @@
 package io.crysknife.client.internal.weak;
 
 import elemental2.core.JsWeakMap;
+import org.treblereel.gwt.utils.GwtIncompatible;
 
 import java.util.Map;
 
@@ -44,24 +45,30 @@ public class WeakMap<K, V> {
 
   private class WeakMapJRE<K, V> extends WeakMapJ2CL<K, V> {
 
+    @GwtIncompatible
     private final Map<K, V> holder = new java.util.WeakHashMap<>();
 
+    @GwtIncompatible
     public void clear() {
       holder.clear();
     }
 
+    @GwtIncompatible
     public boolean delete(K key) {
       return holder.remove(key) != null;
     }
 
+    @GwtIncompatible
     public V get(K key) {
       return holder.get(key);
     }
 
+    @GwtIncompatible
     public boolean has(K key) {
       return holder.containsKey(key);
     }
 
+    @GwtIncompatible
     public void set(K key, V value) {
       holder.put(key, value);
     }

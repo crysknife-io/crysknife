@@ -31,8 +31,11 @@ final class Proxy${bean} extends ${bean} implements io.crysknife.client.internal
 }
 
     private void initDelegate() {
+        Set deps = new HashSet();
         ${bean} delegate = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
         ((Proxy${bean}) instance).setInstance(delegate);
+        addDependencyConstructor(instance, deps);
+        deps.clear();
         doInitInstance(instance);
     }
 

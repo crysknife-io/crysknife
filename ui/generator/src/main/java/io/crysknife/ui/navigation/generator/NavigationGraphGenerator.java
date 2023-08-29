@@ -48,7 +48,7 @@ import io.crysknife.ui.navigation.client.internal.PageNode;
 import io.crysknife.util.GenerationUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
-import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Specializes;
 import jakarta.inject.Inject;
 
 import javax.annotation.processing.FilerException;
@@ -119,12 +119,12 @@ public class NavigationGraphGenerator {
     compilationUnit.addImport(BeanManager.class);
     compilationUnit.addImport(Event.class);
     compilationUnit.addImport(ApplicationScoped.class);
-    compilationUnit.addImport(Default.class);
+    compilationUnit.addImport(Specializes.class);
 
 
     classDeclaration.getExtendedTypes().add(new ClassOrInterfaceType().setName("NavigationGraph"));
     classDeclaration.addAnnotation(ApplicationScoped.class);
-    classDeclaration.addAnnotation(Default.class);
+    classDeclaration.addAnnotation(Specializes.class);
 
 
     ConstructorDeclaration constructorDeclaration =

@@ -353,6 +353,7 @@ public class GenerationUtils {
 
     ObjectCreationExpr onFieldAccessedCreationExpr = new ObjectCreationExpr();
     onFieldAccessedCreationExpr.setType(OnFieldAccessed.class.getSimpleName());
+    onFieldAccessedCreationExpr.addArgument(new NameExpr("this"));
     onFieldAccessedCreationExpr.addArgument(lambda);
 
     return new MethodCallExpr(new NameExpr("interceptor"), "addGetPropertyInterceptor")
