@@ -83,7 +83,8 @@ public class ProxyGenerator extends IOCGenerator<BeanDefinition> {
     if (!beanDefinition.getConstructorParams().isEmpty()) {
       params = beanDefinition.getConstructorParams().stream()
           .map(p -> "_constructor_" + p.getVariableElement().getSimpleName().toString())
-          .map(f -> "this." + f + ".get().getInstance()").collect(Collectors.joining(","));
+          .map(f -> "addDependencyConstructor(this." + f + ".get())")
+          .collect(Collectors.joining(","));
     }
 
     root.put("constructorParams", params);

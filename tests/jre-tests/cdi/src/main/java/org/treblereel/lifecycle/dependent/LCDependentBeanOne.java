@@ -12,11 +12,17 @@
  * the License.
  */
 
-package org.treblereel.check;
+package org.treblereel.lifecycle.dependent;
 
-
+import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.Dependent;
 
 @Dependent
-public class DBean {
+public class LCDependentBeanOne {
+
+
+    @PreDestroy
+    private void destroy() {
+        LCDependentBeanTrap.CLASSES.add(getClass());
+    }
 }

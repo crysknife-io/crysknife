@@ -216,7 +216,8 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
     if (!beanDefinition.getConstructorParams().isEmpty()) {
       params = beanDefinition.getConstructorParams().stream()
           .map(p -> "_constructor_" + p.getVariableElement().getSimpleName().toString())
-          .map(f -> "this." + f + ".get().getInstance()").collect(Collectors.joining(","));
+          .map(f -> "addDependencyConstructor(this." + f + ".get())")
+          .collect(Collectors.joining(","));
 
       beanDefinition.getConstructorParams().stream()
           .map(field -> processField(field, "constructor")).forEach(fields::add);

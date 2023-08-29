@@ -158,10 +158,11 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
       throw new GenerationException(e);
     }
 
-    TemplateDefinition templateDefinition = new TemplateDefinition();
+    TemplateDefinition templateDefinition =
+        new TemplateDefinition(beanDefinition.getSimpleClassName());
 
     maybeHasNotGetMethod(beanDefinition, templateDefinition);
-    classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate()");
+    classMetaInfo.addToDoCreateInstance(() -> "setAndInitTemplate(instance, interceptor)");
     setAndInitTemplate(classMetaInfo, beanDefinition, templateDefinition);
   }
 

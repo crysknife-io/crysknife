@@ -18,6 +18,7 @@ import io.crysknife.client.internal.SyncBeanDefImpl;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
@@ -82,5 +83,6 @@ public interface BeanManager {
    * @param ref The instance reference of the bean.
    */
   void destroyBean(Object ref);
-}
 
+  Optional<IOCBeanDef<?>> lookupBeanDefinition(Object ref);
+}

@@ -15,10 +15,15 @@
 package io.crysknife.client.internal;
 
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.SyncBeanDef;
 import jakarta.enterprise.context.Dependent;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21
@@ -27,11 +32,17 @@ public abstract class BeanFactory<T> {
 
   protected AbstractBeanManager beanManager;
 
-  protected SyncBeanDef beanDef;
+  protected SyncBeanDef<T> beanDef;
 
   protected T instance;
   private T incompleteInstance;
   private boolean initialized = false;
+
+  // It's ok to use HashSet here because we don't care about order and we don't need to synchronize.
+  // App is single threaded,
+  // so only one thread will access this, because only one bean can be created at a time.
+  private final Set<Object> tempDependentBeans = new HashSet<>();
+  private final Map<T, Set<Object>> dependentBeans = new HashMap<>();
 
   protected BeanFactory(BeanManager beanManager) {
     this.beanManager = (AbstractBeanManager) beanManager;
@@ -58,13 +69,6 @@ public abstract class BeanFactory<T> {
 
   }
 
-  public T createNewInstance() {
-    if (instance != null) {
-      createInstance();
-    }
-    return instance;
-  }
-
   protected T createInstance() {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");
@@ -72,6 +76,8 @@ public abstract class BeanFactory<T> {
 
   protected T createInstanceInternal() {
     T instance = createInstance();
+    dependentBeans.put(instance, new HashSet<>(tempDependentBeans));
+    tempDependentBeans.clear();
     return addBeanInstanceToPool(instance, this);
   }
 
@@ -86,12 +92,38 @@ public abstract class BeanFactory<T> {
 
   void onDestroyInternal(T instance) {
     onDestroy(instance);
+    if (dependentBeans.containsKey(instance)) {
+      for (Object dependentBean : dependentBeans.get(instance)) {
+        beanManager.destroyBean(dependentBean);
+      }
+    }
+    dependentBeans.remove(instance);
     this.instance = null;
-    initialized = false;
+    this.initialized = false;
   }
 
-  T addBeanInstanceToPool(T instance, BeanFactory<T> factory) {
+  private T addBeanInstanceToPool(T instance, BeanFactory<T> factory) {
     return beanManager.addBeanInstanceToPool(instance, factory);
+  }
+
+  public <D> D addDependencyConstructor(InstanceFactory<D> factory) {
+    return addDependency(factory, tempDependentBeans);
+  }
+
+  public <D> D addDependencyField(T instance, InstanceFactory<D> factory) {
+    return addDependency(factory, dependentBeans.get(instance));
+  }
+
+  // TODO use disposable interface
+  private <D> D addDependency(InstanceFactory<D> factory, Set<Object> holder) {
+    D instance = factory.getInstance();
+    if (factory instanceof SyncBeanDef) {
+      SyncBeanDef<D> beanDef = (SyncBeanDef<D>) factory;
+      if (beanDef.getFactory().isPresent() && beanDef.getScope().equals(Dependent.class)) {
+        holder.add(instance);
+      }
+    }
+    return instance;
   }
 
 }

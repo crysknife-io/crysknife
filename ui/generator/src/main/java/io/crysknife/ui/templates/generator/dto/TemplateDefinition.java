@@ -23,10 +23,15 @@ public class TemplateDefinition {
   private final List<Element> elements = new ArrayList<>();
 
   private final List<Event> events = new ArrayList<>();
+  private final String bean;
   private String html;
   private String rootElementPropertyName;
   private boolean initRootElement;
   private String css;
+
+  public TemplateDefinition(String bean) {
+    this.bean = bean;
+  }
 
 
   public List<Attribute> getAttributes() {
@@ -72,4 +77,9 @@ public class TemplateDefinition {
   public void setCss(String css) {
     this.css = css;
   }
+
+  public String getBean() {
+    return bean;
+  }
+
 }

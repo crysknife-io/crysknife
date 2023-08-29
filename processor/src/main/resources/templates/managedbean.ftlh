@@ -21,16 +21,11 @@ import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.client.Reflect;
 </#if>
 
-
 <#list imports as import>
 import ${import};
 </#list>
 
 public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean}> {
-
-<#if !jre>
-    private Interceptor interceptor;
-</#if>
 
 <#list fields as call>
     ${call?no_esc}
@@ -44,7 +39,7 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
     public ${bean} createInstance() {
 <#if !jre>
     <#if isDependent>
-        interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+        final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
     <#else>
         <#if isProxy>
             interceptor = new Interceptor(new Proxy${bean}());
@@ -52,17 +47,17 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
         if (this.instance != null) {
             return (${bean}) instance;
         }
-        interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+        final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
         </#if>
     </#if>
-        instance = interceptor.getProxy();
+        <#if isDependent>${bean} </#if>instance = interceptor.getProxy();
     <#list fieldInterceptors as call>
         ${call?no_esc};
     </#list>
 <#else>
 
   <#if isDependent>
-        instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+      ${bean} instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
   <#else>
     <#if isProxy>
         instance = new Proxy${bean}();
@@ -93,32 +88,26 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
 <#if isDependent>
     @Override()
     public ${bean} getInstance() {
-        if (!beanDef.getScope().equals(Dependent.class)) {
-            if (instance != null) {
-                return (${bean}) instance;
-            }
-        }
         ${bean} instance = createInstanceInternal();
         initInstance(instance);
-
         return instance;
     }
 <#else>
     @Override()
     public ${bean} getInstance() {
-<#if isProxy>
-    if (instance == null) {
-      createInstance();
-      initDelegate();
-    }
-<#else>
-    if (instance != null) {
-        return (${bean}) instance;
-    }
-    ${bean} instance = createInstanceInternal();
-    initInstance(instance);
-</#if>
-    return instance;
+        <#if isProxy>
+        if (instance == null) {
+          createInstance();
+          initDelegate();
+        }
+        <#else>
+        if (instance != null) {
+            return (${bean}) instance;
+        }
+        ${bean} instance = createInstanceInternal();
+        initInstance(instance);
+        </#if>
+        return instance;
     }
 
 </#if>

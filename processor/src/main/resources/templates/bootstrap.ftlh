@@ -4,7 +4,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import jakarta.inject.Provider;
 
-import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.BeanFactory;
@@ -79,9 +78,27 @@ public class ${bean}Bootstrap {
         this.interceptor = new Interceptor(instance);
         instance = interceptor.getProxy();
 <#list fieldInterceptors as call>
-        ${call?no_esc};
+        ${call.getInstance()?no_esc};
 </#list>
     }
 </#if>
 
+<#if !jre>
+    public final class OnFieldAccessed implements BiFunction<Object, String, Object> {
+
+        private final Supplier<InstanceFactory> supplier;
+
+        public OnFieldAccessed(Supplier<InstanceFactory> supplier) {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public Object apply(Object o, String propertyKey) {
+            if (Reflect.get(o, propertyKey) == null) {
+                Reflect.set(o, propertyKey, supplier.get().getInstance());
+            }
+            return Reflect.get(o, propertyKey);
+       }
+    }
+</#if>
 }

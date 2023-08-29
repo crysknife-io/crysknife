@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Red Hat, Inc. and/or its affiliates.
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,20 +12,12 @@
  * the License.
  */
 
-package io.crysknife.client.ioc;
+package org.treblereel.lifecycle.dependent;
 
-/**
- * A disposer exposes the bean managers explicit disposal functionality. An injected disposer can be
- * used to dispose of the parameterized bean type.
- *
- * @author Mike Brock
- */
-public interface Disposer<T> {
+import java.util.HashSet;
+import java.util.Set;
 
-  /**
-   * Requests that the bean manager dispose of the specified bean instance.
-   *
-   * @param beanInstance the instance of the bean to be disposed.
-   */
-  void dispose(T beanInstance);
+public class LCDependentBeanTrap {
+
+    public static final Set<Class> CLASSES = new HashSet<>();
 }

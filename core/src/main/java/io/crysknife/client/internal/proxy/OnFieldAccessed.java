@@ -18,22 +18,26 @@ import java.util.function.Supplier;
 
 import elemental2.core.Reflect;
 import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.internal.BeanFactory;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 1/1/20
  */
+@SuppressWarnings("rawtypes, unchecked")
 public final class OnFieldAccessed implements BiFunction<Object, String, Object> {
 
   private final Supplier<InstanceFactory> supplier;
+  private final BeanFactory beanFactory;
 
-  public OnFieldAccessed(Supplier<InstanceFactory> supplier) {
+  public OnFieldAccessed(BeanFactory beanFactory, Supplier<InstanceFactory> supplier) {
     this.supplier = supplier;
+    this.beanFactory = beanFactory;
   }
 
   @Override
   public Object apply(Object o, String propertyKey) {
     if (Reflect.get(o, propertyKey) == null) {
-      Reflect.set(o, propertyKey, supplier.get().getInstance());
+      Reflect.set(o, propertyKey, beanFactory.addDependencyField(o, supplier.get()));
     }
     return Reflect.get(o, propertyKey);
   }
