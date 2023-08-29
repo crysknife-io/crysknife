@@ -14,14 +14,12 @@
 
 package org.treblereel.injection;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.injection.managedinstance.SimpleBean;
 import org.treblereel.injection.qualifiers.specializes.SpecializesBeanImpl;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import org.treblereel.injection.specializes.ChildBeanSpecializes;
+import org.treblereel.injection.specializes.ParentBean;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,5 +35,10 @@ public class SpecializesTest extends AbstractTest {
         ((SpecializesBeanImpl) app.specializesBeanHolder.bean).getSimpleBean().say());
     assertEquals(SimpleBean.class.getCanonicalName(),
         ((SpecializesBeanImpl) app.specializesBeanHolder.bean).getLocalSimpleBean().say());
+  }
+
+  @Test
+  public void testSpecializesBean2() {
+    assertEquals(ChildBeanSpecializes.class, app.beanManager.lookupBean(ParentBean.class).getInstance().getClass());
   }
 }

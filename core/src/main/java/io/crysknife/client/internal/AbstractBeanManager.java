@@ -209,20 +209,6 @@ public abstract class AbstractBeanManager implements BeanManager {
   private <T> Collection<IOCBeanDef<T>> doLookupDefaultBean(Class<T> type) {
     Collection<IOCBeanDef<T>> candidates = new HashSet<>();
     BeanDefinitionHolder holder = beans.get(type);
-
-    // TODO this isn't really good, we should refactor it later
-    holder.qualifiers.entrySet().stream().filter(entry -> {
-      if (entry.getKey().isEmpty()) {
-        return true;
-      }
-
-      return entry.getKey().size() == 1 && entry.getKey().contains(DEFAULT_ANNOTATION);
-    }).map(entry -> (IOCBeanDef<T>) entry.getValue()).forEach(candidates::add);
-
-    if (!candidates.isEmpty()) {
-      return candidates;
-    }
-
     Optional<IOCBeanDef<T>> maybeTyped = of(holder, isTyped)
         .filter(bean -> Arrays.asList(((Typed) bean.getTyped().get()).value()).contains(type))
         .map(bean -> (IOCBeanDef<T>) bean).findFirst();
@@ -236,6 +222,19 @@ public abstract class AbstractBeanManager implements BeanManager {
             .map(bean -> (IOCBeanDef<T>) bean).findFirst();
     if (maybeSpecialized.isPresent()) {
       return setOf(maybeSpecialized.get());
+    }
+
+    // TODO this isn't really good, we should refactor it later
+    holder.qualifiers.entrySet().stream().filter(entry -> {
+      if (entry.getKey().isEmpty()) {
+        return true;
+      }
+
+      return entry.getKey().size() == 1 && entry.getKey().contains(DEFAULT_ANNOTATION);
+    }).map(entry -> (IOCBeanDef<T>) entry.getValue()).forEach(candidates::add);
+
+    if (!candidates.isEmpty()) {
+      return candidates;
     }
 
     Set<SyncBeanDef> beans = of(holder, hasFactory, isNotTyped).collect(Collectors.toSet());
