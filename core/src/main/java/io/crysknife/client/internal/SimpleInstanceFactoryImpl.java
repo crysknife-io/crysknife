@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright (C) 2011 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,19 +12,22 @@
  * the License.
  */
 
-package io.crysknife.client;
+package io.crysknife.client.internal;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
- */
-@FunctionalInterface
-public interface InstanceFactory<T> {
+import io.crysknife.client.InstanceFactory;
 
-  /**
-   * Returns an instance of the bean within the active scope.
-   *
-   * @return The bean instance.
-   */
-  T getInstance();
+import java.lang.ref.WeakReference;
 
+public class SimpleInstanceFactoryImpl<T> implements InstanceFactory<T> {
+
+  private WeakReference<T> instance;
+
+  public SimpleInstanceFactoryImpl(T instance) {
+    this.instance = new WeakReference<T>(instance);
+  }
+
+  @Override
+  public T getInstance() {
+    return instance.get();
+  }
 }

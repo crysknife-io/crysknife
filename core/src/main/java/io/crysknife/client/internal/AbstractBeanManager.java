@@ -17,6 +17,7 @@ import io.crysknife.client.BeanManager;
 import io.crysknife.client.IOCBeanDef;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.weak.WeakMap;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Typed;
 
 import java.lang.annotation.Annotation;
@@ -37,6 +38,7 @@ import static io.crysknife.client.internal.QualifierUtil.ANY_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_QUALIFIERS;
 import static io.crysknife.client.internal.QualifierUtil.SPECIALIZES_ANNOTATION;
+import static io.crysknife.client.internal.QualifierUtil.contains;
 import static io.crysknife.client.internal.QualifierUtil.matches;
 
 /**
@@ -112,6 +114,9 @@ public abstract class AbstractBeanManager implements BeanManager {
 
     if (qualifiers.length == 0) {
       return lookupBeans(type);
+    }
+    if (checkIfAny(qualifiers)) {
+      return doLookupAnyBeans(type, qualifiers);
     }
 
     of(beans.get(type)).filter(bean -> bean.matches(setOf(qualifiers))).map(f -> (SyncBeanDef<T>) f)
@@ -206,6 +211,25 @@ public abstract class AbstractBeanManager implements BeanManager {
     return candidates;
   }
 
+  private <T> Collection<SyncBeanDef<T>> doLookupAnyBeans(Class<T> type, Annotation[] q) {
+    Set<Annotation> qualifiers = new HashSet<>();
+    for (Annotation annotation : q) {
+      if (!annotation.annotationType().getName().equals(Any.class.getCanonicalName())) {
+        qualifiers.add(annotation);
+      }
+    }
+    BeanDefinitionHolder holder = beans.get(type);
+    Collection<SyncBeanDef<T>> candidates = new HashSet<>();
+    if (qualifiers.isEmpty()) {
+      Stream.concat(of(holder, hasFactory), holder.qualifiers.values().stream())
+          .forEach(candidates::add);
+    } else {
+      Stream.concat(of(holder, hasFactory), holder.qualifiers.values().stream())
+          .filter(bean -> bean.matches(qualifiers)).forEach(candidates::add);
+    }
+    return candidates;
+  }
+
   private <T> Collection<IOCBeanDef<T>> doLookupDefaultBean(Class<T> type) {
     Collection<IOCBeanDef<T>> candidates = new HashSet<>();
     BeanDefinitionHolder holder = beans.get(type);
@@ -270,10 +294,17 @@ public abstract class AbstractBeanManager implements BeanManager {
     return matches(a1, a2);
   }
 
+  private boolean checkIfAny(Annotation[] qualifiers) {
+    return qualifiers.length > 0 && isAny(qualifiers);
+  }
+
   private boolean isAny(Annotation[] qualifiers) {
-    Annotation[] a1 = new Annotation[] {qualifiers[0]};
-    Annotation[] a2 = new Annotation[] {ANY_ANNOTATION};
-    return matches(a1, a2);
+    for (Annotation annotation : qualifiers) {
+      if (annotation.annotationType().getName().equals(Any.class.getCanonicalName())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // replace it with setOf right after we move to Java 11 emulated by J2CL

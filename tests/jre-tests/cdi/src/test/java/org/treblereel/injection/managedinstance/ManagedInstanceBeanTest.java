@@ -268,7 +268,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
           }).getInstance();
     });
     assertEquals(
-        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers { org.treblereel.injection.managedinstance.ComponentQualifierTwo,  }",
+        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers { org.treblereel.injection.managedinstance.ComponentQualifierTwo }",
         exception.getMessage());
   }
 
@@ -287,7 +287,7 @@ public class ManagedInstanceBeanTest extends AbstractTest {
       }).get();
     });
     assertEquals(
-        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers { org.treblereel.injection.managedinstance.ComponentQualifierTwo,  }",
+        "No beans matched org.treblereel.injection.managedinstance.SimpleBean with qualifiers { org.treblereel.injection.managedinstance.ComponentQualifierTwo }",
         exception.getMessage());
   }
 

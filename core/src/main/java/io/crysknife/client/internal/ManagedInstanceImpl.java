@@ -17,10 +17,13 @@ package io.crysknife.client.internal;
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
+import jakarta.annotation.Nonnull;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21
@@ -31,7 +34,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   private final Class<T> type;
 
-  private Annotation[] qualifiers;
+  private final Annotation[] qualifiers;
 
   public ManagedInstanceImpl(BeanManager beanManager, Class<T> type) {
     this(beanManager, type, new Annotation[] {});
@@ -45,20 +48,23 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public ManagedInstance<T> select(Annotation... annotations) {
-    return new ManagedInstanceImpl<>(beanManager, type, annotations);
+    Annotation[] combined = Stream.concat(Arrays.stream(qualifiers), Arrays.stream(annotations))
+        .toArray(Annotation[]::new);
+    return new ManagedInstanceImpl<>(beanManager, type, combined);
   }
 
   @Override
-  public <U extends T> ManagedInstance<U> select(Class<U> subtype, Annotation... qualifiers) {
-    return new ManagedInstanceImpl<>(beanManager, subtype, qualifiers);
+  public <U extends T> ManagedInstance<U> select(Class<U> subtype, Annotation... annotations) {
+    Annotation[] combined = Stream.concat(Arrays.stream(qualifiers), Arrays.stream(annotations))
+        .toArray(Annotation[]::new);
+    return new ManagedInstanceImpl<>(beanManager, subtype, combined);
   }
 
   @Override
   public boolean isUnsatisfied() {
     if (qualifiers == null || qualifiers.length == 0) {
-      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+      return beanManager.lookupBeans(type, QualifierUtil.DEFAULT_ANNOTATION).size() != 1;
     }
-
     return beanManager.lookupBeans(type, qualifiers).size() != 1;
   }
 
@@ -69,15 +75,16 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public void destroy(T instance) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void destroyAll() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
+  @Nonnull
   public Iterator<T> iterator() {
     return new ManagedInstanceImplIterator<>(beanManager.lookupBeans(type, qualifiers));
   }
@@ -85,7 +92,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
   @Override
   public T get() {
     if (qualifiers.length == 0) {
-      qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+      return beanManager.lookupBean(type, QualifierUtil.DEFAULT_ANNOTATION).getInstance();
     }
     return beanManager.lookupBean(type, qualifiers).getInstance();
   }

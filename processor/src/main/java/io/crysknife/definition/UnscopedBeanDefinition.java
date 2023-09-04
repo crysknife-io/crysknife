@@ -14,10 +14,9 @@
 
 package io.crysknife.definition;
 
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.google.auto.common.MoreTypes;
-import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.client.internal.SimpleInstanceFactoryImpl;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -50,7 +49,7 @@ public class UnscopedBeanDefinition extends BeanDefinition {
 
       String clazzName = TypeUtils
           .getQualifiedName(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()));
-      return new ObjectCreationExpr().setType(InstanceImpl.class.getCanonicalName())
+      return new ObjectCreationExpr().setType(SimpleInstanceFactoryImpl.class.getCanonicalName())
           .addArgument(new ObjectCreationExpr().setType(clazzName)).toString();
 
     }

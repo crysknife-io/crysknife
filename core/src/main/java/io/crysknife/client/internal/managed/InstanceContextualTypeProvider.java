@@ -36,9 +36,6 @@ public class InstanceContextualTypeProvider implements ContextualTypeProvider<In
   @Override
   public Instance provide(Class<?>[] typeargs, Annotation[] qualifiers) {
     Class clazz = typeargs[0];
-    if (qualifiers.length > 0) {
-      return new InstanceImpl(manager.lookupBean(clazz, qualifiers));
-    }
-    return new InstanceImpl(manager.lookupBean(clazz));
+    return new InstanceImpl(manager, clazz, qualifiers);
   }
 }

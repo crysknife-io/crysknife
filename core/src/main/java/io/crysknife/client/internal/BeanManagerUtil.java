@@ -18,7 +18,9 @@ import io.crysknife.client.IOCBeanDef;
 import jakarta.inject.Named;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -56,12 +58,12 @@ public class BeanManagerUtil {
 
   public static String qualifiersToString(final Annotation[] qualifiers) {
     final StringBuilder builder = new StringBuilder().append("{ ");
-    for (final Annotation qualifier : qualifiers) {
-      builder.append(qualifierToString(qualifier));
-      builder.append(", ");
-    }
-    builder.append(" }");
 
+    String strings = Arrays.stream(qualifiers).map(BeanManagerUtil::qualifierToString)
+        .collect(Collectors.joining(", "));
+
+    builder.append(strings);
+    builder.append(" }");
     return builder.toString();
   }
 

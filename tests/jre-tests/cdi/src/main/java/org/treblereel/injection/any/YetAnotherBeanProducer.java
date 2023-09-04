@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021 Treblereel
+ * Copyright © 2023 Treblereel
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,19 +12,18 @@
  * the License.
  */
 
-package io.crysknife.client;
+package org.treblereel.injection.any;
 
-/**
- * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
- */
-@FunctionalInterface
-public interface InstanceFactory<T> {
 
-  /**
-   * Returns an instance of the bean within the active scope.
-   *
-   * @return The bean instance.
-   */
-  T getInstance();
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+
+@ApplicationScoped
+public class YetAnotherBeanProducer {
+
+    @Produces
+    public YetAnotherInterface produceDefault() {
+        return () -> YetAnotherBeanProducer.this.getClass().getSimpleName();
+    }
 
 }
