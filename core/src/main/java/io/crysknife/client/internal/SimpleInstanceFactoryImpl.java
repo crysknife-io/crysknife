@@ -15,15 +15,14 @@
 package io.crysknife.client.internal;
 
 import io.crysknife.client.InstanceFactory;
-
-import java.lang.ref.WeakReference;
+import io.crysknife.client.internal.weak.WeakReference;
 
 public class SimpleInstanceFactoryImpl<T> implements InstanceFactory<T> {
 
   private WeakReference<T> instance;
 
   public SimpleInstanceFactoryImpl(T instance) {
-    this.instance = new WeakReference<T>(instance);
+    this.instance = new WeakReference<>(instance);
   }
 
   @Override
