@@ -74,7 +74,6 @@
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.115</classgraph.classgraph.version>
 
-        <javaparser.core.version>3.15.18</javaparser.core.version>
         <elemental2.version>1.1.0</elemental2.version>
         <auto.common.version>0.11</auto.common.version>
         <auto.service.version>1.0-rc7</auto.service.version>
@@ -231,6 +230,7 @@
                         <exclude>**/*.properties</exclude>
                         <exclude>**/*.gwt.xml</exclude>
                         <exclude>**/*.native.js</exclude>
+                        <exclude>**/*.sh</exclude>
                     </excludes>
                     <properties>
                         <year>${project.inceptionYear}</year>

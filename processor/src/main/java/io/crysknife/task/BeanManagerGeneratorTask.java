@@ -262,7 +262,7 @@ public class BeanManagerGeneratorTask implements Task {
           type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
 
       ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
-      withAssignableTypes.setElementType("Class[]");
+      withAssignableTypes.setElementType(Class.class);
       withAssignableTypes.setInitializer(withAssignableTypesValues);
 
       builderCallExpr = new MethodCallExpr(builderCallExpr, "withAssignableTypes")
@@ -289,7 +289,7 @@ public class BeanManagerGeneratorTask implements Task {
       withAssignableTypesValues.getValues().add(new NameExpr("BeanManager.class"));
 
       ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
-      withAssignableTypes.setElementType("Class[]");
+      withAssignableTypes.setElementType(Class.class);
       withAssignableTypes.setInitializer(withAssignableTypesValues);
 
 
@@ -486,21 +486,11 @@ public class BeanManagerGeneratorTask implements Task {
         qualifiersExpression.add(new NameExpr("DEFAULT_ANNOTATION"));
       }
 
-      // ArrayInitializerExpr withAssignableTypesValues = new ArrayInitializerExpr();
-      // assignableTypes.forEach(
-      // type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
-
-      // ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
-      // withAssignableTypes.setElementType("Class[]");
-      // withAssignableTypes.setInitializer(withAssignableTypesValues);
-
       ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
       qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
       ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
-      withQualifiers.setElementType("Annotation[]");
+      withQualifiers.setElementType(Annotation.class);
       withQualifiers.setInitializer(withQualifiersValues);
-      // builderCallExpr = new MethodCallExpr(builderCallExpr, "withAssignableTypes")
-      // .addArgument(withAssignableTypes);
 
       if (!qualifiersExpression.isEmpty()) {
         builderCallExpr =

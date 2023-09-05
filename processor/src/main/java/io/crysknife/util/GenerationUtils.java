@@ -43,6 +43,7 @@ import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
 import io.crysknife.client.internal.InstanceImpl;
+import io.crysknife.client.internal.SimpleInstanceFactoryImpl;
 import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
@@ -181,7 +182,7 @@ public class GenerationUtils {
     LambdaExpr lambda = new LambdaExpr();
     lambda.setEnclosingParameters(true);
     lambda.setBody(new ExpressionStmt(call));
-    return new ObjectCreationExpr().setType(InstanceImpl.class.getCanonicalName())
+    return new ObjectCreationExpr().setType(SimpleInstanceFactoryImpl.class.getCanonicalName())
         .addArgument(call);
   }
 

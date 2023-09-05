@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.auto.common.MoreElements;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
@@ -93,9 +94,8 @@ public class Elemenatal2FactoryGenerator extends IOCGenerator<BeanDefinition> {
       throw new GenerationException("Unable to process "
           + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName()
               .toString()
-          + ", "
-          + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getEnclosingElement()
-          + "." + fieldPoint.getVariableElement().getSimpleName()
+          + ", " + MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()) + "."
+          + fieldPoint.getVariableElement().getSimpleName()
           + " must be annotated with @Named(\"tag_name\")");
     }
 

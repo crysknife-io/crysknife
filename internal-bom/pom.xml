@@ -77,7 +77,7 @@
         <org.treblereel.j2cl.processors.version>0.6-SNAPSHOT</org.treblereel.j2cl.processors.version>
         <gwt.jakarta.version>0.2</gwt.jakarta.version>
 
-        <javaparser.core.version>3.15.18</javaparser.core.version>
+        <javaparser.core.version>3.25.5</javaparser.core.version>
         <elemental2.version>1.1.0</elemental2.version>
         <auto.common.version>1.2.1</auto.common.version>
         <auto.service.version>1.0-rc7</auto.service.version>

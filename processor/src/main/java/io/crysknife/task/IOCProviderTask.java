@@ -49,6 +49,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -186,8 +187,11 @@ public class IOCProviderTask implements Task {
 
         if (context.getGenerationContext().getProcessingEnvironment().getTypeUtils()
             .isSameType(fieldEnclosingElement, beanEnclosing)) {
-          ((DeclaredType) fieldPoint.getVariableElement().asType()).getTypeArguments().forEach(
-              type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
+          ((DeclaredType) fieldPoint.getVariableElement().asType()).getTypeArguments().stream()
+              .map(t -> context.getGenerationContext().getProcessingEnvironment().getTypeUtils()
+                  .erasure(t))
+              .forEach(
+                  type -> withAssignableTypesValues.getValues().add(new NameExpr(type + ".class")));
         } else {
           List<TypeMirror> args = ((DeclaredType) fieldPoint.getVariableElement().asType())
               .getTypeArguments().stream().collect(Collectors.toUnmodifiableList());
@@ -215,7 +219,7 @@ public class IOCProviderTask implements Task {
         }
 
         ArrayCreationExpr withAssignableTypes = new ArrayCreationExpr();
-        withAssignableTypes.setElementType("Class<?>[]");
+        withAssignableTypes.setElementType(Class.class);
         withAssignableTypes.setInitializer(withAssignableTypesValues);
 
         methodCallExpr.addArgument(withAssignableTypes);
@@ -238,7 +242,7 @@ public class IOCProviderTask implements Task {
         ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
         qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
         ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
-        withQualifiers.setElementType("java.lang.annotation.Annotation[]");
+        withQualifiers.setElementType(Annotation.class);
         withQualifiers.setInitializer(withQualifiersValues);
         methodCallExpr.addArgument(withQualifiers);
 
