@@ -22,11 +22,13 @@ import org.treblereel.injection.dependent.SimpleBeanDependent;
 import org.treblereel.injection.inheritance.BeanChild;
 import org.treblereel.injection.managedinstance.any.DefaultPreferencesRegistry;
 import org.treblereel.injection.managedinstance.any.StunnerPreferencesRegistryLoader;
+import org.treblereel.injection.managedinstance.generics.GenericTypedBeanHolder;
 import org.treblereel.injection.managedinstance.inheritance.Child;
 import org.treblereel.injection.managedinstance.select.ManagedInstanceBeanHolder;
 import org.treblereel.injection.managedinstance.select.SimpleInterface;
 import org.treblereel.injection.managedinstance.typed.AbstractTypedBeanHolder;
 import org.treblereel.injection.managedinstance.typed.SimpleBeanAbstractTyped;
+import org.treblereel.injection.qualifiers.controls.LienzoCanvasCommandFactory;
 import org.treblereel.produces.qualifier.QualifierBean;
 
 import jakarta.enterprise.inject.Default;
@@ -426,4 +428,13 @@ public class ManagedInstanceBeanTest extends AbstractTest {
     assertEquals(SimpleBean.class, holder.get().getClass());
     assertEquals(BeanChild.class, holder.get2().getClass());
   }
+
+  @Test
+  public void testGenericTyped() {
+    GenericTypedBeanHolder holder = app.beanManager.lookupBean(GenericTypedBeanHolder.class).getInstance();
+    assertEquals(LienzoCanvasCommandFactory.class, holder.getCanvasCommandFactoryDirectField().getClass());
+    assertEquals(LienzoCanvasCommandFactory.class, holder.getCanvasCommandFactoryInstanceField().get().getClass());
+    assertEquals(LienzoCanvasCommandFactory.class, holder.getCanvasCommandFactoryInstanceConstructor().get().getClass());
+  }
+
 }
