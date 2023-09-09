@@ -1,7 +1,7 @@
 final class Proxy${bean} extends ${bean} implements io.crysknife.client.internal.proxy.CircularDependencyProxy<${bean}> {
 
     private Proxy${bean}() {
-    super(<#if constructorParams??>${nullConstructorParams}</#if>);
+        super(<#if constructorParams??>${nullConstructorParams?no_esc}</#if>);
     }
 
     private ${bean} instance;
@@ -9,7 +9,7 @@ final class Proxy${bean} extends ${bean} implements io.crysknife.client.internal
 
 <#if methods?? && methods?size != 0>
     <#list methods as method>
-    public ${method.returnType} ${method.name}(<#if method.parameters??>${method.parameters}</#if>) {
+    public ${method.returnType?no_esc} ${method.name}(<#if method.parameters??>${method.parameters?no_esc}</#if>) {
         <#if method.isVoid>
             this.instance.${method.name}(${method.parametersNames});
         <#else>
@@ -32,11 +32,17 @@ final class Proxy${bean} extends ${bean} implements io.crysknife.client.internal
 
     private void initDelegate() {
         Set deps = new HashSet();
+        <#if jre>
         ${bean} delegate = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+        <#else>
+        Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+        ${bean} delegate = interceptor.getProxy();
+        </#if>
+
         ((Proxy${bean}) instance).setInstance(delegate);
-        addDependencyConstructor(instance, deps);
+        addDependencyConstructor(delegate, deps);
         deps.clear();
-        doInitInstance(instance);
+        doInitInstance(delegate);
     }
 
     @Override

@@ -34,11 +34,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.crysknife.client.internal.QualifierUtil.ANY_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_QUALIFIERS;
 import static io.crysknife.client.internal.QualifierUtil.SPECIALIZES_ANNOTATION;
-import static io.crysknife.client.internal.QualifierUtil.contains;
 import static io.crysknife.client.internal.QualifierUtil.matches;
 
 /**

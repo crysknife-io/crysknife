@@ -41,26 +41,26 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
     public ${bean} createInstance() {
         Set deps = new HashSet();
     <#if !jre>
-    <#if isDependent>
-        final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
-    <#else>
+        <#if isDependent>
+            final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));
+        <#else>
             <#if isProxy>
-            interceptor = new Interceptor(new Proxy${bean}());
+            final Interceptor interceptor = new Interceptor(new Proxy${bean}());
             <#else>
             if (this.instance != null) {
                 return (${bean}) instance;
             }
-            final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams}</#if>));
+            final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));
             </#if>
     </#if>
         <#if isDependent>${bean} </#if>instance = interceptor.getProxy();
-    <#list fieldInterceptors as call>
-        ${call?no_esc};
-    </#list>
-<#else>
+        <#list fieldInterceptors as call>
+            ${call?no_esc};
+        </#list>
+    <#else>
 
   <#if isDependent>
-      ${bean} instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+      ${bean} instance = new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>);
   <#else>
     <#if isProxy>
         instance = new Proxy${bean}();
@@ -68,7 +68,7 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
         if (this.instance != null) {
           return (${bean}) instance;
         }
-        instance = new ${bean}(<#if constructorParams??>${constructorParams}</#if>);
+        instance = new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>);
     </#if>
   </#if>
 </#if>

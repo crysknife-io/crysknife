@@ -23,6 +23,7 @@ import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
+import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.logger.TreeLogger;
@@ -69,6 +70,7 @@ public class ProxyGenerator extends IOCGenerator<BeanDefinition> {
     classMetaInfo.addImport(ProxyBeanFactory.class);
     root.put("package", beanDefinition.getPackageName());
     root.put("bean", beanDefinition.getSimpleClassName());
+    root.put("jre", iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE));
 
     String nullConstructorParams = null;
     if (!beanDefinition.getConstructorParams().isEmpty()) {
