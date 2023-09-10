@@ -34,6 +34,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.crysknife.client.internal.QualifierUtil.ALTERNATIVE_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_QUALIFIERS;
 import static io.crysknife.client.internal.QualifierUtil.SPECIALIZES_ANNOTATION;
@@ -128,6 +129,12 @@ public abstract class AbstractBeanManager implements BeanManager {
     Collection<IOCBeanDef<T>> candidates = doLookupBean(type, QualifierUtil.DEFAULT_ANNOTATION);
 
     if (candidates.size() > 1) {
+      Set<SyncBeanDef<T>> maybeAlternative =
+          candidates.stream().map(bean -> (SyncBeanDefImpl<T>) bean)
+              .filter(SyncBeanDefImpl::isAlternative).collect(Collectors.toSet());
+      if (maybeAlternative.size() == 1) {
+        return maybeAlternative.iterator().next();
+      }
       throw BeanManagerUtil.ambiguousResolutionException(type, candidates, DEFAULT_ANNOTATION);
     } else if (candidates.isEmpty()) {
       throw BeanManagerUtil.unsatisfiedResolutionException(type, DEFAULT_ANNOTATION);

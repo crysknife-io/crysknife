@@ -14,6 +14,7 @@
 
 package io.crysknife.client.internal;
 
+import jakarta.enterprise.inject.Alternative;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Specializes;
@@ -67,6 +68,18 @@ public class QualifierUtil {
     @Override
     public String toString() {
       return "@Any";
+    };
+  };
+
+  public static final Annotation ALTERNATIVE_ANNOTATION = new Any() {
+    @Override
+    public Class<? extends Annotation> annotationType() {
+      return Alternative.class;
+    }
+
+    @Override
+    public String toString() {
+      return "@Alternative";
     };
   };
 

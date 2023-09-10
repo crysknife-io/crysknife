@@ -45,6 +45,8 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
   private Optional<BeanFactory<T>> factory = Optional.empty();
   private Optional<Typed> typed = Optional.empty();
 
+  private boolean isAlternative = false;
+
   protected SyncBeanDefImpl(final Class<T> actualType) {
     this.actualType = actualType;
     this.scope = Dependent.class;
@@ -180,6 +182,10 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     return builder.toString();
   }
 
+  public boolean isAlternative() {
+    return isAlternative;
+  }
+
   public static class Builder {
 
     private final Class<?> actualType;
@@ -188,6 +194,7 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
     private List<Class<?>> assignableTypes;
     private BeanFactory factory;
     private Typed typed;
+    private boolean isAlternative = false;
 
     public Builder(final Class<?> actualType, final Class<? extends Annotation> scope) {
       this.actualType = actualType;
@@ -214,6 +221,11 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
       return this;
     }
 
+    public Builder isAlternative() {
+      this.isAlternative = true;
+      return this;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> SyncBeanDefImpl<T> build() {
       SyncBeanDefImpl<T> definition = new SyncBeanDefImpl(actualType, scope);
@@ -232,6 +244,10 @@ public class SyncBeanDefImpl<T> implements SyncBeanDef<T> {
 
       if (typed != null) {
         definition.typed = Optional.of(typed);
+      }
+
+      if (isAlternative) {
+        definition.isAlternative = true;
       }
 
       return definition;

@@ -14,6 +14,7 @@
 
 package io.crysknife.definition;
 
+import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.annotation.CircularDependency;
 import io.crysknife.generator.api.IOCGenerator;
@@ -21,6 +22,7 @@ import io.crysknife.util.TypeUtils;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
@@ -91,6 +93,10 @@ public class BeanDefinition implements Definition {
 
   public boolean isProxy() {
     return MoreTypes.asTypeElement(type).getAnnotation(CircularDependency.class) != null;
+  }
+
+  public boolean isAlternative() {
+    return MoreElements.isAnnotationPresent(MoreTypes.asTypeElement(type), Alternative.class);
   }
 
   public String getPackageName() {

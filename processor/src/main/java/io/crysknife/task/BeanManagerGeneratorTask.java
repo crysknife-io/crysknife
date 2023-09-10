@@ -57,6 +57,7 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.TypeUtils;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Instance;
 import jakarta.enterprise.inject.Specializes;
@@ -223,6 +224,7 @@ public class BeanManagerGeneratorTask implements Task {
                   builderCallExpr =
                       maybeAddQualifierExpression(MoreTypes.asElement(erased), builderCallExpr);
                   builderCallExpr = maybeAddTypedExpression(bean, builderCallExpr);
+                  builderCallExpr = maybeAddAlternativeExpression(bean, builderCallExpr);
 
                   builderCallExpr = new MethodCallExpr(builderCallExpr, "withFactory").addArgument(
                       new ObjectCreationExpr().setType(TypeUtils.getQualifiedFactoryName(erased))
@@ -235,6 +237,13 @@ public class BeanManagerGeneratorTask implements Task {
               }
             }
           });
+    }
+
+    private Expression maybeAddAlternativeExpression(TypeMirror bean, Expression builderCallExpr) {
+      if (MoreTypes.asTypeElement(bean).getAnnotation(Alternative.class) != null) {
+        builderCallExpr = new MethodCallExpr(builderCallExpr, "isAlternative");
+      }
+      return builderCallExpr;
     }
 
     private Expression maybeAddTypedExpression(TypeMirror bean, Expression builderCallExpr) {
