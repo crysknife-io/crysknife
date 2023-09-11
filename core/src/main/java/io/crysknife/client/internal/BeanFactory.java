@@ -16,6 +16,7 @@ package io.crysknife.client.internal;
 
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
 import jakarta.enterprise.context.Dependent;
 
@@ -39,10 +40,6 @@ public abstract class BeanFactory<T> {
   private T incompleteInstance;
   private boolean initialized = false;
 
-  // It's ok to use HashSet here because we don't care about order and we don't need to synchronize.
-  // App is single threaded,
-  // so only one thread will access this, because only one bean can be created at a time.
-  private final Set<Object> tempDependentBeans = new HashSet<>();
   private final Map<T, Set<Object>> dependentBeans = new HashMap<>();
 
   protected BeanFactory(BeanManager beanManager) {
@@ -117,6 +114,8 @@ public abstract class BeanFactory<T> {
     D instance = factory.getInstance();
     if (isDependent.test(factory)) {
       deps.add(instance);
+    } else if (instance instanceof ManagedInstance) {
+      deps.add(instance);
     }
     return instance;
   }
@@ -139,6 +138,8 @@ public abstract class BeanFactory<T> {
   private <D> D addDependency(InstanceFactory<D> factory, Set<Object> holder) {
     D instance = factory.getInstance();
     if (isDependent.test(factory)) {
+      holder.add(instance);
+    } else if (instance instanceof ManagedInstance) {
       holder.add(instance);
     }
     return instance;

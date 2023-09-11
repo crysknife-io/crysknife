@@ -27,6 +27,7 @@ import io.crysknife.client.Reflect;
 import ${import};
 </#list>
 
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean}> {
 
     <#list fields as call>
@@ -39,7 +40,7 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
 
     @Override()
     public ${bean} createInstance() {
-        Set deps = new HashSet();
+        Set<Object> deps = new HashSet<>();
     <#if !jre>
         <#if isDependent>
             final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));

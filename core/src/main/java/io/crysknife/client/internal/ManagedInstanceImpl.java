@@ -18,11 +18,14 @@ import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
 import jakarta.annotation.Nonnull;
+import jakarta.enterprise.context.Dependent;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -35,6 +38,8 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
   private final Class<T> type;
 
   private final Annotation[] qualifiers;
+
+  private final Set<T> dependentInstances = new HashSet<>();
 
   public ManagedInstanceImpl(BeanManager beanManager, Class<T> type) {
     this(beanManager, type, new Annotation[] {});
@@ -75,29 +80,49 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public void destroy(T instance) {
-    throw new UnsupportedOperationException();
+    if (beanManager.lookupBeanDefinition(instance).isPresent()) {
+      if (beanManager.lookupBeanDefinition(instance).get().getScope().equals(Dependent.class)) {
+        beanManager.destroyBean(instance);
+        dependentInstances.remove(instance);
+      }
+    }
   }
 
   @Override
   public void destroyAll() {
-    throw new UnsupportedOperationException();
+    Set<T> removed = new HashSet<>();
+    for (T instance : dependentInstances) {
+      if (beanManager.lookupBeanDefinition(instance).isPresent()) {
+        if (beanManager.lookupBeanDefinition(instance).get().getScope().equals(Dependent.class)) {
+          beanManager.destroyBean(instance);
+          removed.add(instance);
+        }
+      }
+    }
+    dependentInstances.removeAll(removed);
   }
 
   @Override
   @Nonnull
   public Iterator<T> iterator() {
-    return new ManagedInstanceImplIterator<>(beanManager.lookupBeans(type, qualifiers));
+    return new ManagedInstanceImplIterator(beanManager.lookupBeans(type, qualifiers));
   }
 
   @Override
   public T get() {
     if (qualifiers.length == 0) {
-      return beanManager.lookupBean(type, QualifierUtil.DEFAULT_ANNOTATION).getInstance();
+      return addDependentInstance(
+          beanManager.lookupBean(type, QualifierUtil.DEFAULT_ANNOTATION).getInstance());
     }
-    return beanManager.lookupBean(type, qualifiers).getInstance();
+    return addDependentInstance(beanManager.lookupBean(type, qualifiers).getInstance());
   }
 
-  private static class ManagedInstanceImplIterator<T> implements Iterator<T> {
+  private T addDependentInstance(T instance) {
+    dependentInstances.add(instance);
+    return instance;
+  }
+
+  private class ManagedInstanceImplIterator implements Iterator<T> {
 
     private final Iterator<SyncBeanDef<T>> delegate;
 
@@ -113,7 +138,7 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
     @Override
     public T next() {
       final SyncBeanDef<T> bean = delegate.next();
-      return bean.getInstance();
+      return addDependentInstance(bean.getInstance());
     }
   }
 }

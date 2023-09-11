@@ -15,6 +15,7 @@ package io.crysknife.client.internal;
 
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.IOCBeanDef;
+import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.SyncBeanDef;
 import io.crysknife.client.internal.weak.WeakMap;
 import jakarta.enterprise.inject.Any;
@@ -285,6 +286,8 @@ public abstract class AbstractBeanManager implements BeanManager {
     if (pool.has(ref) && pool.get(ref).beanDef.getFactory().isPresent()) {
       pool.get(ref).onDestroyInternal(ref);
       pool.delete(ref);
+    } else if (ref instanceof ManagedInstance) {
+      ((ManagedInstance) ref).destroyAll();
     }
   }
 
