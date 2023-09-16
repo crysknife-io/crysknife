@@ -37,7 +37,7 @@ public class ${bean}Bootstrap {
 
 <#if deps?? && deps?size != 0>
     <#list deps as dep>
-    private Supplier<InstanceFactory<${dep.fqdn}>> ${dep.fieldName} = ${dep.call?no_esc};
+    private final Supplier<InstanceFactory<${dep.fqdn}>> ${dep.fieldName} = ${dep.call?no_esc};
     </#list>
 </#if>
 

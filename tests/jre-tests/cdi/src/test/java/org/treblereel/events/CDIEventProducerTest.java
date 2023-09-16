@@ -40,6 +40,8 @@ public class CDIEventProducerTest extends AbstractTest {
 
   @Test
   public void testSimpleEvents2() {
+    app.beanManager.lookupBean(SimpleEventSubscriberApplicationScoped.class)
+            .getInstance().events.clear();
     Set<SimpleEvent> events = app.beanManager.lookupBean(SimpleEventSubscriberApplicationScoped.class)
             .getInstance().events;
 
@@ -49,7 +51,6 @@ public class CDIEventProducerTest extends AbstractTest {
     CDIEventProducer cdiEventProducer =
         app.beanManager.lookupBean(CDIEventProducer.class).getInstance();
     cdiEventProducer.simpleEventEvent.fire(new SimpleEvent());
-
     assertEquals(1, events.size());
     assertEquals(1, simpleEventSubscriberDependent.events.size());
 

@@ -16,6 +16,7 @@ package io.crysknife.generator.context;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import io.crysknife.client.internal.event.EventManager;
 import io.crysknife.definition.Definition;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
@@ -58,7 +59,11 @@ public class IOCContext {
 
   private final Set<TypeMirror> orderedBeans = new LinkedHashSet<>();
 
-  private final List<String> buildIn = new ArrayList<>();
+  private final List<String> buildIn = new ArrayList<>() {
+    {
+      add(EventManager.class.getCanonicalName());
+    }
+  };
 
   private final Map<String, Set<TypeElement>> classesByAnnotation = new HashMap<>();
 

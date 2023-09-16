@@ -35,7 +35,7 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
     </#list>
 
     <#list deps as dep>
-    private Supplier<InstanceFactory<${dep.fqdn}>> ${dep.fieldName} = ${dep.call?no_esc};
+    private final Supplier<InstanceFactory<${dep.fqdn}>> ${dep.fieldName} = ${dep.call?no_esc};
     </#list>
 
     @Override()
@@ -128,6 +128,9 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
 
     public ${clazz}_Factory(BeanManager beanManager) {
         super(beanManager);
+        <#list factoryConstructor as call>
+        ${call?no_esc}
+        </#list>
     }
 
 <#if !jre>

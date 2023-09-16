@@ -15,10 +15,14 @@
 package io.crysknife.client.internal.event;
 
 import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
 import io.crysknife.client.internal.AbstractEventFactory;
+import io.crysknife.client.internal.BeanFactory;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import java.util.function.Supplier;
 
 @Startup
 @Singleton
@@ -28,5 +32,34 @@ public class EventManager extends AbstractEventFactory {
   @Inject
   public EventManager(BeanManager beanManager) {
     super(beanManager);
+  }
+
+  public static class EventManagerFactory extends BeanFactory<EventManager> {
+
+    private final Supplier<InstanceFactory<BeanManager>> _constructor_beanManager =
+        () -> beanManager.lookupBean(io.crysknife.client.BeanManager.class);
+
+    public EventManagerFactory(BeanManager beanManager) {
+      super(beanManager);
+    }
+
+    @Override()
+    public EventManager getInstance() {
+      if (instance != null) {
+        return instance;
+      }
+      EventManager instance = createInstanceInternal();
+      initInstance(instance);
+      return instance;
+    }
+
+    @Override()
+    public EventManager createInstance() {
+      if (this.instance != null) {
+        return instance;
+      }
+      instance = new EventManager(this._constructor_beanManager.get().getInstance());
+      return instance;
+    }
   }
 }

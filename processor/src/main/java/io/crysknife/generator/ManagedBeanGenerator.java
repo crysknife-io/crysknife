@@ -115,6 +115,7 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
     beanDTO.put("preDestroy", classMetaInfo.getOnDestroy());
     beanDTO.put("doInitInstance", classMetaInfo.getDoInitInstance());
     beanDTO.put("doCreateInstance", classMetaInfo.getDoCreateInstance());
+    beanDTO.put("factoryConstructor", classMetaInfo.getFactoryConstructor());
 
     String source = freemarkerTemplateGenerator.toSource(beanDTO);
     String fileName = TypeUtils.getQualifiedFactoryName(beanDefinition.getType());

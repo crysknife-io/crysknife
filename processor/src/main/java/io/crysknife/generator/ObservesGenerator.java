@@ -28,6 +28,7 @@ import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.logger.TreeLogger;
 
+import io.crysknife.util.TypeUtils;
 import jakarta.enterprise.event.Observes;
 import jsinterop.base.Js;
 
@@ -74,6 +75,8 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     classMetaInfo.addImport(EventManager.class);
     classMetaInfo.addImport(Js.class);
 
+    boolean isDependent = TypeUtils.isDependent(methodDefinition.getBeanDefinition());
+
     VariableElement parameter = methodDefinition.getExecutableElement().getParameters().get(0);
     String consumer = getConsumer(methodDefinition.getExecutableElement(), parameter);
     String target =
@@ -81,7 +84,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
     addConsumerField(classMetaInfo, methodDefinition, target, consumer);
     addToOnDestroy(classMetaInfo, target, consumer);
-    doInitInstance(classMetaInfo, target, consumer);
+    doInitInstance(classMetaInfo, target, consumer, isDependent);
 
   }
 
@@ -97,22 +100,19 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
       throw new GenerationException("Method annotated with @Observes must be non-static "
           + method.getEnclosingElement() + " " + method);
     }
-
-    /*    if (!MoreElements.getPackage(MoreTypes.asTypeElement(classBuilder.beanDefinition.getType()))
-            .equals(MoreElements.getPackage(method.getEnclosingElement()))
-            && !method.getModifiers().contains(Modifier.PUBLIC)) {
-      throw new GenerationException(
-              String.format("Method %s annotated with @Observes is not accessible from parent bean %s",
-                      (method.getEnclosingElement().toString() + "." + method), parent.getType()));
-    }*/
   }
 
-  private void doInitInstance(ClassMetaInfo classMetaInfo, String target, String consumer) {
+  private void doInitInstance(ClassMetaInfo classMetaInfo, String target, String consumer,
+      boolean isDependent) {
     Map<String, Object> root = new HashMap<>();
     root.put("target", target);
     root.put("consumer", consumer);
+    root.put("isDependent", isDependent);
 
     String source = freemarkerTemplateSubscribeGenerator.toSource(root);
+    if (!isDependent) {
+      classMetaInfo.addToFactoryConstructor(() -> source);
+    }
     classMetaInfo.addToDoInitInstance(() -> source);
   }
 

@@ -30,7 +30,7 @@ import java.util.function.Predicate;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21
  */
-public abstract class BeanFactory<T> {
+public abstract class BeanFactory<T> implements InstanceFactory<T> {
 
   protected AbstractBeanManager beanManager;
 

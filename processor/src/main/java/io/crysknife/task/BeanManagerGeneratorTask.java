@@ -183,6 +183,7 @@ public class BeanManagerGeneratorTask implements Task {
     private void initInitMethod() {
       init = classDeclaration.addMethod("init", Modifier.Keyword.PRIVATE);
       addBeanManager(init);
+      addEventManager(init);
 
 
       Set<TypeMirror> processed = new HashSet<>();
@@ -326,6 +327,15 @@ public class BeanManagerGeneratorTask implements Task {
 
 
       init.getBody().ifPresent(body -> body.addAndGetStatement(registerCallExpr));
+    }
+
+    private void addEventManager(MethodDeclaration init) {
+      String statement =
+          "register(new Builder(io.crysknife.client.internal.event.EventManager.class, jakarta.inject.Singleton.class)"
+              + ".withAssignableTypes(new Class[] { io.crysknife.client.internal.event.EventManager.class, io.crysknife.client.internal.AbstractEventFactory.class })"
+              + ".withFactory(new io.crysknife.client.internal.event.EventManager.EventManagerFactory(this)).build());";
+      init.getBody().ifPresent(body -> body.addAndGetStatement(statement));
+
     }
 
     private void addProducesBeanDefinition(ProducesBeanDefinition producesBeanDefinition) {

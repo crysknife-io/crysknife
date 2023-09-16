@@ -14,7 +14,6 @@
 
 package org.treblereel.events;
 
-import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Singleton;
 import java.util.HashSet;

@@ -31,9 +31,9 @@ public abstract class AbstractEventFactory {
     this.beanManager = beanManager;
   }
 
-  protected Map<Class, AbstractEventHandler> holder = new HashMap<>();
+  protected Map<Class<?>, AbstractEventHandler> holder = new HashMap<>();
 
-  public <T> Event<T> get(Class type) {
+  public <T> Event<T> get(Class<?> type) {
     if (!holder.containsKey(type)) {
       holder.put(type, new EventHolder());
     }

@@ -28,6 +28,8 @@ public class ClassMetaInfo {
   private final List<Supplier<String>> doCreateInstance = new ArrayList<>();
   private final List<Supplier<String>> body = new ArrayList<>();
 
+  private final List<Supplier<String>> factoryConstructor = new ArrayList<>();
+
 
   public void addImport(String _import) {
     imports.add(_import);
@@ -47,6 +49,10 @@ public class ClassMetaInfo {
 
   public void addToDoInitInstance(Supplier<String> supplier) {
     doInitInstance.add(supplier);
+  }
+
+  public void addToFactoryConstructor(Supplier<String> supplier) {
+    factoryConstructor.add(supplier);
   }
 
   public void addToDoCreateInstance(Supplier<String> supplier) {
@@ -71,6 +77,11 @@ public class ClassMetaInfo {
 
   public List<String> getDoCreateInstance() {
     return doCreateInstance.stream().map(Supplier::get)
+        .collect(java.util.stream.Collectors.toList());
+  }
+
+  public List<String> getFactoryConstructor() {
+    return factoryConstructor.stream().map(Supplier::get)
         .collect(java.util.stream.Collectors.toList());
   }
 
