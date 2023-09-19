@@ -6,9 +6,14 @@
 </#if>
     private final EventHandlerRegistration eventHandlerRegistration = new EventHandlerRegistration();
 
+    private static boolean isInjected = false;
+
     private void setAndInitTemplate(${bean} instance, Interceptor interceptor) {
 <#if css??>
-            StyleInjector.fromString("${css?no_esc}").inject();
+        if (!isInjected) {
+          StyleInjector.fromString("${css?no_esc}").inject();
+          isInjected = true;
+        }
 </#if>
 <#if initRootElement>
         elemental2.core.Reflect.set(instance, "__root_element__", elemental2.dom.DomGlobal.document.createElement("div"));
