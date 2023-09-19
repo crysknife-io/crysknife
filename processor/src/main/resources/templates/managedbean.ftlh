@@ -43,20 +43,20 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
         Set<Object> deps = new HashSet<>();
     <#if !jre>
         <#if isDependent>
-            final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));
+        final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));
         <#else>
-            <#if isProxy>
-            final Interceptor interceptor = new Interceptor(new Proxy${bean}());
-            <#else>
-            if (this.instance != null) {
-                return (${bean}) instance;
-            }
-            final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));
-            </#if>
+        <#if isProxy>
+        final Interceptor interceptor = new Interceptor(new Proxy${bean}());
+        <#else>
+        if (this.instance != null) {
+            return (${bean}) instance;
+        }
+        final Interceptor interceptor = new Interceptor(new ${bean}(<#if constructorParams??>${constructorParams?no_esc}</#if>));
+        </#if>
     </#if>
         <#if isDependent>${bean} </#if>instance = interceptor.getProxy();
         <#list fieldInterceptors as call>
-            ${call?no_esc};
+        ${call?no_esc};
         </#list>
     <#else>
 
