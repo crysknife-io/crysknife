@@ -14,6 +14,15 @@
 
 package io.crysknife;
 
+import java.util.Set;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.TypeElement;
+
 import com.google.auto.service.AutoService;
 import io.crysknife.client.internal.step.BeanManagerStep;
 import io.crysknife.generator.context.IOCContext;
@@ -25,13 +34,6 @@ import io.crysknife.task.FireAfterTask;
 import io.crysknife.task.RunContextTask;
 import io.crysknife.task.TaskGroup;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
-import java.util.Set;
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)

@@ -14,8 +14,9 @@
 
 package org.jboss.gwt.elemento.processor.context;
 
-import javax.lang.model.type.TypeMirror;
 import java.util.List;
+
+import javax.lang.model.type.TypeMirror;
 
 public class TemplateContext {
 

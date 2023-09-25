@@ -14,6 +14,21 @@
 
 package io.crysknife;
 
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.TypeElement;
+
 import com.google.auto.common.MoreElements;
 import com.google.auto.service.AutoService;
 import io.crysknife.client.internal.step.AfterBurnFactoryStep;
@@ -27,21 +42,6 @@ import io.crysknife.task.BeanProcessorTask;
 import io.crysknife.task.FactoryGeneratorTask;
 import io.crysknife.task.IOCProviderTask;
 import io.crysknife.task.TaskGroup;
-import jakarta.ejb.Singleton;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Dependent;
-
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
-import java.lang.annotation.Annotation;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)

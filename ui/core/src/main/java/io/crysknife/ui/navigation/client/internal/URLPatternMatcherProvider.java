@@ -16,12 +16,13 @@ package io.crysknife.ui.navigation.client.internal;
 
 import java.util.Collection;
 
-import io.crysknife.ui.navigation.client.DefaultPage;
-import io.crysknife.ui.navigation.client.URLPatternMatcher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import io.crysknife.ui.navigation.client.DefaultPage;
+import io.crysknife.ui.navigation.client.URLPatternMatcher;
 
 /**
  * This class is responsible for initializing and providing the {@link URLPatternMatcher} for the

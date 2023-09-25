@@ -14,13 +14,14 @@
 
 package io.crysknife.ui.templates.client;
 
+import java.util.function.Function;
+
 import elemental2.dom.Element;
 
-import java.util.function.Function;
 
 /**
  * Visits the DOM and translates i18n text.
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * @author Max Barkley <mbarkley@redhat.com>
  */
@@ -36,7 +37,7 @@ public class TemplateTranslationVisitor extends TemplateVisitor {
 
   /**
    * Translate the text in this element if there is i18n text.
-   * 
+   *
    * @param i18nKeyPrefix The template prefix for the i18n key
    * @param element The element to be translated
    */
@@ -50,7 +51,7 @@ public class TemplateTranslationVisitor extends TemplateVisitor {
 
   /**
    * Translate the text value in an attribute of this element if there is i18n text.
-   * 
+   *
    * @param i18nKeyPrefix The template prefix for the i18n key
    * @param element The element containing the attribute to be translated
    * @param attributeName The name of the attribute to be translated

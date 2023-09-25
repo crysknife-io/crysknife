@@ -14,6 +14,8 @@
 
 package io.crysknife.definition;
 
+import javax.lang.model.type.TypeMirror;
+
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.internal.SimpleInstanceFactoryImpl;
@@ -21,8 +23,6 @@ import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.TypeUtils;
-
-import javax.lang.model.type.TypeMirror;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/9/21

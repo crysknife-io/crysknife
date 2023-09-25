@@ -14,12 +14,6 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.ManagedInstance;
-import io.crysknife.client.SyncBeanDef;
-import jakarta.annotation.Nonnull;
-import jakarta.enterprise.context.Dependent;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +21,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import jakarta.annotation.Nonnull;
+import jakarta.enterprise.context.Dependent;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.ManagedInstance;
+import io.crysknife.client.SyncBeanDef;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/25/21

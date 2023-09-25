@@ -14,10 +14,11 @@
 
 package io.crysknife.ui.navigation.client.internal;
 
-import io.crysknife.ui.navigation.client.HistoryTokenFactory;
-import io.crysknife.ui.navigation.client.Navigation;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import io.crysknife.ui.navigation.client.HistoryTokenFactory;
+import io.crysknife.ui.navigation.client.Navigation;
 
 /**
  * Provides new instances of the {@link TransitionAnchor} widget class, which allows them to be

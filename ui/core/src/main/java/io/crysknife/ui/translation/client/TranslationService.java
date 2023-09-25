@@ -14,6 +14,12 @@
 
 package io.crysknife.ui.translation.client;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+
 import io.crysknife.client.utils.Properties;
 import io.crysknife.ui.templates.client.annotation.Templated;
 import io.crysknife.ui.translation.client.internal.Dictionary;
@@ -21,11 +27,6 @@ import jsinterop.base.Js;
 import jsinterop.base.JsForEachCallbackFn;
 import jsinterop.base.JsPropertyMap;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 /**
  * A base class for a generated translation service that includes all of the translation visible at

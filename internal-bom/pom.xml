@@ -74,7 +74,7 @@
         <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.156</classgraph.classgraph.version>
-        <org.treblereel.j2cl.processors.version>0.6-SNAPSHOT</org.treblereel.j2cl.processors.version>
+        <org.treblereel.j2cl.processors.version>0.6.1</org.treblereel.j2cl.processors.version>
         <gwt.jakarta.version>0.2</gwt.jakarta.version>
 
         <javaparser.core.version>3.25.5</javaparser.core.version>

@@ -14,14 +14,15 @@
 
 package io.crysknife.client.internal.managed;
 
+import java.lang.annotation.Annotation;
+
+import jakarta.inject.Inject;
+
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.ManagedInstance;
 import io.crysknife.client.internal.ManagedInstanceImpl;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
-import jakarta.inject.Inject;
-
-import java.lang.annotation.Annotation;
 
 @IOCProvider
 public class ManagedInstanceContextualTypeProvider
@@ -40,4 +41,3 @@ public class ManagedInstanceContextualTypeProvider
     return new ManagedInstanceImpl(manager, clazz, qualifiers);
   }
 }
-

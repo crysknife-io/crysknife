@@ -14,16 +14,17 @@
 
 package io.crysknife.ui.navigation.client.annotation;
 
-import io.crysknife.ui.navigation.client.DefaultPage;
-import io.crysknife.ui.navigation.client.PageRole;
-import io.crysknife.ui.navigation.client.TransitionTo;
-import io.crysknife.ui.navigation.client.UniquePageRole;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import io.crysknife.ui.navigation.client.DefaultPage;
+import io.crysknife.ui.navigation.client.PageRole;
+import io.crysknife.ui.navigation.client.TransitionTo;
+import io.crysknife.ui.navigation.client.UniquePageRole;
+
 
 /**
  * Declares that the target type &#8212; <em>which must be a subtype of Widget, implement

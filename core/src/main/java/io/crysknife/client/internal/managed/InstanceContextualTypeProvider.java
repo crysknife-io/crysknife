@@ -14,14 +14,15 @@
 
 package io.crysknife.client.internal.managed;
 
+import java.lang.annotation.Annotation;
+
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
-import java.lang.annotation.Annotation;
 
 @IOCProvider
 public class InstanceContextualTypeProvider implements ContextualTypeProvider<Instance> {

@@ -13,9 +13,9 @@
  */
 package io.crysknife.generator.context.oracle;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
 import java.net.URL;
+
+import javax.lang.model.element.Element;
 
 /**
  * An abstraction for finding and retrieving {@link Resource}s by abstract path name. Intuitively,

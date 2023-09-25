@@ -14,19 +14,19 @@
 
 package io.crysknife.client.internal;
 
-import jakarta.enterprise.inject.Alternative;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Default;
-import jakarta.enterprise.inject.Specializes;
-import jakarta.enterprise.inject.Typed;
-import jakarta.inject.Named;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
 
 /**
  * A utility class for testing the equality of qualifiers at runtime.

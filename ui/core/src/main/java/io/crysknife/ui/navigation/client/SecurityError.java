@@ -14,8 +14,6 @@
 
 package io.crysknife.ui.navigation.client;
 
-import io.crysknife.ui.navigation.client.UniquePageRole;
-
 /**
  * A page with this role is used to show to the user explaining he does not have enough rights to
  * continue.

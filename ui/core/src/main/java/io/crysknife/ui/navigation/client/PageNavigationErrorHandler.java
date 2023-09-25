@@ -14,8 +14,6 @@
 
 package io.crysknife.ui.navigation.client;
 
-import io.crysknife.ui.navigation.client.UniquePageRole;
-
 /**
  * Defines an error handler used for page navigation errors.
  *

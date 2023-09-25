@@ -14,6 +14,10 @@
 
 package io.crysknife.generator.context;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.TypeElement;
@@ -28,9 +32,6 @@ import io.crysknife.logger.TreeLogger;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/21/19

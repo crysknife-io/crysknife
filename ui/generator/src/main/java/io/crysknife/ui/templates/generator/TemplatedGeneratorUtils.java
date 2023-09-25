@@ -14,6 +14,9 @@
 
 package io.crysknife.ui.templates.generator;
 
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeMirror;
+
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -22,9 +25,6 @@ import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.context.IOCContext;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
 import org.jboss.gwt.elemento.processor.context.TemplateContext;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.type.TypeMirror;
 
 public class TemplatedGeneratorUtils {
 

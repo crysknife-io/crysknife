@@ -16,7 +16,6 @@ package io.crysknife.ui.templates.generator;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-
 import elemental2.dom.HTMLAnchorElement;
 import elemental2.dom.HTMLAreaElement;
 import elemental2.dom.HTMLAudioElement;

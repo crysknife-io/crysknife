@@ -14,26 +14,27 @@
 
 package io.crysknife.ui.navigation.client.internal;
 
+import java.lang.annotation.Annotation;
+
+import jakarta.inject.Inject;
+
 import io.crysknife.client.ioc.ContextualTypeProvider;
 import io.crysknife.client.ioc.IOCProvider;
 import io.crysknife.ui.navigation.client.Navigation;
 import io.crysknife.ui.navigation.client.TransitionTo;
-import jakarta.inject.Inject;
-
-import java.lang.annotation.Annotation;
 
 @IOCProvider
 public class TransitionToContextualTypeProvider implements ContextualTypeProvider<TransitionTo> {
 
-  @Inject
-  private Navigation navigation;
+    @Inject
+    private Navigation navigation;
 
-  @Override
-  public TransitionTo provide(Class<?>[] typeargs, Annotation[] qualifiers) {
-    Class clazz = typeargs[0];
-    if (typeargs.length == 0) {
-      throw new IllegalArgumentException("TransitionTo must be parameterized with a page type");
+    @Override
+    public TransitionTo provide(Class<?>[] typeargs, Annotation[] qualifiers) {
+        Class clazz = typeargs[0];
+        if (typeargs.length == 0) {
+            throw new IllegalArgumentException("TransitionTo must be parameterized with a page type");
+        }
+        return new TransitionTo(clazz, navigation);
     }
-    return new TransitionTo(clazz, navigation);
-  }
 }

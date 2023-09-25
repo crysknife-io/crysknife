@@ -14,9 +14,6 @@
 
 package io.crysknife.ui.navigation.client;
 
-import io.crysknife.ui.navigation.client.PageRole;
-import io.crysknife.ui.navigation.client.UniquePageRole;
-
 /**
  * Thrown when navigation by {@link PageRole} is attempted and no page with that role exists.
  *

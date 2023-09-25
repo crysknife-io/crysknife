@@ -14,11 +14,12 @@
 
 package io.crysknife.definition;
 
-import io.crysknife.generator.api.IOCGenerator;
-
-import javax.lang.model.element.VariableElement;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.lang.model.element.VariableElement;
+
+import io.crysknife.generator.api.IOCGenerator;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/11/21

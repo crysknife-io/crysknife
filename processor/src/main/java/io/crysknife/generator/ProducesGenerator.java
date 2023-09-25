@@ -14,14 +14,14 @@
 
 package io.crysknife.generator;
 
-import io.crysknife.generator.api.Generator;
+import jakarta.enterprise.inject.Produces;
+
 import io.crysknife.definition.MethodDefinition;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-
-import jakarta.enterprise.inject.Produces;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/4/19

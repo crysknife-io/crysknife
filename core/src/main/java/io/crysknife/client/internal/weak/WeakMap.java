@@ -14,10 +14,10 @@
 
 package io.crysknife.client.internal.weak;
 
+import java.util.Map;
+
 import elemental2.core.JsWeakMap;
 import org.treblereel.gwt.utils.GwtIncompatible;
-
-import java.util.Map;
 
 public class WeakMap<K, V> {
 

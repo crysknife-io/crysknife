@@ -14,15 +14,16 @@
 
 package io.crysknife.client.internal.event;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.internal.AbstractEventFactory;
-import io.crysknife.client.internal.BeanFactory;
+import java.util.function.Supplier;
+
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import java.util.function.Supplier;
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.internal.AbstractEventFactory;
+import io.crysknife.client.internal.BeanFactory;
 
 @Startup
 @Singleton

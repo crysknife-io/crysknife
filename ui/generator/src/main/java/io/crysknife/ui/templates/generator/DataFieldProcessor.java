@@ -14,6 +14,11 @@
 
 package io.crysknife.ui.templates.generator;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import org.jboss.gwt.elemento.processor.context.DataElementInfo;
@@ -22,10 +27,6 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 // Sort DataField in proper order
 public class DataFieldProcessor {

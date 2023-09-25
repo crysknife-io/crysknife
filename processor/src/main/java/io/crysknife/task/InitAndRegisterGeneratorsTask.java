@@ -14,9 +14,14 @@
 
 package io.crysknife.task;
 
-import io.crysknife.generator.api.Generator;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import javax.lang.model.element.TypeElement;
+
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -25,9 +30,6 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 
-import javax.lang.model.element.TypeElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 
 /**
@@ -35,37 +37,37 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class InitAndRegisterGeneratorsTask implements Task {
 
-  private IOCContext context;
-  private TreeLogger logger;
+    private IOCContext context;
+    private TreeLogger logger;
 
-  private GeneratorValidator generatorValidator;
+    private GeneratorValidator generatorValidator;
 
-  public InitAndRegisterGeneratorsTask(IOCContext context, TreeLogger logger) {
-    this.context = context;
-    this.logger = logger;
-    this.generatorValidator = new GeneratorValidator(context);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public void execute() throws UnableToCompleteException {
-    ScanResult scanResult = context.getGenerationContext().getScanResult();
-    ClassInfoList routeClassInfoList =
-        scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
-    for (ClassInfo routeClassInfo : routeClassInfoList) {
-      try {
-        String generator = routeClassInfo.getName();
-        TypeElement typeElement =
-            context.getGenerationContext().getElements().getTypeElement(generator);
-        generatorValidator.validate(typeElement);
-        Constructor c = Class.forName(generator).getConstructor(TreeLogger.class, IOCContext.class);
-        ((IOCGenerator<?>) c.newInstance(
-            logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
-            this.context)).register();
-      } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-          | NoSuchMethodException | InvocationTargetException e) {
-        throw new GenerationException(e);
-      }
+    public InitAndRegisterGeneratorsTask(IOCContext context, TreeLogger logger) {
+        this.context = context;
+        this.logger = logger;
+        this.generatorValidator = new GeneratorValidator(context);
     }
-  }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void execute() throws UnableToCompleteException {
+        ScanResult scanResult = context.getGenerationContext().getScanResult();
+        ClassInfoList routeClassInfoList =
+                scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
+        for (ClassInfo routeClassInfo : routeClassInfoList) {
+            try {
+                String generator = routeClassInfo.getName();
+                TypeElement typeElement =
+                        context.getGenerationContext().getElements().getTypeElement(generator);
+                generatorValidator.validate(typeElement);
+                Constructor c = Class.forName(generator).getConstructor(TreeLogger.class, IOCContext.class);
+                ((IOCGenerator<?>) c.newInstance(
+                        logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
+                        this.context)).register();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                     | NoSuchMethodException | InvocationTargetException e) {
+                throw new GenerationException(e);
+            }
+        }
+    }
 }

@@ -19,10 +19,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
-import io.crysknife.definition.BeanDefinition;
 import io.crysknife.generator.context.oracle.BeanOracle;
 import io.crysknife.logger.TreeLogger;
 

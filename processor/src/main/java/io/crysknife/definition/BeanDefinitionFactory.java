@@ -14,6 +14,12 @@
 
 package io.crysknife.definition;
 
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
+
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
@@ -21,10 +27,6 @@ import io.crysknife.processor.ConstructorInjectionPointProcessor;
 import io.crysknife.processor.FieldProcessor;
 import io.crysknife.util.TypeUtils;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
-import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21

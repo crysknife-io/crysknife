@@ -14,10 +14,6 @@
 
 package io.crysknife.ui.navigation.client.annotation;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -26,8 +22,10 @@ import jakarta.inject.Qualifier;
 
 import elemental2.dom.EventListener;
 import elemental2.dom.HTMLAnchorElement;
-import io.crysknife.ui.navigation.client.annotation.Page;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * A qualifier for {@link HTMLAnchorElement} elements linking to Errai Navigation {@link Page
  * Pages}. An injected anchor with this qualifier has an {@link EventListener} registered for

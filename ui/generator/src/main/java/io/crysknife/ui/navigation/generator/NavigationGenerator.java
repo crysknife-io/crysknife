@@ -14,6 +14,11 @@
 
 package io.crysknife.ui.navigation.generator;
 
+import java.util.Set;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import javax.lang.model.element.TypeElement;
+
 import io.crysknife.generator.ManagedBeanGenerator;
 import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.WiringElementType;
@@ -21,10 +26,6 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.annotation.Page;
 import io.crysknife.ui.navigation.client.internal.NavigationGraph;
-import jakarta.enterprise.context.ApplicationScoped;
-
-import javax.lang.model.element.TypeElement;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/1/20
@@ -32,23 +33,23 @@ import java.util.Set;
 @Generator
 public class NavigationGenerator extends ManagedBeanGenerator {
 
-  public NavigationGenerator(TreeLogger treeLogger, IOCContext iocContext) {
-    super(treeLogger, iocContext);
-  }
-
-  @Override
-  public void register() {
-    iocContext.register(ApplicationScoped.class, NavigationGraph.class, WiringElementType.BEAN,
-        this);
-  }
-
-  @Override
-  public void before() {
-    Set<TypeElement> pages = iocContext.getTypeElementsByAnnotation(Page.class.getCanonicalName());
-    if (!pages.isEmpty()) {
-      new NavigationGraphGenerator(iocContext, pages)
-          .generate(logger.branch(TreeLogger.DEBUG, " starting generating navigation"));
+    public NavigationGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+        super(treeLogger, iocContext);
     }
-  }
+
+    @Override
+    public void register() {
+        iocContext.register(ApplicationScoped.class, NavigationGraph.class, WiringElementType.BEAN,
+                this);
+    }
+
+    @Override
+    public void before() {
+        Set<TypeElement> pages = iocContext.getTypeElementsByAnnotation(Page.class.getCanonicalName());
+        if (!pages.isEmpty()) {
+            new NavigationGraphGenerator(iocContext, pages)
+                    .generate(logger.branch(TreeLogger.DEBUG, " starting generating navigation"));
+        }
+    }
 
 }

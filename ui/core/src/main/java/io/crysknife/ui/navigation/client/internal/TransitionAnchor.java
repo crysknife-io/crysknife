@@ -24,7 +24,6 @@ import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.HistoryToken;
 import io.crysknife.ui.navigation.client.HistoryTokenFactory;
 import io.crysknife.ui.navigation.client.Navigation;
-import io.crysknife.ui.navigation.client.internal.PageNode;
 
 /**
  * Represents an anchor widget that, when clicked, will navigate the user to another page in the

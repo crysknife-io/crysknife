@@ -14,25 +14,26 @@
 
 package io.crysknife.generator;
 
-import com.github.javaparser.ast.expr.Expression;
-import io.crysknife.annotation.Application;
-import io.crysknife.generator.api.Generator;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.api.ClassMetaInfo;
-import io.crysknife.generator.api.WiringElementType;
-import io.crysknife.generator.context.ExecutionEnv;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
-import io.crysknife.logger.TreeLogger;
-import jakarta.ejb.Startup;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.ejb.Startup;
+
+import com.github.javaparser.ast.expr.Expression;
+import io.crysknife.annotation.Application;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.api.ClassMetaInfo;
+import io.crysknife.generator.api.Generator;
+import io.crysknife.generator.api.WiringElementType;
+import io.crysknife.generator.context.ExecutionEnv;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
+import io.crysknife.logger.TreeLogger;
 
 import static io.crysknife.util.TypeUtils.isDependent;
 

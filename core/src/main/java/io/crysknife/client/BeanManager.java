@@ -13,12 +13,12 @@
  */
 package io.crysknife.client;
 
-import io.crysknife.client.internal.IOCResolutionException;
-import io.crysknife.client.internal.SyncBeanDefImpl;
-
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Optional;
+
+import io.crysknife.client.internal.IOCResolutionException;
+import io.crysknife.client.internal.SyncBeanDefImpl;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19

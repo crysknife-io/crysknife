@@ -14,12 +14,13 @@
 
 package io.crysknife.client.internal.event;
 
-import io.crysknife.client.ioc.ContextualTypeProvider;
-import io.crysknife.client.ioc.IOCProvider;
+import java.lang.annotation.Annotation;
+
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 
-import java.lang.annotation.Annotation;
+import io.crysknife.client.ioc.ContextualTypeProvider;
+import io.crysknife.client.ioc.IOCProvider;
 
 @IOCProvider
 public class EventContextualTypeProvider implements ContextualTypeProvider<Event> {

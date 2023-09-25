@@ -14,21 +14,21 @@
 
 package io.crysknife.ui.navigation.client.internal;
 
-import io.crysknife.client.IsElement;
-
-import io.crysknife.ui.navigation.client.Navigation;
-import io.crysknife.ui.navigation.client.TransitionTo;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import io.crysknife.client.IsElement;
+import io.crysknife.ui.navigation.client.Navigation;
+import io.crysknife.ui.navigation.client.TransitionTo;
 
 @Singleton
 public class PageTransitionProvider {
 
-  @Inject
-  Navigation navigation;
+    @Inject
+    Navigation navigation;
 
-  public TransitionTo provide(Class<?>[] typeargs) {
-    Class<IsElement> toPageType = (Class<IsElement>) typeargs[0];
-    return new TransitionTo<>(toPageType, navigation);
-  }
+    public TransitionTo provide(Class<?>[] typeargs) {
+        Class<IsElement> toPageType = (Class<IsElement>) typeargs[0];
+        return new TransitionTo<>(toPageType, navigation);
+    }
 }

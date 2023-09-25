@@ -14,11 +14,12 @@
 
 package io.crysknife.definition;
 
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
-import io.crysknife.annotation.CircularDependency;
-import io.crysknife.generator.api.IOCGenerator;
-import io.crysknife.util.TypeUtils;
+import java.lang.annotation.Annotation;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
@@ -26,12 +27,13 @@ import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-import java.lang.annotation.Annotation;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.CircularDependency;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.util.TypeUtils;
+
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21

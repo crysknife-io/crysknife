@@ -14,12 +14,12 @@
 
 package io.crysknife.ui.navigation.client.internal;
 
-import io.crysknife.client.IsElement;
-
-import io.crysknife.ui.navigation.client.HistoryTokenFactory;
-import io.crysknife.ui.navigation.client.Navigation;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import io.crysknife.client.IsElement;
+import io.crysknife.ui.navigation.client.HistoryTokenFactory;
+import io.crysknife.ui.navigation.client.Navigation;
 
 /**
  * Provides new instances of the {@link TransitionAnchorFactory} class, which allows them to be
@@ -30,15 +30,15 @@ import jakarta.inject.Singleton;
 @Singleton
 public class TransitionAnchorFactoryProvider {
 
-  @Inject
-  Navigation navigation;
-  @Inject
-  HistoryTokenFactory htFactory;
+    @Inject
+    Navigation navigation;
+    @Inject
+    HistoryTokenFactory htFactory;
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public TransitionAnchorFactory provide(Class<?>[] typeargs) {
-    Class<IsElement> toPageType = (Class<IsElement>) typeargs[0];
-    return new TransitionAnchorFactory<>(navigation, toPageType, htFactory);
-  }
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public TransitionAnchorFactory provide(Class<?>[] typeargs) {
+        Class<IsElement> toPageType = (Class<IsElement>) typeargs[0];
+        return new TransitionAnchorFactory<>(navigation, toPageType, htFactory);
+    }
 
 }

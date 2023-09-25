@@ -14,11 +14,11 @@
 
 package io.crysknife.client.internal.weak;
 
-import elemental2.core.JsWeakSet;
-import org.treblereel.gwt.utils.GwtIncompatible;
-
 import java.util.Collections;
 import java.util.Set;
+
+import elemental2.core.JsWeakSet;
+import org.treblereel.gwt.utils.GwtIncompatible;
 
 public class WeakSet<T> {
 

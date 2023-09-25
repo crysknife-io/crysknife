@@ -14,6 +14,31 @@
 
 package io.crysknife.task;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypesException;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.JavaFileObject;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
@@ -57,30 +82,6 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.TypeUtils;
-import jakarta.enterprise.inject.Alternative;
-import jakarta.enterprise.inject.Default;
-import jakarta.enterprise.inject.Instance;
-import jakarta.enterprise.inject.Specializes;
-import jakarta.enterprise.inject.Typed;
-import jakarta.inject.Named;
-import jakarta.inject.Provider;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypesException;
-import javax.lang.model.type.TypeMirror;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
 

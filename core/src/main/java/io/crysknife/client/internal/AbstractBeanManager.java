@@ -13,14 +13,6 @@
  */
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.IOCBeanDef;
-import io.crysknife.client.ManagedInstance;
-import io.crysknife.client.SyncBeanDef;
-import io.crysknife.client.internal.weak.WeakMap;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Typed;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +27,15 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.crysknife.client.internal.QualifierUtil.ALTERNATIVE_ANNOTATION;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Typed;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.IOCBeanDef;
+import io.crysknife.client.ManagedInstance;
+import io.crysknife.client.SyncBeanDef;
+import io.crysknife.client.internal.weak.WeakMap;
+
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_ANNOTATION;
 import static io.crysknife.client.internal.QualifierUtil.DEFAULT_QUALIFIERS;
 import static io.crysknife.client.internal.QualifierUtil.SPECIALIZES_ANNOTATION;

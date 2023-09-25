@@ -14,6 +14,20 @@
 
 package io.crysknife.util;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
@@ -42,7 +56,6 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.client.Reflect;
-import io.crysknife.client.internal.InstanceImpl;
 import io.crysknife.client.internal.SimpleInstanceFactoryImpl;
 import io.crysknife.client.internal.proxy.OnFieldAccessed;
 import io.crysknife.definition.BeanDefinition;
@@ -54,19 +67,6 @@ import io.crysknife.generator.context.IOCContext;
 import jsinterop.base.Js;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.treblereel.j2cl.processors.utils.J2CLUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 8/19/21

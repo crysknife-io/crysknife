@@ -14,13 +14,13 @@
 
 package io.crysknife.generator.context.oracle;
 
-import com.google.auto.common.MoreTypes;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.definition.InjectableVariableDefinition;
-import io.crysknife.definition.UnscopedBeanDefinition;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.TypeUtils;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Specializes;
@@ -37,13 +37,15 @@ import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
-import java.util.stream.Collectors;
+
+import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.UnscopedBeanDefinition;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
+import io.crysknife.util.TypeUtils;
+
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/5/21

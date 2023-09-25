@@ -14,18 +14,19 @@
 
 package io.crysknife.definition;
 
-import com.google.auto.common.MoreElements;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Singleton;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Singleton;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+
+import com.google.auto.common.MoreElements;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/6/21

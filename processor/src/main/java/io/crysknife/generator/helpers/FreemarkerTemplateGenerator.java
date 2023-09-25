@@ -14,6 +14,11 @@
 
 package io.crysknife.generator.helpers;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -21,42 +26,37 @@ import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.util.StringOutputStream;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-
 public class FreemarkerTemplateGenerator {
 
-  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
+    private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_29);
 
-  private final Template template;
+    private final Template template;
 
-  {
-    cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    cfg.setLogTemplateExceptions(false);
-    cfg.setWrapUncheckedExceptions(true);
-    cfg.setFallbackOnNullLoopVariable(false);
-  }
-
-  public FreemarkerTemplateGenerator(final String templateName) {
-    try {
-      template = cfg.getTemplate(templateName);
-    } catch (Exception e) {
-      throw new GenerationException("Unable to load template " + templateName, e);
+    {
+        cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
+        cfg.setDefaultEncoding("UTF-8");
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        cfg.setLogTemplateExceptions(false);
+        cfg.setWrapUncheckedExceptions(true);
+        cfg.setFallbackOnNullLoopVariable(false);
     }
-  }
 
-  public String toSource(Object mapping) {
-    StringOutputStream os = new StringOutputStream();
-    try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-      template.process(mapping, out);
-      return os.toString();
-    } catch (TemplateException | IOException e) {
-      throw new GenerationException(e);
+    public FreemarkerTemplateGenerator(final String templateName) {
+        try {
+            template = cfg.getTemplate(templateName);
+        } catch (Exception e) {
+            throw new GenerationException("Unable to load template " + templateName, e);
+        }
     }
-  }
+
+    public String toSource(Object mapping) {
+        StringOutputStream os = new StringOutputStream();
+        try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+            template.process(mapping, out);
+            return os.toString();
+        } catch (TemplateException | IOException e) {
+            throw new GenerationException(e);
+        }
+    }
 
 }

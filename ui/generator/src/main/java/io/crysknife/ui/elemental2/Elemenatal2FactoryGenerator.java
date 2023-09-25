@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.auto.common.MoreElements;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
@@ -27,6 +26,7 @@ import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLElement;
@@ -47,65 +47,65 @@ import static io.crysknife.ui.elemental2.ElmToTagMapping.HTML_ELEMENTS;
 @Generator(priority = 100000)
 public class Elemenatal2FactoryGenerator extends IOCGenerator<BeanDefinition> {
 
-  public Elemenatal2FactoryGenerator(TreeLogger treeLogger, IOCContext iocContext) {
-    super(treeLogger, iocContext);
-  }
-
-  @Override
-  public void register() {
-    HTML_ELEMENTS.keySet().forEach(clazz -> {
-      iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
-      iocContext.getBuildIn().add(clazz.getCanonicalName());
-    });
-  }
-
-  @Override
-  public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
-    return generationUtils.wrapCallInstanceImpl(new MethodCallExpr(
-        new FieldAccessExpr(new NameExpr(DomGlobal.class.getCanonicalName()), "document"),
-        "createElement").addArgument(getTagFromType(fieldPoint))).toString();
-  }
-
-  private StringLiteralExpr getTagFromType(InjectableVariableDefinition fieldPoint) {
-    if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null
-        && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("")) {
-      return new StringLiteralExpr(fieldPoint.getVariableElement().getAnnotation(Named.class)
-          .value().toLowerCase(Locale.ROOT));
+    public Elemenatal2FactoryGenerator(TreeLogger treeLogger, IOCContext iocContext) {
+        super(treeLogger, iocContext);
     }
 
-    Class<? extends HTMLElement> clazz;
-    try {
-      clazz = (Class<? extends HTMLElement>) Class.forName(MoreTypes
-          .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
-    } catch (ClassNotFoundException e) {
-      throw new Error(
-          "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
-              .getQualifiedName().toString() + " " + e.getMessage());
+    public static Set<Map.Entry<Class<? extends HTMLElement>, String>> getHTMLElementByTag(
+            String tag) {
+        return HTML_ELEMENTS.entries().stream().filter(elm -> elm.getValue().equals(tag))
+                .collect(Collectors.toSet());
     }
 
-    if (!HTML_ELEMENTS.containsKey(clazz)) {
-      throw new GenerationException("Unable to process " + MoreTypes
-          .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
+    @Override
+    public void register() {
+        HTML_ELEMENTS.keySet().forEach(clazz -> {
+            iocContext.register(Inject.class, clazz, WiringElementType.FIELD_TYPE, this);
+            iocContext.getBuildIn().add(clazz.getCanonicalName());
+        });
     }
 
-    long count = HTML_ELEMENTS.get(clazz).size();
-
-    if (count > 1) {
-      throw new GenerationException("Unable to process "
-          + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName()
-              .toString()
-          + ", " + MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()) + "."
-          + fieldPoint.getVariableElement().getSimpleName()
-          + " must be annotated with @Named(\"tag_name\")");
+    @Override
+    public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
+        return generationUtils.wrapCallInstanceImpl(new MethodCallExpr(
+                new FieldAccessExpr(new NameExpr(DomGlobal.class.getCanonicalName()), "document"),
+                "createElement").addArgument(getTagFromType(fieldPoint))).toString();
     }
 
-    return new StringLiteralExpr(HTML_ELEMENTS.get(clazz).stream().findFirst().get());
-  }
+    private StringLiteralExpr getTagFromType(InjectableVariableDefinition fieldPoint) {
+        if (fieldPoint.getVariableElement().getAnnotation(Named.class) != null
+                && !fieldPoint.getVariableElement().getAnnotation(Named.class).value().equals("")) {
+            return new StringLiteralExpr(fieldPoint.getVariableElement().getAnnotation(Named.class)
+                    .value().toLowerCase(Locale.ROOT));
+        }
 
-  public static Set<Map.Entry<Class<? extends HTMLElement>, String>> getHTMLElementByTag(
-      String tag) {
-    return HTML_ELEMENTS.entries().stream().filter(elm -> elm.getValue().equals(tag))
-        .collect(Collectors.toSet());
-  }
+        Class<? extends HTMLElement> clazz;
+        try {
+            clazz = (Class<? extends HTMLElement>) Class.forName(MoreTypes
+                    .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
+        } catch (ClassNotFoundException e) {
+            throw new Error(
+                    "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+                            .getQualifiedName().toString() + " " + e.getMessage());
+        }
+
+        if (!HTML_ELEMENTS.containsKey(clazz)) {
+            throw new GenerationException("Unable to process " + MoreTypes
+                    .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
+        }
+
+        long count = HTML_ELEMENTS.get(clazz).size();
+
+        if (count > 1) {
+            throw new GenerationException("Unable to process "
+                    + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName()
+                    .toString()
+                    + ", " + MoreElements.asType(fieldPoint.getVariableElement().getEnclosingElement()) + "."
+                    + fieldPoint.getVariableElement().getSimpleName()
+                    + " must be annotated with @Named(\"tag_name\")");
+        }
+
+        return new StringLiteralExpr(HTML_ELEMENTS.get(clazz).stream().findFirst().get());
+    }
 
 }

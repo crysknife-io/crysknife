@@ -14,13 +14,13 @@
 
 package io.crysknife.ui.navigation.client.annotation;
 
-import io.crysknife.ui.navigation.client.Navigation;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import io.crysknife.ui.navigation.client.Navigation;
 
 /**
  * Indicates that the target method should be called when the {@link Page} it belongs to is about to

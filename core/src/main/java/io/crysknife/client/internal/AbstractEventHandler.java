@@ -13,19 +13,17 @@
  */
 package io.crysknife.client.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-import elemental2.dom.DomGlobal;
-import io.crysknife.client.InstanceFactory;
 import jakarta.enterprise.event.Event;
+
+import io.crysknife.client.InstanceFactory;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/1/19

@@ -14,10 +14,10 @@
 
 package io.crysknife.definition;
 
+import javax.lang.model.element.ExecutableElement;
+
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-
-import javax.lang.model.element.ExecutableElement;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/6/21

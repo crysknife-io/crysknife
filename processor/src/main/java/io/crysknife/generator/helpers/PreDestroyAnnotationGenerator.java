@@ -14,6 +14,14 @@
 
 package io.crysknife.generator.helpers;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import jakarta.annotation.PreDestroy;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
+
 import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.GenerationException;
@@ -21,13 +29,7 @@ import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.util.TypeUtils;
 import io.crysknife.validation.PreDestroyValidator;
-import jakarta.annotation.PreDestroy;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class PreDestroyAnnotationGenerator {
 

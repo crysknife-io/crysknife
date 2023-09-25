@@ -14,6 +14,13 @@
 
 package io.crysknife.task;
 
+import java.io.IOException;
+import java.io.Writer;
+
+import javax.annotation.processing.FilerException;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.JavaFileObject;
+
 import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.ProducesBeanDefinition;
@@ -26,12 +33,6 @@ import io.crysknife.generator.info.AbstractBeanInfoGenerator;
 import io.crysknife.generator.info.BeanInfoJREGeneratorBuilder;
 import io.crysknife.generator.info.InterceptorGenerator;
 import io.crysknife.logger.TreeLogger;
-
-import javax.annotation.processing.FilerException;
-import javax.lang.model.type.TypeMirror;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.Writer;
 
 import static javax.lang.model.element.Modifier.ABSTRACT;
 

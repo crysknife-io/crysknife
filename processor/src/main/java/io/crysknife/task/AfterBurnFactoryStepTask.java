@@ -14,17 +14,18 @@
 
 package io.crysknife.task;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashMap;
+
+import javax.annotation.processing.FilerException;
+import javax.tools.JavaFileObject;
+
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.logger.TreeLogger;
-
-import javax.annotation.processing.FilerException;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.HashMap;
 
 public class AfterBurnFactoryStepTask implements Task {
 

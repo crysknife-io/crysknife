@@ -13,12 +13,12 @@
  */
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.enterprise.event.Event;
+
+import io.crysknife.client.BeanManager;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/4/19

@@ -14,6 +14,13 @@
 
 package io.crysknife.ui.mutationobserver.generator;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
 import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.EnclosedExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -22,13 +29,13 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.MutationRecord;
-import io.crysknife.generator.api.Generator;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.api.ClassMetaInfo;
+import io.crysknife.generator.api.Generator;
 import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.api.WiringElementType;
-import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.mutationobserver.client.MutationObserver;
@@ -36,12 +43,7 @@ import io.crysknife.ui.mutationobserver.client.ObserverCallback;
 import io.crysknife.ui.mutationobserver.client.OnAttach;
 import io.crysknife.ui.mutationobserver.client.OnDetach;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/7/19
@@ -49,130 +51,130 @@ import javax.lang.model.type.TypeMirror;
 @Generator(priority = 100002)
 public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
 
-  private TypeMirror htmlElement;
+    private TypeMirror htmlElement;
 
-  private BeanDefinition mutationObserverBeanDefinition;
+    private BeanDefinition mutationObserverBeanDefinition;
 
-  public MutationObserverGenerator(TreeLogger logger, IOCContext iocContext) {
-    super(logger, iocContext);
-  }
-
-  @Override
-  public void register() {
-    iocContext.register(OnAttach.class, WiringElementType.METHOD_DECORATOR, this);
-    iocContext.register(OnDetach.class, WiringElementType.METHOD_DECORATOR, this);
-
-    htmlElement = iocContext.getGenerationContext().getElements()
-        .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
-  }
-
-  public void generate(ClassMetaInfo builder, MethodDefinition mutationObserver) {
-    ifValid(mutationObserver);
-    VariableElement target = findField(mutationObserver);
-    isValid(target);
-    generateCallback(builder, mutationObserver);
-  }
-
-  private void isValid(VariableElement target) {
-    if (target.getModifiers().contains(Modifier.PRIVATE)) {
-      throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
-          + target.getEnclosingElement() + " must not be private");
+    public MutationObserverGenerator(TreeLogger logger, IOCContext iocContext) {
+        super(logger, iocContext);
     }
 
-    if (target.getModifiers().contains(Modifier.STATIC)) {
-      throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
-          + target.getEnclosingElement() + " must not be static");
+    @Override
+    public void register() {
+        iocContext.register(OnAttach.class, WiringElementType.METHOD_DECORATOR, this);
+        iocContext.register(OnDetach.class, WiringElementType.METHOD_DECORATOR, this);
+
+        htmlElement = iocContext.getGenerationContext().getElements()
+                .getTypeElement(HTMLElement.class.getCanonicalName()).asType();
     }
 
-    if (iocContext.getGenerationContext().getTypes().isSubtype(htmlElement, target.asType())) {
-      throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
-          + target.getEnclosingElement() + " must be subtype of HTMLElement atm");
-    }
-  }
-
-  private VariableElement findField(MethodDefinition mutationObserver) {
-    String fieldName = findFieldName(mutationObserver.getExecutableElement());
-
-    Element target = mutationObserver.getExecutableElement().getEnclosingElement()
-        .getEnclosedElements().stream().filter(elm -> elm.getKind().equals(ElementKind.FIELD))
-        .filter(elm -> MoreElements.asVariable(elm).getSimpleName().toString().equals(fieldName))
-        .findAny().orElseThrow(() -> new Error("Unable to find field named " + fieldName + " in "
-            + mutationObserver.getExecutableElement().getEnclosingElement()));
-
-    return MoreElements.asVariable(target);
-  }
-
-  private String findFieldName(ExecutableElement executableElement) {
-    OnDetach onDetach = executableElement.getAnnotation(OnDetach.class);
-    if (onDetach != null && !onDetach.value().isEmpty()) {
-      return onDetach.value();
+    public void generate(ClassMetaInfo builder, MethodDefinition mutationObserver) {
+        ifValid(mutationObserver);
+        VariableElement target = findField(mutationObserver);
+        isValid(target);
+        generateCallback(builder, mutationObserver);
     }
 
-    OnAttach onAttach = executableElement.getAnnotation(OnAttach.class);
-    if (onAttach != null && !onAttach.value().isEmpty()) {
-      return onAttach.value();
+    private void ifValid(MethodDefinition mutationObserver) {
+        if (mutationObserver.getExecutableElement().getParameters().size() > 1
+                || mutationObserver.getExecutableElement().getParameters().isEmpty()) {
+            throw new GenerationException(
+                    "Method [" + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+                            + mutationObserver.getExecutableElement().getEnclosingElement()
+                            + " must have only one arg of type MutationRecord");
+        }
+
+        if (mutationObserver.getExecutableElement().getModifiers().contains(Modifier.PRIVATE)) {
+            throw new GenerationException("Method ["
+                    + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+                    + mutationObserver.getExecutableElement().getEnclosingElement() + " must not be private");
+        }
+
+        if (mutationObserver.getExecutableElement().getModifiers().contains(Modifier.STATIC)) {
+            throw new GenerationException("Method ["
+                    + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+                    + mutationObserver.getExecutableElement().getEnclosingElement() + " must not be static");
+        }
+
+        TypeMirror mutationRecord = iocContext.getGenerationContext().getElements()
+                .getTypeElement(MutationRecord.class.getCanonicalName()).asType();
+
+        if (!mutationObserver.getExecutableElement().getParameters().get(0).asType()
+                .equals(mutationRecord)) {
+            throw new GenerationException(
+                    "Method [" + mutationObserver.getExecutableElement().getSimpleName() + "] in "
+                            + mutationObserver.getExecutableElement().getEnclosingElement()
+                            + " must have arg of type MutationRecord");
+        }
     }
-    throw new Error("Unable to find field name");
-  }
 
-  private void ifValid(MethodDefinition mutationObserver) {
-    if (mutationObserver.getExecutableElement().getParameters().size() > 1
-        || mutationObserver.getExecutableElement().getParameters().isEmpty()) {
-      throw new GenerationException(
-          "Method [" + mutationObserver.getExecutableElement().getSimpleName() + "] in "
-              + mutationObserver.getExecutableElement().getEnclosingElement()
-              + " must have only one arg of type MutationRecord");
+    private VariableElement findField(MethodDefinition mutationObserver) {
+        String fieldName = findFieldName(mutationObserver.getExecutableElement());
+
+        Element target = mutationObserver.getExecutableElement().getEnclosingElement()
+                .getEnclosedElements().stream().filter(elm -> elm.getKind().equals(ElementKind.FIELD))
+                .filter(elm -> MoreElements.asVariable(elm).getSimpleName().toString().equals(fieldName))
+                .findAny().orElseThrow(() -> new Error("Unable to find field named " + fieldName + " in "
+                        + mutationObserver.getExecutableElement().getEnclosingElement()));
+
+        return MoreElements.asVariable(target);
     }
 
-    if (mutationObserver.getExecutableElement().getModifiers().contains(Modifier.PRIVATE)) {
-      throw new GenerationException("Method ["
-          + mutationObserver.getExecutableElement().getSimpleName() + "] in "
-          + mutationObserver.getExecutableElement().getEnclosingElement() + " must not be private");
+    private void isValid(VariableElement target) {
+        if (target.getModifiers().contains(Modifier.PRIVATE)) {
+            throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
+                    + target.getEnclosingElement() + " must not be private");
+        }
+
+        if (target.getModifiers().contains(Modifier.STATIC)) {
+            throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
+                    + target.getEnclosingElement() + " must not be static");
+        }
+
+        if (iocContext.getGenerationContext().getTypes().isSubtype(htmlElement, target.asType())) {
+            throw new GenerationException("MutationObserver target  [" + target.getSimpleName() + " in "
+                    + target.getEnclosingElement() + " must be subtype of HTMLElement atm");
+        }
     }
 
-    if (mutationObserver.getExecutableElement().getModifiers().contains(Modifier.STATIC)) {
-      throw new GenerationException("Method ["
-          + mutationObserver.getExecutableElement().getSimpleName() + "] in "
-          + mutationObserver.getExecutableElement().getEnclosingElement() + " must not be static");
+    // TODO replace with template
+    public void generateCallback(ClassMetaInfo builder, MethodDefinition definition) {
+        builder.addImport(MutationObserver.class);
+        builder.addImport(ObserverCallback.class);
+
+        String callbackMethodName =
+                definition.getExecutableElement().getAnnotation(OnAttach.class) != null
+                        ? "addOnAttachListener"
+                        : "addOnDetachListener";
+
+        String fieldName = definition.getExecutableElement().getAnnotation(OnAttach.class) != null
+                ? definition.getExecutableElement().getAnnotation(OnAttach.class).value()
+                : definition.getExecutableElement().getAnnotation(OnDetach.class).value();
+
+        EnclosedExpr castToAbstractEventHandler =
+                new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("MutationObserver"),
+                        new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                                .addArgument("MutationObserver.class"), "getInstance")));
+
+        builder.addToDoInitInstance(
+                () -> new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
+                        .addArgument("instance." + fieldName)
+                        .addArgument("(ObserverCallback) m -> instance."
+                                + definition.getExecutableElement().getSimpleName().toString() + "(m)")
+                        .toString() + ";");
     }
 
-    TypeMirror mutationRecord = iocContext.getGenerationContext().getElements()
-        .getTypeElement(MutationRecord.class.getCanonicalName()).asType();
+    private String findFieldName(ExecutableElement executableElement) {
+        OnDetach onDetach = executableElement.getAnnotation(OnDetach.class);
+        if (onDetach != null && !onDetach.value().isEmpty()) {
+            return onDetach.value();
+        }
 
-    if (!mutationObserver.getExecutableElement().getParameters().get(0).asType()
-        .equals(mutationRecord)) {
-      throw new GenerationException(
-          "Method [" + mutationObserver.getExecutableElement().getSimpleName() + "] in "
-              + mutationObserver.getExecutableElement().getEnclosingElement()
-              + " must have arg of type MutationRecord");
+        OnAttach onAttach = executableElement.getAnnotation(OnAttach.class);
+        if (onAttach != null && !onAttach.value().isEmpty()) {
+            return onAttach.value();
+        }
+        throw new Error("Unable to find field name");
     }
-  }
-
-  // TODO replace with template
-  public void generateCallback(ClassMetaInfo builder, MethodDefinition definition) {
-    builder.addImport(MutationObserver.class);
-    builder.addImport(ObserverCallback.class);
-
-    String callbackMethodName =
-        definition.getExecutableElement().getAnnotation(OnAttach.class) != null
-            ? "addOnAttachListener"
-            : "addOnDetachListener";
-
-    String fieldName = definition.getExecutableElement().getAnnotation(OnAttach.class) != null
-        ? definition.getExecutableElement().getAnnotation(OnAttach.class).value()
-        : definition.getExecutableElement().getAnnotation(OnDetach.class).value();
-
-    EnclosedExpr castToAbstractEventHandler =
-        new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("MutationObserver"),
-            new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
-                .addArgument("MutationObserver.class"), "getInstance")));
-
-    builder.addToDoInitInstance(
-        () -> new MethodCallExpr(castToAbstractEventHandler, callbackMethodName)
-            .addArgument("instance." + fieldName)
-            .addArgument("(ObserverCallback) m -> instance."
-                + definition.getExecutableElement().getSimpleName().toString() + "(m)")
-            .toString() + ";");
-  }
 
 }

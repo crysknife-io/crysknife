@@ -14,18 +14,19 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.ManagedInstance;
-import io.crysknife.client.SyncBeanDef;
-import jakarta.enterprise.context.Dependent;
-
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import jakarta.enterprise.context.Dependent;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.ManagedInstance;
+import io.crysknife.client.SyncBeanDef;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21

@@ -13,19 +13,18 @@
  */
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.ManagedInstance;
-import io.crysknife.client.SyncBeanDef;
-import jakarta.annotation.Nonnull;
-import jakarta.enterprise.inject.Instance;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import jakarta.annotation.Nonnull;
+import jakarta.enterprise.inject.Instance;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.SyncBeanDef;
 
 /**
  * TODO this class must be refactored

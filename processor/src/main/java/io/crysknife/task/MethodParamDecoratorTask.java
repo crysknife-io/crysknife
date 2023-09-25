@@ -14,6 +14,14 @@
 
 package io.crysknife.task;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeMirror;
+
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.definition.BeanDefinition;
@@ -25,12 +33,6 @@ import io.crysknife.generator.api.WiringElementType;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 24/11/21

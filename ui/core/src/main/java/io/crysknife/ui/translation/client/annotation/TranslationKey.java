@@ -14,13 +14,13 @@
 
 package io.crysknife.ui.translation.client.annotation;
 
-import io.crysknife.ui.translation.client.TranslationService;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import io.crysknife.ui.translation.client.TranslationService;
 
 /**
  * <p>

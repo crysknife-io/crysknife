@@ -22,7 +22,7 @@
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
     <elemental2.version>1.1.0</elemental2.version>
     <j2cl.maven.plugin.version>0.21-SNAPSHOT</j2cl.maven.plugin.version>
-    <org.treblereel.j2cl.processors.version>0.6-SNAPSHOT</org.treblereel.j2cl.processors.version>
+    <org.treblereel.j2cl.processors.version>0.6.1</org.treblereel.j2cl.processors.version>
   </properties>
 
   <dependencyManagement>

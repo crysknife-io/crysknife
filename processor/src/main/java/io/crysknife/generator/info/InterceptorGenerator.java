@@ -14,6 +14,18 @@
 
 package io.crysknife.generator.info;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import jakarta.inject.Named;
+import javax.annotation.processing.FilerException;
+import javax.lang.model.element.AnnotationMirror;
+import javax.tools.JavaFileObject;
+
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -26,17 +38,6 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.util.GenerationUtils;
 import io.crysknife.util.TypeUtils;
-import jakarta.inject.Named;
-
-import javax.annotation.processing.FilerException;
-import javax.lang.model.element.AnnotationMirror;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class InterceptorGenerator {
 

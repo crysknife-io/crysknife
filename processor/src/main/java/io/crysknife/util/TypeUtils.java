@@ -14,23 +14,27 @@
 
 package io.crysknife.util;
 
-import com.google.auto.common.MoreElements;
-import com.google.auto.common.MoreTypes;
-import io.crysknife.definition.BeanDefinition;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.context.IOCContext;
-import jsinterop.annotations.JsProperty;
+import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Default;
-import org.treblereel.j2cl.processors.utils.J2CLUtils;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -40,9 +44,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import java.lang.annotation.Annotation;
-import java.util.*;
-import java.util.stream.Collectors;
+
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.context.IOCContext;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/21/19

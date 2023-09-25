@@ -14,11 +14,6 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.SyncBeanDef;
-import jakarta.enterprise.context.Dependent;
-import jakarta.enterprise.inject.Typed;
-import jakarta.inject.Named;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +24,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
+
+import io.crysknife.client.SyncBeanDef;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21

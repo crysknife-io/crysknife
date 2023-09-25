@@ -14,10 +14,10 @@
 
 package io.crysknife.client;
 
+import java.lang.annotation.Annotation;
+
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Provider;
-
-import java.lang.annotation.Annotation;
 
 /**
  * This type is like {@code javax.inject.Instance} but with automatic life-cycle management.
@@ -137,4 +137,3 @@ public interface ManagedInstance<T> extends Provider<T>, Iterable<T> {
    */
   void destroyAll();
 }
-

@@ -14,9 +14,9 @@
 
 package io.crysknife.client;
 
-import io.crysknife.client.internal.BeanFactory;
-
 import java.util.Optional;
+
+import io.crysknife.client.internal.BeanFactory;
 
 /**
  * Represents a bean definition within the bean manager.

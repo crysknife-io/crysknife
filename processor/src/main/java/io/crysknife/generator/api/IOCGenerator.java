@@ -14,6 +14,14 @@
 
 package io.crysknife.generator.api;
 
+import java.io.IOException;
+import java.io.Writer;
+
+import javax.annotation.processing.FilerException;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import javax.tools.JavaFileObject;
+
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -24,12 +32,6 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.GenerationUtils;
 
-import javax.annotation.processing.FilerException;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/2/19

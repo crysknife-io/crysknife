@@ -14,8 +14,6 @@
 
 package io.crysknife.ui.navigation.client;
 
-import io.crysknife.ui.navigation.client.UniquePageRole;
-
 /**
  * Marks this page as the login page so that we can 'redirect' here when authentication of the user
  * is needed.

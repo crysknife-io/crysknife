@@ -14,8 +14,6 @@
 
 package io.crysknife.ui.navigation.client.annotation;
 
-import io.crysknife.ui.navigation.client.annotation.Page;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

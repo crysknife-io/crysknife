@@ -21,8 +21,8 @@ import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.client.utils.CreationalCallback;
 import io.crysknife.ui.navigation.client.HistoryToken;
 import io.crysknife.ui.navigation.client.Navigation;
-import io.crysknife.ui.navigation.client.annotation.Page;
 import io.crysknife.ui.navigation.client.TransitionTo;
+import io.crysknife.ui.navigation.client.annotation.Page;
 
 /**
  * Represents a page (a distinct place that can be navigated to and bookmarked to return to later).
@@ -34,102 +34,102 @@ import io.crysknife.ui.navigation.client.TransitionTo;
  */
 public interface PageNode<P> {
 
-  /**
-   * Returns the name of this page.
-   *
-   * @return This page's name. Never null.
-   */
-  String name();
+    /**
+     * Returns the name of this page.
+     *
+     * @return This page's name. Never null.
+     */
+    String name();
 
-  /**
-   * Returns the URL template specified for this page by {@link Page#path()}. If no template is
-   * specified, it returns the page name.
-   *
-   * @return This page's URL. Never null.
-   */
-  String getURL();
+    /**
+     * Returns the URL template specified for this page by {@link Page#path()}. If no template is
+     * specified, it returns the page name.
+     *
+     * @return This page's URL. Never null.
+     */
+    String getURL();
 
-  /**
-   * Retrieves the widget that provides this page's content from the client-side bean manager.
-   *
-   * @param callback The callback that will receive the widget to display for this page. The Widget
-   *        will have the same runtime type as returned by {@link #contentType()}, and will never be
-   *        null.
-   */
-  void produceContent(CreationalCallback<P> callback);
+    /**
+     * Retrieves the widget that provides this page's content from the client-side bean manager.
+     *
+     * @param callback The callback that will receive the widget to display for this page. The Widget
+     *                 will have the same runtime type as returned by {@link #contentType()}, and will never be
+     *                 null.
+     */
+    void produceContent(CreationalCallback<P> callback);
 
-  /**
-   * Returns the type of widget that this page node's {@link #produceContent(CreationalCallback)}
-   * method will produce.
-   *
-   * @return The type of widget that supplies this page's content. Never null.
-   */
-  Class<P> contentType();
+    /**
+     * Returns the type of widget that this page node's {@link #produceContent(CreationalCallback)}
+     * method will produce.
+     *
+     * @return The type of widget that supplies this page's content. Never null.
+     */
+    Class<P> contentType();
 
-  /**
-   * Called by the framework when this page node is about to be displayed in the navigation content
-   * panel.
-   * <p>
-   * If this method throws an exception when called, framework behaviour is undefined.
-   *
-   * @param page the page instance that was just returned from a call to
-   *        {@link #produceContent(CreationalCallback)}. Never null.
-   * @param state the state of the page, parsed from the history token on the URL. Never null.
-   */
-  void pageShowing(P page, HistoryToken state, NavigationControl control);
+    /**
+     * Called by the framework when this page node is about to be displayed in the navigation content
+     * panel.
+     * <p>
+     * If this method throws an exception when called, framework behaviour is undefined.
+     *
+     * @param page  the page instance that was just returned from a call to
+     *              {@link #produceContent(CreationalCallback)}. Never null.
+     * @param state the state of the page, parsed from the history token on the URL. Never null.
+     */
+    void pageShowing(P page, HistoryToken state, NavigationControl control);
 
-  /**
-   * Called by the framework when this page node was displayed in the navigation content panel.
-   * <p>
-   * If this method throws an exception when called, framework behaviour is undefined.
-   *
-   * @param page the page instance that was just returned from a call to
-   *        {@link #produceContent(CreationalCallback)}. Never null.
-   * @param state the state of the page, parsed from the history token on the URL. Never null.
-   */
-  void pageShown(P page, HistoryToken state);
+    /**
+     * Called by the framework when this page node was displayed in the navigation content panel.
+     * <p>
+     * If this method throws an exception when called, framework behaviour is undefined.
+     *
+     * @param page  the page instance that was just returned from a call to
+     *              {@link #produceContent(CreationalCallback)}. Never null.
+     * @param state the state of the page, parsed from the history token on the URL. Never null.
+     */
+    void pageShown(P page, HistoryToken state);
 
-  /**
-   * Called by the framework when this page node is about to be removed from the navigation content
-   * panel.
-   * <p>
-   * If this method throws an exception when called, framework behaviour is undefined.
-   *
-   * @param page the page instance (which is currently in the navigation content panel) that was
-   *        previously used in the call to {@link #pageShowing(P, HistoryToken, NavigationControl)}.
-   *        Never null.
-   */
-  void pageHiding(P page, NavigationControl control);
+    /**
+     * Called by the framework when this page node is about to be removed from the navigation content
+     * panel.
+     * <p>
+     * If this method throws an exception when called, framework behaviour is undefined.
+     *
+     * @param page the page instance (which is currently in the navigation content panel) that was
+     *             previously used in the call to {@link #pageShowing(P, HistoryToken, NavigationControl)}.
+     *             Never null.
+     */
+    void pageHiding(P page, NavigationControl control);
 
-  /**
-   * Called by the framework after this page has been removed from the navigation content panel.
-   * <p>
-   * If this method throws an exception when called, framework behaviour is undefined.
-   *
-   * @param page the page instance (which was in the navigation content panel) that was previously
-   *        used in the call to {@link #pageShowing(P, HistoryToken, NavigationControl)}. Never
-   *        null.
-   */
-  void pageHidden(P page);
+    /**
+     * Called by the framework after this page has been removed from the navigation content panel.
+     * <p>
+     * If this method throws an exception when called, framework behaviour is undefined.
+     *
+     * @param page the page instance (which was in the navigation content panel) that was previously
+     *             used in the call to {@link #pageShowing(P, HistoryToken, NavigationControl)}. Never
+     *             null.
+     */
+    void pageHidden(P page);
 
-  /**
-   * Called by the framework when this page node state was updated
-   * {@link Navigation#updateState(Multimap)}.
-   * <p>
-   * If this method throws an exception when called, framework behaviour is undefined.
-   *
-   * @param page the page instance that was just returned from a call to
-   *        {@link #produceContent(CreationalCallback)}. Never null.
-   * @param state the state of the page, parsed from the history token on the URL. Never null.
-   */
-  void pageUpdate(P page, HistoryToken state);
+    /**
+     * Called by the framework when this page node state was updated
+     * {@link Navigation#updateState(Multimap)}.
+     * <p>
+     * If this method throws an exception when called, framework behaviour is undefined.
+     *
+     * @param page  the page instance that was just returned from a call to
+     *              {@link #produceContent(CreationalCallback)}. Never null.
+     * @param state the state of the page, parsed from the history token on the URL. Never null.
+     */
+    void pageUpdate(P page, HistoryToken state);
 
-  /**
-   * Used by the framework to destroy {@link Dependent} scoped beans after a page is no longer
-   * needed. For {@link ApplicationScoped} beans this method is a noop.
-   *
-   * @param page The page instance that will be destroyed if it is a dependent-scoped bean. Never
-   *        null.
-   */
-  void destroy(P page);
+    /**
+     * Used by the framework to destroy {@link Dependent} scoped beans after a page is no longer
+     * needed. For {@link ApplicationScoped} beans this method is a noop.
+     *
+     * @param page The page instance that will be destroyed if it is a dependent-scoped bean. Never
+     *             null.
+     */
+    void destroy(P page);
 }

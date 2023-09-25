@@ -14,9 +14,13 @@
  */
 package io.crysknife.generator.context.oracle;
 
-import com.google.auto.common.MoreElements;
-import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.context.GenerationContext;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.processing.FilerException;
 import javax.lang.model.element.Element;
@@ -25,13 +29,11 @@ import javax.lang.model.element.PackageElement;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.StandardLocation;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
+
+import com.google.auto.common.MoreElements;
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.GenerationContext;
+
 
 /**
  * @author Dmitrii Tikhomirov <chani.liet@gmail.com> Created by treblereel on 10/8/18.

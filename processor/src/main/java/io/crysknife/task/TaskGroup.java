@@ -14,12 +14,12 @@
 
 package io.crysknife.task;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.logger.TreeLogger;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/9/21

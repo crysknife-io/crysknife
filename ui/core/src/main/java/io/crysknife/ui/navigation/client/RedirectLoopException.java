@@ -14,8 +14,6 @@
 
 package io.crysknife.ui.navigation.client;
 
-import io.crysknife.ui.navigation.client.Navigation;
-
 /**
  * This exception is thrown when the page has caused more than the maximum number of redirects ( see
  * {@link Navigation}), indicating an infinite redirection loop.
