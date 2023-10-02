@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.crysknife.tests</groupId>
     <artifactId>jre-cdi-tests</artifactId>
-    <version>0.5.2-SNAPSHOT</version>
+    <version>0.6</version>
     <packaging>jar</packaging>
 
     <properties>

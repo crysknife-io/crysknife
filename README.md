@@ -69,6 +69,7 @@ Crysknife requires the following software in order to run:
 * Java 11 or later
 * Maven 3.6.3 or later
 * Basic knowledge of J2Cl and Maven
+* j2cl-maven-plugin 0.21 or later
 
 
 ## 1.3. Getting Started with Crysknife
