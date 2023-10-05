@@ -14,10 +14,11 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-
-import javax.enterprise.context.Dependent;
 import java.util.function.Supplier;
+
+import jakarta.enterprise.context.Dependent;
+
+import io.crysknife.client.BeanManager;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/29/21

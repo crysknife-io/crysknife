@@ -14,24 +14,34 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.SyncBeanDef;
-
-import javax.enterprise.context.Dependent;
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import jakarta.enterprise.context.Dependent;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.InstanceFactory;
+import io.crysknife.client.ManagedInstance;
+import io.crysknife.client.SyncBeanDef;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/25/21
  */
-public abstract class BeanFactory<T> {
+public abstract class BeanFactory<T> implements InstanceFactory<T> {
 
   protected AbstractBeanManager beanManager;
 
-  protected SyncBeanDef beanDef;
+  protected SyncBeanDef<T> beanDef;
 
   protected T instance;
   private T incompleteInstance;
   private boolean initialized = false;
+
+  private final Map<T, Set<Object>> dependentBeans = new HashMap<>();
 
   protected BeanFactory(BeanManager beanManager) {
     this.beanManager = (AbstractBeanManager) beanManager;
@@ -45,7 +55,7 @@ public abstract class BeanFactory<T> {
     incompleteInstance = instance;
   }
 
-  public abstract <T> T getInstance();
+  public abstract T getInstance();
 
   public void initInstance(T instance) {
     if (beanDef.getScope().equals(Dependent.class) || !initialized) {
@@ -58,19 +68,12 @@ public abstract class BeanFactory<T> {
 
   }
 
-  public <T> T createNewInstance() {
-    if (instance != null) {
-      createInstance();
-    }
-    return (T) instance;
-  }
-
-  protected <T> T createInstance() {
+  protected T createInstance() {
     throw new UnsupportedOperationException(
         "The factory, " + getClass().getSimpleName() + ", only supports contextual instances.");
   }
 
-  protected <T> T createInstanceInternal() {
+  protected T createInstanceInternal() {
     T instance = createInstance();
     return addBeanInstanceToPool(instance, this);
   }
@@ -86,12 +89,61 @@ public abstract class BeanFactory<T> {
 
   void onDestroyInternal(T instance) {
     onDestroy(instance);
+    if (dependentBeans.containsKey(instance)) {
+      for (Object dependentBean : dependentBeans.get(instance)) {
+        beanManager.destroyBean(dependentBean);
+      }
+    }
+    dependentBeans.remove(instance);
     this.instance = null;
-    initialized = false;
+    this.initialized = false;
   }
 
-  protected <T> T addBeanInstanceToPool(Object instance, BeanFactory factory) {
-    return (T) beanManager.addBeanInstanceToPool(instance, factory);
+  private T addBeanInstanceToPool(T instance, BeanFactory<T> factory) {
+    return beanManager.addBeanInstanceToPool(instance, factory);
+  }
+
+  private final Predicate<InstanceFactory> isDependent = factory -> {
+    if (factory instanceof SyncBeanDef) {
+      SyncBeanDef<?> beanDef = (SyncBeanDef<?>) factory;
+      return beanDef.getFactory().isPresent() && beanDef.getScope().equals(Dependent.class);
+    }
+    return false;
+  };
+
+  public <D> D addDependencyConstructor(InstanceFactory<D> factory, Set<Object> deps) {
+    D instance = factory.getInstance();
+    if (isDependent.test(factory)) {
+      deps.add(instance);
+    } else if (instance instanceof ManagedInstance) {
+      deps.add(instance);
+    }
+    return instance;
+  }
+
+  public void addDependencyConstructor(T instance, Set<Object> deps) {
+    if (!dependentBeans.containsKey(instance)) {
+      dependentBeans.put(instance, new HashSet<>());
+    }
+    dependentBeans.get(instance).addAll(deps);
+  }
+
+  public <D> D addDependencyField(T instance, InstanceFactory<D> factory) {
+    if (!dependentBeans.containsKey(instance)) {
+      dependentBeans.put(instance, new HashSet<>());
+    }
+    return addDependency(factory, dependentBeans.get(instance));
+  }
+
+  // TODO use disposable interface
+  private <D> D addDependency(InstanceFactory<D> factory, Set<Object> holder) {
+    D instance = factory.getInstance();
+    if (isDependent.test(factory)) {
+      holder.add(instance);
+    } else if (instance instanceof ManagedInstance) {
+      holder.add(instance);
+    }
+    return instance;
   }
 
 }

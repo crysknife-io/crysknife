@@ -14,14 +14,14 @@
 
 package io.crysknife.task;
 
-import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.definition.BeanDefinition;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.TreeLogger;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/10/21

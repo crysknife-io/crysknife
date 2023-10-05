@@ -14,7 +14,7 @@
 
 package io.crysknife.demo.client.inject.iface;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
 

@@ -14,15 +14,21 @@
 
 package io.crysknife.validation;
 
-import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.util.Utils;
-
-import javax.inject.Named;
-import javax.lang.model.element.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.inject.Named;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.util.TypeUtils;
+
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21
@@ -46,7 +52,7 @@ public class InjectionPointValidator extends Validator<VariableElement> {
         @Override
         public void check(VariableElement variableElement) throws UnableToCompleteException {
           List<AnnotationMirror> qualifiers =
-              Utils.getAllElementQualifierAnnotations(context, variableElement);
+              TypeUtils.getAllElementQualifierAnnotations(context, variableElement);
           if (qualifiers.size() > 1) {
             log(variableElement,
                 "Injection point must be annotated with only one @Qualifier, but there is "

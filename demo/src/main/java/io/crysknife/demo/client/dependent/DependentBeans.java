@@ -14,9 +14,9 @@
 
 package io.crysknife.demo.client.dependent;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
@@ -24,9 +24,9 @@ import elemental2.dom.HTMLInputElement;
 import elemental2.dom.HTMLSelectElement;
 import elemental2.dom.MouseEvent;
 import io.crysknife.client.IsElement;
-import io.crysknife.ui.navigation.client.local.Page;
-import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.demo.client.inject.DependentBean;
+import io.crysknife.ui.templates.client.annotation.ForEvent;
+import io.crysknife.ui.navigation.client.annotation.Page;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.Templated;

@@ -14,7 +14,7 @@
 
 package io.crysknife.demo.client.inject;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
 

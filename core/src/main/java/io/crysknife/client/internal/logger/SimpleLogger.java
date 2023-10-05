@@ -15,7 +15,7 @@
 package io.crysknife.client.internal.logger;
 
 import elemental2.dom.DomGlobal;
-import io.crysknife.client.GwtIncompatible;
+import org.treblereel.gwt.utils.GwtIncompatible;
 
 public class SimpleLogger {
 

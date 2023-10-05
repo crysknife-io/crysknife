@@ -14,9 +14,9 @@
 
 package io.crysknife.definition;
 
-import io.crysknife.generator.IOCGenerator;
-
 import java.util.Optional;
+
+import io.crysknife.generator.api.IOCGenerator;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/11/21

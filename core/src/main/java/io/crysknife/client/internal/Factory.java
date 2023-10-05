@@ -13,9 +13,9 @@
  */
 package io.crysknife.client.internal;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Scope;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
+import jakarta.inject.Scope;
 
 /**
  * An {@linkplain Scope unscoped} {@link Provider}. While a {@link Provider} <i>may</i> apply
@@ -27,7 +27,7 @@ import javax.inject.Scope;
  * those created by {@link Inject} constructors, a new instance is not guaranteed by all bindings.
  *
  * @author Gregory Kick
- * 
+ *
  * @since 2.0
  */
 public interface Factory<T> extends Provider<T> {

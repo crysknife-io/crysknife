@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * <p>
  * Classes which are annotated with <tt>@IOCProvider</tt> MUST implement either:
  * <ul>
- * <li>{@link javax.inject.Provider}</li>
+ * <li>{@link jakarta.inject.Provider}</li>
  * <li>{@link ContextualTypeProvider}</li>
  * </ul>
  *

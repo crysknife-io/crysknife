@@ -14,19 +14,20 @@
 
 package io.crysknife.task;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.lang.model.type.TypeMirror;
+
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-
-import javax.lang.model.type.TypeMirror;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/16/21

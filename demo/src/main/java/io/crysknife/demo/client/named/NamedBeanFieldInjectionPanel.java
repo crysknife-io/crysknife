@@ -14,9 +14,9 @@
 
 package io.crysknife.demo.client.named;
 
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;

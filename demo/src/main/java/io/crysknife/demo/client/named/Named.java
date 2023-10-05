@@ -14,13 +14,13 @@
 
 package io.crysknife.demo.client.named;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import io.crysknife.ui.navigation.client.annotation.Page;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import elemental2.dom.HTMLDivElement;
 import io.crysknife.client.IsElement;
-import io.crysknife.ui.navigation.client.local.Page;
 
 /**
  * @author Dmitrii Tikhomirov

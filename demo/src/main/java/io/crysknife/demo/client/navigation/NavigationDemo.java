@@ -14,8 +14,8 @@
 
 package io.crysknife.demo.client.navigation;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
@@ -26,13 +26,13 @@ import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.Navigation;
-import io.crysknife.ui.navigation.client.local.Page;
-import io.crysknife.ui.navigation.client.local.PageHidden;
-import io.crysknife.ui.navigation.client.local.PageHiding;
-import io.crysknife.ui.navigation.client.local.PageShowing;
-import io.crysknife.ui.navigation.client.local.PageShown;
-import io.crysknife.ui.navigation.client.local.TransitionTo;
+import io.crysknife.ui.navigation.client.Navigation;
+import io.crysknife.ui.navigation.client.TransitionTo;
+import io.crysknife.ui.navigation.client.annotation.Page;
+import io.crysknife.ui.navigation.client.annotation.PageHidden;
+import io.crysknife.ui.navigation.client.annotation.PageHiding;
+import io.crysknife.ui.navigation.client.annotation.PageShowing;
+import io.crysknife.ui.navigation.client.annotation.PageShown;
 
 /**
  * @author Dmitrii Tikhomirov

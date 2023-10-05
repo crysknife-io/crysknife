@@ -13,52 +13,79 @@
  */
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-import io.crysknife.client.IOCBeanDef;
-import io.crysknife.client.SyncBeanDef;
-
-import javax.enterprise.inject.Typed;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Typed;
+
+import io.crysknife.client.BeanManager;
+import io.crysknife.client.IOCBeanDef;
+import io.crysknife.client.ManagedInstance;
+import io.crysknife.client.SyncBeanDef;
+import io.crysknife.client.internal.weak.WeakMap;
+
+import static io.crysknife.client.internal.QualifierUtil.DEFAULT_ANNOTATION;
+import static io.crysknife.client.internal.QualifierUtil.DEFAULT_QUALIFIERS;
+import static io.crysknife.client.internal.QualifierUtil.SPECIALIZES_ANNOTATION;
+import static io.crysknife.client.internal.QualifierUtil.matches;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 3/28/19
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class AbstractBeanManager implements BeanManager {
 
   private final Map<Class, BeanDefinitionHolder> beans = new HashMap<>();
 
-  private final Map<Object, BeanFactory> pool = new IdentityHashMap<>();
+  private final WeakMap<Object, BeanFactory> pool = new WeakMap<>();
   private final Map<String, Class> beansByBeanName = new HashMap<>();
+
+  private final Predicate<SyncBeanDefImpl> isTyped =
+      syncBeanDef -> syncBeanDef.getTyped().isPresent();
+  private final Predicate<SyncBeanDefImpl> isNotTyped =
+      syncBeanDef -> syncBeanDef.getTyped().isEmpty();
+
+  private final Predicate<SyncBeanDefImpl> hasFactory =
+      syncBeanDef -> syncBeanDef.getFactory().isPresent();
+
+  private final Predicate<SyncBeanDefImpl> hasDefaultQualifiers =
+      bean -> bean.matches(setOf(DEFAULT_ANNOTATION));
 
   protected AbstractBeanManager() {
 
   }
 
-  public void register(SyncBeanDefImpl beanDefinition) {
-    BeanDefinitionHolder holder = get(beanDefinition.getType());
-    holder.beanDefinition = beanDefinition;
-    beanDefinition.getAssignableTypes().forEach(superType -> {
-      get((Class<?>) superType).subTypes.add(holder);
-      beansByBeanName.put(((Class<?>) superType).getCanonicalName(), (Class<?>) superType);
-
-    });
+  @Override
+  public void register(final SyncBeanDefImpl beanDefinition) {
+    BeanDefinitionHolder holder =
+        beans.computeIfAbsent(beanDefinition.getType(), k -> new BeanDefinitionHolder());
+    for (Class<?> superType : (Collection<Class<?>>) beanDefinition.getAssignableTypes()) {
+      beans.computeIfAbsent(superType, k -> new BeanDefinitionHolder()).subTypes.add(holder);
+      beansByBeanName.put(superType.getCanonicalName(), superType);
+    }
+    Set<Annotation> temp = new HashSet<Annotation>(beanDefinition.getActualQualifiers());
+    holder.qualifiers.put(temp, beanDefinition);
     beansByBeanName.put(beanDefinition.getName(), beanDefinition.getType());
   }
 
-  private BeanDefinitionHolder get(Class<?> type) {
-    if (!beans.containsKey(type)) {
-      BeanDefinitionHolder holder = new BeanDefinitionHolder();
-      beans.put(type, holder);
+  @Override
+  public Optional<IOCBeanDef<?>> lookupBeanDefinition(Object ref) {
+    if (!pool.has(ref)) {
+      return Optional.empty();
     }
-    return beans.get(type);
+    return Optional.of(pool.get(ref).beanDef);
   }
 
   @Override
@@ -66,11 +93,19 @@ public abstract class AbstractBeanManager implements BeanManager {
     if (beansByBeanName.containsKey(name)) {
       return lookupBeans(beansByBeanName.get(name));
     }
-
-
     return Collections.EMPTY_SET;
   }
 
+  private <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type) {
+    Set<SyncBeanDef<T>> result = new HashSet<>();
+    if (!beans.containsKey(type)) {
+      return result;
+    }
+    of(beans.get(type)).map(f -> (SyncBeanDef<T>) f).forEach(result::add);
+    return result;
+  }
+
+  @Override
   public <T> Collection<SyncBeanDef<T>> lookupBeans(final Class<T> type, Annotation... qualifiers) {
     Set<SyncBeanDef<T>> result = new HashSet<>();
     if (!beans.containsKey(type)) {
@@ -78,35 +113,38 @@ public abstract class AbstractBeanManager implements BeanManager {
     }
 
     if (qualifiers.length == 0) {
-      if (beans.get(type).beanDefinition != null) {
-        result.add(beans.get(type).beanDefinition);
-      }
-      beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-          .forEach(bean -> result.add(bean.beanDefinition));
-      return result;
+      return lookupBeans(type);
+    }
+    if (checkIfAny(qualifiers)) {
+      return doLookupAnyBeans(type, qualifiers);
     }
 
-    if (beans.get(type).beanDefinition != null) {
-      if (compareAnnotations(beans.get(type).beanDefinition.getActualQualifiers(), qualifiers)) {
-        result.add(beans.get(type).beanDefinition);
-      }
-    }
-    beans.get(type).subTypes.stream().filter(f -> f.beanDefinition != null)
-        .filter(f -> compareAnnotations(f.beanDefinition.getActualQualifiers(), qualifiers))
-        .forEach(bean -> result.add(bean.beanDefinition));
+    of(beans.get(type)).filter(bean -> bean.matches(setOf(qualifiers))).map(f -> (SyncBeanDef<T>) f)
+        .forEach(result::add);
 
     return result;
   }
 
-  private boolean compareAnnotations(Collection<Annotation> all, Annotation... in) {
-    Annotation[] _all = all.toArray(new Annotation[all.size()]);
-    return QualifierUtil.matches(in, _all);
-  }
-
+  @Override
   public <T> SyncBeanDef<T> lookupBean(final Class<T> type) {
-    return lookupBean(type, QualifierUtil.DEFAULT_ANNOTATION);
+    Collection<IOCBeanDef<T>> candidates = doLookupBean(type, QualifierUtil.DEFAULT_ANNOTATION);
+
+    if (candidates.size() > 1) {
+      Set<SyncBeanDef<T>> maybeAlternative =
+          candidates.stream().map(bean -> (SyncBeanDefImpl<T>) bean)
+              .filter(SyncBeanDefImpl::isAlternative).collect(Collectors.toSet());
+      if (maybeAlternative.size() == 1) {
+        return maybeAlternative.iterator().next();
+      }
+      throw BeanManagerUtil.ambiguousResolutionException(type, candidates, DEFAULT_ANNOTATION);
+    } else if (candidates.isEmpty()) {
+      throw BeanManagerUtil.unsatisfiedResolutionException(type, DEFAULT_ANNOTATION);
+    } else {
+      return (SyncBeanDef<T>) candidates.iterator().next();
+    }
   }
 
+  @Override
   public <T> SyncBeanDef<T> lookupBean(final Class<T> type, Annotation... qualifiers) {
     Collection<IOCBeanDef<T>> candidates = doLookupBean(type, qualifiers);
 
@@ -119,117 +157,192 @@ public abstract class AbstractBeanManager implements BeanManager {
     }
   }
 
-  public void destroyBean(Object ref) {
-    if (pool.containsKey(ref)) {
-      pool.get(ref).onDestroyInternal(ref);
-      pool.remove(ref);
+  private <T> Collection<IOCBeanDef<T>> doLookupBean(final Class<T> type,
+      final Annotation... qualifiers) {
+    if (!beans.containsKey(type)) {
+      return Collections.EMPTY_SET;
     }
-  }
 
-  <T> T addBeanInstanceToPool(Object instance, BeanFactory factory) {
-    pool.put(instance, factory);
-    return (T) instance;
-  }
+    if (qualifiers.length == 1 && isDefault(qualifiers)) {
+      return doLookupDefaultBean(type);
+    }
 
-  <T> Collection<IOCBeanDef<T>> doLookupBean(final Class<T> type, Annotation... qualifiers) {
     Collection<IOCBeanDef<T>> candidates = new HashSet<>();
-    if (beans.containsKey(type)) {
+    BeanDefinitionHolder holder = beans.get(type);
 
-      if (qualifiers == null || qualifiers.length == 0) {
-        qualifiers = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
+    Optional<IOCBeanDef<T>> maybeTyped = of(holder, isTyped)
+        .filter(bean -> Arrays.asList(((Typed) bean.getTyped().get()).value()).contains(type))
+        .map(bean -> (IOCBeanDef<T>) bean).findFirst();
+
+    if (maybeTyped.isPresent()) {
+      return setOf(maybeTyped.get());
+    }
+
+    of(holder, hasFactory, isNotTyped).filter(bean -> {
+      Set<Annotation> temp = new HashSet<Annotation>(bean.getActualQualifiers());
+      Collections.addAll(temp, DEFAULT_QUALIFIERS);
+      return compareAnnotations(temp, qualifiers);
+    }).forEach(bean -> candidates.add((IOCBeanDef<T>) bean));
+
+    if (qualifiers.length == 1 && isDefault(qualifiers)) {
+      Optional<IOCBeanDef<T>> maybeSpecialized =
+          of(holder, isNotTyped).filter(bean -> bean.matches(setOf(SPECIALIZES_ANNOTATION)))
+              .map(bean -> (IOCBeanDef<T>) bean).findFirst();
+
+      // TODO this is not correct, specialized bean totally overrides the parent bean, including
+      // qualifiers
+      if (maybeSpecialized.isPresent()) {
+        return setOf(maybeSpecialized.get());
       }
 
-      if (beans.get(type).beanDefinition != null) {
-        if (beans.get(type).beanDefinition.getTyped().isPresent()) {
-          if (Arrays.stream(((Typed) beans.get(type).beanDefinition.getTyped().get()).value())
-              .anyMatch(any -> any.equals(type))) {
-            Set<IOCBeanDef<T>> result = new HashSet<>();
-            result.add(beans.get(type).beanDefinition);
-            return result;
-          }
-        }
+      Optional<IOCBeanDef<T>> maybeDefault = of(holder, isNotTyped, hasDefaultQualifiers)
+          .map(bean -> (IOCBeanDef<T>) bean).findFirst();
 
-        if (compareAnnotations(beans.get(type).beanDefinition.getQualifiers(), qualifiers)) {
-          if (beans.get(type).beanDefinition.getFactory().isPresent()) {
-            candidates.add(beans.get(type).beanDefinition);
-          }
-        }
+      if (maybeDefault.isPresent()) {
+        return setOf(maybeDefault.get());
       }
 
-      if (qualifiers.length == 1 && !beans.get(type).subTypes.isEmpty() && isDefault(qualifiers)) {
-        for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-          if (subType.beanDefinition != null) {
-            if (!subType.beanDefinition.getActualQualifiers().isEmpty()
-                && compareAnnotations(subType.beanDefinition.getActualQualifiers(),
-                    QualifierUtil.SPECIALIZES_ANNOTATION)) {
-              Collection<IOCBeanDef<T>> result = new HashSet<>();
-              result.add(subType.beanDefinition);
-              return result;
-            }
-          }
-        }
-        for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-          if (subType.beanDefinition != null) {
-            if (!subType.beanDefinition.getActualQualifiers().isEmpty() && compareAnnotations(
-                subType.beanDefinition.getActualQualifiers(), QualifierUtil.DEFAULT_ANNOTATION)) {
-              Collection<IOCBeanDef<T>> result = new HashSet<>();
-              result.add(subType.beanDefinition);
-              return result;
-            }
-          }
-        }
-        for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-          Set<Annotation> annotations = new HashSet<>();
-          annotations.add(QualifierUtil.DEFAULT_ANNOTATION);
-          if (compareAnnotations(subType.beanDefinition.getActualQualifiers(), qualifiers)) {
-            if (subType.beanDefinition.getTyped().isPresent()) {
-              continue;
-            } else if (subType.beanDefinition.getFactory().isPresent())
-              candidates.add(subType.beanDefinition);
-          }
-        }
-      } else {
-        Set<Annotation> _qual = new HashSet<>();
-        Collections.addAll(_qual, qualifiers);
-        Collections.addAll(_qual, QualifierUtil.DEFAULT_QUALIFIERS);
-        _qual.toArray(new Annotation[_qual.size()]);
+      of(holder, isNotTyped, hasFactory, hasDefaultQualifiers).map(bean -> (IOCBeanDef<T>) bean)
+          .forEach(candidates::add);
+    } else if (qualifiers.length == 1 && isAny(qualifiers)) {
 
-        for (BeanDefinitionHolder subType : beans.get(type).subTypes) {
-          if (compareAnnotations(subType.beanDefinition.getQualifiers(),
-              _qual.toArray(new Annotation[_qual.size()]))) {
-            if (subType.beanDefinition.getTyped().isPresent()
-                && !isDefault(subType.beanDefinition.getActualQualifiers())) {
-              continue;
-            } else if (subType.beanDefinition.getFactory().isPresent())
-              candidates.add(subType.beanDefinition);
-          }
-        }
-      }
+      of(holder, hasFactory)
+          // .filter(bean -> bean.getTyped().isEmpty()) //TODO not sure about this, may I have to
+          // filter out @typed beans
+          .map(bean -> (IOCBeanDef<T>) bean).forEach(candidates::add);
+    } else {
+      of(holder, isNotTyped, hasFactory).filter(bean -> bean.matches(setOf(qualifiers)))
+          .map(bean -> (IOCBeanDef<T>) bean).forEach(candidates::add);
     }
     return candidates;
   }
 
-  private boolean isDefault(Collection<Annotation> qualifiers) {
-    if (qualifiers.isEmpty()) {
-      return false;
+  private <T> Collection<SyncBeanDef<T>> doLookupAnyBeans(Class<T> type, Annotation[] q) {
+    Set<Annotation> qualifiers = new HashSet<>();
+    for (Annotation annotation : q) {
+      if (!annotation.annotationType().getName().equals(Any.class.getCanonicalName())) {
+        qualifiers.add(annotation);
+      }
     }
-    return isDefault(qualifiers.toArray(new Annotation[qualifiers.size()]));
+    BeanDefinitionHolder holder = beans.get(type);
+    Collection<SyncBeanDef<T>> candidates = new HashSet<>();
+    if (qualifiers.isEmpty()) {
+      Stream.concat(of(holder, hasFactory), holder.qualifiers.values().stream())
+          .forEach(candidates::add);
+    } else {
+      Stream.concat(of(holder, hasFactory), holder.qualifiers.values().stream())
+          .filter(bean -> bean.matches(qualifiers)).forEach(candidates::add);
+    }
+    return candidates;
+  }
+
+  private <T> Collection<IOCBeanDef<T>> doLookupDefaultBean(Class<T> type) {
+    Collection<IOCBeanDef<T>> candidates = new HashSet<>();
+    BeanDefinitionHolder holder = beans.get(type);
+    Optional<IOCBeanDef<T>> maybeTyped = of(holder, isTyped)
+        .filter(bean -> Arrays.asList(((Typed) bean.getTyped().get()).value()).contains(type))
+        .map(bean -> (IOCBeanDef<T>) bean).findFirst();
+
+    if (maybeTyped.isPresent()) {
+      return setOf(maybeTyped.get());
+    }
+
+    Optional<IOCBeanDef<T>> maybeSpecialized =
+        of(holder, isNotTyped).filter(bean -> bean.matches(setOf(SPECIALIZES_ANNOTATION)))
+            .map(bean -> (IOCBeanDef<T>) bean).findFirst();
+    if (maybeSpecialized.isPresent()) {
+      return setOf(maybeSpecialized.get());
+    }
+
+    // TODO this isn't really good, we should refactor it later
+    holder.qualifiers.entrySet().stream().filter(entry -> {
+      if (entry.getKey().isEmpty()) {
+        return true;
+      }
+
+      return entry.getKey().size() == 1 && entry.getKey().contains(DEFAULT_ANNOTATION);
+    }).map(entry -> (IOCBeanDef<T>) entry.getValue()).forEach(candidates::add);
+
+    if (!candidates.isEmpty()) {
+      return candidates;
+    }
+
+    Set<SyncBeanDef> beans = of(holder, hasFactory, isNotTyped).collect(Collectors.toSet());
+    if (beans.size() == 1) {
+      return setOf((IOCBeanDef<T>) beans.iterator().next());
+    }
+    beans.stream().filter(bean -> {
+      if (bean.getActualQualifiers().isEmpty()) {
+        return true;
+      }
+      return bean.getActualQualifiers().contains(DEFAULT_ANNOTATION);
+    }).forEach(bean -> candidates.add((IOCBeanDef<T>) bean));
+
+    return candidates;
+  }
+
+  @Override
+  public void destroyBean(Object ref) {
+    if (pool.has(ref) && pool.get(ref).beanDef.getFactory().isPresent()) {
+      pool.get(ref).onDestroyInternal(ref);
+      pool.delete(ref);
+    } else if (ref instanceof ManagedInstance) {
+      ((ManagedInstance) ref).destroyAll();
+    }
+  }
+
+  private boolean compareAnnotations(Collection<Annotation> all, Annotation... in) {
+    Annotation[] _all = all.toArray(new Annotation[all.size()]);
+    return matches(in, _all);
   }
 
   private boolean isDefault(Annotation[] qualifiers) {
     Annotation[] a1 = new Annotation[] {qualifiers[0]};
-    Annotation[] a2 = new Annotation[] {QualifierUtil.DEFAULT_ANNOTATION};
-    return QualifierUtil.matches(a1, a2);
+    Annotation[] a2 = new Annotation[] {DEFAULT_ANNOTATION};
+    return matches(a1, a2);
   }
 
-  private boolean compareAnnotations(Annotation[] all, Annotation[] in) {
-    return QualifierUtil.matches(in, all);
+  private boolean checkIfAny(Annotation[] qualifiers) {
+    return qualifiers.length > 0 && isAny(qualifiers);
+  }
+
+  private boolean isAny(Annotation[] qualifiers) {
+    for (Annotation annotation : qualifiers) {
+      if (annotation.annotationType().getName().equals(Any.class.getCanonicalName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // replace it with setOf right after we move to Java 11 emulated by J2CL
+  private static <T> Set<T> setOf(T... values) {
+    Set<T> set = new HashSet<>();
+    Collections.addAll(set, values);
+    return Collections.unmodifiableSet(set);
+  }
+
+  private Stream<SyncBeanDefImpl> of(BeanDefinitionHolder holder,
+      Predicate<SyncBeanDefImpl>... filters) {
+    Stream<SyncBeanDefImpl> stream =
+        Stream.of(holder.subTypes.stream().flatMap(f -> f.qualifiers.values().stream()),
+            holder.qualifiers.values().stream()).flatMap(Function.identity());
+    for (Predicate<SyncBeanDefImpl> filter : filters) {
+      stream = stream.filter(filter);
+    }
+
+    return stream;
+  }
+
+  <T> T addBeanInstanceToPool(Object instance, BeanFactory<T> factory) {
+    pool.set(instance, factory);
+    return (T) instance;
   }
 
   private static class BeanDefinitionHolder {
 
-    SyncBeanDefImpl beanDefinition;
-    Set<BeanDefinitionHolder> subTypes = new HashSet<>();
+    private final Set<BeanDefinitionHolder> subTypes = new HashSet<>();
+    private final Map<Set<Annotation>, SyncBeanDefImpl> qualifiers = new HashMap<>();
+
   }
 }
-

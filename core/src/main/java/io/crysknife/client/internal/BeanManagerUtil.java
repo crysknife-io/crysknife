@@ -14,11 +14,14 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.IOCBeanDef;
-
-import javax.inject.Named;
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
+
+import jakarta.inject.Named;
+
+import io.crysknife.client.IOCBeanDef;
 
 /**
  *
@@ -29,26 +32,25 @@ public class BeanManagerUtil {
   public static <T> IOCResolutionException ambiguousResolutionException(Class<T> type,
       final Collection<IOCBeanDef<T>> resolved, Annotation... qualifiers) {
     final StringBuilder builder = new StringBuilder();
-    builder.append("Multiple beans matched " + type.getName() + " with qualifiers {"
-        + qualifiersToString(qualifiers) + "\n").append("Found:\n");
+    builder.append("Multiple beans matched ").append(type.getName()).append(" with qualifiers ")
+        .append(qualifiersToString(qualifiers)).append("\n").append("Found:\n");
     for (final IOCBeanDef<T> beanDef : resolved) {
       builder.append("  ").append(beanDef.toString()).append("\n");
     }
     builder.append("}");
-    IOCResolutionException iocResolutionException = new IOCResolutionException(builder.toString());
-    return iocResolutionException;
+    return new IOCResolutionException(builder.toString());
   }
 
   public static <T> IOCResolutionException unsatisfiedResolutionException(Class<T> type,
       Annotation... qualifiers) {
-    return new IOCResolutionException("No beans matched " + type.getName() + " with qualifiers {"
-        + qualifiersToString(qualifiers) + "}");
+    return new IOCResolutionException("No beans matched " + type.getName() + " with qualifiers "
+        + qualifiersToString(qualifiers));
   }
 
   public static <T> IOCResolutionException noFactoryResolutionException(Class<T> type,
       Annotation... qualifiers) {
     return new IOCResolutionException("No factory registered for " + type.getName()
-        + " with qualifiers {" + qualifiersToString(qualifiers) + "}");
+        + " with qualifiers " + qualifiersToString(qualifiers));
   }
 
   public static String qualifiersToString(Collection<Annotation> qualifiers) {
@@ -57,12 +59,12 @@ public class BeanManagerUtil {
 
   public static String qualifiersToString(final Annotation[] qualifiers) {
     final StringBuilder builder = new StringBuilder().append("{ ");
-    for (final Annotation qualifier : qualifiers) {
-      builder.append(qualifierToString(qualifier));
-      builder.append(", ");
-    }
-    builder.append(" }");
 
+    String strings = Arrays.stream(qualifiers).map(BeanManagerUtil::qualifierToString)
+        .collect(Collectors.joining(", "));
+
+    builder.append(strings);
+    builder.append(" }");
     return builder.toString();
   }
 

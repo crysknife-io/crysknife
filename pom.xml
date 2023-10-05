@@ -44,41 +44,50 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
 
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
         <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
-        <maven.license.plugin.version>3.0</maven.license.plugin.version>
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
         <maven.scm.provider.gitexe.plugin.version>1.9.5</maven.scm.provider.gitexe.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M3</maven.enforcer.plugin.version>
         <maven.shade.plugin.version>3.2.4</maven.shade.plugin.version>
         <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
-        <maven.formatter.plugin.version>2.13.0</maven.formatter.plugin.version>
-        <maven.license.plugin.version>3.0</maven.license.plugin.version>
         <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
         <maven.flatten.plugin>1.2.2</maven.flatten.plugin>
+        <maven.checkstyle.plugin>3.2.0</maven.checkstyle.plugin>
 
-        <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
-        <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
-        <apache.commons.io.version>2.8.0</apache.commons.io.version>
-
-        <jsoup.version>1.11.3</jsoup.version>
-        <javax.inject.version>1</javax.inject.version>
-        <lesscss.version>1.7.0.1.1</lesscss.version>
-        <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
-        <google.guava.version>28.1-jre</google.guava.version>
-        <classgraph.classgraph.version>4.8.115</classgraph.classgraph.version>
-
-        <javaparser.core.version>3.15.18</javaparser.core.version>
-        <elemental2.version>1.1.0</elemental2.version>
-        <auto.common.version>0.11</auto.common.version>
-        <auto.service.version>1.0-rc7</auto.service.version>
-        <junit.version>4.13.1</junit.version>
+        <version.checkstyle>8.29</version.checkstyle>
+        <checkstyle.header.templateFile>LICENSE.header</checkstyle.header.templateFile>
+        <checkstyle.header.template
+        ><![CDATA[
+^\/\*$\n^
+\* Licensed to the Apache Software Foundation \(ASF\) under one$\n^
+\* or more contributor license agreements\.  See the NOTICE file$\n^
+\* distributed with this work for additional information$\n^
+\* regarding copyright ownership\.  The ASF licenses this file$\n^
+\* to you under the Apache License, Version 2\.0 \(the$\n^
+\* &quot;License&quot;\); you may not use this file except in compliance$\n^
+\* with the License\.  You may obtain a copy of the License at$\n^
+\*$\n^
+\*   http:\/\/www\.apache\.org\/licenses\/LICENSE-2\.0$\n^
+\*$\n^
+\* Unless required by applicable law or agreed to in writing,$\n^
+\* software distributed under the License is distributed on an$\n^
+\* &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY$\n^
+\* KIND, either express or implied\.  See the License for the$\n^
+\* specific language governing permissions and limitations$\n^
+\* under the License\.$\n^
+\*\/$
+]]>
+        </checkstyle.header.template>
+        <checkstyle.header.extensions>java</checkstyle.header.extensions>
+        <checkstyle.failOnViolation>true</checkstyle.failOnViolation>
+        <checkstyle.logViolationsToConsole>true</checkstyle.logViolationsToConsole>
     </properties>
 
     <modules>
@@ -89,7 +98,6 @@
         <module>core</module>
         <module>ui</module>
         <module>tests</module>
-        <module>legacy</module>
     </modules>
 
     <dependencyManagement>
@@ -133,19 +141,12 @@
                     <version>${maven.clean.plugin.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.coveo</groupId>
-                    <artifactId>fmt-maven-plugin</artifactId>
-                    <version>${maven.fmt.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>${maven.license.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>net.revelc.code.formatter</groupId>
-                    <artifactId>formatter-maven-plugin</artifactId>
-                    <version>${maven.formatter.plugin.version}</version>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${version.checkstyle.plugin}</version>
+                    <configuration>
+                        <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -199,66 +200,79 @@
 
         <plugins>
             <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <header>${user.dir}/LICENSE.header</header>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                    <skipExistingHeaders>true</skipExistingHeaders>
-                    <mapping>
-                        <java>SLASHSTAR_STYLE</java>
-                    </mapping>
-                    <excludes>
-                        <exclude>.github/**</exclude>
-                        <exclude>**/README.md</exclude>
-                        <exclude>**/LICENSE</exclude>
-                        <exclude>**/LICENSE.header</exclude>
-                        <exclude>**/AUTHORS</exclude>
-                        <exclude>**/src/test/resources/**</exclude>
-                        <exclude>**/src/main/resources/**</exclude>
-                        <exclude>**/war</exclude>
-                        <exclude>**/pom.xml</exclude>
-                        <exclude>**/.flattened-pom.xml</exclude>
-                        <exclude>**/gwt-unitcache</exclude>
-                        <exclude>**/webapp/**</exclude>
-                        <exclude>**/tomcatconf/**</exclude>
-                        <exclude>.github/FUNDING.yml</exclude>
-                        <exclude>eclipse-java-google-style.xml</exclude>
-                        <exclude>docs/**</exclude>
-                        <exclude>**/*.less</exclude>
-                        <exclude>**/*.html</exclude>
-                        <exclude>**/*.css</exclude>
-                        <exclude>**/.factorypath</exclude>
-                        <exclude>**/*.properties</exclude>
-                        <exclude>**/*.gwt.xml</exclude>
-                    </excludes>
-                    <properties>
-                        <year>${project.inceptionYear}</year>
-                        <name>${project.organization.name}</name>
-                    </properties>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${maven.checkstyle.plugin}</version>
                 <executions>
                     <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>net.revelc.code.formatter</groupId>
-                <artifactId>formatter-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>format</goal>
-                        </goals>
                         <configuration>
-                            <configFile>${user.dir}/eclipse-java-google-style.xml</configFile>
-                            <encoding>UTF-8</encoding>
+                            <checkstyleRules>
+                                <module name="Checker">
+                                    <!-- Checks for whitespace. -->
+                                    <module name="FileTabCharacter">
+                                        <property name="severity" value="error" />
+                                        <property name="eachLine" value="true" />
+                                    </module>
+                                    <module name="TreeWalker">
+                                        <!-- Import settings: getting rid of redundant import, forbid star notation, defined order of imports. -->
+                                        <module name="RedundantImport" />
+                                        <module name="AvoidStarImport">
+                                            <property name="allowClassImports" value="false" />
+                                            <property name="allowStaticMemberImports" value="false" />
+                                        </module>
+                                        <module name="CustomImportOrder">
+                                            <property
+                                                    name="customImportOrderRules"
+                                                    value="STANDARD_JAVA_PACKAGE###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE###STATIC"
+                                            />
+                                            <property name="specialImportsRegExp" value="^(jakarta|javax)\." />
+                                            <property name="standardPackageRegExp" value="^java\." />
+                                            <property name="sortImportsInGroupAlphabetically" value="true" />
+                                            <property name="separateLineBetweenGroups" value="true" />
+                                        </module>
+                                        <module name="UnusedImports" />
+                                        <module name="NeedBraces">
+                                            <property
+                                                    name="tokens"
+                                                    value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO"
+                                            />
+                                        </module>
+                                        <module name="EqualsHashCode" />
+                                    </module>
+                                    <module name="RegexpHeader">
+                                        <property name="header" value="${checkstyle.header.template}" />
+                                        <property name="fileExtensions" value="${checkstyle.header.extensions}" />
+                                    </module>
+                                </module>
+                            </checkstyleRules>
+                            <outputFile>${project.build.directory}/checkstyle.log</outputFile>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <includeResources>true</includeResources>
+                            <includeTestResources>true</includeTestResources>
+                            <consoleOutput>false</consoleOutput>
+                            <logViolationsToConsole>${checkstyle.logViolationsToConsole}</logViolationsToConsole>
+                            <failsOnError>false</failsOnError>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${version.checkstyle}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.sun</groupId>
+                                <artifactId>tools</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

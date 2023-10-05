@@ -14,11 +14,9 @@
 
 package io.crysknife.tests.j2cl;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import jakarta.annotation.PostConstruct;
 
 import io.crysknife.annotation.Application;
-import io.crysknife.client.BeanManager;
 
 @Application
 public class TestApp {

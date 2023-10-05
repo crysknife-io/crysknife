@@ -69,14 +69,17 @@
 
         <jsoup.version>1.11.3</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
+        <freemarker.version>2.3.30</freemarker.version>
         <lesscss.version>1.10</lesscss.version>
         <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
-        <classgraph.classgraph.version>4.8.53</classgraph.classgraph.version>
+        <classgraph.classgraph.version>4.8.156</classgraph.classgraph.version>
+        <org.treblereel.j2cl.processors.version>0.6.1</org.treblereel.j2cl.processors.version>
+        <gwt.jakarta.version>0.2</gwt.jakarta.version>
 
-        <javaparser.core.version>3.15.18</javaparser.core.version>
+        <javaparser.core.version>3.25.5</javaparser.core.version>
         <elemental2.version>1.1.0</elemental2.version>
-        <auto.common.version>0.11</auto.common.version>
+        <auto.common.version>1.2.1</auto.common.version>
         <auto.service.version>1.0-rc7</auto.service.version>
         <mockito.core.version>4.6.1</mockito.core.version>
         <junit.version>4.13.1</junit.version>
@@ -84,6 +87,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.treblereel.gwt.jakarta</groupId>
+                <artifactId>bom</artifactId>
+                <version>${gwt.jakarta.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
@@ -131,6 +141,11 @@
                 <version>${apache.commons.commons-text.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>${freemarker.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.maven.scm</groupId>
                 <artifactId>maven-scm-provider-gitexe</artifactId>
                 <version>${maven.scm.provider.gitexe.plugin.version}</version>
@@ -154,6 +169,11 @@
                 <groupId>de.inetsoftware</groupId>
                 <artifactId>jlessc</artifactId>
                 <version>${lesscss.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.j2cl.processors</groupId>
+                <artifactId>utils</artifactId>
+                <version>${org.treblereel.j2cl.processors.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>

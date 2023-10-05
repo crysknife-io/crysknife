@@ -13,10 +13,11 @@
  */
 package io.crysknife.exception;
 
+import java.util.Set;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.Set;
 
 /**
  * Used to indicate that some part of a multi-step process failed. Typically, operation can continue

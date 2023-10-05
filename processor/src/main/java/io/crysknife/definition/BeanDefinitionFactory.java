@@ -14,14 +14,19 @@
 
 package io.crysknife.definition;
 
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
+
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.processor.ConstructorInjectionPointProcessor;
 import io.crysknife.processor.FieldProcessor;
+import io.crysknife.util.TypeUtils;
 
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21
@@ -44,19 +49,18 @@ public class BeanDefinitionFactory {
   public BeanDefinition of(TypeMirror type) throws UnableToCompleteException {
     validateBean(type);
     BeanDefinition bean = new BeanDefinition(type);
-
     fieldProcessor.process(bean);
     constructorInjectionPointProcessor.process(bean);
-
     return bean;
   }
 
   public ProducesBeanDefinition of(ExecutableElement produces) throws UnableToCompleteException {
-    ProducesBeanDefinition bean = new ProducesBeanDefinition(produces);
-    return bean;
+    List<AnnotationMirror> qualifiers =
+        TypeUtils.getAllElementQualifierAnnotations(context, produces);
+    return new ProducesBeanDefinition(produces, qualifiers);
   }
 
   private void validateBean(TypeMirror type) {
-
+    // TODO
   }
 }

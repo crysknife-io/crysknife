@@ -17,6 +17,7 @@ package io.crysknife.client;
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/27/21
  */
+@FunctionalInterface
 public interface InstanceFactory<T> {
 
   /**

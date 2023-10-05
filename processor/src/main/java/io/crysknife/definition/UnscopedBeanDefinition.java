@@ -14,17 +14,15 @@
 
 package io.crysknife.definition;
 
-import com.github.javaparser.ast.expr.Expression;
+import javax.lang.model.type.TypeMirror;
+
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.google.auto.common.MoreTypes;
-import io.crysknife.client.internal.InstanceImpl;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.api.ClassBuilder;
+import io.crysknife.client.internal.SimpleInstanceFactoryImpl;
+import io.crysknife.generator.api.IOCGenerator;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.util.Utils;
-
-import javax.lang.model.type.TypeMirror;
+import io.crysknife.util.TypeUtils;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/9/21
@@ -36,7 +34,7 @@ public class UnscopedBeanDefinition extends BeanDefinition {
     setIocGenerator(new UnscopedIOCGenerator(logger, context));
   }
 
-  private static class UnscopedIOCGenerator extends IOCGenerator {
+  private static class UnscopedIOCGenerator extends IOCGenerator<BeanDefinition> {
 
     private UnscopedIOCGenerator(TreeLogger logger, IOCContext context) {
       super(logger, context);
@@ -47,21 +45,12 @@ public class UnscopedBeanDefinition extends BeanDefinition {
 
     }
 
-    @Override
-    public void generate(ClassBuilder clazz, Definition beanDefinition) {
+    public String generateBeanLookupCall(InjectableVariableDefinition fieldPoint) {
 
-    }
-
-    public Expression generateBeanLookupCall(ClassBuilder clazz,
-        InjectableVariableDefinition fieldPoint) {
-
-      String clazzName =
-          Utils.getQualifiedName(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()));
-
-      clazz.getClassCompilationUnit().addImport(InstanceImpl.class);
-
-      return new ObjectCreationExpr().setType(InstanceImpl.class)
-          .addArgument(new ObjectCreationExpr().setType(clazzName));
+      String clazzName = TypeUtils
+          .getQualifiedName(MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()));
+      return new ObjectCreationExpr().setType(SimpleInstanceFactoryImpl.class.getCanonicalName())
+          .addArgument(new ObjectCreationExpr().setType(clazzName)).toString();
 
     }
   }

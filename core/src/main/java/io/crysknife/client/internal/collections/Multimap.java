@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/3/20
@@ -37,6 +38,12 @@ public class Multimap<K, V> {
     this(new HashMap<>());
   }
 
+  public Collection<Map.Entry<K, V>> entries() {
+    Map<K, V> map = new TreeMap<>();
+    keys().forEach(key -> get(key).stream().forEach(v -> map.put(key, v)));
+    return map.entrySet();
+  }
+
   public void put(K key, V value) {
     if (!holder.containsKey(key)) {
       holder.put(key, new ArrayList<>());
@@ -51,7 +58,7 @@ public class Multimap<K, V> {
         result.add(value);
       }
     }
-    return result;
+    return Collections.unmodifiableSet(result);
   }
 
   public List<V> get(K key) {

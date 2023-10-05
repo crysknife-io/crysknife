@@ -14,12 +14,12 @@
 
 package io.crysknife.task;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.logger.TreeLogger;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/9/21
@@ -38,7 +38,13 @@ public class TaskGroup implements Task {
     Set<UnableToCompleteException> errors = new LinkedHashSet<>();
     for (Task task : tasks) {
       try {
+        long start = System.currentTimeMillis();
         task.execute();
+
+
+        logger.log(TreeLogger.INFO, "Finished task " + task.getClass().getSimpleName() + " in "
+            + (System.currentTimeMillis() - start) + "ms");
+
       } catch (UnableToCompleteException e) {
         errors.add(e);
       }

@@ -14,14 +14,19 @@
 
 package io.crysknife.definition;
 
-import com.google.auto.common.MoreElements;
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.inject.Singleton;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Singleton;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import java.lang.annotation.Annotation;
+
+import com.google.auto.common.MoreElements;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/6/21
@@ -30,13 +35,32 @@ public class ProducesBeanDefinition extends BeanDefinition {
 
   private ExecutableElement method;
 
-  public ProducesBeanDefinition(ExecutableElement method) {
+  private List<AnnotationMirror> qualifiers;
+
+  private Set<ProducesBeanDefinition> subtypes = new HashSet<>();
+
+
+  public ProducesBeanDefinition(ExecutableElement method, List<AnnotationMirror> qualifiers) {
     super(method.getReturnType());
+    super.setHasFactory(false);
     this.method = method;
+    this.qualifiers = qualifiers;
+  }
+
+  public void addSubtype(ProducesBeanDefinition subtype) {
+    subtypes.add(subtype);
+  }
+
+  public Set<ProducesBeanDefinition> getSubtypes() {
+    return new HashSet<>(subtypes);
   }
 
   public ExecutableElement getMethod() {
     return method;
+  }
+
+  public List<AnnotationMirror> getQualifier() {
+    return qualifiers;
   }
 
   public TypeElement getProducer() {
@@ -66,4 +90,5 @@ public class ProducesBeanDefinition extends BeanDefinition {
       }
     };
   }
+
 }

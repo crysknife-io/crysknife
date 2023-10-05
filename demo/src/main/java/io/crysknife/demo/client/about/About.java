@@ -14,15 +14,15 @@
 
 package io.crysknife.demo.client.about;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import elemental2.dom.HTMLDivElement;
 import io.crysknife.client.IsElement;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.Templated;
-import io.crysknife.ui.navigation.client.local.DefaultPage;
-import io.crysknife.ui.navigation.client.local.Page;
+import io.crysknife.ui.navigation.client.DefaultPage;
+import io.crysknife.ui.navigation.client.annotation.Page;
 
 /**
  * @author Dmitrii Tikhomirov

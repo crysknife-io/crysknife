@@ -14,19 +14,19 @@
 
 package io.crysknife.client.internal;
 
-import io.crysknife.client.BeanManager;
-
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Specializes;
-import javax.enterprise.inject.Typed;
-import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Default;
+import jakarta.enterprise.inject.Specializes;
+import jakarta.enterprise.inject.Typed;
+import jakarta.inject.Named;
 
 /**
  * A utility class for testing the equality of qualifiers at runtime.
@@ -71,6 +71,18 @@ public class QualifierUtil {
     };
   };
 
+  public static final Annotation ALTERNATIVE_ANNOTATION = new Any() {
+    @Override
+    public Class<? extends Annotation> annotationType() {
+      return Alternative.class;
+    }
+
+    @Override
+    public String toString() {
+      return "@Alternative";
+    };
+  };
+
   public static final Annotation[] DEFAULT_QUALIFIERS =
       new Annotation[] {DEFAULT_ANNOTATION, ANY_ANNOTATION};
 
@@ -101,9 +113,9 @@ public class QualifierUtil {
    *        collection is empty, then it represents the universal qualifier that satisfies all other
    *        qualifiers. This is unambiguous since it is otherwise impossible to have no qualifiers
    *        (everything has {@link Any}).
-   * @return If {@code in} is non-empty then this returns true iff every annotation in
-   *         {@code allOff} contains an equal annotation in {@code in}. If {@code in} is empty, then
-   *         this returns true.
+   * @return If {@code in} is non-empty then this returns true if every annotation in {@code allOff}
+   *         contains an equal annotation in {@code in}. If {@code in} is empty, then this returns
+   *         true.
    */
   public static boolean matches(final Collection<Annotation> allOf,
       final Collection<Annotation> in) {
@@ -117,7 +129,7 @@ public class QualifierUtil {
   public static boolean contains(final Collection<Annotation> allOf,
       final Collection<Annotation> in) {
     if (allOf.isEmpty())
-      return true;
+      return false;
 
     final Map<String, Annotation> allOfMap = new HashMap<>();
     final Map<String, Annotation> inMap = new HashMap<>();

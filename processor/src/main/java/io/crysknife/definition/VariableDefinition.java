@@ -14,11 +14,12 @@
 
 package io.crysknife.definition;
 
-import io.crysknife.generator.IOCGenerator;
-
-import javax.lang.model.element.VariableElement;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.lang.model.element.VariableElement;
+
+import io.crysknife.generator.api.IOCGenerator;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/11/21
@@ -38,7 +39,7 @@ public class VariableDefinition implements Definition {
     return variableElement;
   }
 
-  public BeanDefinition getBeanDefinition() {
+  public BeanDefinition getEnclosingBeanDefinition() {
     return parent;
   }
 

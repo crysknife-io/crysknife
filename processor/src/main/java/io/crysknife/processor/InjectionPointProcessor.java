@@ -14,58 +14,61 @@
 
 package io.crysknife.processor;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.lang.model.element.VariableElement;
+
+import io.crysknife.definition.BeanDefinition;
+import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
-import io.crysknife.definition.BeanDefinition;
 import io.crysknife.validation.InjectionPointValidator;
 
-import javax.lang.model.element.VariableElement;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/4/21
  */
 public abstract class InjectionPointProcessor {
 
-  protected final IOCContext context;
-  protected final TreeLogger logger;
+    protected final IOCContext context;
+    protected final TreeLogger logger;
 
-  public InjectionPointProcessor(IOCContext context, TreeLogger logger) {
-    this.context = context;
-    this.logger = logger;
-  }
-
-  public abstract void process(BeanDefinition bean) throws UnableToCompleteException;
-
-  protected void process(BeanDefinition bean, Set<VariableElement> points)
-      throws UnableToCompleteException {
-
-    Set<UnableToCompleteException> errors = new HashSet<>();
-
-    for (VariableElement field : points) {
-      try {
-        new InjectionPointValidator(context, field.getEnclosingElement()).validate(field);
-        process(bean, field);
-      } catch (UnableToCompleteException e) {
-        errors.add(e);
-      }
+    public InjectionPointProcessor(IOCContext context, TreeLogger logger) {
+        this.context = context;
+        this.logger = logger;
     }
 
-    if (!errors.isEmpty()) {
-      TreeLogger logger =
-          this.logger.branch(TreeLogger.ERROR, "Unable to process bean: " + bean.getType());
-      for (UnableToCompleteException error : errors) {
-        logger.log(TreeLogger.ERROR, error.getMessage());
-      }
-      throw new UnableToCompleteException();
+    public abstract void process(BeanDefinition bean) throws UnableToCompleteException;
+
+    protected void process(BeanDefinition bean, Set<VariableElement> points)
+            throws UnableToCompleteException {
+
+        Set<UnableToCompleteException> errors = new HashSet<>();
+
+        for (VariableElement field : points) {
+            try {
+                new InjectionPointValidator(context, field.getEnclosingElement()).validate(field);
+                process(bean, field);
+            } catch (UnableToCompleteException e) {
+                errors.add(e);
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            TreeLogger logger =
+                    this.logger.branch(TreeLogger.ERROR, "Unable to process bean: " + bean.getType());
+            for (UnableToCompleteException error : errors) {
+                logger.log(TreeLogger.ERROR, error.getMessage());
+            }
+            throw new GenerationException();
+        }
     }
-  }
 
 
-  protected abstract void process(BeanDefinition bean, VariableElement field)
-      throws UnableToCompleteException;
+    protected abstract void process(BeanDefinition bean, VariableElement field)
+            throws UnableToCompleteException;
 
 
 }

@@ -27,5 +27,5 @@ public interface Disposer<T> {
    *
    * @param beanInstance the instance of the bean to be disposed.
    */
-  public void dispose(T beanInstance);
+  void dispose(T beanInstance);
 }

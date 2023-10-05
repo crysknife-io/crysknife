@@ -14,8 +14,6 @@
 
 package io.crysknife.client.ioc;
 
-import io.crysknife.client.BeanManager;
-
 import java.lang.annotation.Annotation;
 
 /**

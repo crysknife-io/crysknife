@@ -2,25 +2,51 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>tests-parent</artifactId>
-        <groupId>io.crysknife.tests</groupId>
-        <version>0.5.2-SNAPSHOT</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>io.crysknife.tests</groupId>
     <artifactId>j2cl-tests</artifactId>
+    <version>0.5.2-SNAPSHOT</version>
     <description>J2CL tests</description>
 
     <properties>
-        <maven.j2cl.plugin>0.19</maven.j2cl.plugin>
-        <j2cl.version>0.10</j2cl.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
+        <maven.license.plugin.version>3.0</maven.license.plugin.version>
+        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+        <maven.scm.provider.gitexe.plugin.version>1.9.5</maven.scm.provider.gitexe.plugin.version>
+        <maven.enforcer.plugin.version>3.0.0-M3</maven.enforcer.plugin.version>
+        <maven.shade.plugin.version>3.2.4</maven.shade.plugin.version>
+        <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
+        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
+        <maven.formatter.plugin.version>2.13.0</maven.formatter.plugin.version>
+        <maven.license.plugin.version>3.0</maven.license.plugin.version>
+        <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
+        <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
+        <maven.flatten.plugin>1.2.2</maven.flatten.plugin>
+        <maven.j2cl.plugin>0.20</maven.j2cl.plugin>
+        <j2cl.version>0.10.0-3c97afeac</j2cl.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.crysknife</groupId>
             <artifactId>crysknife-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.crysknife</groupId>
+            <artifactId>crysknife-processor</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.vertispan.j2cl</groupId>
@@ -56,9 +82,6 @@
         </resources>
         <testResources>
             <testResource>
-                <directory>${project.basedir}/src/test/java</directory>
-            </testResource>
-            <testResource>
                 <directory>${project.basedir}/src/test/resources</directory>
             </testResource>
         </testResources>
@@ -66,21 +89,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>io.crysknife</groupId>
-                            <artifactId>crysknife-processor</artifactId>
-                            <version>${project.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
@@ -91,6 +109,13 @@
                 <version>${maven.j2cl.plugin}</version>
                 <executions>
                     <execution>
+                        <id>build-js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>j2cl-test</id>
                         <phase>test</phase>
                         <goals>
@@ -99,13 +124,14 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <compilationLevel>BUNDLE</compilationLevel>
+                    <compilationLevel>BUNDLE_JAR</compilationLevel>
                     <webdriver>chrome</webdriver>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

@@ -14,16 +14,6 @@
 
 package io.crysknife.definition;
 
-import com.google.auto.common.MoreTypes;
-import io.crysknife.annotation.CircularDependency;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.util.Utils;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.inject.Singleton;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,22 +21,37 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.inject.Singleton;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
+
+import com.google.auto.common.MoreElements;
+import com.google.auto.common.MoreTypes;
+import io.crysknife.annotation.CircularDependency;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.util.TypeUtils;
+
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 9/3/21
  */
 public class BeanDefinition implements Definition {
 
   private final TypeMirror type;
-
-  private Set<InjectableVariableDefinition> fields = new LinkedHashSet<>();
-  private Set<InjectionParameterDefinition> constructorParams = new LinkedHashSet<>();
-  private Set<MethodDefinition> methods = new LinkedHashSet<>();
-  private Set<BeanDefinition> dependencies = new LinkedHashSet<>();
-  private Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
+  private final Set<InjectableVariableDefinition> fields = new LinkedHashSet<>();
+  private final Set<InjectionParameterDefinition> constructorParams = new LinkedHashSet<>();
+  private final Set<MethodDefinition> methods = new LinkedHashSet<>();
+  private final Set<BeanDefinition> dependencies = new LinkedHashSet<>();
+  private final Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
   private Optional<IOCGenerator<BeanDefinition>> iocGenerator = Optional.empty();
+  private final Set<BeanDefinition> subclasses = new LinkedHashSet<>();
   private boolean hasFactory = true;
 
-  private Set<BeanDefinition> subclasses = new LinkedHashSet<>();
+  private boolean factoryGenerationFinished = false;
+
 
   public BeanDefinition(TypeMirror type) {
     this.type = type;
@@ -92,28 +97,20 @@ public class BeanDefinition implements Definition {
     return MoreTypes.asTypeElement(type).getAnnotation(CircularDependency.class) != null;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    BeanDefinition that = (BeanDefinition) o;
-    return MoreTypes.asTypeElement(type).getQualifiedName().toString()
-        .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
+  public boolean isAlternative() {
+    return MoreElements.isAnnotationPresent(MoreTypes.asTypeElement(type), Alternative.class);
   }
 
   public String getPackageName() {
-    return Utils.getPackageName(MoreTypes.asTypeElement(type));
+    return TypeUtils.getPackageName(MoreTypes.asTypeElement(type));
   }
 
   public String getQualifiedName() {
     return MoreTypes.asTypeElement(type).getQualifiedName().toString();
+  }
+
+  public String getSimpleClassName() {
+    return TypeUtils.getSimpleClassName(type);
   }
 
   public Set<IOCGenerator<BeanDefinition>> getDecorators() {
@@ -123,6 +120,10 @@ public class BeanDefinition implements Definition {
   public Annotation getScope() {
     if (MoreTypes.asTypeElement(type).getAnnotation(Singleton.class) != null) {
       return MoreTypes.asTypeElement(type).getAnnotation(Singleton.class);
+    }
+
+    if (MoreTypes.asTypeElement(type).getAnnotation(jakarta.ejb.Singleton.class) != null) {
+      return MoreTypes.asTypeElement(type).getAnnotation(jakarta.ejb.Singleton.class);
     }
 
     if (MoreTypes.asTypeElement(type).getAnnotation(ApplicationScoped.class) != null) {
@@ -144,5 +145,30 @@ public class BeanDefinition implements Definition {
 
   public void setHasFactory(boolean hasFactory) {
     this.hasFactory = hasFactory;
+  }
+
+
+  public boolean isFactoryGenerationFinished() {
+    return factoryGenerationFinished;
+  }
+
+  public void setFactoryGenerationFinished(boolean factoryGenerationFinished) {
+    this.factoryGenerationFinished = factoryGenerationFinished;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(MoreTypes.asTypeElement(type).getQualifiedName().toString());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    BeanDefinition that = (BeanDefinition) o;
+    return MoreTypes.asTypeElement(type).getQualifiedName().toString()
+        .equals(MoreTypes.asTypeElement(that.type).getQualifiedName().toString());
   }
 }

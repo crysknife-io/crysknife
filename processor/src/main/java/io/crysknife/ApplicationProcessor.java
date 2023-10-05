@@ -14,122 +14,187 @@
 
 package io.crysknife;
 
-import com.google.auto.service.AutoService;
-import io.crysknife.annotation.Application;
-import io.crysknife.annotation.Generator;
-import io.crysknife.exception.GenerationException;
-import io.crysknife.generator.BeanManagerGenerator;
-import io.crysknife.generator.FactoryGenerator;
-import io.crysknife.generator.IOCGenerator;
-import io.crysknife.generator.context.GenerationContext;
-import io.crysknife.generator.context.IOCContext;
-import io.crysknife.generator.info.BeanInfoGenerator;
-import io.crysknife.logger.PrintWriterTreeLogger;
-import io.crysknife.logger.TreeLogger;
-import io.crysknife.task.*;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
-import java.util.Set;
+
+import com.google.auto.service.AutoService;
+import io.crysknife.annotation.Application;
+import io.crysknife.exception.GenerationException;
+import io.crysknife.generator.BeanManagerProducerGenerator;
+import io.crysknife.generator.BootstrapperGenerator;
+import io.crysknife.generator.ManagedBeanGenerator;
+import io.crysknife.generator.ObservesGenerator;
+import io.crysknife.generator.ProducesGenerator;
+import io.crysknife.generator.ProxyGenerator;
+import io.crysknife.generator.api.Generator;
+import io.crysknife.generator.api.IOCGenerator;
+import io.crysknife.generator.context.GenerationContext;
+import io.crysknife.generator.context.IOCContext;
+import io.crysknife.logger.PrintWriterTreeLogger;
+import io.crysknife.logger.TreeLogger;
+import io.crysknife.task.AfterBurnFactoryStepTask;
+import io.crysknife.task.BeanInfoGenerator;
+import io.crysknife.task.BeanProcessorTask;
+import io.crysknife.task.FactoryGeneratorTask;
+import io.crysknife.task.FireBeforeTask;
+import io.crysknife.task.IOCProviderTask;
+import io.crysknife.task.MethodParamDecoratorTask;
+import io.crysknife.task.ProcessGraphTask;
+import io.crysknife.task.ProcessSubClassesTask;
+import io.crysknife.task.TaskGroup;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
+
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@SupportedAnnotationTypes({"io.crysknife.annotation.Application"})
 public class ApplicationProcessor extends AbstractProcessor {
 
-  private IOCContext iocContext;
-  private Set<String> packages;
-  private GenerationContext context;
-  private TypeElement application;
-
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations,
-      RoundEnvironment roundEnvironment) {
-    if (annotations.isEmpty()) {
-      return false;
+    @Override
+    public Set<String> getSupportedAnnotationTypes() {
+        return Set.of(Application.class.getCanonicalName());
     }
 
-    context = new GenerationContext(roundEnvironment, processingEnv);
-    iocContext = new IOCContext(context);
-
-    TreeLogger logger = new PrintWriterTreeLogger();
-
-    Optional<TypeElement> maybeApplication = processApplicationAnnotation(iocContext);
-    if (!maybeApplication.isPresent()) {
-      return true;
-    }
-    this.application = maybeApplication.get();
-
-    initAndRegisterGenerators(logger);
-
-    TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
-    // taskGroup.addTask(new InitAndRegisterGeneratorsTask(iocContext, logger));
-    taskGroup.addTask(new FireBeforeTask(iocContext, logger));
-    taskGroup.addTask(new IOCProviderTask(iocContext, logger));
-    taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
-    taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
-    // taskGroup.addTask(new FireBeforeTask(iocContext, logger));
-    taskGroup.addTask(new ProcessGraphTask(iocContext, logger, application));
-    taskGroup.addTask(new CheckCyclesTask(iocContext, logger));
-
-    taskGroup.addTask(new MethodParamDecoratorTask(iocContext, logger));
-
-    taskGroup.addTask(new FactoryGenerator(iocContext, logger));
-    taskGroup.addTask(new BeanInfoGenerator(iocContext, logger));
-    taskGroup.addTask(new BeanManagerGenerator(iocContext, logger));
-    taskGroup.addTask(new FireAfterTask(iocContext, logger));
-    taskGroup.execute();
-
-    return false;
-  }
-
-  private Optional<TypeElement> processApplicationAnnotation(IOCContext iocContext) {
-    Set<TypeElement> applications = (Set<TypeElement>) iocContext.getGenerationContext()
-        .getRoundEnvironment().getElementsAnnotatedWith(Application.class);
-
-    if (applications.size() == 0) {
-      context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING,
-          "No class annotated with @Application detected\"");
-      return Optional.empty();
-    }
-
-    if (applications.size() > 1) {
-      context.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.ERROR,
-          "There is must be only one class annotated with @Application\"");
-      throw new GenerationException();
-    }
-    return applications.stream().findFirst();
-  }
-
-  private void initAndRegisterGenerators(TreeLogger logger) {
-    try (ScanResult scanResult = new ClassGraph().enableAllInfo().scan()) {
-      ClassInfoList routeClassInfoList =
-          scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
-      for (ClassInfo routeClassInfo : routeClassInfoList) {
-        try {
-          Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(TreeLogger.class,
-              IOCContext.class);
-          ((IOCGenerator) c.newInstance(
-              logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
-              iocContext)).register();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-            | NoSuchMethodException | InvocationTargetException e) {
-          throw new GenerationException(e);
+    @Override
+    public boolean process(Set<? extends TypeElement> annotations,
+                           RoundEnvironment roundEnvironment) {
+        if (annotations.isEmpty()) {
+            return false;
         }
-      }
+
+        final TreeLogger logger = new PrintWriterTreeLogger();
+        final long start = System.currentTimeMillis();
+
+        Optional<TypeElement> maybeApplication = processApplicationAnnotation(roundEnvironment, logger);
+        if (maybeApplication.isEmpty()) {
+            return false;
+        }
+
+        logger.log(TreeLogger.INFO, "Crysknife generation started ...");
+
+        TypeElement application = maybeApplication.get();
+        GenerationContext context = new GenerationContext(application, roundEnvironment, processingEnv,
+                logger.branch(TreeLogger.DEBUG, "start classpath scan ..."));
+
+        final long finished = (System.currentTimeMillis() - start);
+
+        logger.log(TreeLogger.INFO, "classpath processed in " + finished / 1000 + "s");
+        if (finished > 1000) {
+            logger.log(TreeLogger.INFO,
+                    "ClassPath scan is slow, reduce the number of jars in the classpath/dependencies.");
+        }
+
+        IOCContext iocContext = new IOCContext(context);
+        ContextHolder.getInstance().setContext(iocContext);
+
+        logger.log(TreeLogger.INFO,
+                "IOCContext created in " + (System.currentTimeMillis() - start) + " ms");
+
+        long startgen = System.currentTimeMillis();
+
+        initAndRegisterGenerators(iocContext, logger.branch(TreeLogger.DEBUG, "start generators scan"));
+
+        logger.log(TreeLogger.INFO,
+                "Generators registered in  " + (System.currentTimeMillis() - startgen) + " ms");
+
+        TaskGroup taskGroup = new TaskGroup(logger.branch(TreeLogger.DEBUG, "start processing"));
+        taskGroup.addTask(new FireBeforeTask(iocContext, logger));
+        taskGroup.addTask(new IOCProviderTask(iocContext, logger));
+        taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
+        taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
+        taskGroup.addTask(new ProcessGraphTask(iocContext, logger, application));
+        taskGroup.addTask(new MethodParamDecoratorTask(iocContext, logger));
+        taskGroup.addTask(new FactoryGeneratorTask(iocContext, logger));
+        taskGroup.addTask(new BeanInfoGenerator(iocContext, logger));
+        taskGroup.addTask(new AfterBurnFactoryStepTask(iocContext, logger));
+        taskGroup.execute();
+
+
+        logger.log(TreeLogger.INFO,
+                "Crysknife generation finished in " + (System.currentTimeMillis() - start) + " ms");
+
+        return true;
     }
-  }
+
+    private Optional<TypeElement> processApplicationAnnotation(RoundEnvironment roundEnvironment,
+                                                               TreeLogger logger) {
+        Set<Element> applications =
+                (Set<Element>) roundEnvironment.getElementsAnnotatedWith(Application.class);
+
+        if (applications.isEmpty()) {
+            logger.log(TreeLogger.ERROR, "No classes annotated with @Application detected");
+            return Optional.empty();
+        }
+
+        if (applications.size() > 1) {
+            logger.log(TreeLogger.ERROR, "There is must be only one class annotated with @Application\"");
+            throw new GenerationException();
+        }
+
+        Optional<Element> candidate = applications.stream().findFirst();
+
+        if (candidate.isPresent()) {
+            if (!candidate.get().getKind().isClass()) {
+                logger.log(TreeLogger.ERROR, "The class annotated with @Application must be a class\"");
+                throw new GenerationException();
+            }
+
+            if (candidate.get().getModifiers().contains(javax.lang.model.element.Modifier.ABSTRACT)) {
+                logger.log(TreeLogger.ERROR,
+                        "The class annotated with @Application must not be abstract\"");
+                throw new GenerationException();
+            }
+            return candidate.map(TypeElement.class::cast);
+        }
+        return Optional.empty();
+    }
+
+    private void initAndRegisterGenerators(IOCContext iocContext, TreeLogger logger) {
+        Set<IOCGenerator<?>> buildIn = new HashSet<>();
+        buildIn.add(new BeanManagerProducerGenerator(logger, iocContext));
+        buildIn.add(new BootstrapperGenerator(logger, iocContext));
+        buildIn.add(new ObservesGenerator(logger, iocContext));
+        buildIn.add(new ProducesGenerator(logger, iocContext));
+        buildIn.add(new ProxyGenerator(logger, iocContext));
+        buildIn.add(new ManagedBeanGenerator(logger, iocContext));
+
+        ScanResult scanResult = iocContext.getGenerationContext().getScanResult();
+
+        ClassInfoList routeClassInfoList =
+                scanResult.getClassesWithAnnotation(Generator.class.getCanonicalName());
+
+        for (ClassInfo routeClassInfo : routeClassInfoList) {
+            try {
+                Constructor c = Class.forName(routeClassInfo.getName()).getConstructor(TreeLogger.class,
+                        IOCContext.class);
+                IOCGenerator<?> generator = ((IOCGenerator<?>) c.newInstance(
+                        logger.branch(TreeLogger.INFO, "register generator: " + routeClassInfo.getName()),
+                        iocContext));
+                buildIn.add(generator);
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                     | NoSuchMethodException | InvocationTargetException e) {
+                throw new GenerationException(e);
+            }
+        }
+        for (IOCGenerator<?> generator : buildIn) {
+            registerGenerator(generator, logger);
+        }
+    }
+
+    private void registerGenerator(IOCGenerator<?> generator, TreeLogger logger) {
+        generator.register();
+    }
+
 }

@@ -14,12 +14,12 @@
 
 package io.crysknife.validation;
 
-import io.crysknife.exception.UnableToCompleteException;
-import io.crysknife.generator.context.IOCContext;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+
+import io.crysknife.exception.UnableToCompleteException;
+import io.crysknife.generator.context.IOCContext;
 
 public class PreDestroyValidator extends Validator<ExecutableElement> {
 

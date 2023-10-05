@@ -14,16 +14,36 @@
 
 package io.crysknife.client.internal;
 
+import java.util.Objects;
+
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 10/4/21
  */
 public class Pair<K, V> {
-  public final K a;
-  public final V b;
+  public final K key;
+  public final V value;
 
-  public Pair(K a, V b) {
-    this.a = a;
-    this.b = b;
+  private Pair(K key, V value) {
+    this.key = key;
+    this.value = value;
   }
 
+  public static <K, V> Pair<K, V> of(K a, V b) {
+    return new Pair<>(a, b);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    Pair<?, ?> pair = (Pair<?, ?>) o;
+    return Objects.equals(key, pair.key) && Objects.equals(value, pair.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, value);
+  }
 }
