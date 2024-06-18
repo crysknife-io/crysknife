@@ -5,7 +5,7 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.6</version>
+  <version>0.7-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -20,9 +20,9 @@
 
     <webappdir>${project.build.directory}/webapp</webappdir>
     <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
-    <elemental2.version>1.1.0</elemental2.version>
-    <j2cl.maven.plugin.version>0.22-SNAPSHOT</j2cl.maven.plugin.version>
-    <org.treblereel.j2cl.processors.version>0.6.1</org.treblereel.j2cl.processors.version>
+    <elemental2.version>1.2.1</elemental2.version>
+    <j2cl.maven.plugin.version>0.23-SNAPSHOT</j2cl.maven.plugin.version>
+    <org.treblereel.j2cl.processors.version>0.7.0-SNAPSHOT</org.treblereel.j2cl.processors.version>
   </properties>
 
   <dependencyManagement>

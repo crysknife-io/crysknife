@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>internal-bom</artifactId>
-    <version>0.6</version>
+    <version>0.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
 
@@ -74,11 +74,11 @@
         <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.156</classgraph.classgraph.version>
-        <org.treblereel.j2cl.processors.version>0.6.1</org.treblereel.j2cl.processors.version>
-        <gwt.jakarta.version>0.2</gwt.jakarta.version>
+        <org.treblereel.j2cl.processors.version>0.7.0-SNAPSHOT</org.treblereel.j2cl.processors.version>
+        <gwt.jakarta.version>0.4-SNAPSHOT</gwt.jakarta.version>
 
         <javaparser.core.version>3.25.5</javaparser.core.version>
-        <elemental2.version>1.1.0</elemental2.version>
+        <elemental2.version>1.2.1</elemental2.version>
         <auto.common.version>1.2.1</auto.common.version>
         <auto.service.version>1.0-rc7</auto.service.version>
         <mockito.core.version>4.6.1</mockito.core.version>
