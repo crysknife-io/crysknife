@@ -44,7 +44,7 @@ import io.crysknife.task.IOCProviderTask;
 import io.crysknife.task.TaskGroup;
 
 @AutoService(Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class AfterBurnFactoryProcessor extends AbstractProcessor {
 
   private static final TreeLogger logger = new PrintWriterTreeLogger();

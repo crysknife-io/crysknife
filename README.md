@@ -69,6 +69,7 @@ Crysknife requires the following software in order to run:
 * Java 11 or later
 * Maven 3.6.3 or later
 * Basic knowledge of J2Cl and Maven
+* j2cl-maven-plugin 0.22 or later
 
 
 ## 1.3. Getting Started with Crysknife
@@ -104,7 +105,7 @@ To read more about Jakarta CDI, please visit official documentation (https://jak
 
 * pre-requisites: working maven j2cl application. If you don't have one, please follow the instructions in the J2CL Maven Plugin documentation (https://github.com/Vertispan/j2clmavenplugin). 
 
-tip : clone application from https://github.com/treblereel/j2cl-tests or genetare it from j2cl-maven-plugin archetype.
+tip : clone application from https://github.com/treblereel/j2cl-tests, use demo or generate it from j2cl-maven-plugin archetype.
 
 * add crysknife  dependencies to your pom.xml
 
