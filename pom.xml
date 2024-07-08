@@ -5,7 +5,7 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7</version>
     <packaging>pom</packaging>
 
     <name>crysknife parent</name>
@@ -285,7 +285,7 @@
                             <version>3.0</version>
                         </requireMavenVersion>
                         <requireJavaVersion>
-                            <version>(1.8.0,)</version>
+                            <version>(11.0,)</version>
                         </requireJavaVersion>
                     </rules>
                 </configuration>

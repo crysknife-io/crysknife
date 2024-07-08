@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife.tests</groupId>
     <artifactId>j2cl-tests</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7</version>
     <description>J2CL tests</description>
 
     <properties>
