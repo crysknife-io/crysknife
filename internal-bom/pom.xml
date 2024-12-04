@@ -63,7 +63,7 @@
         <maven.license.plugin.version>3.0</maven.license.plugin.version>
         <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
 
-        <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
+        <apache.commons.commons-text.version>1.10.0</apache.commons.commons-text.version>
         <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
         <apache.commons.io.version>2.8.0</apache.commons.io.version>
 
