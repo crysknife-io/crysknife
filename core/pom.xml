@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.7</version>
+    <version>0.8</version>
   </parent>
 
   <artifactId>crysknife-core</artifactId>
@@ -36,10 +36,6 @@
   </organization>
 
   <dependencies>
-    <dependency>
-      <groupId>com.google.jsinterop</groupId>
-      <artifactId>jsinterop-annotations</artifactId>
-    </dependency>
     <dependency>
       <groupId>io.crysknife</groupId>
       <artifactId>crysknife-annotations</artifactId>

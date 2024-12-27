@@ -154,7 +154,7 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
                     .methodsIn(MoreTypes.asTypeElement(beanDefinition.getType()).getEnclosedElements())
                     .stream().filter(method -> method.getModifiers().contains(Modifier.PRIVATE))
                     .filter(method -> !method.getModifiers().contains(Modifier.NATIVE))
-                    .map(method -> j2CLUtils.createDeclarationMethodDescriptor(method).getMangledName())
+                    .map(j2CLUtils::getMethodMangledName)
                     .collect(Collectors.toSet());
             if (!methods.isEmpty()) {
                 classMetaInfo.addImport(JsType.class);

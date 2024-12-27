@@ -54,11 +54,11 @@ public class MethodCallGenerator {
     if (isJre) {
       root.put("name", method.getSimpleName().toString());
       if (!args.isEmpty()) {
-        root.put("args", args.stream().collect(Collectors.joining(", ")));
+        root.put("args", String.join(", ", args));
       }
     } else {
       if (isPrivate) {
-        root.put("name", j2CLUtils.createDeclarationMethodDescriptor(method).getMangledName());
+        root.put("name", j2CLUtils.getMethodMangledName(method));
       } else {
         root.put("name", method.getSimpleName().toString());
       }

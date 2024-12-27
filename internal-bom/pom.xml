@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>internal-bom</artifactId>
-    <version>0.7</version>
+    <version>0.8</version>
     <packaging>pom</packaging>
 
 
@@ -71,18 +71,17 @@
         <javax.inject.version>1</javax.inject.version>
         <freemarker.version>2.3.30</freemarker.version>
         <lesscss.version>1.10</lesscss.version>
-        <google.jsinterop.annotations.version>2.0.0</google.jsinterop.annotations.version>
         <google.guava.version>28.1-jre</google.guava.version>
         <classgraph.classgraph.version>4.8.156</classgraph.classgraph.version>
-        <org.treblereel.j2cl.processors.version>0.7</org.treblereel.j2cl.processors.version>
-        <gwt.jakarta.version>0.4</gwt.jakarta.version>
+        <org.treblereel.j2cl.processors.version>0.8</org.treblereel.j2cl.processors.version>
+        <gwt.jakarta.version>0.6</gwt.jakarta.version>
 
         <javaparser.core.version>3.25.5</javaparser.core.version>
-        <elemental2.version>1.2.1</elemental2.version>
-        <auto.common.version>1.2.1</auto.common.version>
-        <auto.service.version>1.0-rc7</auto.service.version>
+        <elemental2.version>1.2.3</elemental2.version>
+        <auto.common.version>1.2.2</auto.common.version>
+        <auto.service.version>1.1.1</auto.service.version>
         <mockito.core.version>4.6.1</mockito.core.version>
-        <junit.version>4.13.1</junit.version>
+        <junit.version>4.13.2</junit.version>
     </properties>
 
     <dependencyManagement>
@@ -99,11 +98,6 @@
                 <artifactId>javax.inject</artifactId>
                 <version>${javax.inject.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.jsinterop</groupId>
-                <artifactId>jsinterop-annotations</artifactId>
-                <version>${google.jsinterop.annotations.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.elemental2</groupId>
