@@ -178,7 +178,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
             if (executableElement.isPresent()) {
                 templateDefinition.setInitRootElement(true);
                 String mangledName =
-                        j2CLUtils.createDeclarationMethodDescriptor(executableElement.get()).getMangledName();
+                        j2CLUtils.getMethodMangledName(executableElement.get());
                 templateDefinition.setRootElementPropertyName(mangledName);
             }
         }
@@ -280,7 +280,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
                         "resolveElement").addArgument(instance)
                         .addArgument(new StringLiteralExpr(element.getName()));
             }
-            String mangleName = j2CLUtils.createFieldDescriptor(element.getField()).getMangledName();
+            String mangleName = j2CLUtils.getVariableMangledName(element.getField());
             MethodCallExpr fieldSetCallExpr =
                     new MethodCallExpr(
                             new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
@@ -321,8 +321,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
                             .getAnnotation(ForEvent.class).value();
                     String clazz = iocContext.getGenerationContext().getTypes()
                             .erasure(eventHandlerInfo.getMethod().getParameters().get(0).asType()).toString();
-                    String mangleName = j2CLUtils.createFieldDescriptor(eventHandlerInfo.getInfo().getField(),
-                            beanDefinition.getType()).getMangledName();
+                    String mangleName = j2CLUtils.getVariableMangledName(eventHandlerInfo.getInfo().getField());
                     String call = methodCallGenerator.generate(beanDefinition.getType(),
                             eventHandlerInfo.getMethod(), List.of("e"));
                     Event event = new Event(eventTypes, mangleName, clazz, call);
@@ -530,7 +529,7 @@ public class TemplateGenerator extends IOCGenerator<BeanDefinition> {
     }
 
     public MethodCallExpr getFieldAccessCallExpr(VariableElement field) {
-        String mangleName = j2CLUtils.createFieldDescriptor(field).getMangledName();
+        String mangleName = j2CLUtils.getVariableMangledName(field);
 
         return new MethodCallExpr(
                 new MethodCallExpr(new NameExpr(Js.class.getSimpleName()), "asPropertyMap")
