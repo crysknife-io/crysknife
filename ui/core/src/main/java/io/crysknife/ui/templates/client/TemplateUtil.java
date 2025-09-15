@@ -24,6 +24,7 @@ import elemental2.dom.NamedNodeMap;
 import elemental2.dom.Node;
 import elemental2.dom.NodeFilter;
 import elemental2.dom.TreeWalker;
+import io.crysknife.client.IsElement;
 import jsinterop.base.Js;
 
 /**
@@ -55,8 +56,13 @@ public final class TemplateUtil {
 
   // ------------------------------------------------------ IsElement / (Is)Widget methods
 
+  public static <E extends HTMLElement> void replaceElement(HTMLElement context, String identifier,
+                                    IsElement<E> newElement) {
+    HTMLElement element = Js.cast(newElement.getElement());
+    replaceElement(context, identifier, element);
+  }
   public static void replaceElement(HTMLElement context, String identifier,
-      HTMLElement newElement) {
+                                    HTMLElement newElement) {
     if (newElement == null) {
       throw new NullPointerException(
           "New element must not be null in TemplateUtils.replaceElement()");
