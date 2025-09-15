@@ -15,16 +15,13 @@
 package io.crysknife.generator.helpers;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
+import java.io.StringWriter;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import io.crysknife.exception.GenerationException;
-import io.crysknife.util.StringOutputStream;
 
 public class FreemarkerTemplateGenerator {
 
@@ -35,6 +32,7 @@ public class FreemarkerTemplateGenerator {
     {
         cfg.setClassForTemplateLoading(this.getClass(), "/templates/");
         cfg.setDefaultEncoding("UTF-8");
+        cfg.setOutputEncoding("UTF-8");
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         cfg.setLogTemplateExceptions(false);
         cfg.setWrapUncheckedExceptions(true);
@@ -50,10 +48,9 @@ public class FreemarkerTemplateGenerator {
     }
 
     public String toSource(Object mapping) {
-        StringOutputStream os = new StringOutputStream();
-        try (Writer out = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+        try (StringWriter out = new StringWriter(8192)) {
             template.process(mapping, out);
-            return os.toString();
+            return out.toString();
         } catch (TemplateException | IOException e) {
             throw new GenerationException(e);
         }
