@@ -5,69 +5,34 @@
   <parent>
     <groupId>io.crysknife</groupId>
     <artifactId>crysknife-parent</artifactId>
-    <version>0.8</version>
+    <version>0.11</version>
   </parent>
 
   <artifactId>tests-parent</artifactId>
   <groupId>io.crysknife.tests</groupId>
-  <version>0.8</version>
+  <version>0.11</version>
   <packaging>pom</packaging>
+
+  <name>Crysknife :: Tests</name>
+  <description>Test modules parent</description>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <maven.install.skip>true</maven.install.skip>
+    <central.publishing.skip>true</central.publishing.skip>
+    <gpg.skip>true</gpg.skip>
+  </properties>
 
   <modules>
     <module>jre-tests</module>
-<!--
     <module>j2cl-tests</module>
--->
+    <module>j2cl-tests-commons</module>
+    <module>j2cl-tests-custom-policy</module>
+    <module>j2cl-tests-rest</module>
+    <module>j2cl-tests-navigation</module>
+    <module>j2cl-tests-templates</module>
+    <module>j2cl-tests-websocket</module>
+    <module>j2cl-tests-translation-en</module>
+    <module>j2cl-tests-translation-ru</module>
   </modules>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>flatten-maven-plugin</artifactId>
-        <configuration>
-          <flattenMode>oss</flattenMode>
-        </configuration>
-        <executions>
-          <execution>
-            <id>flatten</id>
-            <phase>package</phase>
-            <goals>
-              <goal>flatten</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>flatten.clean</id>
-            <phase>clean</phase>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
-<!--
-    <profiles>
-
-      DO NOT CHANGE THE *ORDER* IN WHICH THESE PROFILES ARE DEFINED!
-
-      <profile>
-        <id>J2CL</id>
-        <modules>
-          <module>jre-tests</module>
-          <module>j2cl-tests</module>
-        </modules>
-      </profile>
-      <profile>
-        <id>default</id>
-        <activation>
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <modules>
-          <module>jre-tests</module>
-        </modules>
-      </profile>
-    </profiles>
--->
 </project>

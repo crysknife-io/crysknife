@@ -18,14 +18,24 @@ public class TemplateSelector {
 
   public final String template;
   public final String selector;
+  public final boolean inline;
 
   public TemplateSelector(final String template) {
-    this(template, null);
+    this(template, null, false);
   }
 
   public TemplateSelector(final String template, final String selector) {
+    this(template, selector, false);
+  }
+
+  public TemplateSelector(final String template, final String selector, final boolean inline) {
     this.template = template;
     this.selector = selector;
+    this.inline = inline;
+  }
+
+  public static TemplateSelector ofInline(final String html) {
+    return new TemplateSelector(html, null, true);
   }
 
   public boolean hasSelector() {
@@ -34,6 +44,9 @@ public class TemplateSelector {
 
   @Override
   public String toString() {
+    if (inline) {
+      return "<inline template>";
+    }
     return template + (hasSelector() ? "#" + selector : "");
   }
 }

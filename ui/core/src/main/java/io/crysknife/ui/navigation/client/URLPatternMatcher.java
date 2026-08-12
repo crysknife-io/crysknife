@@ -24,7 +24,6 @@ import io.crysknife.client.internal.collections.BiMap;
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.annotation.Page;
-import jsinterop.base.Js;
 
 /**
  * Used to match URLs typed in by the user to the correct {@link Page#path()}
@@ -75,7 +74,7 @@ public class URLPatternMatcher {
 
     while ((mr = regex.exec(urlTemplate)) != null) {
       addParamName(paramList, mr);
-      startOfNextPattern = Js.asInt(mr.index);
+      startOfNextPattern = mr.index;
 
       // Append any string literal that may occur in the URL path
       // before the next parameter.
@@ -108,11 +107,11 @@ public class URLPatternMatcher {
     final Multimap<String, String> mapBuilder = new Multimap<>();
     String keyValuePairs, pageInfo;
 
-    final int indexOfSemicolon = url.indexOf(';');
+    final int indexOfQuestion = url.indexOf('?');
 
-    if (indexOfSemicolon > 0) {
-      pageInfo = url.substring(0, indexOfSemicolon);
-      keyValuePairs = url.substring(indexOfSemicolon + 1);
+    if (indexOfQuestion > 0) {
+      pageInfo = url.substring(0, indexOfQuestion);
+      keyValuePairs = url.substring(indexOfQuestion + 1);
     } else {
       pageInfo = url;
       keyValuePairs = null;
@@ -131,8 +130,7 @@ public class URLPatternMatcher {
       parseKeyValuePairs(keyValuePairs, mapBuilder);
     }
 
-    final Multimap<String, String> state = new Multimap<>();
-    return new HistoryToken(pageName, ImmutableMultimap.copyOf(state), getURLPattern(pageName));
+    return new HistoryToken(pageName, ImmutableMultimap.copyOf(mapBuilder), getURLPattern(pageName));
   }
 
   private String parseValues(String rawURIPath, Multimap<String, String> builder) {
@@ -141,7 +139,7 @@ public class URLPatternMatcher {
       return null;
 
     final URLPattern pattern = getURLPattern(pageName);
-    if (pattern.getParamList().size() == 0)
+    if (pattern.getParamList().isEmpty())
       return pageName;
 
     final RegExpResult mr = pattern.getRegex().exec(rawURIPath);
@@ -191,7 +189,7 @@ public class URLPatternMatcher {
       throw new IllegalArgumentException("Page " + defaultPage
           + " must be added to URLPatternMatcher before it can be set as Default Page.");
 
-    if (urlPattern.getParamList().size() > 0)
+    if (!urlPattern.getParamList().isEmpty())
       throw new IllegalArgumentException("Cannot set a default page that has path parameters.");
 
     this.defaultPageName = defaultPage;
@@ -210,7 +208,7 @@ public class URLPatternMatcher {
    * @return The name of the page to which the given user-entered URL corresponds.
    */
   public String getPageName(String typedURL) {
-    if (typedURL.equals("")) {
+    if (typedURL.isEmpty()) {
       return this.defaultPageName;
     }
     for (final Map.Entry<URLPattern, String> urlMatcher : pageMap.entrySet()) {

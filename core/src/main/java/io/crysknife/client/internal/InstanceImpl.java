@@ -79,7 +79,7 @@ public class InstanceImpl<T> implements Instance<T>, InstanceFactory<T> {
 
   @Override
   public void destroy(T instance) {
-    throw new UnsupportedOperationException();
+    beanManager.destroyBean(instance);
   }
 
   @Override

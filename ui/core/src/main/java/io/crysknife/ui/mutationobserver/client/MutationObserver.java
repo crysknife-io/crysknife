@@ -52,13 +52,13 @@ public class MutationObserver {
           MutationRecord[] added = Js.uncheckedCast(records[i].addedNodes);
           MutationRecord[] removed = Js.uncheckedCast(records[i].removedNodes);
           for (int j = 0; j < added.length; j++) {
-            if (attach.containsKey(Js.uncheckedCast(added[i]))) {
-              attach.get(Js.uncheckedCast(added[i])).onAttachOrDetachCallback(added[i]);
+            if (attach.containsKey(Js.uncheckedCast(added[j]))) {
+              attach.get(Js.uncheckedCast(added[j])).onAttachOrDetachCallback(added[j]);
             }
           }
           for (int j = 0; j < removed.length; j++) {
-            if (detach.containsKey(Js.uncheckedCast(removed[i]))) {
-              detach.get(Js.uncheckedCast(removed[i])).onAttachOrDetachCallback(removed[i]);
+            if (detach.containsKey(Js.uncheckedCast(removed[j]))) {
+              detach.get(Js.uncheckedCast(removed[j])).onAttachOrDetachCallback(removed[j]);
             }
           }
         }

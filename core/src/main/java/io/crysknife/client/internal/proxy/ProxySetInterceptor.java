@@ -20,7 +20,7 @@ import jsinterop.base.Js;
  */
 public final class ProxySetInterceptor implements SetFN {
 
-  private Object target;
+  private final Object target;
 
   public ProxySetInterceptor(Object target) {
     this.target = target;

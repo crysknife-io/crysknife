@@ -1,0 +1,45 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@Specializes</h2>
+
+    <p>A <code>@Specializes</code> bean replaces its parent bean entirely. When you inject
+       the parent type, the container provides the specialized child instead. Unlike
+       <code>@Alternative</code>, specialization is always active — no configuration needed.</p>
+
+    <h4>Parent bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class BaseService {\n
+        public String getName() {\n
+            return "BaseService";\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Specialized bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    @Specializes\n
+    public class SpecializedService extends BaseService {\n
+        @Override\n
+        public String getName() {\n
+            return "SpecializedService";\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Injection point:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject BaseService service;\n
+    // Actually gets SpecializedService!\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="nameBtn">service.getName()</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="classBtn">service.getClass()</button>
+        <div class="demo-result" data-field="resultOutput">
+            Click a button to see the result
+        </div>
+    </div>
+  </div>
+</div>

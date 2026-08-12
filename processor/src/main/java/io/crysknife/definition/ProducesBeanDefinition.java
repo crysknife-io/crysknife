@@ -15,9 +15,8 @@
 package io.crysknife.definition;
 
 import java.lang.annotation.Annotation;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
@@ -37,7 +36,7 @@ public class ProducesBeanDefinition extends BeanDefinition {
 
   private List<AnnotationMirror> qualifiers;
 
-  private Set<ProducesBeanDefinition> subtypes = new HashSet<>();
+  private List<ProducesBeanDefinition> subtypes = new ArrayList<>();
 
 
   public ProducesBeanDefinition(ExecutableElement method, List<AnnotationMirror> qualifiers) {
@@ -51,8 +50,8 @@ public class ProducesBeanDefinition extends BeanDefinition {
     subtypes.add(subtype);
   }
 
-  public Set<ProducesBeanDefinition> getSubtypes() {
-    return new HashSet<>(subtypes);
+  public List<ProducesBeanDefinition> getSubtypes() {
+    return new ArrayList<>(subtypes);
   }
 
   public ExecutableElement getMethod() {

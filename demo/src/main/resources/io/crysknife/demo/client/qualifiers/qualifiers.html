@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<div class="form-group" data-field="root">
+<div class="pf-v6-c-page__main-section" data-field="root">
+  <div class="pf-v6-c-content">
+    <h2>@Qualifier</h2>
 
-    <p>The @Qualifier annotation that is added to the annotation, makes this annotation discoverable by the container.</p>
+    <p>The @Qualifier annotation makes this annotation discoverable by the container.</p>
+
     <pre class="prettyprint lang-java">
     public interface QualifierBean {\n
         String say();\n
@@ -45,14 +41,12 @@
         public QualifierBeans(@QualifierTwo QualifierBean two)\n
     </pre>
 
-
-    <div>
-        <label setfor="textBox" class="control-label">@Qualifiers beans</label>
-        <input disabled="" class="form-control" style="width: 700px;" data-field="textBox">
-        <button class="btn btn-default" data-field="defaultBtn">Default</button>
-        <button class="btn btn-default" data-field="qualifierOneBtn">@QualifierOne</button>
-        <button class="btn btn-default" data-field="qualifierTwoBtn">@QualifierTwo</button>
+    <div class="demo-playground">
+        <label class="pf-v6-c-form__label">@Qualifiers beans</label>
+        <input disabled="" class="pf-v6-c-form-control" style="width: 700px;" data-field="textBox">
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="defaultBtn">Default</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="qualifierOneBtn">@QualifierOne</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="qualifierTwoBtn">@QualifierTwo</button>
     </div>
+  </div>
 </div>
-</body>
-</html>

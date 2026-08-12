@@ -25,8 +25,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import elemental2.core.JsArray;
-import elemental2.core.JsString;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.EventListener;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HashChangeEvent;
 import elemental2.dom.Window;
@@ -90,6 +90,8 @@ public class Navigation {
     @Inject
     private HistoryTokenFactory historyTokenFactory;
     private Window window = DomGlobal.window;
+    private EventListener hashChangeListener;
+    private EventListener locationChangeListener;
 
     /**
      * Gets the application context used in pushstate URL paths. This application context should match
@@ -109,30 +111,48 @@ public class Navigation {
             return;
         }
 
+        removeWindowListeners();
+
         String raw = window.location.hash;
-        navigationErrorHandler = new DefaultNavigationErrorHandler(this);
         navigationErrorHandler = new DefaultNavigationErrorHandler(this);
         processToken(raw);
 
-        window.addEventListener("hashchange", evt -> {
+        hashChangeListener = evt -> {
             String raw1 = window.location.hash;
             processToken(raw1);
-        });
+        };
+        window.addEventListener("hashchange", hashChangeListener);
 
-        window.addEventListener("locationchange", evt -> {
+        locationChangeListener = evt -> {
             HashChangeEvent.HashChangeEventEventInitDictType eventEventInitDictType =
                     HashChangeEvent.HashChangeEventEventInitDictType.create();
             eventEventInitDictType.setOldURL(hash());
             eventEventInitDictType.setNewURL(window.location.href);
             window.dispatchEvent(new HashChangeEvent("hashchange", eventEventInitDictType));
-        });
+        };
+        window.addEventListener("locationchange", locationChangeListener);
+    }
+
+    private void removeWindowListeners() {
+        if (hashChangeListener != null) {
+            window.removeEventListener("hashchange", hashChangeListener);
+            hashChangeListener = null;
+        }
+        if (locationChangeListener != null) {
+            window.removeEventListener("locationchange", locationChangeListener);
+            locationChangeListener = null;
+        }
     }
 
     private void processToken(String raw) {
-        HistoryToken token = historyTokenFactory.parseURL(raw);
-        if (currentNode == null || !token.equals(currentToken)) {
-            PageNode<Object> toPage = navGraph.getPage(token.getPageName());
-            navigate(new Request<>(toPage, token), false);
+        try {
+            HistoryToken token = historyTokenFactory.parseURL(raw);
+            if (currentNode == null || !token.equals(currentToken)) {
+                PageNode<Object> toPage = navGraph.getPage(token.getPageName());
+                navigate(new Request<>(toPage, token), false);
+            }
+        } catch (final RuntimeException e) {
+            navigationErrorHandler.handleInvalidURLError(e, raw);
         }
     }
 
@@ -150,7 +170,12 @@ public class Navigation {
 
     @PreDestroy
     public void cleanUp() {
+        removeWindowListeners();
         setErrorHandler(null);
+        currentPage = null;
+        currentNode = null;
+        currentElements = null;
+        currentToken = null;
     }
 
     /**
@@ -544,13 +569,9 @@ public class Navigation {
     private String hash() {
         String raw = window.location.hash;
         if (!raw.isEmpty()) {
-            if (raw.indexOf("?") > 0) {
-                raw = new JsString(raw).split("?").getAt(0);
-            }
             raw = raw.replaceFirst("#", "");
         }
         return raw;
-
     }
 
     /**

@@ -1,1 +1,5 @@
-((AbstractEventHandler) beanManager.lookupBean(EventManager.class).getInstance().get(${target}.class)).removeSubscriber(instance, ${subscriber});
+<#if isDependent>
+beanManager.lookupBean(EventManager.class).getInstance().getRegistry().unsubscribe(${target}.class, instance);
+<#else>
+beanManager.lookupBean(EventManager.class).getInstance().getRegistry().unsubscribe(${target}.class, this);
+</#if>

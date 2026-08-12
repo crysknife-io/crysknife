@@ -1,0 +1,37 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@Startup</h2>
+
+    <p>A bean annotated with <code>@Startup</code> is initialized eagerly when the application
+       starts, not lazily when first injected. Combined with <code>@PostConstruct</code>, this
+       is useful for initialization logic that must run at application boot.</p>
+
+    <h4>Eager bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    @Startup\n
+    public class EagerService {\n
+    \n
+        @Inject StartupLog log;\n
+    \n
+        @PostConstruct\n
+        public void init() {\n
+            log.record("EagerService initialized");\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Injection point:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject StartupLog log;\n
+    // log already has entries — EagerService ran at startup!\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="showBtn">Show startup log</button>
+        <div class="demo-result" style="font-family: monospace; font-size: 13px; white-space: pre-line;" data-field="resultOutput">
+            Click to see what was initialized at startup
+        </div>
+    </div>
+  </div>
+</div>

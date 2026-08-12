@@ -15,8 +15,11 @@
 package io.crysknife.definition;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -26,6 +29,7 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 import com.google.auto.common.MoreElements;
@@ -47,10 +51,16 @@ public class BeanDefinition implements Definition {
   private final Set<BeanDefinition> dependencies = new LinkedHashSet<>();
   private final Set<IOCGenerator<BeanDefinition>> decorators = new LinkedHashSet<>();
   private Optional<IOCGenerator<BeanDefinition>> iocGenerator = Optional.empty();
+  private final Set<VariableDefinition> decoratedFields = new LinkedHashSet<>();
   private final Set<BeanDefinition> subclasses = new LinkedHashSet<>();
   private boolean hasFactory = true;
 
   private boolean factoryGenerationFinished = false;
+  private final Map<ExecutableElement, List<InterceptorInfo>> interceptedMethods =
+      new LinkedHashMap<>();
+  private final List<DecoratorInfo> decoratorChain = new ArrayList<>();
+  private final Set<TypeMirror> additionalAssignableTypes = new LinkedHashSet<>();
+  private final Set<TypeMirror> excludedAssignableTypes = new LinkedHashSet<>();
 
 
   public BeanDefinition(TypeMirror type) {
@@ -63,6 +73,10 @@ public class BeanDefinition implements Definition {
 
   public Set<InjectableVariableDefinition> getFields() {
     return fields;
+  }
+
+  public Set<VariableDefinition> getDecoratedFields() {
+    return decoratedFields;
   }
 
   public Set<InjectionParameterDefinition> getConstructorParams() {
@@ -113,8 +127,24 @@ public class BeanDefinition implements Definition {
     return TypeUtils.getSimpleClassName(type);
   }
 
+  public Map<ExecutableElement, List<InterceptorInfo>> getInterceptedMethods() {
+    return interceptedMethods;
+  }
+
   public Set<IOCGenerator<BeanDefinition>> getDecorators() {
     return decorators;
+  }
+
+  public List<DecoratorInfo> getDecoratorChain() {
+    return decoratorChain;
+  }
+
+  public Set<TypeMirror> getAdditionalAssignableTypes() {
+    return additionalAssignableTypes;
+  }
+
+  public Set<TypeMirror> getExcludedAssignableTypes() {
+    return excludedAssignableTypes;
   }
 
   public Annotation getScope() {

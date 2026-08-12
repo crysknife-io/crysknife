@@ -1,0 +1,37 @@
+/*
+ * Copyright © 2026 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package io.crysknife.tests.translation;
+
+import io.crysknife.ui.translation.client.annotation.TranslationBundle;
+import io.crysknife.ui.translation.client.annotation.TranslationKey;
+
+@TranslationBundle
+public interface TestMessages {
+
+  @TranslationKey(defaultValue = "Welcome")
+  String welcome();
+
+  @TranslationKey(defaultValue = "Save")
+  String save();
+
+  @TranslationKey(defaultValue = "Cancel")
+  String cancel();
+
+  @TranslationKey(defaultValue = "Hello {$name}, you have {$count} messages")
+  String greeting(String name, String count);
+
+  @TranslationKey(defaultValue = "Delete", key = "btn_delete")
+  String deleteButton();
+}

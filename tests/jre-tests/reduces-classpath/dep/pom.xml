@@ -5,20 +5,35 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.crysknife.tests</groupId>
     <artifactId>reduces-classpath-dep</artifactId>
-    <version>0.8</version>
+    <version>0.11</version>
     <packaging>jar</packaging>
 
+    <name>Crysknife :: Tests :: JRE :: Reduced Classpath :: Dep</name>
+    <description>Reduced classpath test dependency</description>
+
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <gwt.jakarta.version>0.7</gwt.jakarta.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.treblereel.gwt.jakarta</groupId>
+                <artifactId>bom</artifactId>
+                <version>${gwt.jakarta.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.treblereel.gwt.jakarta</groupId>
-            <artifactId>enterprise</artifactId>
-            <version>0.2</version>
+            <artifactId>cdi</artifactId>
         </dependency>
     </dependencies>
 

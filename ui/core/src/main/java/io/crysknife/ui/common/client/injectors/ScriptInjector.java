@@ -19,12 +19,13 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLDocument;
 import elemental2.dom.HTMLScriptElement;
 import elemental2.dom.Window;
+import io.crysknife.ui.common.client.SafeHtmlUtils;
 import jsinterop.annotations.JsFunction;
 
 public class ScriptInjector {
 
   public static final Window TOP_WINDOW = DomGlobal.window;
-  public Window window;
+  public Window window = DomGlobal.window;
 
   private HTMLScriptElement scriptElement;
 
@@ -42,7 +43,7 @@ public class ScriptInjector {
 
   public static ScriptInjector fromString(String contents, Callback onResolve, Callback onReject) {
     HTMLScriptElement element = createElement(onResolve, onReject);
-    element.text = contents;
+    SafeHtmlUtils.setScriptText(element, contents);
     return new ScriptInjector(element);
   }
 
@@ -56,7 +57,7 @@ public class ScriptInjector {
 
   public static ScriptInjector fromUrl(String url, Callback onResolve, Callback onReject) {
     HTMLScriptElement element = createElement(onResolve, onReject);
-    element.src = url;
+    SafeHtmlUtils.setScriptSrc(element, url);
     return new ScriptInjector(element);
   }
 

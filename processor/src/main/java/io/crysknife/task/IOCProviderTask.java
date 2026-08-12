@@ -14,11 +14,10 @@
 
 package io.crysknife.task;
 
-
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -238,13 +237,14 @@ public class IOCProviderTask implements Task {
                             .add(new MethodCallExpr(new NameExpr("io.crysknife.client.internal.QualifierUtil"),
                                     "createNamed")
                                     .addArgument(new StringLiteralExpr(
-                                            fieldPoint.getVariableElement().getAnnotation(Named.class).value())));
+                                            Objects.requireNonNull(fieldPoint.getVariableElement().getAnnotation(Named.class)).value())));
                 }
 
                 ArrayInitializerExpr withQualifiersValues = new ArrayInitializerExpr();
                 qualifiersExpression.forEach(type -> withQualifiersValues.getValues().add(type));
                 ArrayCreationExpr withQualifiers = new ArrayCreationExpr();
-                withQualifiers.setElementType(Annotation.class);
+                withQualifiers.setElementType(
+                        new ClassOrInterfaceType().setName("java.lang.annotation.Annotation"));
                 withQualifiers.setInitializer(withQualifiersValues);
                 methodCallExpr.addArgument(withQualifiers);
 

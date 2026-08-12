@@ -26,7 +26,7 @@ import io.crysknife.client.internal.collections.Multimap;
  * example:
  *
  * <pre>
- *     MyPage;key1=value1&key2=value2&multiKey=value1&multiKey=value2
+ *     MyPage?key1=value1&key2=value2&multiKey=value1&multiKey=value2
  * </pre>
  *
  * Keys are case-sensitive, so <tt>key</tt> and <tt>kEy</tt> are different keys.

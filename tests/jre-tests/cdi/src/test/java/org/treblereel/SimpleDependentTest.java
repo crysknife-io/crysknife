@@ -17,6 +17,7 @@ package org.treblereel;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 4/26/20
@@ -32,5 +33,13 @@ public class SimpleDependentTest extends AbstractTest {
 
     assertNotEquals(fieldOne, fieldTwo);
     assertNotEquals(constrOne, constrTwo);
+  }
+
+  @Test
+  public void testDependentFieldRetainsSameInstance() {
+    assertSame(app.simpleDependentTest.getFieldOne(),
+        app.simpleDependentTest.getFieldOne());
+    assertSame(app.simpleDependentTest.getConstrOne(),
+        app.simpleDependentTest.getConstrOne());
   }
 }

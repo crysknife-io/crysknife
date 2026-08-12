@@ -25,29 +25,29 @@ import jsinterop.base.Js;
  */
 public final class ProxyGetInterceptor implements GetFN {
 
-  private Object target;
+  private final Object target;
 
-  private Map<String, BiFunction<Object, String, Object>> propHolder = new HashMap<>();
-  private Map<String, BiFunction<Object, String, Object>> methodHolder = new HashMap<>();
+  private final Map<String, BiFunction<Object, String, Object>> propHolder = new HashMap<>();
+  private final Map<String, BiFunction<Object, String, Object>> methodHolder = new HashMap<>();
 
   public ProxyGetInterceptor(Object target) {
     this.target = target;
   }
 
-  public void addProperty(String obfuscated, BiFunction function) {
+  public void addProperty(String obfuscated, BiFunction<Object, String, Object> function) {
     propHolder.put(obfuscated, function);
   }
 
-  public void addMethod(String obfuscated, BiFunction function) {
+  public void addMethod(String obfuscated, BiFunction<Object, String, Object> function) {
     methodHolder.put(obfuscated, function);
   }
 
   @Override
   public Object onInvoke(Object object, String objectKey, Object receiver) {
     if (object != target) {
-      return elemental2.core.Reflect.get(object, objectKey);
+      return Reflect.get(object, objectKey);
     }
-    Object prop = elemental2.core.Reflect.get(object, objectKey);
+    Object prop = Reflect.get(object, objectKey);
     if (Js.typeof(prop).equals("function")) {
       if (methodHolder.containsKey(objectKey)) {
         return methodHolder.get(objectKey).apply(object, objectKey);

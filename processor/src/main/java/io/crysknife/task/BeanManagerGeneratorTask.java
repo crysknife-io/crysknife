@@ -216,6 +216,20 @@ public class BeanManagerGeneratorTask implements Task {
                         }
                       });
 
+                  if (!beanDefinition.getExcludedAssignableTypes().isEmpty()) {
+                    assignableTypes.removeIf(t -> beanDefinition.getExcludedAssignableTypes()
+                        .stream().anyMatch(excluded -> iocContext.getGenerationContext().getTypes()
+                            .isSameType(t, excluded)));
+                  }
+
+                  for (TypeMirror additional : beanDefinition.getAdditionalAssignableTypes()) {
+                    if (assignableTypes.stream().noneMatch(
+                        t -> iocContext.getGenerationContext().getTypes()
+                            .isSameType(t, additional))) {
+                      assignableTypes.add(additional);
+                    }
+                  }
+
                   MethodCallExpr registerCallExpr = new MethodCallExpr("register");
 
                   Expression builderCallExpr =
@@ -333,7 +347,7 @@ public class BeanManagerGeneratorTask implements Task {
     private void addEventManager(MethodDeclaration init) {
       String statement =
           "register(new Builder(io.crysknife.client.internal.event.EventManager.class, jakarta.inject.Singleton.class)"
-              + ".withAssignableTypes(new Class[] { io.crysknife.client.internal.event.EventManager.class, io.crysknife.client.internal.AbstractEventFactory.class })"
+              + ".withAssignableTypes(new Class[] { io.crysknife.client.internal.event.EventManager.class })"
               + ".withFactory(new io.crysknife.client.internal.event.EventManager.EventManagerFactory(this)).build());";
       init.getBody().ifPresent(body -> body.addAndGetStatement(statement));
 

@@ -1,0 +1,47 @@
+/*
+ * Copyright © 2025 Treblereel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package io.crysknife.tests.navigation;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLElement;
+import io.crysknife.annotation.Application;
+import io.crysknife.ui.navigation.client.Navigation;
+import org.treblereel.j2cl.processors.annotations.GWT3EntryPoint;
+
+@Application
+public class App {
+
+  @Inject
+  private Navigation navigation;
+
+  @GWT3EntryPoint
+  public void onModuleLoad() {
+    new AppBootstrap(this).initialize();
+  }
+
+  @PostConstruct
+  public void init() {
+    HTMLElement container =
+        (HTMLElement) DomGlobal.document.getElementById("navigation-container");
+    navigation.setNavigationContainer(container);
+
+    HTMLElement reinitBtn = (HTMLElement) DomGlobal.document.getElementById("reinit-nav-btn");
+    if (reinitBtn != null) {
+      reinitBtn.addEventListener("click", evt -> navigation.setNavigationContainer(container));
+    }
+  }
+}

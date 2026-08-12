@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.crysknife.tests</groupId>
+    <artifactId>j2cl-tests-custom-policy</artifactId>
+    <version>0.11</version>
+    <name>Crysknife :: Tests :: J2CL :: Custom Policy</name>
+    <description>J2CL tests for TrustedTypes custom policy</description>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
+        <maven.surefire.plugin.version>3.1.0</maven.surefire.plugin.version>
+
+        <crysknife.version>0.11</crysknife.version>
+        <j2cl.platform.version>20260527-1</j2cl.platform.version>
+        <org.treblereel.j2cl.processors.version>0.11</org.treblereel.j2cl.processors.version>
+        <selenium.chrome.driver.version>4.12.1</selenium.chrome.driver.version>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.crysknife</groupId>
+                <artifactId>bom</artifactId>
+                <version>${crysknife.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.j2cl.platform</groupId>
+                <artifactId>bom</artifactId>
+                <version>${j2cl.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.crysknife</groupId>
+            <artifactId>crysknife-core</artifactId>
+            <version>${crysknife.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.crysknife.ui</groupId>
+            <artifactId>crysknife-ui-core</artifactId>
+            <version>${crysknife.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.j2cl.processors</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${org.treblereel.j2cl.processors.version}</version>
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-chrome-driver</artifactId>
+            <version>${selenium.chrome.driver.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>io.crysknife</groupId>
+                            <artifactId>crysknife-processor</artifactId>
+                            <version>${crysknife.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.crysknife.ui</groupId>
+                            <artifactId>crysknife-ui-generator</artifactId>
+                            <version>${crysknife.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.crysknife</groupId>
+                            <artifactId>crysknife-core</artifactId>
+                            <version>${crysknife.version}</version>
+                        </path>
+                        <path>
+                            <groupId>io.crysknife.ui</groupId>
+                            <artifactId>crysknife-ui-core</artifactId>
+                            <version>${crysknife.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.treblereel.j2cl.processors</groupId>
+                            <artifactId>processors</artifactId>
+                            <version>${org.treblereel.j2cl.processors.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.kie.j2cl.tools</groupId>
+                <artifactId>j2cl-maven-plugin</artifactId>
+                <version>0.23.8</version>
+                <executions>
+                    <execution>
+                        <id>build-js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <webappDirectory>${project.build.directory}/j2cl/launcherDir</webappDirectory>
+                    <initialScriptFilename>app.js</initialScriptFilename>
+                    <compilationLevel>ADVANCED</compilationLevel>
+                    <annotationProcessorMode>IGNORE_MAVEN</annotationProcessorMode>
+                    <defines>
+                        <crysknife.trustedtype.policy.name>custom-policy</crysknife.trustedtype.policy.name>
+                    </defines>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <skipTests>false</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

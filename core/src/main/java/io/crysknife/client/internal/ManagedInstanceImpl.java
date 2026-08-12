@@ -81,26 +81,24 @@ public class ManagedInstanceImpl<T> implements ManagedInstance<T> {
 
   @Override
   public void destroy(T instance) {
+    dependentInstances.remove(instance);
     if (beanManager.lookupBeanDefinition(instance).isPresent()) {
       if (beanManager.lookupBeanDefinition(instance).get().getScope().equals(Dependent.class)) {
         beanManager.destroyBean(instance);
-        dependentInstances.remove(instance);
       }
     }
   }
 
   @Override
   public void destroyAll() {
-    Set<T> removed = new HashSet<>();
     for (T instance : dependentInstances) {
       if (beanManager.lookupBeanDefinition(instance).isPresent()) {
         if (beanManager.lookupBeanDefinition(instance).get().getScope().equals(Dependent.class)) {
           beanManager.destroyBean(instance);
-          removed.add(instance);
         }
       }
     }
-    dependentInstances.removeAll(removed);
+    dependentInstances.clear();
   }
 
   @Override

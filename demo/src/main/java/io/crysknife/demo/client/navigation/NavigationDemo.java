@@ -21,7 +21,7 @@ import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLButtonElement;
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.MouseEvent;
-import io.crysknife.demo.client.about.About;
+import io.crysknife.demo.client.home.HomePage;
 import io.crysknife.ui.templates.client.annotation.DataField;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
 import io.crysknife.ui.templates.client.annotation.ForEvent;
@@ -47,7 +47,7 @@ public class NavigationDemo implements io.crysknife.client.IsElement<HTMLDivElem
     private Navigation navigation;
 
     @Inject
-    private TransitionTo<About> toAboutPage;
+    private TransitionTo<HomePage> toHomePage;
 
     @Inject
     @DataField
@@ -55,7 +55,7 @@ public class NavigationDemo implements io.crysknife.client.IsElement<HTMLDivElem
 
     @EventHandler("button")
     public void onClick(@ForEvent("click")final MouseEvent e) {
-        toAboutPage.go();
+        toHomePage.go();
     }
 
     @PageShown

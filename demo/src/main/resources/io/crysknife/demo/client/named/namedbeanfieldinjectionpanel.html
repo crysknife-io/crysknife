@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<div class="form-group" data-field="form">
+<div class="pf-v6-c-page__main-section" data-field="form">
+  <div class="pf-v6-c-content">
+    <h2>@Named &mdash; Field Injection</h2>
 
     <pre class="prettyprint lang-java">
     @Inject\n
@@ -21,11 +16,12 @@
     private Animal bird;\n
     </pre>
 
-    <label setfor="textBoxNamedBeanFieldInjectionPanel" class="control-label">@Named beans, field injection</label>
-    <input disabled="" class="form-control" style="width: 300px;" data-field="textBox">
-    <button class="btn btn-default" data-field="birdBtn">Bird</button>
-    <button class="btn btn-default" data-field="cowBtn">Cow</button>
-    <button class="btn btn-default" data-field="dogBtn">Dog</button>
+    <div class="demo-playground">
+        <label class="pf-v6-c-form__label">@Named beans, field injection</label>
+        <input disabled="" class="pf-v6-c-form-control" style="width: 300px;" data-field="textBox">
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="birdBtn">Bird</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="cowBtn">Cow</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="dogBtn">Dog</button>
+    </div>
+  </div>
 </div>
-</body>
-</html>

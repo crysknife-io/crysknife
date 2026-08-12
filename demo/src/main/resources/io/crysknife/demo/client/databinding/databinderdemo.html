@@ -1,0 +1,70 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>DataBinder &mdash; Two-Way Data Binding</h2>
+
+    <p>This demo shows <code>@Bindable</code> models with <strong>primitive types</strong>,
+       <strong>nested beans</strong> (dot-notation), and <strong>collections</strong> (ObservableList).
+       Type in the inputs to update the model; click <strong>Load Sample</strong> to
+       update inputs from the model programmatically.</p>
+
+    <div class="demo-playground">
+        <!-- Simple Properties -->
+        <h3>Simple Properties</h3>
+
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label">Name:</label>
+            <input class="pf-v6-c-form-control" style="width: 300px;" data-field="nameInput" placeholder="Enter name">
+        </div>
+
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label">Email:</label>
+            <input class="pf-v6-c-form-control" style="width: 300px;" data-field="emailInput" placeholder="Enter email">
+        </div>
+
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label" style="display: inline;">
+                <input type="checkbox" data-field="active"> Active
+            </label>
+        </div>
+
+        <!-- Nested Bean -->
+        <h3>Nested Bean (Address &mdash; dot-notation)</h3>
+        <p>Bound with <code>@Bound(property = "address.city")</code> and <code>@Bound(property = "address.zip")</code></p>
+
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label">City:</label>
+            <input class="pf-v6-c-form-control" style="width: 300px;" data-field="cityInput" placeholder="Enter city">
+        </div>
+
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label">Zip:</label>
+            <input class="pf-v6-c-form-control" style="width: 200px;" data-field="zipInput" placeholder="Enter zip">
+        </div>
+
+        <!-- Collections -->
+        <h3>Collection (List&lt;String&gt; tags)</h3>
+        <p>Bound with <code>ListComponent&lt;String&gt;</code> &mdash; mutations via <code>ObservableList</code> re-render automatically.</p>
+
+        <div style="margin-top: 8px;">
+            <label class="pf-v6-c-form__label">Tags:</label>
+            <ul class="demo-result" style="padding-left: 20px; min-height: 24px; margin: 0;" data-field="tagsList"></ul>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+            <input class="pf-v6-c-form-control" style="width: 200px;" data-field="tagInput" placeholder="New tag">
+            <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="addTagBtn">Add Tag</button>
+            <button class="pf-v6-c-button pf-m-warning pf-m-sm" data-field="removeTagBtn">Remove Last</button>
+        </div>
+
+        <!-- Controls -->
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+            <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="loadBtn">Load Sample</button>
+            <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="clearBtn">Clear</button>
+        </div>
+
+        <div class="demo-result" data-field="modelState">
+            Model state will appear here
+        </div>
+    </div>
+  </div>
+</div>

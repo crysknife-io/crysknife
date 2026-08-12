@@ -6,12 +6,12 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>internal-bom</artifactId>
-    <version>0.8</version>
+    <version>0.11</version>
     <packaging>pom</packaging>
 
 
-    <name>Internal BOM (Bill Of Materials)</name>
-    <description>POC DI for GWT 3 or j2cl</description>
+    <name>Crysknife :: Internal BOM</name>
+    <description>Internal Bill of Materials for third-party dependency versions</description>
     <url>https://github.com/treblereel</url>
 
     <developers>
@@ -46,42 +46,46 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
 
-        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
-        <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
+        <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
+        <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
         <maven.license.plugin.version>3.0</maven.license.plugin.version>
-        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.scm.provider.gitexe.plugin.version>1.9.5</maven.scm.provider.gitexe.plugin.version>
-        <maven.enforcer.plugin.version>3.0.0-M3</maven.enforcer.plugin.version>
-        <maven.shade.plugin.version>3.2.4</maven.shade.plugin.version>
-        <maven.jar.plugin.version>3.2.0</maven.jar.plugin.version>
-        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
-        <maven.formatter.plugin.version>2.17.0</maven.formatter.plugin.version>
+        <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+        <maven.scm.provider.gitexe.plugin.version>2.2.1</maven.scm.provider.gitexe.plugin.version>
+        <maven.enforcer.plugin.version>3.6.3</maven.enforcer.plugin.version>
+        <maven.shade.plugin.version>3.6.2</maven.shade.plugin.version>
+        <maven.jar.plugin.version>3.5.0</maven.jar.plugin.version>
+        <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
+        <maven.formatter.plugin.version>2.29.0</maven.formatter.plugin.version>
         <maven.license.plugin.version>3.0</maven.license.plugin.version>
-        <maven.javadoc.plugin.version>3.2.0</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.12.0</maven.javadoc.plugin.version>
+        <maven.central.publishing.plugin>0.11.0</maven.central.publishing.plugin>
 
-        <apache.commons.commons-text.version>1.6</apache.commons.commons-text.version>
-        <apache.commons.commons-lang3.version>3.11</apache.commons.commons-lang3.version>
-        <apache.commons.io.version>2.8.0</apache.commons.io.version>
+        <apache.commons.commons-lang3.version>3.19.0</apache.commons.commons-lang3.version>
 
-        <jsoup.version>1.11.3</jsoup.version>
+        <jsoup.version>1.22.2</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
         <freemarker.version>2.3.30</freemarker.version>
-        <lesscss.version>1.10</lesscss.version>
-        <google.guava.version>28.1-jre</google.guava.version>
-        <classgraph.classgraph.version>4.8.156</classgraph.classgraph.version>
-        <org.treblereel.j2cl.processors.version>0.8</org.treblereel.j2cl.processors.version>
-        <gwt.jakarta.version>0.6</gwt.jakarta.version>
+        <lesscss.version>1.12</lesscss.version>
+        <google.guava.version>32.1.2-jre</google.guava.version>
+        <classgraph.classgraph.version>4.8.181</classgraph.classgraph.version>
+        <org.treblereel.j2cl.processors.version>0.11</org.treblereel.j2cl.processors.version>
+        <closure.compiler.version>v20221004</closure.compiler.version>
 
-        <javaparser.core.version>3.25.5</javaparser.core.version>
-        <elemental2.version>1.2.3</elemental2.version>
+
+        <gwt.jakarta.version>0.8</gwt.jakarta.version>
+        <j2cl.platform.version>20260527-1</j2cl.platform.version>
+        <javaparser.core.version>3.28.2</javaparser.core.version>
         <auto.common.version>1.2.2</auto.common.version>
         <auto.service.version>1.1.1</auto.service.version>
-        <mockito.core.version>4.6.1</mockito.core.version>
-        <junit.version>4.13.2</junit.version>
+        <mockito.core.version>5.21.0</mockito.core.version>
+        <jakarta4g.rest.version>0.2</jakarta4g.rest.version>
+        <mapper.json.version>0.10</mapper.json.version>
+        <gson.version>2.13.1</gson.version>
+        <jakarta4g.websocket.version>0.1</jakarta4g.websocket.version>
     </properties>
 
     <dependencyManagement>
@@ -94,15 +98,20 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.treblereel.j2cl.platform</groupId>
+                <artifactId>bom</artifactId>
+                <version>${j2cl.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+
+
+            <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
                 <version>${javax.inject.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.elemental2</groupId>
-                <artifactId>elemental2-dom</artifactId>
-                <version>${elemental2.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.auto</groupId>
@@ -120,19 +129,9 @@
                 <version>${auto.service.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>${apache.commons.io.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.github.javaparser</groupId>
                 <artifactId>javaparser-core</artifactId>
                 <version>${javaparser.core.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-text</artifactId>
-                <version>${apache.commons.commons-text.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
@@ -170,16 +169,45 @@
                 <version>${org.treblereel.j2cl.processors.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.javascript</groupId>
+                <artifactId>closure-compiler</artifactId>
+                <version>${closure.compiler.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.core.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
+                <groupId>org.treblereel.gwt.jakarta.rest</groupId>
+                <artifactId>api</artifactId>
+                <version>${jakarta4g.rest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.gwt.jakarta.rest</groupId>
+                <artifactId>processor</artifactId>
+                <version>${jakarta4g.rest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.gwt.json.mapper</groupId>
+                <artifactId>common</artifactId>
+                <version>${mapper.json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.gwt.json.mapper</groupId>
+                <artifactId>processor</artifactId>
+                <version>${mapper.json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.treblereel.gwt.jakarta.websocket</groupId>
+                <artifactId>common</artifactId>
+                <version>${jakarta4g.websocket.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -200,8 +228,31 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven.gpg.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -213,27 +264,16 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>${maven.deploy.plugin.version}</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${maven.central.publishing.plugin}</version>
+                        <extensions>true</extensions>
                         <configuration>
-                            <skip>false</skip>
+                            <publishingServerId>central</publishingServerId>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
-
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 </project>

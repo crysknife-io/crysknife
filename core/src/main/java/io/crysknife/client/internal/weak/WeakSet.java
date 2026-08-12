@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import elemental2.core.JsWeakSet;
-import org.treblereel.gwt.utils.GwtIncompatible;
+import io.crysknife.client.internal.GwtIncompatible;
 
 public class WeakSet<T> {
 

@@ -1,0 +1,41 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>ManagedInstance&lt;T&gt;</h2>
+
+    <p><code>ManagedInstance&lt;T&gt;</code> extends <code>Provider&lt;T&gt;</code> with
+       lifecycle management. It tracks all <code>@Dependent</code> instances it creates and
+       can destroy them via <code>destroyAll()</code> or <code>destroy(instance)</code>,
+       triggering <code>@PreDestroy</code> callbacks.</p>
+
+    <h4>Dependent bean with lifecycle:</h4>
+    <pre class="prettyprint lang-java">
+    @Dependent\n
+    public class Worker {\n
+        private static int counter = 0;\n
+        private final int id = ++counter;\n
+    \n
+        @PreDestroy\n
+        public void cleanup() {\n
+            // called when destroyed\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Injection point:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject ManagedInstance&lt;Worker&gt; workers;\n
+    \n
+    Worker w = workers.get();       // create\n
+    workers.destroy(w);             // destroy one\n
+    workers.destroyAll();           // destroy all\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="createBtn">Create worker</button>
+        <button class="pf-v6-c-button pf-m-warning pf-m-sm" data-field="destroyAllBtn">Destroy all</button>
+        <div class="demo-result" style="font-family: monospace; font-size: 13px; white-space: pre-line;" data-field="resultOutput">
+            Click "Create worker" to create instances
+        </div>
+    </div>
+  </div>
+</div>

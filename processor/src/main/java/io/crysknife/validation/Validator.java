@@ -30,7 +30,7 @@ public abstract class Validator<T> {
     this.context = context;
   }
 
-  protected Validator addCheck(Check<T> check) {
+  protected Validator<?> addCheck(Check<T> check) {
     checks.add(check.setContext(context));
     return this;
   }

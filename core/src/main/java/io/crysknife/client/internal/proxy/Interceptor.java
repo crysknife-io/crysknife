@@ -13,6 +13,7 @@
  */
 package io.crysknife.client.internal.proxy;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 import jsinterop.base.Js;
@@ -23,16 +24,16 @@ import jsinterop.base.JsPropertyMap;
  */
 public class Interceptor {
 
-  private Proxy proxy;
+  private final Proxy proxy;
 
-  private ProxyGetInterceptor get;
+  private final ProxyGetInterceptor get;
 
-  private ProxySetInterceptor set;
+  private final ProxySetInterceptor set;
 
   public Interceptor(Object target) {
     get = new ProxyGetInterceptor(target);
     set = new ProxySetInterceptor(target);
-    JsPropertyMap holder = JsPropertyMap.of();
+    JsPropertyMap<Object> holder = JsPropertyMap.of();
     holder.set("get", get);
     holder.set("set", set);
 
@@ -48,6 +49,12 @@ public class Interceptor {
   public Interceptor addGetMethodInterceptor(String obfuscatedPropertyName,
       BiFunction<Object, String, Object> function) {
     get.addMethod(obfuscatedPropertyName, function);
+    return this;
+  }
+
+  public Interceptor addAroundInvokeInterceptor(String obfuscatedMethodName,
+      List<AroundInvokeCallback> chain) {
+    get.addMethod(obfuscatedMethodName, new MethodInterceptorWrapper(chain));
     return this;
   }
 

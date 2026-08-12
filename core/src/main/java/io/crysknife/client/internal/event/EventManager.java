@@ -14,25 +14,37 @@
 
 package io.crysknife.client.internal.event;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import jakarta.ejb.Startup;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 import io.crysknife.client.BeanManager;
 import io.crysknife.client.InstanceFactory;
-import io.crysknife.client.internal.AbstractEventFactory;
 import io.crysknife.client.internal.BeanFactory;
 
 @Startup
 @Singleton
-public class EventManager extends AbstractEventFactory {
+public class EventManager {
 
+  private final ObserverRegistry registry = ObserverRegistry.INSTANCE;
+  private final Map<Class<?>, EventImpl<?>> events = new HashMap<>();
 
   @Inject
   public EventManager(BeanManager beanManager) {
-    super(beanManager);
+  }
+
+  public ObserverRegistry getRegistry() {
+    return registry;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> Event<T> get(Class<?> type) {
+    return (Event<T>) events.computeIfAbsent(type, t -> new EventImpl<>(t, registry));
   }
 
   public static class EventManagerFactory extends BeanFactory<EventManager> {

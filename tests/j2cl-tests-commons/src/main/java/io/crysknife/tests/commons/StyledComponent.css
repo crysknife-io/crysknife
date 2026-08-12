@@ -1,0 +1,11 @@
+.styled-component {
+    padding: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
+.styled-component p {
+    color: #333;
+    font-family: sans-serif;
+}

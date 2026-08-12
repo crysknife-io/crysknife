@@ -125,7 +125,6 @@ public class BeanProcessorTask implements Task {
     logger.log(TreeLogger.INFO, "fields registered " + count);
   }
 
-  // TODO annotated field could be non-injectable
   private void processFieldDecorators() {
     iocContext.getGenerators().asMap().entrySet().stream()
         .filter(iocGeneratorMetaCollectionEntry -> iocGeneratorMetaCollectionEntry
@@ -142,15 +141,28 @@ public class BeanProcessorTask implements Task {
             elements.addAll(iocContext
                 .getFieldsByAnnotation(iocGeneratorMetaCollectionEntry.getKey().annotation));
 
+            Set<IOCGenerator<VariableDefinition>> generators =
+                iocGeneratorMetaCollectionEntry.getValue().stream()
+                    .map(em -> (IOCGenerator<VariableDefinition>) em)
+                    .collect(Collectors.toSet());
+
             elements.forEach(field -> {
               TypeMirror erased = iocContext.getGenerationContext().getTypes()
                   .erasure(field.getEnclosingElement().asType());
               BeanDefinition bean = iocContext.getBeans().get(erased);
-              bean.getFields().stream().filter(f -> f.getVariableElement().equals(field))
-                  .forEach(f -> f.getDecorators()
-                      .addAll(iocGeneratorMetaCollectionEntry.getValue().stream()
-                          .map(em -> (IOCGenerator<VariableDefinition>) em)
-                          .collect(Collectors.toSet())));
+              if (bean != null) {
+                boolean found = bean.getFields().stream()
+                    .anyMatch(f -> f.getVariableElement().equals(field));
+                if (found) {
+                  bean.getFields().stream()
+                      .filter(f -> f.getVariableElement().equals(field))
+                      .forEach(f -> f.getDecorators().addAll(generators));
+                } else {
+                  VariableDefinition varDef = new VariableDefinition(bean, field);
+                  varDef.getDecorators().addAll(generators);
+                  bean.getDecoratedFields().add(varDef);
+                }
+              }
             });
           });
         });
@@ -261,8 +273,15 @@ public class BeanProcessorTask implements Task {
         scoped.stream()
             .map(sc -> iocContext.getGenerationContext().getScanResult()
                 .getClassesWithAnnotation(sc))
-            .flatMap(Collection::stream).map(elm -> elements.getTypeElement(elm.getName()))
-            .filter(elm -> elm.getKind().isClass()))
+            .flatMap(Collection::stream).map(elm -> {
+              TypeElement te = elements.getTypeElement(elm.getName());
+              if (te == null) {
+                logger.log(TreeLogger.Type.WARN,
+                    "Cannot resolve TypeElement for classpath class: " + elm.getName());
+              }
+              return te;
+            })
+            .filter(elm -> elm != null && elm.getKind().isClass()))
         .flatMap(Function.identity()).collect(Collectors.toSet());
   }
 

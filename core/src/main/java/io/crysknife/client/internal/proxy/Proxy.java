@@ -22,7 +22,7 @@ import jsinterop.base.JsPropertyMap;
 @JsType(isNative = true, namespace = "<global>")
 public class Proxy {
 
-  public Proxy(Object target, JsPropertyMap handler) {
+  public Proxy(Object target, JsPropertyMap<?> handler) {
 
   }
 

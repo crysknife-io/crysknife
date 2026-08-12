@@ -89,12 +89,12 @@ public abstract class BeanFactory<T> implements InstanceFactory<T> {
 
   void onDestroyInternal(T instance) {
     onDestroy(instance);
-    if (dependentBeans.containsKey(instance)) {
-      for (Object dependentBean : dependentBeans.get(instance)) {
+    Set<Object> deps = dependentBeans.remove(instance);
+    if (deps != null) {
+      for (Object dependentBean : deps) {
         beanManager.destroyBean(dependentBean);
       }
     }
-    dependentBeans.remove(instance);
     this.instance = null;
     this.initialized = false;
   }
@@ -122,28 +122,17 @@ public abstract class BeanFactory<T> implements InstanceFactory<T> {
   }
 
   public void addDependencyConstructor(T instance, Set<Object> deps) {
-    if (!dependentBeans.containsKey(instance)) {
-      dependentBeans.put(instance, new HashSet<>());
+    if (!deps.isEmpty()) {
+      dependentBeans.computeIfAbsent(instance, k -> new HashSet<>()).addAll(deps);
     }
-    dependentBeans.get(instance).addAll(deps);
   }
 
   public <D> D addDependencyField(T instance, InstanceFactory<D> factory) {
-    if (!dependentBeans.containsKey(instance)) {
-      dependentBeans.put(instance, new HashSet<>());
+    D depInstance = factory.getInstance();
+    if (isDependent.test(factory) || depInstance instanceof ManagedInstance) {
+      dependentBeans.computeIfAbsent(instance, k -> new HashSet<>()).add(depInstance);
     }
-    return addDependency(factory, dependentBeans.get(instance));
-  }
-
-  // TODO use disposable interface
-  private <D> D addDependency(InstanceFactory<D> factory, Set<Object> holder) {
-    D instance = factory.getInstance();
-    if (isDependent.test(factory)) {
-      holder.add(instance);
-    } else if (instance instanceof ManagedInstance) {
-      holder.add(instance);
-    }
-    return instance;
+    return depInstance;
   }
 
 }

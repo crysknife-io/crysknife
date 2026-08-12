@@ -35,19 +35,19 @@ public class DefaultNavigationErrorHandler implements PageNavigationErrorHandler
       throw new Error("Failed to initialize Default Page", exception);
     } else {
       DomGlobal.console.warn(
-          "Got invalid page name \"" + pageName + "\". Redirecting to default page.", exception);
-      navigation.goTo("");
+          "Got invalid page name \"" + pageName + "\".", exception);
+      goToNotFoundOrDefault();
     }
   }
 
   @Override
   public void handleError(Exception exception, Class<? extends UniquePageRole> pageRole) {
-    if (pageRole.equals(DefaultPage.class)) {
-      throw new Error("Failed to initialize Default Page", exception);
+    if (pageRole.equals(DefaultPage.class) || pageRole.equals(PageNotFound.class)) {
+      throw new Error("Failed to initialize page with role " + pageRole, exception);
     } else {
       DomGlobal.console.warn(
-          "Got invalid page role \"" + pageRole + "\". Redirecting to default page.", exception);
-      navigation.goTo("");
+          "Got invalid page role \"" + pageRole + "\".", exception);
+      goToNotFoundOrDefault();
     }
   }
 
@@ -56,8 +56,15 @@ public class DefaultNavigationErrorHandler implements PageNavigationErrorHandler
     if (urlPath.equals("")) {
       throw new Error("Failed to initialize Default Page", exception);
     } else {
-      DomGlobal.console.warn("Got invalid URL \"" + urlPath + "\". Redirecting to default page.",
-          exception);
+      DomGlobal.console.warn("Got invalid URL \"" + urlPath + "\".", exception);
+      goToNotFoundOrDefault();
+    }
+  }
+
+  private void goToNotFoundOrDefault() {
+    if (!navigation.getNavGraph().getPagesByRole(PageNotFound.class).isEmpty()) {
+      navigation.goToWithRole(PageNotFound.class);
+    } else {
       navigation.goTo("");
     }
   }

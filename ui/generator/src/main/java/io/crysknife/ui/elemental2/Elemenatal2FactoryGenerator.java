@@ -81,8 +81,10 @@ public class Elemenatal2FactoryGenerator extends IOCGenerator<BeanDefinition> {
 
         Class<? extends HTMLElement> clazz;
         try {
-            clazz = (Class<? extends HTMLElement>) Class.forName(MoreTypes
-                    .asTypeElement(fieldPoint.getVariableElement().asType()).getQualifiedName().toString());
+            clazz = (Class<? extends HTMLElement>) Class.forName(
+                    MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())
+                            .getQualifiedName()
+                            .toString());
         } catch (ClassNotFoundException e) {
             throw new Error(
                     "Unable to process " + MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType())

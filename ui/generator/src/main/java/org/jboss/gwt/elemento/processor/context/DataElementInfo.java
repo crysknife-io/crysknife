@@ -24,7 +24,7 @@ public class DataElementInfo {
 
   public enum Kind {
     // Name them after the related type for nicer error messages
-    HTMLElement, IsElement, Custom
+    HTMLElement, IsElement, ElementoIsElement, Custom
   }
 
   private VariableElement field;
@@ -34,19 +34,22 @@ public class DataElementInfo {
   private final String selector;
   private final Kind kind;
   private final boolean returnedByMethod;
+  private final String strategy;
 
-  public DataElementInfo(final VariableElement field, final String selector, final Kind kind) {
-    this(field.asType(), field.getSimpleName().toString(), selector, kind, false);
+  public DataElementInfo(final VariableElement field, final String selector, final Kind kind,
+      final String strategy) {
+    this(field.asType(), field.getSimpleName().toString(), selector, kind, false, strategy);
     this.field = field;
   }
 
   public DataElementInfo(final TypeMirror type, final String name, final String selector,
-      final Kind kind, boolean returnedByMethod) {
+      final Kind kind, boolean returnedByMethod, final String strategy) {
     this.type = type;
     this.name = name;
     this.selector = Strings.emptyToNull(selector) == null ? name : selector;
     this.kind = kind;
     this.returnedByMethod = returnedByMethod;
+    this.strategy = strategy;
   }
 
   public VariableElement getField() {
@@ -67,6 +70,10 @@ public class DataElementInfo {
 
   public Kind getKind() {
     return kind;
+  }
+
+  public String getStrategy() {
+    return strategy;
   }
 
   public boolean needsCast() {

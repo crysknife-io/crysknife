@@ -30,6 +30,7 @@ import io.crysknife.generator.context.ExecutionEnv;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.info.AbstractBeanInfoGenerator;
+import io.crysknife.generator.info.AroundInvokeAspectGenerator;
 import io.crysknife.generator.info.BeanInfoJREGeneratorBuilder;
 import io.crysknife.generator.info.InterceptorGenerator;
 import io.crysknife.logger.TreeLogger;
@@ -45,6 +46,7 @@ public class BeanInfoGenerator implements Task {
   private AbstractBeanInfoGenerator generator;
 
   private InterceptorGenerator interceptorGenerator;
+  private AroundInvokeAspectGenerator aroundInvokeGenerator;
 
 
   public BeanInfoGenerator(IOCContext iocContext, TreeLogger logger) {
@@ -52,6 +54,7 @@ public class BeanInfoGenerator implements Task {
     if (iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.JRE)) {
       generator = new BeanInfoJREGeneratorBuilder(iocContext);
       interceptorGenerator = new InterceptorGenerator(iocContext);
+      aroundInvokeGenerator = new AroundInvokeAspectGenerator(iocContext);
     }
   }
 
@@ -71,6 +74,9 @@ public class BeanInfoGenerator implements Task {
       if (isSuitableBeanDefinition(beanDefinition)) {
         beanDefinition.getIocGenerator()
             .ifPresent(iocGenerator -> interceptorGenerator.generate(beanDefinition));
+        if (!beanDefinition.getInterceptedMethods().isEmpty()) {
+          aroundInvokeGenerator.generate(beanDefinition);
+        }
       }
     }
   }

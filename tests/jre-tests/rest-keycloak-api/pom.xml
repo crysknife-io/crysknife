@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.crysknife.tests</groupId>
+    <artifactId>jre-rest-keycloak-api</artifactId>
+    <version>0.11</version>
+    <packaging>jar</packaging>
+
+    <name>Crysknife :: Tests :: JRE :: REST :: Keycloak :: API</name>
+    <description>Shared REST interface and model for Keycloak integration tests</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <maven.deploy.skip>true</maven.deploy.skip>
+
+        <jakarta4g.rest.version>0.2</jakarta4g.rest.version>
+        <mapper.json.version>0.11</mapper.json.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta.rest</groupId>
+            <artifactId>api</artifactId>
+            <version>${jakarta4g.rest.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.treblereel.gwt.jakarta</groupId>
+                    <artifactId>jax-rs</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.treblereel.gwt.json.mapper</groupId>
+            <artifactId>common</artifactId>
+            <version>${mapper.json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.treblereel.gwt.jakarta.rest</groupId>
+                            <artifactId>processor</artifactId>
+                            <version>${jakarta4g.rest.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.treblereel.gwt.json.mapper</groupId>
+                            <artifactId>processor</artifactId>
+                            <version>${mapper.json.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

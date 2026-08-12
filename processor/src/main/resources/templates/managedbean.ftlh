@@ -58,6 +58,9 @@ public class ${clazz}_Factory extends <#if isProxy>Proxy</#if>BeanFactory<${bean
         <#list fieldInterceptors as call>
         ${call?no_esc};
         </#list>
+        <#list methodInterceptors![] as call>
+        ${call?no_esc};
+        </#list>
     <#else>
 
   <#if isDependent>

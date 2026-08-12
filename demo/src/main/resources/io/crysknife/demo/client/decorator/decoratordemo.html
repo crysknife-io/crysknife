@@ -1,0 +1,60 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@Decorator + @Delegate</h2>
+
+    <p>This demo shows CDI Decorators in action. The <code>UpperCaseGreeterDecorator</code> wraps
+       the <code>SimpleGreeter</code> bean. When you inject the <code>Greeter</code> interface,
+       you get the decorator which transforms the result to uppercase. Injecting the concrete
+       <code>SimpleGreeter</code> type bypasses the decorator.</p>
+
+    <h4>Interface:</h4>
+    <pre class="prettyprint lang-java">
+    public interface Greeter {\n
+        String greet(String name);\n
+    }\n
+    </pre>
+
+    <h4>Original bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class SimpleGreeter implements Greeter {\n
+        public String greet(String name) {\n
+            return "Hello, " + name + "!";\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Decorator:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    @Decorator\n
+    @Priority(1000)\n
+    public class UpperCaseGreeterDecorator implements Greeter {\n
+        @Inject @Delegate\n
+        Greeter delegate;\n
+    \n
+        public String greet(String name) {\n
+            return delegate.greet(name).toUpperCase();\n
+        }\n
+    }\n
+    </pre>
+
+    <div class="demo-playground">
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label">Name:</label>
+            <input class="pf-v6-c-form-control" style="width: 300px;" data-field="nameInput" placeholder="World">
+        </div>
+
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="greetBtn">greeter.greet(name) — via interface</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="directBtn">simpleGreeter.greet(name) — direct</button>
+
+        <div class="demo-result" data-field="resultOutput">
+            Decorated result will appear here
+        </div>
+
+        <div class="demo-result" data-field="directOutput">
+            Direct result will appear here
+        </div>
+    </div>
+  </div>
+</div>

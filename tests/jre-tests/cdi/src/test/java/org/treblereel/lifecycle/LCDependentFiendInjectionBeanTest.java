@@ -15,6 +15,9 @@
 
 package org.treblereel.lifecycle;
 
+import jakarta.enterprise.inject.Instance;
+
+import io.crysknife.client.internal.InstanceImpl;
 import org.junit.Test;
 import org.treblereel.AbstractTest;
 import org.treblereel.lifecycle.dependent.LCDependentBeanOne;
@@ -47,5 +50,43 @@ public class LCDependentFiendInjectionBeanTest extends AbstractTest {
         assertTrue(LCDependentBeanTrap.CLASSES.contains(LCDependentBeanThree.class));
         LCDependentFiendInjectionBean dependent2 = app.beanManager.lookupBean(LCDependentFiendInjectionBean.class).getInstance();
         assertNotEquals(dependent, dependent2);
+    }
+
+    @Test
+    public void testMultipleDependentInstancesDestroyIndependently() {
+        LCDependentBeanTrap.CLASSES.clear();
+
+        LCDependentFiendInjectionBean dep1 =
+            app.beanManager.lookupBean(LCDependentFiendInjectionBean.class).getInstance();
+        LCDependentFiendInjectionBean dep2 =
+            app.beanManager.lookupBean(LCDependentFiendInjectionBean.class).getInstance();
+        assertNotNull(dep1);
+        assertNotNull(dep2);
+        assertNotEquals(dep1, dep2);
+
+        app.beanManager.destroyBean(dep1);
+        assertEquals(4, LCDependentBeanTrap.CLASSES.size());
+
+        LCDependentBeanTrap.CLASSES.clear();
+        app.beanManager.destroyBean(dep2);
+        assertEquals(4, LCDependentBeanTrap.CLASSES.size());
+    }
+
+    @Test
+    public void testInstanceDestroyTriggersCascadingPreDestroy() {
+        LCDependentBeanTrap.CLASSES.clear();
+
+        Instance<LCDependentFiendInjectionBean> instance =
+            new InstanceImpl<>(app.beanManager, LCDependentFiendInjectionBean.class);
+        LCDependentFiendInjectionBean bean = instance.get();
+        assertNotNull(bean);
+
+        instance.destroy(bean);
+
+        assertEquals(4, LCDependentBeanTrap.CLASSES.size());
+        assertTrue(LCDependentBeanTrap.CLASSES.contains(LCDependentFiendInjectionBean.class));
+        assertTrue(LCDependentBeanTrap.CLASSES.contains(LCDependentBeanOne.class));
+        assertTrue(LCDependentBeanTrap.CLASSES.contains(LCDependentBeanTwo.class));
+        assertTrue(LCDependentBeanTrap.CLASSES.contains(LCDependentBeanThree.class));
     }
 }

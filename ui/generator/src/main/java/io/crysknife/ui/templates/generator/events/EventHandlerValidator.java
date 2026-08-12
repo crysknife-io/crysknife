@@ -16,17 +16,12 @@ package io.crysknife.ui.templates.generator.events;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import io.crysknife.exception.UnableToCompleteException;
 import io.crysknife.generator.context.IOCContext;
 import io.crysknife.ui.templates.client.annotation.EventHandler;
-import io.crysknife.ui.templates.client.annotation.ForEvent;
-import io.crysknife.ui.templates.client.annotation.SinkNative;
 import io.crysknife.validation.Check;
 import io.crysknife.validation.Validator;
 
@@ -81,23 +76,5 @@ public class EventHandlerValidator extends Validator<ExecutableElement> {
             }
         });
 
-        addCheck(new Check<ExecutableElement>() {
-            @Override
-            public void check(ExecutableElement method) throws UnableToCompleteException {
-                VariableElement parameter = method.getParameters().get(0);
-
-                if (MoreElements.isAnnotationPresent(method, SinkNative.class)
-                        && MoreElements.isAnnotationPresent(parameter, ForEvent.class)) {
-                    log(method, "@%s method must annotated with @%s or has parameter annotated with @%s",
-                            SinkNative.class.getCanonicalName(), ForEvent.class.getSimpleName());
-                }
-
-                DeclaredType declaredType = MoreTypes.asDeclared(parameter.asType());
-                if (!(MoreElements.isAnnotationPresent(method, SinkNative.class)
-                        && MoreElements.isAnnotationPresent(parameter, ForEvent.class))) {
-                    // TODO add better validation
-                }
-            }
-        });
     }
 }

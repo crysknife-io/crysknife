@@ -70,11 +70,6 @@ public class GenerationContext {
           .enableAnnotationInfo().rejectPackages(disabled).scan();
     }
 
-    /*    scanResult.getAllClasses().stream().forEach(classInfo -> {
-      logger.branch(TreeLogger.Type.INFO, classInfo.getName());
-    });*/
-
-
     logger.log(TreeLogger.Type.DEBUG,
         String.format("found classes   : %s", scanResult.getAllClasses().size()));
     logger.log(TreeLogger.Type.DEBUG,

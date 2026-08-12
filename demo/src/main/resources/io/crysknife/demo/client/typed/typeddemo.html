@@ -1,0 +1,41 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@Typed</h2>
+
+    <p>The <code>@Typed</code> annotation restricts the bean types that a bean exposes for
+       injection. <code>Dog</code> is <code>@Typed(Dog.class)</code>, so it can only be injected
+       as <code>Dog</code>, not as <code>Animal</code>. <code>Cat</code> has no restriction and
+       is the only bean visible as <code>Animal</code>.</p>
+
+    <h4>Restricted bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    @Typed(Dog.class)\n
+    public class Dog implements Animal {\n
+        public String sound() { return "Woof"; }\n
+    }\n
+    </pre>
+
+    <h4>Unrestricted bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class Cat implements Animal {\n
+        public String sound() { return "Meow"; }\n
+    }\n
+    </pre>
+
+    <h4>Injection points:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject Dog dog;      // OK — Dog.class is in @Typed\n
+    @Inject Animal animal; // Gets Cat — Dog is not visible as Animal\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="dogBtn">dog.sound() — direct</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="animalBtn">animal.sound() — via interface</button>
+        <div class="demo-result" data-field="resultOutput">
+            Click a button to see the result
+        </div>
+    </div>
+  </div>
+</div>

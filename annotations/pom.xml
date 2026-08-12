@@ -4,14 +4,14 @@
     <parent>
         <groupId>io.crysknife</groupId>
         <artifactId>crysknife-parent</artifactId>
-        <version>0.8</version>
+        <version>0.11</version>
     </parent>
 
     <artifactId>crysknife-annotations</artifactId>
     <packaging>jar</packaging>
 
-    <name>crysknife annotations</name>
-    <description>This artifact contains annotations for crysknife</description>
+    <name>Crysknife :: Annotations</name>
+    <description>CDI and framework annotations</description>
     <url>https://github.com/treblereel</url>
 
     <developers>
@@ -46,7 +46,7 @@
         </dependency>
         <dependency>
             <groupId>org.treblereel.gwt.jakarta</groupId>
-            <artifactId>enterprise</artifactId>
+            <artifactId>cdi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.treblereel.gwt.jakarta</groupId>
@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>org.treblereel.gwt.jakarta</groupId>
-            <artifactId>utils</artifactId>
+            <artifactId>interceptors</artifactId>
         </dependency>
     </dependencies>
 
@@ -86,58 +86,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

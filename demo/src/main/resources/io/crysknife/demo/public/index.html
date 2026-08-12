@@ -17,16 +17,66 @@
   limitations under the License.
   #L%
   -->
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <title>J2CL</title>
+        <title>Crysknife — Jakarta CDI for J2CL</title>
+        <meta charset="UTF-8">
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <meta name="description" content="Crysknife is a compile-time Jakarta CDI dependency injection framework for J2CL. Build type-safe web apps in pure Java with HTML templates, navigation, events, and more.">
+        <meta http-equiv="Content-Security-Policy"
+              content="require-trusted-types-for 'script'; trusted-types crysknife default">
 
+        <link rel="stylesheet" href="https://unpkg.com/@patternfly/patternfly@6.5.2/patternfly.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
         <link rel="stylesheet" href="css/app.css">
-        <link rel="stylesheet" href="css/desert.css">
-        <script language='javascript' src='demo.js' defer></script>
+
+        <script>window.Prism = window.Prism || {}; Prism.manual = true;</script>
+        <script src='demo.js' defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (window.trustedTypes && trustedTypes.createPolicy) {
+                    try { trustedTypes.createPolicy('default', { createHTML: function(s) { return s; } }); }
+                    catch(e) {}
+                }
+                function processBlock(pre, lang) {
+                    pre.setAttribute('data-highlighted', 'yes');
+                    var text = pre.textContent.replace(/\\n/g, '');
+                    var lines = text.split('\n');
+                    while (lines.length && !lines[0].trim()) lines.shift();
+                    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+                    var min = lines.reduce(function(m, l) {
+                        return l.trim() ? Math.min(m, l.match(/^ */)[0].length) : m;
+                    }, Infinity);
+                    if (min === Infinity) min = 0;
+                    text = lines.map(function(l) { return l.substring(min); }).join('\n');
+                    var code = document.createElement('code');
+                    code.className = 'language-' + lang;
+                    code.textContent = text;
+                    pre.textContent = '';
+                    pre.className = 'language-' + lang;
+                    pre.appendChild(code);
+                    Prism.highlightElement(code);
+                }
+                function highlightCode() {
+                    document.querySelectorAll('pre.prettyprint:not([data-highlighted])').forEach(function(pre) {
+                        var lang = 'java';
+                        pre.classList.forEach(function(c) { if (c.startsWith('lang-')) lang = c.substring(5); });
+                        processBlock(pre, lang);
+                    });
+                    document.querySelectorAll('.ck-code-block > pre:not([data-highlighted])').forEach(function(pre) {
+                        var lang = 'java';
+                        var tab = pre.parentElement.querySelector('.ck-code-block__tab');
+                        if (tab && tab.textContent.match(/\.html$/i)) lang = 'markup';
+                        processBlock(pre, lang);
+                    });
+                }
+                new MutationObserver(highlightCode).observe(document.body, { childList: true, subtree: true });
+                highlightCode();
+            });
+        </script>
     </head>
     <body></body>
 </html>

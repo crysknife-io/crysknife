@@ -1,0 +1,50 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>REST Client</h2>
+
+    <h4>1. Define a JAX-RS service interface:</h4>
+    <pre class="prettyprint lang-java">
+    @Path("/posts")\n
+    public interface PostService {\n
+    \n
+        @GET\n
+        @Path("/{id}")\n
+        @Produces(MediaType.APPLICATION_JSON)\n
+        Post getPost(@PathParam("id") long id);\n
+    \n
+        @GET\n
+        @Produces(MediaType.APPLICATION_JSON)\n
+        List&lt;Post&gt; listPosts();\n
+    }\n
+    </pre>
+
+    <h4>2. Configure the REST endpoint with a @Produces method:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class RestDemoConfig {\n
+    \n
+        @Produces\n
+        @Named("jsonplaceholder")\n
+        public RestConfig jsonPlaceholderRestConfig() {\n
+            return RestConfig.builder()\n
+                .baseUrl("https://jsonplaceholder.typicode.com")\n
+                .build();\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>3. Inject the Caller with the matching @Named qualifier:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    @Named("jsonplaceholder")\n
+    Caller&lt;PostService&gt; postServiceCaller;\n
+    \n
+    postServiceCaller\n
+        .call(response -&gt; {\n
+            Post post = (Post) response;\n
+        })\n
+        .getPost(1);\n
+    </pre>
+
+  </div>
+</div>

@@ -59,8 +59,8 @@ public class BeanManagerGeneratorStepTask implements Task {
       try (Writer writer = sourceFile.openWriter()) {
         writer.write(source);
       }
-    } catch (FilerException e) {
-      throw new GenerationException(e);
+    } catch (FilerException ignored) {
+      // ignore
     }
   }
 }

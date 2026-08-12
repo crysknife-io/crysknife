@@ -17,6 +17,7 @@ package io.crysknife.definition;
 import java.util.Optional;
 
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 import io.crysknife.generator.api.IOCGenerator;
 
@@ -27,6 +28,7 @@ public class InjectableVariableDefinition extends VariableDefinition implements 
 
   private Optional<IOCGenerator<BeanDefinition>> generator = Optional.empty();
   private Optional<BeanDefinition> implementation = Optional.empty();
+  private Optional<TypeMirror> overrideType = Optional.empty();
 
   public InjectableVariableDefinition(BeanDefinition parent, VariableElement variableElement) {
     super(parent, variableElement);
@@ -50,5 +52,13 @@ public class InjectableVariableDefinition extends VariableDefinition implements 
   @Override
   public void setImplementation(BeanDefinition implementation) {
     this.implementation = Optional.of(implementation);
+  }
+
+  public Optional<TypeMirror> getOverrideType() {
+    return overrideType;
+  }
+
+  public void setOverrideType(TypeMirror overrideType) {
+    this.overrideType = Optional.of(overrideType);
   }
 }

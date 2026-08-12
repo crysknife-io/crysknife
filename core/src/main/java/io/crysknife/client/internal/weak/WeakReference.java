@@ -14,8 +14,8 @@
 
 package io.crysknife.client.internal.weak;
 
+import io.crysknife.client.internal.GwtIncompatible;
 import jsinterop.annotations.JsType;
-import org.treblereel.gwt.utils.GwtIncompatible;
 
 public class WeakReference<T> {
 

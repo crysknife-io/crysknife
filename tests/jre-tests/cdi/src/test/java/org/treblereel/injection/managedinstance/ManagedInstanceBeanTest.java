@@ -201,6 +201,14 @@ public class ManagedInstanceBeanTest extends AbstractTest {
   }
 
   @Test
+  public void testInstanceDestroyDoesNotThrow() {
+    Instance<SimpleBeanDependent> instance = app.getManagedInstanceBean().getBean();
+    SimpleBeanDependent bean = instance.get();
+    assertNotNull(bean);
+    instance.destroy(bean);
+  }
+
+  @Test
   public void testInstanceProducerBean() {
     Instance<QualifierBean> managedInstanceBean = app.getManagedInstanceBean().getBean2();
     assertEquals("Default", managedInstanceBean.get().say());

@@ -46,9 +46,11 @@ import io.crysknife.logger.TreeLogger;
 import io.crysknife.task.AfterBurnFactoryStepTask;
 import io.crysknife.task.BeanInfoGenerator;
 import io.crysknife.task.BeanProcessorTask;
+import io.crysknife.task.DecoratorProcessorTask;
 import io.crysknife.task.FactoryGeneratorTask;
 import io.crysknife.task.FireBeforeTask;
 import io.crysknife.task.IOCProviderTask;
+import io.crysknife.task.InterceptorBindingProcessorTask;
 import io.crysknife.task.MethodParamDecoratorTask;
 import io.crysknife.task.ProcessGraphTask;
 import io.crysknife.task.ProcessSubClassesTask;
@@ -56,7 +58,6 @@ import io.crysknife.task.TaskGroup;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
-
 
 @AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
@@ -115,6 +116,8 @@ public class ApplicationProcessor extends AbstractProcessor {
         taskGroup.addTask(new BeanProcessorTask(iocContext, logger));
         taskGroup.addTask(new ProcessSubClassesTask(iocContext, logger));
         taskGroup.addTask(new ProcessGraphTask(iocContext, logger, application));
+        taskGroup.addTask(new InterceptorBindingProcessorTask(iocContext, logger));
+        taskGroup.addTask(new DecoratorProcessorTask(iocContext, logger));
         taskGroup.addTask(new MethodParamDecoratorTask(iocContext, logger));
         taskGroup.addTask(new FactoryGeneratorTask(iocContext, logger));
         taskGroup.addTask(new BeanInfoGenerator(iocContext, logger));

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.crysknife.tests</groupId>
+    <artifactId>jre-rest-tests</artifactId>
+    <version>0.11</version>
+    <packaging>jar</packaging>
+
+    <name>Crysknife :: Tests :: JRE :: REST</name>
+    <description>JRE-based REST integration tests</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+
+        <aspectj.version>1.9.24</aspectj.version>
+        <aspectj.maven.plugin.version>1.15.0</aspectj.maven.plugin.version>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <junit.version>4.13.1</junit.version>
+        <jakarta4g.rest.version>0.2</jakarta4g.rest.version>
+        <mapper.json.version>0.10</mapper.json.version>
+    </properties>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.crysknife</groupId>
+                <artifactId>bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>io.crysknife</groupId>
+            <artifactId>crysknife-processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.crysknife</groupId>
+            <artifactId>crysknife-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.crysknife.ui</groupId>
+            <artifactId>crysknife-ui-rest-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.crysknife.ui</groupId>
+            <artifactId>crysknife-ui-rest-generator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta.rest</groupId>
+            <artifactId>api</artifactId>
+            <version>${jakarta4g.rest.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.treblereel.gwt.json.mapper</groupId>
+            <artifactId>common</artifactId>
+            <version>${mapper.json.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.java</include>
+                    <include>**/*.html</include>
+                    <include>**/*.css</include>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>${aspectj.maven.plugin.version}</version>
+                <configuration>
+                    <proc>none</proc>
+                    <Xlint>ignore</Xlint>
+                    <complianceLevel>${maven.compiler.source}</complianceLevel>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>

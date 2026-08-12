@@ -11,3 +11,4 @@ target
 .vscode/
 .flattened-pom.xml
 dependency-reduced-pom.xml
+wksp

@@ -105,6 +105,22 @@ public class IOCContext {
         }
     }
 
+    public void register(final Class annotation, TypeElement type,
+                         final WiringElementType wiringElementType, final IOCGenerator generator) {
+        generators.put(new IOCGeneratorMeta(annotation.getCanonicalName(), type, wiringElementType),
+                generator);
+        if (type != null) {
+            BeanDefinition beanDefinition = null;
+            try {
+                beanDefinition = getBeanDefinitionOrCreateAndReturn(type.asType());
+            } catch (UnableToCompleteException e) {
+                e.printStackTrace();
+            }
+            beanDefinition.setIocGenerator(generator);
+            beans.put(type.asType(), beanDefinition);
+        }
+    }
+
     public GenerationContext getGenerationContext() {
         return generationContext;
     }

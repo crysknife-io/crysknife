@@ -18,7 +18,6 @@ package io.crysknife.generator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import jakarta.enterprise.event.Observes;
 import javax.lang.model.element.ExecutableElement;
@@ -27,7 +26,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import com.google.auto.common.MoreElements;
-import io.crysknife.client.internal.AbstractEventHandler;
 import io.crysknife.client.internal.event.EventManager;
 import io.crysknife.definition.MethodDefinition;
 import io.crysknife.exception.GenerationException;
@@ -40,7 +38,6 @@ import io.crysknife.generator.helpers.FreemarkerTemplateGenerator;
 import io.crysknife.generator.helpers.MethodCallGenerator;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.util.TypeUtils;
-import jsinterop.base.Js;
 
 
 /**
@@ -51,6 +48,9 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
 
     private final FreemarkerTemplateGenerator freemarkerTemplateSubscribeGenerator =
             new FreemarkerTemplateGenerator("observes/subscribe.ftlh");
+
+    private final FreemarkerTemplateGenerator freemarkerTemplateConstructorSubscribeGenerator =
+            new FreemarkerTemplateGenerator("observes/constructorSubscribe.ftlh");
 
     private final FreemarkerTemplateGenerator freemarkerTemplateConsumereGenerator =
             new FreemarkerTemplateGenerator("observes/consumer.ftlh");
@@ -72,10 +72,7 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
     public void generate(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition) {
         validate(methodDefinition);
 
-        classMetaInfo.addImport(AbstractEventHandler.class);
-        classMetaInfo.addImport(BiConsumer.class);
         classMetaInfo.addImport(EventManager.class);
-        classMetaInfo.addImport(Js.class);
 
         boolean isDependent = TypeUtils.isDependent(methodDefinition.getBeanDefinition());
 
@@ -84,9 +81,14 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
         String target =
                 iocContext.getGenerationContext().getTypes().erasure(parameter.asType()).toString();
 
-        addConsumerField(classMetaInfo, methodDefinition, target, consumer);
-        addToOnDestroy(classMetaInfo, target, consumer);
-        doInitInstance(classMetaInfo, target, consumer, isDependent);
+        String call = methodCallGenerator.generate(methodDefinition.getBeanDefinition().getType(),
+                methodDefinition.getExecutableElement(), List.of("(" + target + ") _event_"));
+
+        if (!isDependent) {
+            addConsumerField(classMetaInfo, target, consumer, call);
+        }
+        addToOnDestroy(classMetaInfo, target, isDependent);
+        doInitInstance(classMetaInfo, target, consumer, isDependent, call);
 
     }
 
@@ -115,43 +117,39 @@ public class ObservesGenerator extends IOCGenerator<MethodDefinition> {
         return consumer;
     }
 
-    private void addConsumerField(ClassMetaInfo classMetaInfo, MethodDefinition methodDefinition,
-                                  String target, String consumer) {
-        String bean = iocContext.getGenerationContext().getTypes()
-                .erasure(methodDefinition.getExecutableElement().getEnclosingElement().asType()).toString();
-
+    private void addConsumerField(ClassMetaInfo classMetaInfo, String target, String consumer,
+                                  String call) {
         Map<String, Object> root = new HashMap<>();
         root.put("target", target);
-        root.put("bean", bean);
         root.put("consumer", consumer);
-        String call = methodCallGenerator.generate(methodDefinition.getBeanDefinition().getType(),
-                methodDefinition.getExecutableElement(), List.of("event"));
         root.put("call", call);
 
         String source = freemarkerTemplateConsumereGenerator.toSource(root);
         classMetaInfo.addToBody(() -> source);
     }
 
-    private void addToOnDestroy(ClassMetaInfo classMetaInfo, String target, String consumer) {
+    private void addToOnDestroy(ClassMetaInfo classMetaInfo, String target, boolean isDependent) {
         Map<String, Object> root = new HashMap<>();
         root.put("target", target);
-        root.put("subscriber", consumer);
+        root.put("isDependent", isDependent);
 
         String source = freemarkerTemplateOnDestroyGenerator.toSource(root);
         classMetaInfo.addToOnDestroy(() -> source);
     }
 
     private void doInitInstance(ClassMetaInfo classMetaInfo, String target, String consumer,
-                                boolean isDependent) {
+                                boolean isDependent, String call) {
         Map<String, Object> root = new HashMap<>();
         root.put("target", target);
         root.put("consumer", consumer);
         root.put("isDependent", isDependent);
+        root.put("call", call);
 
         String source = freemarkerTemplateSubscribeGenerator.toSource(root);
-        if (!isDependent) {
-            classMetaInfo.addToFactoryConstructor(() -> source);
-        }
         classMetaInfo.addToDoInitInstance(() -> source);
+        if (!isDependent) {
+            String constructorSource = freemarkerTemplateConstructorSubscribeGenerator.toSource(root);
+            classMetaInfo.addToFactoryConstructor(() -> constructorSource);
+        }
     }
 }

@@ -1,0 +1,377 @@
+<div data-field="root">
+
+  <!-- ===== HERO ===== -->
+  <section class="ck-hero">
+    <h1>Build Web Apps in Pure Java</h1>
+    <p class="ck-hero__subtitle">Compile-time CDI, HTML templates, and client-side navigation &mdash; all transpiled to optimized JavaScript via J2CL</p>
+    <p class="ck-hero__tagline">Crysknife v0.10 &middot; Apache 2.0</p>
+    <div class="ck-hero__actions">
+      <a class="pf-v6-c-button pf-m-primary" href="#GetStarted">Get Started</a>
+      <a class="pf-v6-c-button pf-m-secondary" href="https://github.com/crysknife-io/crysknife" target="_blank">View on GitHub</a>
+    </div>
+    <div class="ck-hero__code-preview">
+      <pre>@Inject private MyService service;</pre>
+    </div>
+  </section>
+
+  <!-- ===== ECOSYSTEM BADGES ===== -->
+  <section class="ck-ecosystem">
+    <div class="ck-ecosystem__pills">
+      <span class="ck-ecosystem__pill">J2CL (Google)</span>
+      <span class="ck-ecosystem__pill">Closure Compiler (Google)</span>
+      <span class="ck-ecosystem__pill">Jakarta CDI</span>
+      <span class="ck-ecosystem__pill">PatternFly</span>
+      <span class="ck-ecosystem__pill">Maven Central</span>
+      <span class="ck-ecosystem__pill">Apache 2.0</span>
+    </div>
+  </section>
+
+  <!-- ===== 3 SELLING POINTS ===== -->
+  <section class="ck-pillars">
+    <div class="ck-pillars__grid">
+
+      <div class="ck-pillar">
+        <div class="ck-pillar__icon">&#x26A1;</div>
+        <h3>Zero Runtime Reflection</h3>
+        <p>All DI wiring generated at compile time. No classpath scanning, no startup cost. Tree-shaking eliminates unused code.</p>
+      </div>
+
+      <div class="ck-pillar">
+        <div class="ck-pillar__icon">&lt;/&gt;</div>
+        <h3>Standard HTML Templates</h3>
+        <p>Use plain HTML files as templates. Bind Java fields to DOM elements with @DataField. No custom widget toolkit.</p>
+      </div>
+
+      <div class="ck-pillar">
+        <div class="ck-pillar__icon">@</div>
+        <h3>Full CDI Stack</h3>
+        <p>@Inject, @Singleton, @Produces, Events, Interceptors, Decorators, Navigation &mdash; all running in the browser.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== FEATURES HEADING ===== -->
+  <div class="ck-features-heading">
+    <h2>See It in Action</h2>
+    <p>Explore the core capabilities and advanced features that make Crysknife a complete framework for building Java web applications.</p>
+  </div>
+
+  <!-- ===== PANEL 1: HTML5 Templating ===== -->
+  <section class="ck-feature-section">
+    <div class="ck-feature">
+
+      <h3>Flexible HTML5 Templating</h3>
+      <p class="ck-feature__desc">Use standard HTML files as templates. Bind Java fields to DOM elements with @DataField. No custom widget toolkit required.</p>
+      <div class="ck-feature__grid">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">CustomerForm.html</div>
+          <pre>&lt;div class="customer-form"&gt;\n
+  &lt;input id="name" type="text"\n
+         placeholder="Your Name"&gt;\n
+  &lt;input id="phone" type="tel"\n
+         placeholder="Phone Number"&gt;\n
+  &lt;button id="saveBtn"&gt;Save&lt;/button&gt;\n
+&lt;/div&gt;\n</pre>
+        </div>
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">CustomerForm.java</div>
+          <pre>@Singleton\n
+@Templated("CustomerForm.html")\n
+public class CustomerForm\n
+    implements IsElement&lt;HTMLDivElement&gt; {\n
+\n
+  @Inject @DataField\n
+  HTMLInputElement name;\n
+\n
+  @Inject @DataField\n
+  HTMLInputElement phone;\n
+\n
+  @Inject @DataField\n
+  HTMLButtonElement saveBtn;\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 2: DOM Binding & Events ===== -->
+  <section class="ck-feature-section ck-feature-section--alt">
+    <div class="ck-feature">
+
+      <h3>Simple DOM Element Injection and Binding</h3>
+      <p class="ck-feature__desc">Attach event handlers with a single annotation. @EventHandler wires click, input, and other DOM events directly to Java methods.</p>
+      <div class="ck-feature__grid ck-feature__grid--single">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">CustomerForm.java</div>
+          <pre>@Templated @Page\n
+public class CustomerForm\n
+    implements IsElement&lt;HTMLDivElement&gt; {\n
+\n
+  @Inject @DataField\n
+  HTMLInputElement name;\n
+\n
+  @Inject @DataField\n
+  HTMLButtonElement saveBtn;\n
+\n
+  @EventHandler("saveBtn")\n
+  public void onSave(\n
+      @ForEvent("click") MouseEvent e) {\n
+    DomGlobal.alert("Hello, " + name.value);\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 3: Data Binding ===== -->
+  <section class="ck-feature-section">
+    <div class="ck-feature">
+
+      <h3>Bidirectional Model &harr; UI Binding</h3>
+      <p class="ck-feature__desc">Two-way data binding keeps your model and UI fields in sync automatically. Change the form &mdash; the model updates. Change the model &mdash; the form updates.</p>
+      <div class="ck-feature__grid ck-feature__grid--single">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">CustomerForm.java</div>
+          <pre>@Templated @Page\n
+public class CustomerForm\n
+    implements IsElement&lt;HTMLDivElement&gt; {\n
+\n
+  @Inject @AutoBound\n
+  DataBinder&lt;Customer&gt; binder;\n
+\n
+  @Inject @Bound @DataField\n
+  HTMLInputElement name;\n
+\n
+  @Inject @Bound @DataField\n
+  HTMLInputElement phone;\n
+\n
+  @EventHandler("saveBtn")\n
+  public void onSave(\n
+      @ForEvent("click") MouseEvent e) {\n
+    // customer already reflects form contents\n
+    Customer c = binder.getModel();\n
+    sendToServer(c);\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 4: Dependency Injection ===== -->
+  <section class="ck-feature-section ck-feature-section--alt">
+    <div class="ck-feature">
+
+      <h3>Compile-time Dependency Injection</h3>
+      <p class="ck-feature__desc">Jakarta CDI-style injection with @Inject, @Singleton, @Dependent scopes, qualifiers, producers, and Instance&lt;T&gt;. All resolved at compile time &mdash; zero reflection at runtime.</p>
+      <div class="ck-feature__grid ck-feature__grid--single">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">OrderService.java</div>
+          <pre>@Singleton\n
+public class OrderService {\n
+\n
+  @Inject\n
+  private NotificationService notifications;\n
+\n
+  @Inject @Premium\n
+  private PaymentGateway gateway;\n
+\n
+  @Inject\n
+  private Instance&lt;ReportGenerator&gt; reports;\n
+\n
+  @PostConstruct\n
+  public void init() {\n
+    notifications.send("Service ready");\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 5: Navigation ===== -->
+  <section class="ck-feature-section">
+    <div class="ck-feature">
+
+      <h3>Bookmarkable Page Navigation</h3>
+      <p class="ck-feature__desc">Declarative @Page routing with lifecycle callbacks, bookmarkable URLs, page roles, and programmatic TransitionTo&lt;T&gt;.</p>
+      <div class="ck-feature__grid">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">HomePage.java</div>
+          <pre>@Page(role = DefaultPage.class)\n
+@Singleton @Templated\n
+public class HomePage\n
+    implements IsElement&lt;HTMLDivElement&gt; {\n
+\n
+}\n</pre>
+        </div>
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">SettingsPage.java</div>
+          <pre>@Page(path = "settings")\n
+@Singleton @Templated\n
+public class SettingsPage\n
+    implements IsElement&lt;HTMLDivElement&gt; {\n
+\n
+  @Inject\n
+  TransitionTo&lt;HomePage&gt; toHome;\n
+\n
+  @PageShown\n
+  void onShown() {\n
+    // page is now visible\n
+  }\n
+\n
+  public void goHome() {\n
+    toHome.go();\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 6: CDI Events ===== -->
+  <section class="ck-feature-section ck-feature-section--alt">
+    <div class="ck-feature">
+
+      <h3>Typesafe CDI Events</h3>
+      <p class="ck-feature__desc">Fire and observe strongly-typed events across beans. Decoupled, type-safe communication &mdash; no event bus boilerplate.</p>
+      <div class="ck-feature__grid">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">OrderService.java</div>
+          <pre>@Singleton\n
+public class OrderService {\n
+\n
+  @Inject\n
+  Event&lt;OrderPlaced&gt; orderEvent;\n
+\n
+  public void placeOrder(Order order) {\n
+    // process order...\n
+    orderEvent.fire(\n
+        new OrderPlaced(order));\n
+  }\n
+}\n</pre>
+        </div>
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">OrderList.java</div>
+          <pre>@Templated\n
+public class OrderList\n
+    implements IsElement&lt;HTMLDivElement&gt; {\n
+\n
+  void onNewOrder(\n
+      @Observes OrderPlaced event) {\n
+    // automatically called when\n
+    // OrderPlaced is fired\n
+    refreshList();\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 7: Interceptors ===== -->
+  <section class="ck-feature-section">
+    <div class="ck-feature">
+
+      <h3>Jakarta Interceptors</h3>
+      <p class="ck-feature__desc">Cross-cutting concerns with @InterceptorBinding and @AroundInvoke. Logging, validation, caching &mdash; without touching business logic.</p>
+      <div class="ck-feature__grid ck-feature__grid--single">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">LoggingInterceptor.java</div>
+          <pre>@InterceptorBinding\n
+@Target({TYPE, METHOD})\n
+@Retention(RUNTIME)\n
+public @interface Logged {}\n
+\n
+@Logged @Interceptor\n
+public class LoggingInterceptor {\n
+\n
+  @AroundInvoke\n
+  public Object log(InvocationContext ctx)\n
+      throws Exception {\n
+    console.log("Calling: "\n
+        + ctx.getMethod().getName());\n
+    return ctx.proceed();\n
+  }\n
+}\n
+\n
+// Usage: annotate any bean method\n
+@Singleton\n
+public class MyService {\n
+  @Logged\n
+  public String process() {\n
+    return "done";\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 8: Decorators ===== -->
+  <section class="ck-feature-section ck-feature-section--alt">
+    <div class="ck-feature">
+
+      <h3>CDI Decorators</h3>
+      <p class="ck-feature__desc">Transparent interface wrapping with @Decorator and @Delegate. Chain multiple decorators with @Priority ordering.</p>
+      <div class="ck-feature__grid ck-feature__grid--single">
+        <div class="ck-code-block">
+          <div class="ck-code-block__tab">TimedGreeter.java</div>
+          <pre>@Decorator\n
+public abstract class TimedGreeter\n
+    implements Greeter {\n
+\n
+  @Inject @Delegate\n
+  Greeter delegate;\n
+\n
+  @Override\n
+  public String greet(String name) {\n
+    double start = currentTimeMillis();\n
+    String result = delegate.greet(name);\n
+    double ms = currentTimeMillis() - start;\n
+    console.log("Took " + ms + "ms");\n
+    return result;\n
+  }\n
+}\n</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== HIGHLIGHT CARDS ===== -->
+  <section class="ck-highlights-section">
+    <div class="ck-highlights">
+      <div class="ck-highlights__grid">
+
+        <div class="ck-highlight-card">
+          <div class="ck-highlight-card__icon">&lt;/&gt;</div>
+          <h4>HTML5 Templates</h4>
+          <p>Use standard HTML and CSS directly from your designer. Clean separation of layout and logic. No custom widget toolkit.</p>
+        </div>
+
+        <div class="ck-highlight-card">
+          <div class="ck-highlight-card__icon">@</div>
+          <h4>Compile-time DI</h4>
+          <p>All injection resolved at compile time via annotation processing. No runtime reflection, no classpath scanning, no startup cost.</p>
+        </div>
+
+        <div class="ck-highlight-card">
+          <div class="ck-highlight-card__icon">JS</div>
+          <h4>J2CL Compatible</h4>
+          <p>Compiles to highly optimized JavaScript via Google Closure Compiler. Tree-shaking eliminates all unused code.</p>
+        </div>
+
+        <div class="ck-highlight-card">
+          <div class="ck-highlight-card__icon">OSS</div>
+          <h4>Open Source</h4>
+          <p>Apache License 2.0. Inspired by Red Hat Errai. Join the community on GitHub.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div>

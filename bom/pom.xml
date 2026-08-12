@@ -6,12 +6,12 @@
 
     <groupId>io.crysknife</groupId>
     <artifactId>bom</artifactId>
-    <version>0.8</version>
+    <version>0.11</version>
     <packaging>pom</packaging>
 
 
-    <name>BOM (Bill Of Materials)</name>
-    <description>POC DI for GWT 3 or j2cl</description>
+    <name>Crysknife :: BOM</name>
+    <description>Bill of Materials for crysknife artifact versions</description>
     <url>https://github.com/treblereel</url>
 
     <developers>
@@ -43,8 +43,11 @@
     </scm>
 
     <properties>
-        <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
+        <maven.central.publishing.plugin>0.11.0</maven.central.publishing.plugin>
     </properties>
 
     <dependencyManagement>
@@ -86,6 +89,48 @@
                 <artifactId>crysknife-ui-generator</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-databinding-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-databinding-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-rest-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-rest-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-websocket-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-websocket-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.crysknife.ui</groupId>
+                <artifactId>crysknife-ui-security-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -109,11 +154,12 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>${maven.deploy.plugin.version}</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${maven.central.publishing.plugin}</version>
+                        <extensions>true</extensions>
                         <configuration>
-                            <skip>false</skip>
+                            <publishingServerId>sonatype</publishingServerId>
                         </configuration>
                     </plugin>
                 </plugins>

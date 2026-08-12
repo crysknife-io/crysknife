@@ -5,19 +5,25 @@
 
   <groupId>io.crysknife.demo</groupId>
   <artifactId>demo</artifactId>
-  <version>0.8</version>
+  <version>0.11</version>
   <packaging>jar</packaging>
+
+  <name>Crysknife :: Demo</name>
+  <description>Demo application</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
 
-    <elemental2.version>1.2.3</elemental2.version>
-    <j2cl.maven.plugin.version>0.23.2</j2cl.maven.plugin.version>
-    <org.treblereel.j2cl.processors.version>0.8</org.treblereel.j2cl.processors.version>
+    <j2cl.platform.version>20260527-1</j2cl.platform.version>
+    <org.treblereel.j2cl.processors.version>0.11</org.treblereel.j2cl.processors.version>
+
+    <jakarta4g.rest.version>0.2</jakarta4g.rest.version>
+    <mapper.json.version>0.11</mapper.json.version>
+    <gwt.jakarta.version>0.8</gwt.jakarta.version>
   </properties>
 
   <dependencyManagement>
@@ -26,6 +32,13 @@
         <groupId>io.crysknife</groupId>
         <artifactId>bom</artifactId>
         <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.treblereel.j2cl.platform</groupId>
+        <artifactId>bom</artifactId>
+        <version>${j2cl.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -51,6 +64,67 @@
     <dependency>
       <groupId>io.crysknife.ui</groupId>
       <artifactId>crysknife-ui-generator</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-rest-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-rest-generator</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.jakarta</groupId>
+      <artifactId>jax-rs</artifactId>
+      <version>${gwt.jakarta.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.jakarta.rest</groupId>
+      <artifactId>api</artifactId>
+      <version>${jakarta4g.rest.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.treblereel.gwt.json.mapper</groupId>
+      <artifactId>common</artifactId>
+      <version>${mapper.json.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-websocket-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-websocket-generator</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-databinding-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.crysknife.ui</groupId>
+      <artifactId>crysknife-ui-databinding-generator</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.patternfly</groupId>
+      <artifactId>patternfly-java-components</artifactId>
+      <version>0.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.patternfly</groupId>
+      <artifactId>patternfly-java-j2cl</artifactId>
+      <version>0.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.patternfly</groupId>
+      <artifactId>patternfly-java-icons</artifactId>
+      <version>0.3.0</version>
     </dependency>
 
     <dependency>
@@ -85,7 +159,7 @@
       <plugin>
         <groupId>org.kie.j2cl.tools</groupId>
         <artifactId>j2cl-maven-plugin</artifactId>
-        <version>${j2cl.maven.plugin.version}</version>
+          <version>0.23.8</version>
         <executions>
           <execution>
             <id>build-js</id>

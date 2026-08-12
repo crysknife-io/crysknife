@@ -29,8 +29,12 @@ public class OnStartup {
   @Inject
   private OnStartupDetector onStartupDetector;
 
+  @Inject
+  private StartupTracker tracker;
+
   @PostConstruct
   public void init() {
     onStartupDetector.setResult(getClass().getCanonicalName());
+    tracker.record(getClass().getCanonicalName());
   }
 }

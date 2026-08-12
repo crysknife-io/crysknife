@@ -1,0 +1,45 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@Alternative</h2>
+
+    <p>An <code>@Alternative</code> bean provides an alternative implementation that can replace
+       the default bean. When an alternative is enabled, it takes priority over the default
+       implementation for the same interface.</p>
+
+    <h4>Interface:</h4>
+    <pre class="prettyprint lang-java">
+    public interface Greeting {\n
+        String greet();\n
+    }\n
+    </pre>
+
+    <h4>Default implementation:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class DefaultGreeting implements Greeting {\n
+        public String greet() {\n
+            return "Default greeting";\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Alternative implementation:</h4>
+    <pre class="prettyprint lang-java">
+    @Alternative\n
+    @ApplicationScoped\n
+    public class FriendlyGreeting implements Greeting {\n
+        public String greet() {\n
+            return "Hey friend!";\n
+        }\n
+    }\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="interfaceBtn">greeting.greet() — via interface</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="defaultBtn">defaultGreeting.greet() — direct</button>
+        <div class="demo-result" data-field="resultOutput">
+            Click a button to see the result
+        </div>
+    </div>
+  </div>
+</div>

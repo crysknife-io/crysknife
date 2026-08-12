@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<div class="form-group" data-field="form">
-
-
+<div class="pf-v6-c-page__main-section" data-field="form">
+  <div class="pf-v6-c-content">
+    <h2>@Dependent</h2>
 
     <p>No injected instance of the bean is ever shared between multiple injection points.</p>
 
@@ -35,11 +28,10 @@
     }\n
     </pre>
 
-    <div>
-        <label setfor="textBox" class="control-label">@Dependent test, the same instance in two fields, random number assigned on construction</label>
-        <input id="textBox" disabled="" class="form-control" data-field="textBox">
-        <button class="btn btn-default" data-field="checkBtn">Check</button>
+    <div class="demo-playground">
+        <label class="pf-v6-c-form__label">@Dependent test, the same instance in two fields, random number assigned on construction</label>
+        <input disabled="" class="pf-v6-c-form-control" data-field="textBox">
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="checkBtn">Check</button>
     </div>
+  </div>
 </div>
-</body>
-</html>

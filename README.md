@@ -31,8 +31,16 @@
       - [2.8.1 @PostConstruct](#281-postconstruct)
       - [2.8.2 @PreDestroy](#282-predestroy)
       - [2.8.3 @Startup](#283-startup)
-    - [2.9 BeanManager](#29-beanmanager)
-      - [2.9.1 ManagedInstance and Instance](#291-managedinstance-and-instance)
+    - [2.9 Interceptors](#29-interceptors)
+      - [2.9.1 @InterceptorBinding](#291-interceptorbinding)
+      - [2.9.2 @AroundInvoke](#292-aroundinvoke)
+      - [2.9.3 Limitations](#293-limitations)
+    - [2.10 Decorators](#210-decorators)
+      - [2.10.1 @Decorator + @Delegate](#2101-decorator--delegate)
+      - [2.10.2 Decorator Chains](#2102-decorator-chains)
+      - [2.10.3 Limitations](#2103-limitations)
+    - [2.11 BeanManager](#211-beanmanager)
+      - [2.11.1 ManagedInstance and Instance](#2111-managedinstance-and-instance)
 - [3.0 UI Components](#30-ui-components)
 - [3.1. Basic templated bean](#31-basic-templated-bean)
 - [3.2. Custom template names](#32-custom-template-names)
@@ -50,6 +58,35 @@
   - [3.4.3. Page Roles](#343-page-roles)
   - [3.4.4. Page Lifecycle](#344-page-lifecycle)
   - [3.4.5. Following a Manual Link](#345-following-a-manual-link)
+  - [3.4.6. Page State (URL Parameters)](#346-page-state-url-parameters)
+  - [3.4.7. Page Security](#347-page-security)
+    - [3.4.7.1. SecurityContext](#3471-securitycontext)
+    - [3.4.7.2. @RolesAllowed and @DenyAll](#3472-rolesallowed-and-denyall)
+    - [3.4.7.3. LoginPage and SecurityError Roles](#3473-loginpage-and-securityerror-roles)
+    - [3.4.7.4. @IfRole — Element-Level Security](#3474-ifrole--element-level-security)
+- [3.5. Data Binding](#35-data-binding)
+  - [3.5.1. @Bindable Models](#351-bindable-models)
+  - [3.5.2. @Bound Fields](#352-bound-fields)
+  - [3.5.3. Nested Bean Properties (Dot-Notation)](#353-nested-bean-properties-dot-notation)
+  - [3.5.4. Programmatic Binding with DataBinder](#354-programmatic-binding-with-databinder)
+  - [3.5.5. Property Change Handlers](#355-property-change-handlers)
+  - [3.5.6. Collection Binding with ListComponent](#356-collection-binding-with-listcomponent)
+  - [3.5.7. Converters](#357-converters)
+  - [3.5.8. Limitations](#358-limitations)
+- [3.6. REST Client](#36-rest-client)
+  - [3.6.1. Dependencies](#361-dependencies)
+  - [3.6.2. Defining a JAX-RS Service Interface](#362-defining-a-jax-rs-service-interface)
+  - [3.6.3. Configuring the REST Endpoint](#363-configuring-the-rest-endpoint)
+  - [3.6.4. Injecting and Using the Caller](#364-injecting-and-using-the-caller)
+  - [3.6.5. Using Qualifiers for Multiple Endpoints](#365-using-qualifiers-for-multiple-endpoints)
+- [3.8. WebSocket Client](#38-websocket-client)
+  - [3.8.1. Dependencies](#381-dependencies)
+  - [3.8.2. Defining a Client Endpoint](#382-defining-a-client-endpoint)
+  - [3.8.3. Connecting](#383-connecting)
+  - [3.8.4. Sending Messages via Session](#384-sending-messages-via-session)
+  - [3.8.5. Dual @OnMessage — Text and Binary](#385-dual-onmessage--text-and-binary)
+  - [3.8.6. Lifecycle Callbacks](#386-lifecycle-callbacks)
+  - [3.8.7. Limitations](#387-limitations)
 - [4. Contributing to Crysknife](#4-contributing-to-crysknife)
 - [5. Crysknife License](#5-crysknife-license)
 
@@ -66,8 +103,8 @@ The goal of this project is to create an Red Hat Errai-like framework for J2CL. 
 
 Crysknife requires the following software in order to run:
 
-* Java 11 or later
-* Maven 3.6.3 or later
+* Java 21 or later
+* Maven 3.9.0 or later
 * Basic knowledge of J2Cl and Maven
 * j2cl-maven-plugin 0.22 or later
 
@@ -190,7 +227,7 @@ How to compile and run your application and how to run development mode, please 
 
 ## 2.1. What is CDI?
 
-CDI stands for Contexts and Dependency Injection. Dependency Injection is a design pattern that allows us to remove the hard-coded dependencies and make our application loosely coupled, extendable and maintainable. Crysknife doesn't support decorators, interceptors and transactions. 
+CDI stands for Contexts and Dependency Injection. Dependency Injection is a design pattern that allows us to remove the hard-coded dependencies and make our application loosely coupled, extendable and maintainable. Crysknife doesn't support transactions. 
 
 tip: It's important to note that Crysknife provides lazy initialization of beans. It means that the bean is created only when it is needed.
 
@@ -644,7 +681,166 @@ public class MyBean {
 ```
 A bean, annotated with @Startup, must be a @ApplicationScoped/@Singleton bean. If it is not, the container will throw an exception.
 
-## 2.9 BeanManager
+## 2.9 Interceptors
+
+Crysknife supports Jakarta Interceptors, allowing you to intercept method invocations using `@InterceptorBinding` and `@AroundInvoke` annotations. In J2CL mode, interception is implemented via ES6 Proxy `get` traps. In JRE mode (for testing), AspectJ `@Around` advice is generated at compile time.
+
+### 2.9.1 @InterceptorBinding
+
+To create an interceptor, first define a custom interceptor binding annotation:
+
+```java
+@InterceptorBinding
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface Logged {}
+```
+
+Then create the interceptor class annotated with `@Interceptor` and your binding annotation:
+
+```java
+@ApplicationScoped
+@Interceptor
+@Logged
+public class LoggingInterceptor {
+
+    @AroundInvoke
+    public Object intercept(InvocationContext ctx) throws Exception {
+        System.out.println("Before: " + ctx.getParameters().length + " args");
+        Object result = ctx.proceed();
+        System.out.println("After: result = " + result);
+        return result;
+    }
+}
+```
+
+### 2.9.2 @AroundInvoke
+
+Apply the interceptor binding annotation to individual methods or to the entire class. When applied to a class, all public non-static non-final business methods are intercepted.
+
+Method-level binding:
+
+```java
+@ApplicationScoped
+public class GreetingService {
+
+    @Logged
+    public String greet(String name) {
+        return "Hello, " + name + "!";
+    }
+
+    // This method is NOT intercepted
+    public String notIntercepted() {
+        return "No interception here";
+    }
+}
+```
+
+Class-level binding:
+
+```java
+@Logged
+@ApplicationScoped
+public class FullyInterceptedService {
+
+    // All public business methods are intercepted
+    public void doWork() { }
+
+    public String process(String input) {
+        return input.toUpperCase();
+    }
+}
+```
+
+The `InvocationContext` passed to the `@AroundInvoke` method provides:
+
+* `getTarget()` — the bean instance being intercepted
+* `getParameters()` — the method arguments (mutable array)
+* `setParameters(Object[])` — replace the method arguments before proceeding
+* `proceed()` — invoke the next interceptor in the chain or the original method
+* `getContextData()` — a `Map<String, Object>` for passing data between interceptors in the chain
+
+### 2.9.3 Limitations
+
+Because J2CL does not support `java.lang.reflect`, the following `InvocationContext` methods are **not available** and will throw `UnsupportedOperationException`:
+
+* `getMethod()` — cannot return `java.lang.reflect.Method` in J2CL
+* `getConstructor()` — cannot return `java.lang.reflect.Constructor` in J2CL
+
+These methods are marked `@GwtIncompatible` in the Jakarta Interceptors API and are stripped by the J2CL transpiler. They work normally in JRE mode (e.g., in unit tests with AspectJ).
+
+Additionally:
+* Only `public`, non-`static`, non-`final` methods can be intercepted
+* `@PostConstruct` and `@PreDestroy` lifecycle methods are excluded from interception
+* Interceptor classes must be managed beans (annotated with a scope such as `@ApplicationScoped`)
+
+## 2.10 Decorators
+
+CDI Decorators allow you to transparently wrap a bean's interface with additional behavior. Unlike interceptors (which are generic and cross-cutting), decorators are aware of the bean's business semantics — they implement the same interface and can selectively override methods.
+
+### 2.10.1 @Decorator + @Delegate
+
+To create a decorator, annotate a class with `@Decorator` and implement the same interface as the bean you want to decorate. Use `@Inject @Delegate` on a field to hold a reference to the original (or next) bean in the chain:
+
+```java
+public interface PaymentService {
+    void pay(BigDecimal amount);
+}
+
+@ApplicationScoped
+public class CreditCardPaymentService implements PaymentService {
+    public void pay(BigDecimal amount) {
+        // process credit card payment
+    }
+}
+
+@ApplicationScoped
+@Decorator
+@Priority(1000)
+public class LoggingPaymentDecorator implements PaymentService {
+
+    @Inject
+    @Delegate
+    PaymentService delegate;
+
+    public void pay(BigDecimal amount) {
+        System.out.println("Payment of " + amount);
+        delegate.pay(amount);
+    }
+}
+```
+
+When you inject `PaymentService`, the container returns the decorator. The decorator's `@Delegate` field receives the original bean:
+
+```java
+@Inject
+PaymentService paymentService; // returns LoggingPaymentDecorator
+
+@Inject
+CreditCardPaymentService directService; // returns the original bean
+```
+
+### 2.10.2 Decorator Chains
+
+Multiple decorators for the same interface are ordered by `@Priority` (lowest value = innermost, closest to the original bean):
+
+```java
+@Decorator @Priority(1000)
+public class LoggingDecorator implements PaymentService { ... }
+
+@Decorator @Priority(2000)
+public class SecurityDecorator implements PaymentService { ... }
+```
+
+Call chain: `SecurityDecorator → LoggingDecorator → CreditCardPaymentService`
+
+### 2.10.3 Limitations
+
+* Only interface-based decoration is supported — you cannot decorate a concrete class directly
+* Decorator classes must be managed beans (annotated with a scope such as `@ApplicationScoped`)
+* Each decorator must have exactly one `@Inject @Delegate` field
+
+## 2.11 BeanManager
 
 is a fundamental interface that provides access to the CDI container. It allows developers to programmatically interact with the CDI container to obtain beans or destroy them. This is especially useful in scenarios where dynamic lookup or programmatic interactions with the CDI container are required.
 
@@ -677,7 +873,7 @@ public class MyBean {
 }
 ```
 
-### 2.9.1 ManagedInstance and Instance
+### 2.11.1 ManagedInstance and Instance
 
 In the context of CDI Instance<T> is a part of the CDI API that provides a way to obtain instances of a certain bean type T dynamically at runtime. It acts as a programmatic client for beans;
 
@@ -993,6 +1189,924 @@ public class WelcomePage implements IsElement {
 
 }
 ```
+
+### 3.4.6. Page State (URL Parameters)
+
+Use the `@PageState` annotation to bind fields in a `@Page` bean to URL query parameters. The navigation framework automatically injects values from the hash fragment before `@PageShowing` is called, and re-injects on `@PageUpdate` when the URL changes while staying on the same page.
+
+#### Supported types
+
+**Scalar types:** `String`, `int`/`Integer`, `long`/`Long`, `boolean`/`Boolean`, `double`/`Double`, `float`/`Float`, `short`/`Short`, `byte`/`Byte`.
+
+**List types** (for multi-valued parameters): `List<String>`, `List<Integer>`, `List<Long>`, `List<Boolean>`, `List<Double>`, `List<Float>`, `List<Short>`, `List<Byte>`.
+
+#### Basic usage
+
+```java
+@Page(path = "search")
+@Templated
+@ApplicationScoped
+public class SearchPage implements IsElement<HTMLDivElement> {
+
+    @PageState
+    String query;              // #search?query=hello
+
+    @PageState
+    int page;                  // #search?page=2
+
+    @PageState
+    List<String> tags;         // #search?tags=java&tags=j2cl → ["java", "j2cl"]
+
+    @PageState
+    List<Integer> ids;         // #search?ids=1&ids=2&ids=3 → [1, 2, 3]
+
+    @PageShown
+    void onShown() {
+        // query = "hello", page = 2, tags = ["java", "j2cl"], ids = [1, 2, 3]
+    }
+}
+```
+
+#### Custom parameter names
+
+By default, the query parameter name matches the field name. Use the `value` attribute to map to a different name:
+
+```java
+@PageState("q")
+String query;  // reads from ?q=...
+```
+
+#### Default values
+
+Use `defaultValue` to provide a fallback when the parameter is absent:
+
+```java
+@PageState(defaultValue = "1")
+int page;  // defaults to 1 when ?page is missing
+
+@PageState(defaultValue = "true")
+boolean active;
+```
+
+If no default is specified and the parameter is absent, scalar fields are left unmodified and list fields receive an empty list.
+
+**Note:** `defaultValue` is not supported for `List` fields — this is enforced at compile time.
+
+#### Navigating with state
+
+Pass page state through `TransitionTo` using a `Multimap`:
+
+```java
+@Inject
+TransitionTo<SearchPage> toSearch;
+
+public void search(String query, List<String> tags) {
+    Multimap<String, String> state = ImmutableMultimap.of();
+    state.put("query", query);
+    tags.forEach(tag -> state.put("tags", tag));
+    toSearch.go(state);
+}
+```
+
+### 3.4.7. Page Security
+
+Crysknife integrates Jakarta Security annotations with the navigation system to protect pages based on user roles. Security guards are generated at compile time and check the `SecurityContext` before allowing navigation to a page.
+
+Add the security dependency:
+
+```xml
+<dependency>
+    <groupId>io.crysknife.ui</groupId>
+    <artifactId>crysknife-ui-security-api</artifactId>
+    <version>${crysknife.version}</version>
+</dependency>
+```
+
+#### 3.4.7.1. SecurityContext
+
+`SecurityContext` is an `@ApplicationScoped` bean that holds the current user's identity and roles. Populate it after authentication (e.g., from an OIDC/REST endpoint):
+
+```java
+@Inject
+SecurityContext securityContext;
+
+void onLoginComplete(String username, String[] roles) {
+    securityContext.setUser(new UserImpl(username, roles));
+}
+```
+
+Key methods:
+* `isLoggedIn()` — returns `true` if a non-anonymous user is set
+* `isUserInRole(String role)` — checks if the user has a specific role
+* `isUserInAllRoles(String... roles)` — checks if the user has all specified roles
+* `getUser()` — returns the current `User`
+* `setUser(User user)` — sets the authenticated user
+* `reset()` — clears the user (logout)
+* `addChangeListener(Runnable listener)` — registers a callback invoked whenever `setUser()` is called (useful for reactive UI updates)
+
+#### 3.4.7.2. @RolesAllowed and @DenyAll
+
+Annotate `@Page` classes with Jakarta Security annotations to restrict access:
+
+```java
+@Page(path = "admin")
+@RolesAllowed("admin")
+@Templated
+@Singleton
+public class AdminPage implements IsElement<HTMLDivElement> {
+    // Only accessible to users with the "admin" role
+}
+
+@Page(path = "dashboard")
+@RolesAllowed({"user", "admin"})
+@Templated
+@Singleton
+public class DashboardPage implements IsElement<HTMLDivElement> {
+    // Requires both "user" AND "admin" roles
+}
+
+@Page(path = "disabled")
+@DenyAll
+@Templated
+@Singleton
+public class DisabledPage implements IsElement<HTMLDivElement> {
+    // Always blocked, redirects to SecurityError page
+}
+```
+
+When a user navigates to a protected page:
+1. If not logged in → redirects to the page with `LoginPage` role
+2. If logged in but missing required roles → redirects to the page with `SecurityError` role
+3. `@DenyAll` → always redirects to `SecurityError`, regardless of authentication
+
+Pages without security annotations (or with `@PermitAll`) are accessible to everyone.
+
+#### 3.4.7.3. LoginPage and SecurityError Roles
+
+You must define pages with `LoginPage` and `SecurityError` roles to handle security redirects:
+
+```java
+@Page(role = LoginPage.class)
+@Templated
+@Singleton
+public class MyLoginPage implements IsElement<HTMLDivElement> {
+    // Shown when an unauthenticated user tries to access a protected page
+}
+
+@Page(role = SecurityError.class)
+@Templated
+@Singleton
+public class AccessDeniedPage implements IsElement<HTMLDivElement> {
+    // Shown when a user lacks the required roles
+}
+```
+
+`LoginPage` and `SecurityError` are `UniquePageRole` markers from `io.crysknife.ui.navigation.client`. Each application using security guards must have exactly one page for each role.
+
+#### 3.4.7.4. @IfRole — Element-Level Security
+
+While `@RolesAllowed` and `@DenyAll` protect entire pages, `@IfRole` provides fine-grained control over individual DOM elements within a page. It hides or shows `@DataField` elements based on the current user's roles.
+
+```java
+@Page(path = "home")
+@Templated
+@Singleton
+public class HomePage implements IsElement<HTMLDivElement> {
+
+    @Inject @DataField @IfRole("user")
+    HTMLDivElement userSection;
+
+    @Inject @DataField @IfRole("admin")
+    HTMLDivElement adminPanel;
+
+    @Inject @DataField @IfRole({"user", "admin"})
+    HTMLDivElement superSection;  // requires ALL listed roles
+}
+```
+
+How it works:
+* At compile time, the annotation processor generates a `SecurityContext` role check for each `@IfRole`-annotated `@DataField`
+* The element's `style.display` is set to `"none"` when the user lacks the required roles, and restored to `""` when the user has them
+* A change listener is registered on `SecurityContext` so visibility updates reactively when the user logs in or out — no page reload required
+* Multiple roles use AND semantics (all roles must be present), consistent with `@RolesAllowed`
+
+The `@IfRole` annotation targets fields only:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface IfRole {
+    String[] value();
+}
+```
+
+**Why `@IfRole` instead of `@RolesAllowed`?** The Jakarta `@RolesAllowed` annotation can only target `TYPE` and `METHOD`, not `FIELD`. `@IfRole` fills this gap for element-level security in templates.
+
+**Note:** `@IfRole` hides elements via CSS (`display: none`). The element remains in the DOM — this is a UI convenience, not a security boundary. Sensitive data should still be protected server-side.
+
+## 3.5. Internationalization (i18n)
+
+Crysknife provides compile-time internationalization using Closure Compiler's `goog.getMsg()` and XTB translation files. Translations are resolved at compile time — no runtime lookups or Map-based dictionaries. Each locale produces a separate JS bundle with all strings baked in.
+
+### 3.5.1. Defining a Translation Bundle
+
+Create a Java interface annotated with `@TranslationBundle`. Each method represents a translatable message, annotated with `@TranslationKey`:
+
+```java
+@TranslationBundle
+public interface AppMessages {
+
+  @TranslationKey(defaultValue = "Welcome")
+  String welcome();
+
+  @TranslationKey(defaultValue = "Save")
+  String save();
+
+  @TranslationKey(defaultValue = "Hello {$name}, you have {$count} messages")
+  String greeting(String name, String count);
+
+  @TranslationKey(defaultValue = "Delete", key = "btn_delete")
+  String deleteButton();
+}
+```
+
+- `defaultValue` — the default (English) text returned when no locale is active
+- `key` — optional custom message key (defaults to `BundleName.methodName`)
+- Parameterized messages use `{$paramName}` placeholders matching method parameter names
+
+### 3.5.2. Providing Translations
+
+Place a `.properties` file alongside the interface with the locale suffix:
+
+```
+# AppMessages_ru.properties
+welcome=Добро пожаловать
+save=Сохранить
+greeting=Привет {$name}, у тебя {$count} сообщений
+btn_delete=Удалить
+```
+
+The annotation processor generates:
+- `AppMessagesImpl.java` — a Java stub implementing the interface
+- `AppMessagesImpl.native.js` — JavaScript with `goog.getMsg()` calls
+- `gwt3_message_bundle_ru.xtb` — XTB file for Closure Compiler
+
+### 3.5.3. Injecting a Bundle
+
+Inject the bundle interface via CDI:
+
+```java
+@Inject
+AppMessages messages;
+```
+
+Call methods to get translated strings:
+
+```java
+String text = messages.welcome(); // "Welcome" or "Добро пожаловать"
+String greeting = messages.greeting("World", "5");
+```
+
+### 3.5.4. Template Translation with data-i18n-key
+
+In `@Templated` HTML, use the `data-i18n-key` attribute to translate element text content at initialization. The element must also have a `data-field` or `id` attribute:
+
+```html
+<div>
+    <span data-field="welcomeLabel" data-i18n-key="AppMessages.welcome">placeholder</span>
+    <span data-field="saveBtn" data-i18n-key="AppMessages.save">placeholder</span>
+    <span data-field="deleteBtn" data-i18n-key="AppMessages.deleteButton">placeholder</span>
+</div>
+```
+
+The format is `BundleName.methodName`. At component initialization, the generated code sets each element's `textContent` to the translated value. Only zero-parameter methods are supported in `data-i18n-key`.
+
+The corresponding component only needs `@DataField` declarations:
+
+```java
+@Singleton
+@Templated("MyComponent.html")
+public class MyComponent implements IsElement<HTMLDivElement> {
+
+  @DataField
+  HTMLElement welcomeLabel;
+
+  @DataField
+  HTMLElement saveBtn;
+
+  @DataField
+  HTMLElement deleteBtn;
+}
+```
+
+### 3.5.5. Building with a Locale
+
+Each J2CL build targets one locale. Configure the locale and XTB auto-discovery in the j2cl-maven-plugin:
+
+```xml
+<plugin>
+    <groupId>org.kie.j2cl.tools</groupId>
+    <artifactId>j2cl-maven-plugin</artifactId>
+    <configuration>
+        <defines>
+            <goog.LOCALE>ru</goog.LOCALE>
+        </defines>
+        <translationsFile>
+            <auto>true</auto>
+        </translationsFile>
+    </configuration>
+</plugin>
+```
+
+Without `goog.LOCALE`, `goog.getMsg()` returns the `defaultValue` strings (English). With a locale and matching XTB file, Closure Compiler substitutes the translated text at compile time.
+
+## 3.6. Data Binding
+
+Crysknife provides a two-way data binding system that automatically synchronizes model properties with UI elements. When a user types into a bound input field, the model updates automatically. When the model changes programmatically, the UI reflects the new values. Inspired by Errai Data Binding.
+
+### 3.6.1. @Bindable Models
+
+To make a model class eligible for data binding, annotate it with `@Bindable`. The annotation processor generates a proxy subclass that intercepts setter calls and fires property change events.
+
+```java
+@Bindable
+@Dependent
+public class Contact {
+    private String name = "";
+    private String email = "";
+    private boolean active = true;
+    private Address address = new Address();
+    private List<String> tags = new ArrayList<>();
+
+    // Standard getters and setters required
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public Address getAddress() { return address; }
+    public void setAddress(Address address) { this.address = address; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
+}
+```
+
+Requirements for `@Bindable` classes:
+* Must not be `final`
+* Must have a default (no-arg) constructor
+* Setters must not be `final` or `private`
+* Properties follow JavaBean convention (getter/setter pairs)
+
+### 3.6.2. @Bound Fields
+
+Use the `@Bound` annotation on `@DataField` elements in a `@Templated` bean to bind them to model properties. The `DataBinder` is injected and manages the binding lifecycle.
+
+```java
+@Singleton
+@Templated("contact-form.html")
+public class ContactForm implements IsElement<HTMLDivElement> {
+
+    @Inject
+    @DataField
+    HTMLDivElement root;
+
+    @Inject
+    DataBinder<Contact> binder;
+
+    @Inject
+    @DataField
+    @Bound(property = "name")
+    HTMLInputElement nameInput;
+
+    @Inject
+    @DataField
+    @Bound(property = "email")
+    HTMLInputElement emailInput;
+
+    @Inject
+    @DataField
+    @Bound
+    HTMLInputElement active;  // property name defaults to field name "active"
+
+    @EventHandler("saveBtn")
+    private void onSave(@ForEvent("click") MouseEvent event) {
+        Contact model = binder.getModel();
+        // model.getName() already contains the current input value
+    }
+
+    @Override
+    public HTMLDivElement getElement() { return root; }
+}
+```
+
+When `property` is not specified in `@Bound`, the field name is used as the property name.
+
+### 3.6.3. Nested Bean Properties (Dot-Notation)
+
+Bind to properties of nested beans using dot-notation. The nested bean must also be annotated with `@Bindable`:
+
+```java
+@Bindable
+@Dependent
+public class Address {
+    private String city = "";
+    private String zip = "";
+    // getters and setters
+}
+```
+
+```java
+@Inject
+@DataField
+@Bound(property = "address.city")
+HTMLInputElement cityInput;
+
+@Inject
+@DataField
+@Bound(property = "address.zip")
+HTMLInputElement zipInput;
+```
+
+Changes to `cityInput` will call `getModel().getAddress().setCity(...)` automatically, and calling `getModel().getAddress().setCity("Boston")` will update `cityInput`.
+
+### 3.6.4. Programmatic Binding with DataBinder
+
+In addition to declarative `@Bound` annotations, you can bind elements programmatically:
+
+```java
+@Inject
+DataBinder<Contact> binder;
+
+@Inject
+@DataField
+HTMLInputElement phoneInput;
+
+@PostConstruct
+public void init() {
+    binder.bind(phoneInput, "phone");
+}
+```
+
+Key `DataBinder` methods:
+
+```java
+// Set or replace the model — all bound UI elements update immediately
+binder.setModel(contact);
+
+// Get the current (proxied) model — reflects latest UI input values
+Contact model = binder.getModel();
+
+// Bind / unbind programmatically
+binder.bind(element, "propertyName");
+binder.unbind("propertyName");
+binder.unbind();  // unbind all
+```
+
+### 3.6.5. Property Change Handlers
+
+Listen for property changes on the model. Handlers fire whenever a bound property changes, whether from user input or programmatic updates:
+
+```java
+// Listen to all properties
+binder.addPropertyChangeHandler(event -> {
+    System.out.println(event.getPropertyName() + ": "
+        + event.getOldValue() + " -> " + event.getNewValue());
+});
+
+// Listen to a specific property
+PropertyChangeUnsubscribeHandle handle =
+    binder.addPropertyChangeHandler("name", event -> {
+        validateName(event.getNewValue());
+    });
+
+// Unsubscribe when no longer needed
+handle.unsubscribe();
+```
+
+### 3.6.6. Collection Binding with ListComponent
+
+`ListComponent<M>` automatically renders list items as child DOM elements. When bound to an `ObservableList` property, it re-renders whenever items are added or removed.
+
+Basic usage with default renderer (uses `toString()`):
+
+```java
+@DataField
+@Bound(property = "tags")
+ListComponent<String> tagsList = ListComponent.simple("ul", "li");
+```
+
+Custom renderer:
+
+```java
+@DataField
+@Bound(property = "tags")
+ListComponent<String> tagsList = ListComponent.create("ul", "li",
+    (tag, el) -> {
+        el.textContent = tag;
+        el.classList.add("badge");
+    });
+```
+
+The `ListComponent` implements `IsElement` so it integrates with `@DataField` as a template element replacement. No `@Inject` is needed — the field initializer creates the component.
+
+Mutations on the list are tracked automatically via `ObservableList`:
+
+```java
+// These mutations trigger automatic re-rendering
+binder.getModel().getTags().add("new-tag");
+binder.getModel().getTags().remove(0);
+```
+
+### 3.6.7. Converters
+
+Use a `Converter` to transform values between the model and the UI widget. For example, converting between an integer model property and the string value of an input element:
+
+```java
+public class IntegerConverter implements Converter<Integer, String> {
+    @Override
+    public Integer toModelValue(String widgetValue) {
+        return widgetValue.isEmpty() ? 0 : Integer.parseInt(widgetValue);
+    }
+
+    @Override
+    public String toWidgetValue(Integer modelValue) {
+        return String.valueOf(modelValue);
+    }
+}
+```
+
+Apply via annotation:
+
+```java
+@Inject
+@DataField
+@Bound(property = "age", converter = IntegerConverter.class)
+HTMLInputElement ageInput;
+```
+
+Or programmatically:
+
+```java
+binder.bind(ageInput, "age", new IntegerConverter());
+```
+
+### 3.6.8. Limitations
+
+* `@Bindable` classes must not be `final`
+* Setters must not be `final` or `private`
+* Array-typed properties are not supported — use `List` instead
+* `ListComponent` re-renders the full list on each mutation (no fine-grained DOM diffing)
+* Circular references in `@Bindable` models are not supported
+
+## 3.7. REST Client
+
+Crysknife provides a type-safe REST client built on top of jakarta4g-rest. You define a JAX-RS service interface, and Crysknife generates a `Caller<T>` implementation at compile time. The `Caller` uses `XMLHttpRequest` under the hood and integrates with JSON Mapper for automatic serialization/deserialization.
+
+### 3.7.1. Dependencies
+
+Add the following dependencies to your `pom.xml`:
+
+```xml
+<!-- REST client runtime (transitively includes jakarta4g-rest API and JSON Mapper) -->
+<dependency>
+    <groupId>io.crysknife.ui</groupId>
+    <artifactId>crysknife-ui-rest-api</artifactId>
+    <version>${crysknife.version}</version>
+</dependency>
+
+<!-- JAX-RS annotations (J2CL-compatible) -->
+<dependency>
+    <groupId>org.treblereel.gwt.jakarta</groupId>
+    <artifactId>jax-rs</artifactId>
+    <version>0.8</version>
+</dependency>
+```
+
+Add the generator to your annotation processor paths in `maven-compiler-plugin`. It transitively pulls in the `jakarta4g-rest` and `json-mapper` annotation processors:
+
+```xml
+<annotationProcessorPaths>
+    <!-- ... other crysknife processors ... -->
+    <path>
+        <groupId>io.crysknife.ui</groupId>
+        <artifactId>crysknife-ui-rest-generator</artifactId>
+        <version>${crysknife.version}</version>
+    </path>
+</annotationProcessorPaths>
+```
+
+### 3.7.2. Defining a JAX-RS Service Interface
+
+Define a standard JAX-RS interface. The annotation processor generates a `_RestCaller` implementation and a JSON mapper for each model class used in the interface.
+
+```java
+@Path("/posts")
+public interface PostService {
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    Post getPost(@PathParam("id") long id);
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    List<Post> listPosts();
+}
+```
+
+Supported JAX-RS annotations: `@Path`, `@GET`, `@POST`, `@PUT`, `@DELETE`, `@PathParam`, `@QueryParam`, `@Produces`, `@Consumes`.
+
+### 3.7.3. Configuring the REST Endpoint
+
+Use a CDI `@Produces` method to provide a `RestConfig` bean that specifies the base URL for your REST service:
+
+```java
+@ApplicationScoped
+public class MyRestConfig {
+
+    @Produces
+    @Named("myapi")
+    public RestConfig myApiConfig() {
+        return RestConfig.builder()
+                .baseUrl("https://api.example.com")
+                .build();
+    }
+}
+```
+
+If no `@Named` qualifier is specified and no custom `RestConfig` producer exists, the default `RestConfig` uses the current domain as the base URL (suitable for same-origin APIs).
+
+### 3.7.4. Injecting and Using the Caller
+
+Inject `Caller<T>` where `T` is your JAX-RS service interface. Use the `@Named` qualifier to match the `RestConfig` producer:
+
+```java
+@Inject
+@Named("myapi")
+Caller<PostService> postServiceCaller;
+
+public void loadPost() {
+    postServiceCaller
+        .onError((response, throwable) -> {
+            // handle error
+        })
+        .call(response -> {
+            Post post = (Post) response;
+            // use the post
+        })
+        .getPost(1);
+}
+```
+
+The `Caller` API is fluent:
+* `.onError(callback)` — register an error handler (optional)
+* `.call(callback)` — register a success callback and return the service proxy
+* Then call any method on the service proxy — this triggers the actual HTTP request
+
+### 3.7.5. Using Qualifiers for Multiple Endpoints
+
+You can define multiple `RestConfig` producers with different qualifiers to talk to different APIs:
+
+```java
+@ApplicationScoped
+public class RestConfigs {
+
+    @Produces
+    @Named("internal")
+    public RestConfig internalApi() {
+        return RestConfig.builder()
+                .baseUrl("/api")
+                .build();
+    }
+
+    @Produces
+    @Named("external")
+    public RestConfig externalApi() {
+        return RestConfig.builder()
+                .baseUrl("https://external-service.com")
+                .build();
+    }
+}
+```
+
+Then inject with the matching qualifier:
+
+```java
+@Inject
+@Named("internal")
+Caller<ItemService> itemCaller;
+
+@Inject
+@Named("external")
+Caller<PostService> postCaller;
+```
+
+You can also use custom `@Qualifier` annotations instead of `@Named`:
+
+```java
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+public @interface ExternalApi {}
+```
+
+```java
+@Produces
+@ExternalApi
+public RestConfig externalApiConfig() {
+    return RestConfig.builder()
+            .baseUrl("https://external-service.com")
+            .build();
+}
+
+@Inject
+@ExternalApi
+Caller<PostService> externalPostCaller;
+```
+
+## 3.8. WebSocket Client
+
+Crysknife provides a CDI-managed WebSocket client built on top of Jakarta WebSocket annotations. You define a `@ClientEndpoint` bean with `@OnOpen`, `@OnMessage`, `@OnClose`, and `@OnError` lifecycle methods, and Crysknife generates the WebSocket proxy at compile time. Connection is managed via a type-safe `WebSocketConnector<T>` injectable.
+
+### 3.8.1. Dependencies
+
+Add the following dependencies to your `pom.xml`:
+
+```xml
+<!-- WebSocket CDI API (WebSocketConnector) -->
+<dependency>
+    <groupId>io.crysknife.ui</groupId>
+    <artifactId>crysknife-ui-websocket-api</artifactId>
+    <version>${crysknife.version}</version>
+</dependency>
+
+<!-- Jakarta WebSocket client runtime (J2CL-compatible) -->
+<dependency>
+    <groupId>org.treblereel.gwt.jakarta.websocket</groupId>
+    <artifactId>common</artifactId>
+    <version>0.1</version>
+</dependency>
+
+<!-- WebSocket code generator (compile-time only) -->
+<dependency>
+    <groupId>io.crysknife.ui</groupId>
+    <artifactId>crysknife-ui-websocket-generator</artifactId>
+    <version>${crysknife.version}</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+### 3.8.2. Defining a Client Endpoint
+
+Annotate a CDI bean with `@ClientEndpoint` and add lifecycle methods:
+
+```java
+@ClientEndpoint
+@Singleton
+public class ChatEndpoint {
+
+    @Inject
+    NotificationService notifications;
+
+    @OnOpen
+    public void onOpen(Session session) {
+        notifications.show("Connected");
+    }
+
+    @OnMessage
+    public void onMessage(String message) {
+        notifications.show(message);
+    }
+
+    @OnClose
+    public void onClose(CloseReason reason) {
+        notifications.show("Disconnected: " + reason.getReasonPhrase());
+    }
+
+    @OnError
+    public void onError(Throwable error) {
+        notifications.show("Error: " + error.getMessage());
+    }
+}
+```
+
+The endpoint is a regular CDI bean — you can use `@Inject`, `@PostConstruct`, and any scope (`@Singleton`, `@Dependent`, `@ApplicationScoped`).
+
+### 3.8.3. Connecting
+
+Inject `WebSocketConnector<T>` where `T` is your `@ClientEndpoint` bean. Call `baseUri()` to set the WebSocket URL and `connect()` to initiate the connection:
+
+```java
+@ApplicationScoped
+public class ChatPanel {
+
+    @Inject
+    WebSocketConnector<ChatEndpoint> connector;
+
+    public void connect() {
+        connector.baseUri("ws://localhost:8080/chat").connect();
+    }
+}
+```
+
+`connect()` is fire-and-forget — it initiates the connection asynchronously. The `jakarta.websocket.Session` is delivered to your `@OnOpen` method, not returned from `connect()`. This matches the browser's async WebSocket model.
+
+### 3.8.4. Sending Messages via Session
+
+Use the `Session` received in `@OnOpen` to send messages:
+
+```java
+@ClientEndpoint
+@Singleton
+public class ChatEndpoint {
+
+    private Session session;
+
+    @OnOpen
+    public void onOpen(Session session) {
+        this.session = session;
+        session.getBasicRemote().sendText("hello from client");
+    }
+
+    public void send(String message) {
+        if (session != null) {
+            session.getBasicRemote().sendText(message);
+        }
+    }
+}
+```
+
+### 3.8.5. Dual @OnMessage — Text and Binary
+
+An endpoint can have two `@OnMessage` methods — one for text (`String`) and one for binary (`byte[]`):
+
+```java
+@ClientEndpoint
+@Singleton
+public class DataEndpoint {
+
+    @OnMessage
+    public void onText(String message, Session session) {
+        // handle text message
+    }
+
+    @OnMessage
+    public void onBinary(byte[] data, Session session) {
+        // handle binary message
+    }
+}
+```
+
+The generator classifies each method by parameter type and overrides `handleTextMessage` and `handleBinaryMessage` independently.
+
+### 3.8.6. Lifecycle Callbacks
+
+All callback parameters are optional and order-independent. The generator matches by type:
+
+| Annotation | Recognized parameter types |
+|------------|--------------------------|
+| `@OnOpen` | `Session` |
+| `@OnMessage` | `String` or `byte[]`, `Session` |
+| `@OnClose` | `CloseReason`, `Session` |
+| `@OnError` | `Throwable` (or subclasses), `Session` |
+
+Examples:
+
+```java
+@OnOpen
+public void onOpen() { }                      // no parameters — valid
+
+@OnOpen
+public void onOpen(Session session) { }        // Session only — valid
+
+@OnMessage
+public void onMessage(String msg) { }          // payload only — valid
+
+@OnMessage
+public void onMessage(String msg, Session s) { } // payload + session — valid
+
+@OnClose
+public void onClose(CloseReason reason) { }    // reason only — valid
+
+@OnError
+public void onError(Throwable error) { }       // error only — valid
+```
+
+### 3.8.7. Limitations
+
+* `connect()` returns `void` — session is delivered asynchronously via `@OnOpen`
+* No automatic reconnection (must be implemented manually)
+* No Encoder/Decoder framework support
+* No `@PathParam` URI template variables
+* No partial message handling
+* No Ping/Pong (browser WebSocket API limitation)
+* At most one text `@OnMessage` and one binary `@OnMessage` per endpoint
+* `@ClientEndpoint` subprotocols attribute is not processed (use `WebSocketConnector.subprotocol()` instead)
 
 # 4. Contributing to Crysknife
 

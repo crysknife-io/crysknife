@@ -13,6 +13,7 @@
  */
 package io.crysknife.client.internal.collections;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * @author Dmitrii Tikhomirov Created by treblereel 2/3/20
@@ -39,9 +39,9 @@ public class Multimap<K, V> {
   }
 
   public Collection<Map.Entry<K, V>> entries() {
-    Map<K, V> map = new TreeMap<>();
-    keys().forEach(key -> get(key).stream().forEach(v -> map.put(key, v)));
-    return map.entrySet();
+    List<Map.Entry<K, V>> result = new ArrayList<>();
+    keys().forEach(key -> get(key).forEach(v -> result.add(new AbstractMap.SimpleEntry<>(key, v))));
+    return result;
   }
 
   public void put(K key, V value) {

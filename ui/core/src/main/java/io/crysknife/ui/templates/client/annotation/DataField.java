@@ -27,4 +27,6 @@ import java.lang.annotation.Target;
 public @interface DataField {
 
   String value() default "";
+
+  ConflictStrategy strategy() default ConflictStrategy.USE_TEMPLATE;
 }

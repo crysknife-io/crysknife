@@ -66,7 +66,7 @@ public class MethodCallGenerator {
         if (isPrivate) {
           root.put("args", String.join(",", args));
         } else {
-          root.put("args", args.stream().map(c -> String.format("Js.uncheckedCast(%s)", c))
+          root.put("args", args.stream().map(c -> String.format("jsinterop.base.Js.uncheckedCast(%s)", c))
               .collect(Collectors.joining(",")));
         }
       }

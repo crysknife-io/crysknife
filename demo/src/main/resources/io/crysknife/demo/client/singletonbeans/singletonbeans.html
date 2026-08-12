@@ -1,28 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<div class="form-group" data-field="root">
+<div class="pf-v6-c-page__main-section" data-field="root">
+  <div class="pf-v6-c-content">
+    <h2>@Singleton / @ApplicationScoped</h2>
 
-    <p>An application-scoped bean is a lazily-instantiated bean which will live for the entire duration of the application. In this sense, it is essentially like a singleton. And it’s generally okay to think of it in that way.</p>
-    <p>@ApplicationScoped/@Singleton</p>
-    <pre class="prettyprint lang-java">
-    @Dependent\n
-    public class DependentBean {\n
-        private int random;\n
-    \n
-        public DependentBean() {\n
-            this.random = new Random().nextInt();\n
-        }\n
-    \n
-        public int getRandom() {\n
-            return random;\n
-        }\n
-    }\n
-    </pre>
+    <p>An application-scoped bean is a lazily-instantiated bean which will live for the entire duration of the application.</p>
 
     <pre class="prettyprint lang-java">
     @Singleton\n
@@ -46,11 +26,10 @@
     ...\n
     </pre>
 
-    <div>
-        <label setfor="SingletonBeans" class="control-label">@Singleton test, the same instance in two fields, random number assigned on construction</label>
-        <input id="SingletonBeans" disabled="" class="form-control" style="width: 700px;" data-field="input">
-        <button class="btn btn-default" data-field="checkBtn" id="somediv">Check</button>
+    <div class="demo-playground">
+        <label class="pf-v6-c-form__label">@Singleton test, the same instance in two fields, random number assigned on construction</label>
+        <input disabled="" class="pf-v6-c-form-control" style="width: 700px;" data-field="input">
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="checkBtn" id="somediv">Check</button>
     </div>
+  </div>
 </div>
-</body>
-</html>

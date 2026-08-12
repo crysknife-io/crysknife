@@ -162,6 +162,21 @@ public class MutationObserverGenerator extends IOCGenerator<MethodDefinition> {
                         .addArgument("(ObserverCallback) m -> instance."
                                 + definition.getExecutableElement().getSimpleName().toString() + "(m)")
                         .toString() + ";");
+
+        String removeMethodName =
+                definition.getExecutableElement().getAnnotation(OnAttach.class) != null
+                        ? "removeOnAttachListener"
+                        : "removeOnDetachListener";
+
+        EnclosedExpr castForDestroy =
+                new EnclosedExpr(new CastExpr(new ClassOrInterfaceType().setName("MutationObserver"),
+                        new MethodCallExpr(new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                                .addArgument("MutationObserver.class"), "getInstance")));
+
+        builder.addToOnDestroy(
+                () -> new MethodCallExpr(castForDestroy, removeMethodName)
+                        .addArgument("instance." + fieldName)
+                        .toString() + ";");
     }
 
     private String findFieldName(ExecutableElement executableElement) {

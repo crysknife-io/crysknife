@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.security.DenyAll;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Specializes;
@@ -31,6 +34,8 @@ import javax.annotation.processing.FilerException;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypesException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -44,11 +49,15 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.CastExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.auto.common.MoreElements;
@@ -62,16 +71,20 @@ import io.crysknife.generator.context.IOCContext;
 import io.crysknife.logger.TreeLogger;
 import io.crysknife.ui.navigation.client.DefaultPage;
 import io.crysknife.ui.navigation.client.HistoryToken;
+import io.crysknife.ui.navigation.client.LoginPage;
 import io.crysknife.ui.navigation.client.NavigationEvent;
 import io.crysknife.ui.navigation.client.PageRequest;
+import io.crysknife.ui.navigation.client.SecurityError;
 import io.crysknife.ui.navigation.client.annotation.Page;
 import io.crysknife.ui.navigation.client.annotation.PageHidden;
 import io.crysknife.ui.navigation.client.annotation.PageHiding;
 import io.crysknife.ui.navigation.client.annotation.PageShowing;
 import io.crysknife.ui.navigation.client.annotation.PageShown;
+import io.crysknife.ui.navigation.client.annotation.PageState;
 import io.crysknife.ui.navigation.client.internal.NavigationControl;
 import io.crysknife.ui.navigation.client.internal.NavigationGraph;
 import io.crysknife.ui.navigation.client.internal.PageNode;
+import io.crysknife.ui.security.SecurityContext;
 import io.crysknife.util.GenerationUtils;
 
 /**
@@ -126,6 +139,11 @@ public class NavigationGraphGenerator {
         compilationUnit.addImport(Event.class);
         compilationUnit.addImport(ApplicationScoped.class);
         compilationUnit.addImport(Specializes.class);
+        if (hasSecurityAnnotatedPages()) {
+            compilationUnit.addImport(SecurityContext.class);
+            compilationUnit.addImport(LoginPage.class);
+            compilationUnit.addImport(SecurityError.class);
+        }
 
 
         classDeclaration.getExtendedTypes().add(new ClassOrInterfaceType().setName("NavigationGraph"));
@@ -182,6 +200,7 @@ public class NavigationGraphGenerator {
                     + " is annotated with @Page, so it must implement io.crysknife.client.IsElement");
         }
         compilationUnit.addImport(page.getQualifiedName().toString());
+        generatePageStateHelperClass(page);
         Page annotation = page.getAnnotation(Page.class);
         String pageName = getPageName(page);
 
@@ -222,6 +241,17 @@ public class NavigationGraphGenerator {
 
         ctor.getBody().addStatement(new MethodCallExpr(new NameExpr("pagesByName"), "put")
                 .addArgument(new StringLiteralExpr(pageName)).addArgument(toLowerCase(page)));
+
+        for (String role : annotatedPageRoles) {
+            if (!role.equals(DefaultPage.class.getCanonicalName())) {
+                String simpleRoleName = role.substring(role.lastIndexOf('.') + 1);
+                compilationUnit.addImport(role);
+                ctor.getBody()
+                        .addStatement(new MethodCallExpr(new NameExpr("pagesByRole"), "put")
+                                .addArgument(new NameExpr(simpleRoleName + ".class"))
+                                .addArgument(toLowerCase(page)));
+            }
+        }
     }
 
     private boolean isAssignable(TypeMirror subType, Class<?> baseType) {
@@ -391,6 +421,8 @@ public class NavigationGraphGenerator {
         method.addParameter(HistoryToken.class.getSimpleName(), "state");
         method.addParameter(NavigationControl.class.getSimpleName(), "control");
 
+        generateSecurityGuard(page, method);
+
         ObjectCreationExpr mapCreationExpr = new ObjectCreationExpr()
                 .setType(new ClassOrInterfaceType().setName(HashMap.class.getSimpleName()));
 
@@ -411,6 +443,8 @@ public class NavigationGraphGenerator {
         method.getBody().get().addAndGetStatement(
                 new MethodCallExpr(new NameExpr("event"), "fire").addArgument(navigationEvent));
 
+        generatePageStateInjection(page, method);
+
         ExecutableElement executableElement = checkMethod(page, PageShowing.class);
         if (executableElement != null) {
             method.getBody().ifPresent(body -> body.addAndGetStatement(
@@ -419,6 +453,74 @@ public class NavigationGraphGenerator {
         method.getBody().ifPresent(
                 body -> body.addAndGetStatement(new MethodCallExpr(new NameExpr("control"), "proceed")));
         anonymousClassBody.add(method);
+    }
+
+    private void generateSecurityGuard(TypeElement page, MethodDeclaration method) {
+        DenyAll denyAll = page.getAnnotation(DenyAll.class);
+        PermitAll permitAll = page.getAnnotation(PermitAll.class);
+        RolesAllowed rolesAllowed = page.getAnnotation(RolesAllowed.class);
+
+        if (denyAll == null && rolesAllowed == null) {
+            return;
+        }
+
+        if (permitAll != null) {
+            return;
+        }
+
+        method.getBody().ifPresent(body -> {
+            // SecurityContext _secCtx = (SecurityContext) beanManager.lookupBean(SecurityContext.class).getInstance();
+            CastExpr castExpr = new CastExpr(
+                    new ClassOrInterfaceType().setName("SecurityContext"),
+                    new MethodCallExpr(
+                            new MethodCallExpr(new NameExpr("beanManager"), "lookupBean")
+                                    .addArgument("SecurityContext.class"),
+                            "getInstance"));
+            body.addAndGetStatement(new AssignExpr()
+                    .setTarget(new VariableDeclarationExpr(
+                            new ClassOrInterfaceType().setName("SecurityContext"), "_secCtx"))
+                    .setValue(castExpr));
+
+            if (denyAll != null) {
+                // @DenyAll: always redirect to SecurityError
+                body.addAndGetStatement(
+                        new MethodCallExpr(new NameExpr("control"), "redirectToRole")
+                                .addArgument("SecurityError.class"));
+                body.addAndGetStatement(new ReturnStmt());
+            } else {
+                // @RolesAllowed: check login, then check roles
+                String[] roles = rolesAllowed.value();
+
+                // if (!_secCtx.isLoggedIn()) { control.redirectToRole(LoginPage.class); return; }
+                BlockStmt loginBlock = new BlockStmt();
+                loginBlock.addStatement(
+                        new MethodCallExpr(new NameExpr("control"), "redirectToRole")
+                                .addArgument("LoginPage.class"));
+                loginBlock.addStatement(new ReturnStmt());
+
+                body.addAndGetStatement(new IfStmt(
+                        new UnaryExpr(
+                                new MethodCallExpr(new NameExpr("_secCtx"), "isLoggedIn"),
+                                UnaryExpr.Operator.LOGICAL_COMPLEMENT),
+                        loginBlock, null));
+
+                // if (!_secCtx.isUserInAllRoles("role1", "role2")) { control.redirectToRole(SecurityError.class); return; }
+                MethodCallExpr rolesCheck = new MethodCallExpr(new NameExpr("_secCtx"), "isUserInAllRoles");
+                for (String role : roles) {
+                    rolesCheck.addArgument(new StringLiteralExpr(role));
+                }
+
+                BlockStmt rolesBlock = new BlockStmt();
+                rolesBlock.addStatement(
+                        new MethodCallExpr(new NameExpr("control"), "redirectToRole")
+                                .addArgument("SecurityError.class"));
+                rolesBlock.addStatement(new ReturnStmt());
+
+                body.addAndGetStatement(new IfStmt(
+                        new UnaryExpr(rolesCheck, UnaryExpr.Operator.LOGICAL_COMPLEMENT),
+                        rolesBlock, null));
+            }
+        });
     }
 
     private void appendPageShownMethod(TypeElement page, String pageName,
@@ -438,6 +540,9 @@ public class NavigationGraphGenerator {
                         .setTarget(new VariableDeclarationExpr(
                                 new ClassOrInterfaceType().setName(Map.class.getSimpleName()), "pageState"))
                         .setValue(mapCreationExpr)));
+
+        generatePageStateInjection(page, method);
+
         ExecutableElement executableElement = checkMethod(page, PageShown.class);
         if (executableElement != null) {
             method.getBody().ifPresent(body -> body.addAndGetStatement(
@@ -463,6 +568,9 @@ public class NavigationGraphGenerator {
                         .setTarget(new VariableDeclarationExpr(
                                 new ClassOrInterfaceType().setName(Map.class.getSimpleName()), "pageState"))
                         .setValue(mapCreationExpr)));
+
+        generatePageStateInjection(page, method);
+
         anonymousClassBody.add(method);
     }
 
@@ -473,8 +581,14 @@ public class NavigationGraphGenerator {
         method.setModifiers(Modifier.Keyword.PUBLIC);
         method.setName("destroy");
         method.setType("void");
-        method.getBody().ifPresent(body -> body.addAndGetStatement(
-                new MethodCallExpr(new NameExpr("beanManager"), "destroyBean").addArgument("instance")));
+        boolean isSingleton =
+                page.getAnnotation(jakarta.inject.Singleton.class) != null
+                        || page.getAnnotation(ApplicationScoped.class) != null;
+        if (!isSingleton) {
+            method.getBody().ifPresent(body -> body.addAndGetStatement(
+                    new MethodCallExpr(new NameExpr("beanManager"), "destroyBean")
+                            .addArgument("instance")));
+        }
         anonymousClassBody.add(method);
     }
 
@@ -486,6 +600,257 @@ public class NavigationGraphGenerator {
         }
 
         return path;
+    }
+
+    private static final Map<String, String> SUPPORTED_TYPES = new HashMap<>();
+
+    static {
+        SUPPORTED_TYPES.put("java.lang.String", null);
+        SUPPORTED_TYPES.put("int", "Integer.parseInt");
+        SUPPORTED_TYPES.put("java.lang.Integer", "Integer.parseInt");
+        SUPPORTED_TYPES.put("long", "Long.parseLong");
+        SUPPORTED_TYPES.put("java.lang.Long", "Long.parseLong");
+        SUPPORTED_TYPES.put("boolean", "Boolean.parseBoolean");
+        SUPPORTED_TYPES.put("java.lang.Boolean", "Boolean.parseBoolean");
+        SUPPORTED_TYPES.put("double", "Double.parseDouble");
+        SUPPORTED_TYPES.put("java.lang.Double", "Double.parseDouble");
+        SUPPORTED_TYPES.put("float", "Float.parseFloat");
+        SUPPORTED_TYPES.put("java.lang.Float", "Float.parseFloat");
+        SUPPORTED_TYPES.put("short", "Short.parseShort");
+        SUPPORTED_TYPES.put("java.lang.Short", "Short.parseShort");
+        SUPPORTED_TYPES.put("byte", "Byte.parseByte");
+        SUPPORTED_TYPES.put("java.lang.Byte", "Byte.parseByte");
+    }
+
+    private static final Map<String, String> SUPPORTED_LIST_ELEMENT_TYPES = new HashMap<>();
+
+    static {
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.String", null);
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Integer", "Integer::parseInt");
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Long", "Long::parseLong");
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Boolean", "Boolean::parseBoolean");
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Double", "Double::parseDouble");
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Float", "Float::parseFloat");
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Short", "Short::parseShort");
+        SUPPORTED_LIST_ELEMENT_TYPES.put("java.lang.Byte", "Byte::parseByte");
+    }
+
+    private List<VariableElement> findPageStateFields(TypeElement pageClass) {
+        List<VariableElement> fields = pageClass.getEnclosedElements().stream()
+                .filter(elm -> elm.getKind().equals(ElementKind.FIELD))
+                .map(elm -> MoreElements.asVariable(elm))
+                .filter(elm -> elm.getAnnotation(PageState.class) != null)
+                .collect(Collectors.toList());
+
+        for (VariableElement field : fields) {
+            if (field.getModifiers().contains(javax.lang.model.element.Modifier.PRIVATE)) {
+                throw new GenerationException("@PageState field [" + field.getSimpleName()
+                        + "] in " + pageClass.getQualifiedName() + " must not be private");
+            }
+            if (field.getModifiers().contains(javax.lang.model.element.Modifier.FINAL)) {
+                throw new GenerationException("@PageState field [" + field.getSimpleName()
+                        + "] in " + pageClass.getQualifiedName() + " must not be final");
+            }
+            String typeName = field.asType().toString();
+            if (isListType(field)) {
+                String elementType = getListElementType(field);
+                if (!SUPPORTED_LIST_ELEMENT_TYPES.containsKey(elementType)) {
+                    throw new GenerationException("@PageState field [" + field.getSimpleName()
+                            + "] in " + pageClass.getQualifiedName()
+                            + " has unsupported List element type " + elementType
+                            + ". Supported: List<String>, List<Integer>, List<Long>,"
+                            + " List<Boolean>, List<Double>, List<Float>, List<Short>,"
+                            + " List<Byte>");
+                }
+                String defaultValue = field.getAnnotation(PageState.class).defaultValue();
+                if (!PageState.DEFAULT_VALUE_UNSET.equals(defaultValue)) {
+                    throw new GenerationException("@PageState field [" + field.getSimpleName()
+                            + "] in " + pageClass.getQualifiedName()
+                            + ": defaultValue is not supported for List fields");
+                }
+            } else if (!SUPPORTED_TYPES.containsKey(typeName)) {
+                throw new GenerationException("@PageState field [" + field.getSimpleName()
+                        + "] in " + pageClass.getQualifiedName()
+                        + " has unsupported type " + typeName
+                        + ". Supported: String, int, long, boolean, double, float, short, byte,"
+                        + " their boxed equivalents, and List<BoxedType>");
+            }
+        }
+        return fields;
+    }
+
+    private String wrapWithConversion(String rawExpr, String typeName) {
+        String parseMethod = SUPPORTED_TYPES.get(typeName);
+        if (parseMethod == null) {
+            return rawExpr;
+        }
+        return parseMethod + "(" + rawExpr + ")";
+    }
+
+    private boolean isListType(VariableElement field) {
+        TypeMirror type = field.asType();
+        if (!(type instanceof DeclaredType)) {
+            return false;
+        }
+        DeclaredType dt = (DeclaredType) type;
+        TypeMirror erasure = context.getGenerationContext().getTypes().erasure(type);
+        TypeElement listElement =
+                context.getGenerationContext().getElements().getTypeElement("java.util.List");
+        TypeMirror listErasure =
+                context.getGenerationContext().getTypes().erasure(listElement.asType());
+        return context.getGenerationContext().getTypes().isSameType(erasure, listErasure)
+                && dt.getTypeArguments().size() == 1;
+    }
+
+    private String getListElementType(VariableElement field) {
+        DeclaredType dt = (DeclaredType) field.asType();
+        return dt.getTypeArguments().get(0).toString();
+    }
+
+    private String getHelperClassName(TypeElement page) {
+        return page.getSimpleName().toString() + "_PageStateHelper";
+    }
+
+    private String getHelperFqcn(TypeElement page) {
+        String pkg = MoreElements.getPackage(page).getQualifiedName().toString();
+        return pkg + "." + getHelperClassName(page);
+    }
+
+    private String getSimpleFieldTypeName(String typeName) {
+        int dot = typeName.lastIndexOf('.');
+        return dot >= 0 ? typeName.substring(dot + 1) : typeName;
+    }
+
+    private void generatePageStateHelperClass(TypeElement page) {
+        List<VariableElement> fields = findPageStateFields(page);
+        if (fields.isEmpty()) {
+            return;
+        }
+
+        String pkg = MoreElements.getPackage(page).getQualifiedName().toString();
+        String helperClassName = getHelperClassName(page);
+        String pageSimpleName = page.getSimpleName().toString();
+
+        CompilationUnit helperCu = new CompilationUnit();
+        helperCu.setPackageDeclaration(pkg);
+
+        ClassOrInterfaceDeclaration helperClass =
+                helperCu.addClass(helperClassName).setPublic(true);
+
+        boolean needsListImport = false;
+
+        for (VariableElement field : fields) {
+            String fieldName = field.getSimpleName().toString();
+            String simpleType;
+
+            if (isListType(field)) {
+                String elementFqcn = getListElementType(field);
+                String simpleElement = getSimpleFieldTypeName(elementFqcn);
+                simpleType = "List<" + simpleElement + ">";
+                needsListImport = true;
+            } else {
+                simpleType = getSimpleFieldTypeName(field.asType().toString());
+            }
+
+            MethodDeclaration setter = helperClass.addMethod(
+                    "set_" + fieldName,
+                    Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
+            setter.setType("void");
+            setter.addParameter(pageSimpleName, "instance");
+            setter.addParameter(simpleType, "value");
+            setter.getBody().ifPresent(body ->
+                    body.addStatement(new AssignExpr()
+                            .setTarget(new NameExpr("instance." + fieldName))
+                            .setValue(new NameExpr("value"))));
+        }
+
+        if (needsListImport) {
+            helperCu.addImport("java.util.List");
+        }
+
+        try {
+            String fqcn = pkg + "." + helperClassName;
+            build(fqcn, helperCu.toString(), context.getGenerationContext());
+        } catch (FilerException e) {
+            // ignore if already generated
+        } catch (IOException e) {
+            throw new GenerationException(e);
+        }
+    }
+
+    private void generatePageStateInjection(TypeElement page, MethodDeclaration method) {
+        List<VariableElement> fields = findPageStateFields(page);
+        if (fields.isEmpty()) {
+            return;
+        }
+
+        String helperFqcn = getHelperFqcn(page);
+        String helperSimple = getHelperClassName(page);
+        compilationUnit.addImport(helperFqcn);
+        compilationUnit.addImport(java.util.List.class);
+
+        for (VariableElement field : fields) {
+            PageState ann = field.getAnnotation(PageState.class);
+            String paramName = ann.value().isEmpty()
+                    ? field.getSimpleName().toString() : ann.value();
+            String defaultValue = ann.defaultValue();
+            boolean hasDefault = !PageState.DEFAULT_VALUE_UNSET.equals(defaultValue);
+            String typeName = field.asType().toString();
+            String fieldName = field.getSimpleName().toString();
+
+            String valuesVar = "_" + fieldName + "_values";
+
+            method.getBody().ifPresent(body -> body.addAndGetStatement(
+                    new AssignExpr()
+                            .setTarget(new VariableDeclarationExpr(
+                                    new ClassOrInterfaceType().setName("List<String>"), valuesVar))
+                            .setValue(new MethodCallExpr(
+                                    new MethodCallExpr(new NameExpr("state"), "getState"),
+                                    "get").addArgument(new StringLiteralExpr(paramName)))));
+
+            if (isListType(field)) {
+                String elementType = getListElementType(field);
+                String mapRef = SUPPORTED_LIST_ELEMENT_TYPES.get(elementType);
+                MethodCallExpr setterCall = new MethodCallExpr(
+                        new NameExpr(helperSimple), "set_" + fieldName)
+                        .addArgument("instance");
+                if (mapRef == null) {
+                    setterCall.addArgument(new NameExpr(valuesVar));
+                } else {
+                    compilationUnit.addImport("java.util.stream.Collectors");
+                    String streamExpr = valuesVar + ".stream().map(" + mapRef
+                            + ").collect(Collectors.toList())";
+                    setterCall.addArgument(new NameExpr(streamExpr));
+                }
+                method.getBody().ifPresent(body -> body.addAndGetStatement(setterCall));
+            } else {
+                String convertedGet = wrapWithConversion(valuesVar + ".get(0)", typeName);
+
+                MethodCallExpr setterCall = new MethodCallExpr(
+                        new NameExpr(helperSimple), "set_" + fieldName)
+                        .addArgument("instance");
+
+                if (hasDefault) {
+                    String convertedDefault = wrapWithConversion(
+                            "\"" + defaultValue.replace("\"", "\\\"") + "\"", typeName);
+                    String valueExpr = valuesVar + ".isEmpty() ? " + convertedDefault
+                            + " : " + convertedGet;
+                    setterCall.addArgument(new NameExpr(valueExpr));
+                    method.getBody().ifPresent(body -> body.addAndGetStatement(setterCall));
+                } else {
+                    setterCall.addArgument(new NameExpr(convertedGet));
+                    method.getBody().ifPresent(body -> {
+                        com.github.javaparser.ast.stmt.IfStmt ifStmt =
+                                new com.github.javaparser.ast.stmt.IfStmt();
+                        ifStmt.setCondition(new NameExpr("!" + valuesVar + ".isEmpty()"));
+                        ifStmt.setThenStmt(
+                                new com.github.javaparser.ast.stmt.BlockStmt()
+                                        .addAndGetStatement(setterCall));
+                        body.addAndGetStatement(ifStmt);
+                    });
+                }
+            }
+        }
     }
 
     private ExecutableElement checkMethod(TypeElement pageClass,
@@ -527,5 +892,11 @@ public class NavigationGraphGenerator {
 
     protected boolean isRelevantClass(TypeElement clazz) {
         return null != clazz.getAnnotation(Page.class);
+    }
+
+    private boolean hasSecurityAnnotatedPages() {
+        return pages.stream().anyMatch(page ->
+                page.getAnnotation(DenyAll.class) != null
+                        || page.getAnnotation(RolesAllowed.class) != null);
     }
 }

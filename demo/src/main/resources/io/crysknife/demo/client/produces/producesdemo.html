@@ -1,0 +1,42 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@Produces</h2>
+
+    <p>Producer methods create beans programmatically. The <code>@Produces</code> annotation
+       marks a method whose return value becomes a CDI-managed bean. The scope annotation on
+       the method controls the bean lifecycle.</p>
+
+    <h4>Producer class:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class ServiceProducer {\n
+    \n
+        @Produces @Singleton\n
+        public RandomIdService produceRandomIdService() {\n
+            return new RandomIdService();\n
+        }\n
+    \n
+        @Produces @Dependent\n
+        public AppConfig produceAppConfig() {\n
+            return new AppConfig();\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Injection point:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject RandomIdService idService1;\n
+    @Inject RandomIdService idService2;\n
+    @Inject AppConfig config1;\n
+    @Inject AppConfig config2;\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="singletonBtn">Check @Singleton produced</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="dependentBtn">Check @Dependent produced</button>
+        <div class="demo-result" data-field="resultOutput">
+            Click a button to see the result
+        </div>
+    </div>
+  </div>
+</div>

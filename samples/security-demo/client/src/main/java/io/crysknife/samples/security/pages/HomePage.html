@@ -1,0 +1,25 @@
+<div data-field="root">
+  <h2>Welcome to Crysknife Security Demo</h2>
+  <p>This demo shows how <code>@RolesAllowed</code> and <code>@DenyAll</code> annotations
+     work with crysknife navigation and Keycloak authentication.</p>
+  <h3>Test the navigation guards:</h3>
+  <ul>
+    <li><a href="#public">Public Page</a> - accessible to everyone</li>
+    <li><a href="#secure">Secure Page</a> - requires "user" role (<code>@RolesAllowed("user")</code>)</li>
+    <li><a href="#admin">Admin Page</a> - requires "admin" role (<code>@RolesAllowed("admin")</code>)</li>
+  </ul>
+  <h3>Demo users:</h3>
+  <table border="1" cellpadding="8" cellspacing="0">
+    <tr><th>Username</th><th>Password</th><th>Roles</th></tr>
+    <tr><td>user1</td><td>password1</td><td>user</td></tr>
+    <tr><td>admin1</td><td>password1</td><td>user, admin</td></tr>
+  </table>
+
+  <div data-field="userSection" style="margin-top:1rem; padding:1rem; background:#e8f5e9; border-radius:4px;">
+    <strong>User Section</strong> — visible only to users with <code>"user"</code> role (<code>@IfRole("user")</code>)
+  </div>
+
+  <div data-field="adminPanel" style="margin-top:1rem; padding:1rem; background:#fff3e0; border-radius:4px;">
+    <strong>Admin Panel</strong> — visible only to users with <code>"admin"</code> role (<code>@IfRole("admin")</code>)
+  </div>
+</div>

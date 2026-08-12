@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<div class="form-group">
+<div class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>Navigation</h2>
 
-    <span>initialization</span>
+    <h4>Initialization</h4>
     <pre class="prettyprint lang-java">
     @Inject\n
     private Navigation navigation;\n
@@ -18,37 +13,36 @@
     }\n
     </pre>
 
-    <span>default page declaration</span>
+    <h4>Default page declaration</h4>
     <pre class="prettyprint lang-java">
     @Page(role = DefaultPage.class)\n
     @Singleton\n
-    @Page(role = DefaultPage.class)\n
-    @Templated(value = "about.html")\n
-    public class About implements IsElement&lt;HTMLDivElement&gt; {\n
+    @Templated(value = "homepage.html")\n
+    public class HomePage implements IsElement&lt;HTMLDivElement&gt; {\n
     \n
     }\n
     </pre>
 
-    <span>custom page path</span>
+    <h4>Custom page path</h4>
     <pre class="prettyprint lang-java">
     @Page(path = "navigation")\n
     @Singleton\n
     @Templated("navigation.html")\n
-    public class WidgetPanel implements IsElement&lt;HTMLDivElement&gt; {\n
+    public class NavigationDemo implements IsElement&lt;HTMLDivElement&gt; {\n
     \n
     }\n
     </pre>
 
-    <span>programmatic navigation</span>
+    <h4>Programmatic navigation</h4>
     <pre class="prettyprint lang-java">
     @Inject\n
-    TransitionTo&lt;NamedBeanFieldInjectionPanel&gt; toNamedBeanFieldInjectionPanel;\n
+    TransitionTo&lt;HomePage&gt; toHome;\n
     \n
     \n
-    toNamedBeanFieldInjectionPanel.go();\n
+    toHome.go();\n
     </pre>
 
-    <span>Events: </span>
+    <h4>Lifecycle events</h4>
     <pre class="prettyprint lang-java">
     @PageShown\n
     public void onPageShown() {\n
@@ -67,9 +61,8 @@
     }\n
     </pre>
 
-    <div>
-        <button class="btn btn-default" data-field="button">goto About page</button>
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="button">goto Home page</button>
     </div>
+  </div>
 </div>
-</body>
-</html>

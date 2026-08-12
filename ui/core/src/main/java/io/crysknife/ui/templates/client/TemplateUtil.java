@@ -25,6 +25,7 @@ import elemental2.dom.Node;
 import elemental2.dom.NodeFilter;
 import elemental2.dom.TreeWalker;
 import io.crysknife.client.IsElement;
+import io.crysknife.ui.common.client.SafeHtmlUtils;
 import jsinterop.base.Js;
 
 /**
@@ -79,12 +80,36 @@ public final class TemplateUtil {
 
       if (!oldElement.innerHTML.isEmpty()) {
         if (newElement.innerHTML.isEmpty()) {
-          newElement.innerHTML = oldElement.innerHTML;
+          SafeHtmlUtils.setInnerHTML(newElement, oldElement.innerHTML);
         } else {
           while (oldElement.hasChildNodes()) {
             newElement.appendChild(oldElement.firstChild);
           }
         }
+      }
+    }
+  }
+
+  public static void replaceElementUseBean(HTMLElement context, String identifier,
+                                    HTMLElement newElement) {
+    if (newElement == null) {
+      throw new NullPointerException(
+          "New element must not be null in TemplateUtils.replaceElementUseBean()");
+    }
+    HTMLElement oldElement = resolveElement(context, identifier);
+    if (oldElement != null && oldElement.parentNode != null) {
+      oldElement.parentNode.replaceChild(newElement, oldElement);
+      if (oldElement.hasAttributes()) {
+        for (String attributeName : ((JsArray<String>) Js
+            .uncheckedCast(oldElement.getAttributeNames())).asList()) {
+          if (!newElement.hasAttribute(attributeName)) {
+            newElement.setAttribute(attributeName, oldElement.getAttribute(attributeName));
+          }
+        }
+      }
+
+      if (!oldElement.innerHTML.isEmpty() && newElement.innerHTML.isEmpty()) {
+        SafeHtmlUtils.setInnerHTML(newElement, oldElement.innerHTML);
       }
     }
   }

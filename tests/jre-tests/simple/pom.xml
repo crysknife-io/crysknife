@@ -4,17 +4,20 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.crysknife.tests</groupId>
     <artifactId>jre-simple-tests</artifactId>
-    <version>0.8</version>
+    <version>0.11</version>
     <packaging>jar</packaging>
+
+    <name>Crysknife :: Tests :: JRE :: Simple</name>
+    <description>JRE-based simple integration tests</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
 
-        <aspectj.version>1.9.19</aspectj.version>
-        <aspectj.maven.plugin.version>1.14.0</aspectj.maven.plugin.version>
+        <aspectj.version>1.9.24</aspectj.version>
+        <aspectj.maven.plugin.version>1.15.0</aspectj.maven.plugin.version>
         <webappdir>${project.build.directory}/webapp</webappdir>
         <webapp.libdir>${webappdir}/WEB-INF/lib</webapp.libdir>
         <maven.properties.plugin>1.0.0</maven.properties.plugin>

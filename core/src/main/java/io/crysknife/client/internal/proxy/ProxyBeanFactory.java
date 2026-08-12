@@ -26,5 +26,5 @@ public abstract class ProxyBeanFactory<T> extends BeanFactory<T> {
     super(beanManager);
   }
 
-  public abstract void dependantBeanReady(Class clazz);
+  public abstract void dependantBeanReady(Class<?> clazz);
 }

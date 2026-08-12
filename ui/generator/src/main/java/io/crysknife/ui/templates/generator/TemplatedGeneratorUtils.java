@@ -37,6 +37,8 @@ public class TemplatedGeneratorUtils {
   public String getGetRootElementMethodName(DataElementInfo.Kind kind) {
     if (kind.equals(DataElementInfo.Kind.IsElement)) {
       return "getElement";
+    } else if (kind.equals(DataElementInfo.Kind.ElementoIsElement)) {
+      return "element";
     }
     throw new GenerationException("Unable to find type of " + kind);
   }
@@ -57,9 +59,18 @@ public class TemplatedGeneratorUtils {
       return DataElementInfo.Kind.HTMLElement;
     } else if (isAssignable(dataElementType, io.crysknife.client.IsElement.class)) {
       return DataElementInfo.Kind.IsElement;
+    } else if (isAssignableToElementoIsElement(dataElementType)) {
+      return DataElementInfo.Kind.ElementoIsElement;
     } else {
       return DataElementInfo.Kind.Custom;
     }
+  }
+
+  private boolean isAssignableToElementoIsElement(TypeMirror dataElementType) {
+    javax.lang.model.element.TypeElement elementoIsElement =
+        processingEnvironment.getElementUtils().getTypeElement("org.jboss.elemento.IsElement");
+    return elementoIsElement != null
+        && isAssignable(dataElementType, elementoIsElement.asType());
   }
 
 

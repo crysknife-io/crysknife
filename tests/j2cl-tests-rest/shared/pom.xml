@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.crysknife.tests</groupId>
+        <artifactId>j2cl-tests-rest-parent</artifactId>
+        <version>0.11</version>
+    </parent>
+
+    <artifactId>j2cl-tests-rest-shared</artifactId>
+    <name>Crysknife :: Tests :: J2CL :: REST :: Shared</name>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.treblereel.gwt.jakarta</groupId>
+            <artifactId>jax-rs</artifactId>
+            <version>${gwt.jakarta.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

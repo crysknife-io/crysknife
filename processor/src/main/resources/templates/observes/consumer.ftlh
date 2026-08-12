@@ -1,2 +1,2 @@
-private final BiConsumer<${target}, ${bean}> ${consumer} = (event, instance) -> {
+private final java.util.function.Consumer<Object> ${consumer} = _event_ -> {
     ${call?no_esc}    };

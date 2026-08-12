@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Crysknife Navigation Tests</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="j2cl-tests-navigation.js" defer></script>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        .nav-links { margin: 1rem 0; }
+        .nav-links a { margin-right: 1rem; }
+        #log { background: #1d1f21; color: #c5c8c6; padding: 1rem; border-radius: 4px;
+               font-family: monospace; font-size: 13px; white-space: pre-line; min-height: 200px; }
+        #navigation-container { border: 1px solid #ccc; padding: 1rem; margin: 1rem 0; min-height: 100px; }
+    </style>
+</head>
+<body>
+    <h1>Navigation Test</h1>
+    <div class="nav-links">
+        <a href="#HomePage">Home</a>
+        <a href="#PageA">Page A</a>
+        <a href="#PageB">Page B</a>
+        <a href="#PageB?key1=value1&key2=value2">Page B (with state)</a>
+        <a href="#items/42/detail">Item Detail (path param)</a>
+        <button id="reinit-nav-btn">Reinit Navigation</button>
+    </div>
+    <div id="navigation-container"></div>
+    <h3>Lifecycle Log</h3>
+    <div id="log"></div>
+</body>
+</html>

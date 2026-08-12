@@ -1,0 +1,35 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>Provider&lt;T&gt;</h2>
+
+    <p><code>ManagedInstance&lt;T&gt;</code> implements <code>Provider&lt;T&gt;</code> and gives you
+       lazy, on-demand bean creation with lifecycle management. Each call to
+       <code>provider.get()</code> on a <code>@Dependent</code> bean returns a new instance.</p>
+
+    <h4>Dependent bean:</h4>
+    <pre class="prettyprint lang-java">
+    @Dependent\n
+    public class ExpensiveService {\n
+        private final int instanceId = new Random().nextInt(10000);\n
+    }\n
+    </pre>
+
+    <h4>Injection point:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject ManagedInstance&lt;ExpensiveService&gt; provider;\n
+    \n
+    // Each call creates a new instance:\n
+    ExpensiveService a = provider.get();\n
+    ExpensiveService b = provider.get();\n
+    // a.instanceId != b.instanceId\n
+    </pre>
+
+    <div class="demo-playground">
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="getBtn">provider.get()</button>
+        <button class="pf-v6-c-button pf-m-warning pf-m-sm" data-field="clearBtn">Clear</button>
+        <div class="demo-result" style="font-family: monospace; font-size: 13px; white-space: pre-line;" data-field="resultOutput">
+            Click "provider.get()" to create instances
+        </div>
+    </div>
+  </div>
+</div>

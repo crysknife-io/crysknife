@@ -29,6 +29,7 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
 
@@ -43,6 +44,7 @@ import elemental2.core.Function;
 import io.crysknife.client.InstanceFactory;
 import io.crysknife.definition.BeanDefinition;
 import io.crysknife.definition.InjectableVariableDefinition;
+import io.crysknife.definition.InterceptorInfo;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.api.ClassMetaInfo;
 import io.crysknife.generator.api.Generator;
@@ -108,6 +110,7 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
         privateMethods(beanDefinition, classMetaInfo, beanDTO);
         fieldDecorators(beanDefinition, classMetaInfo);
         interceptorFieldDecorators(beanDefinition, beanDTO);
+        aroundInvokeInterceptors(beanDefinition, beanDTO);
         methodDecorators(beanDefinition, classMetaInfo);
         classDecorators(beanDefinition, classMetaInfo);
         postConstruct(beanDefinition, beanDTO);
@@ -206,6 +209,8 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
     protected void fieldDecorators(BeanDefinition beanDefinition, ClassMetaInfo classMetaInfo) {
         beanDefinition.getFields()
                 .forEach(field -> field.getDecorators().forEach(g -> g.generate(classMetaInfo, field)));
+        beanDefinition.getDecoratedFields()
+                .forEach(field -> field.getDecorators().forEach(g -> g.generate(classMetaInfo, field)));
     }
 
     protected void deps(BeanDefinition beanDefinition, List<Dep> fields) {
@@ -266,6 +271,43 @@ public class ManagedBeanGenerator extends IOCGenerator<BeanDefinition> {
         }
 
         return String.format("() -> %s", beanCall);
+    }
+
+    private void aroundInvokeInterceptors(BeanDefinition beanDefinition,
+        Map<String, Object> root) {
+        if (!iocContext.getGenerationContext().getExecutionEnv().equals(ExecutionEnv.J2CL)) {
+            return;
+        }
+        Map<ExecutableElement, List<InterceptorInfo>> intercepted =
+            beanDefinition.getInterceptedMethods();
+        if (intercepted.isEmpty()) {
+            return;
+        }
+
+        List<String> methodInterceptors = new ArrayList<>();
+        for (Map.Entry<ExecutableElement, List<InterceptorInfo>> entry : intercepted.entrySet()) {
+            ExecutableElement method = entry.getKey();
+            List<InterceptorInfo> chain = entry.getValue();
+
+            String mangledName = j2CLUtils.getMethodMangledName(method);
+
+            String chainEntries = chain.stream().map(info -> {
+                String interceptorFqdn = MoreTypes.asTypeElement(info.getInterceptorType())
+                    .getQualifiedName().toString();
+                String aroundMethodName = info.getAroundInvokeMethod().getSimpleName().toString();
+                return String.format(
+                    "(ctx) -> beanManager.lookupBean(%s.class).getInstance().%s(ctx)",
+                    interceptorFqdn, aroundMethodName);
+            }).collect(Collectors.joining(", "));
+
+            String call = String.format(
+                "interceptor.addAroundInvokeInterceptor("
+                    + "Reflect.objectProperty(\"%s\", this.instance), "
+                    + "java.util.List.of(%s))",
+                mangledName, chainEntries);
+            methodInterceptors.add(call);
+        }
+        root.put("methodInterceptors", methodInterceptors);
     }
 
     public static class Dep {

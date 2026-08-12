@@ -1,0 +1,61 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>@InterceptorBinding + @AroundInvoke</h2>
+
+    <p>This demo shows Jakarta Interceptors in action. The <code>GreetingService</code> has methods
+       annotated with <code>@Logged</code> (a custom <code>@InterceptorBinding</code>).
+       The <code>LoggingInterceptor</code> intercepts those calls via <code>@AroundInvoke</code>.</p>
+
+    <h4>Interceptor binding:</h4>
+    <pre class="prettyprint lang-java">
+    @InterceptorBinding\n
+    @Retention(RetentionPolicy.RUNTIME)\n
+    @Target({ElementType.METHOD, ElementType.TYPE})\n
+    public @interface Logged {}\n
+    </pre>
+
+    <h4>Interceptor:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    @Interceptor\n
+    @Logged\n
+    public class LoggingInterceptor {\n
+        @AroundInvoke\n
+        public Object intercept(InvocationContext ctx) throws Exception {\n
+            // before\n
+            Object result = ctx.proceed();\n
+            // after\n
+            return result;\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>Intercepted service:</h4>
+    <pre class="prettyprint lang-java">
+    @ApplicationScoped\n
+    public class GreetingService {\n
+        @Logged\n
+        public String greet(String name) {\n
+            return "Hello, " + name + "!";\n
+        }\n
+    }\n
+    </pre>
+
+    <div class="demo-playground">
+        <div class="pf-v6-c-form__group">
+            <label class="pf-v6-c-form__label">Name:</label>
+            <input class="pf-v6-c-form-control" style="width: 300px;" data-field="nameInput" placeholder="World">
+        </div>
+
+        <button class="pf-v6-c-button pf-m-primary pf-m-sm" data-field="greetBtn">greet(name)</button>
+        <button class="pf-v6-c-button pf-m-tertiary pf-m-sm" data-field="addBtn">add(3, 7)</button>
+        <button class="pf-v6-c-button pf-m-secondary pf-m-sm" data-field="noInterceptBtn">notIntercepted()</button>
+        <button class="pf-v6-c-button pf-m-warning pf-m-sm" data-field="clearBtn">Clear log</button>
+
+        <div class="demo-result" data-field="resultOutput"></div>
+
+        <label class="pf-v6-c-form__label" style="margin-top: 12px;">Interceptor log:</label>
+        <textarea class="demo-result pf-v6-c-form-control" rows="8" readonly data-field="logOutput" style="font-family: monospace; font-size: 12px;"></textarea>
+    </div>
+  </div>
+</div>

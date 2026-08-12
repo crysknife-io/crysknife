@@ -1,0 +1,75 @@
+<div data-field="root">
+    <h2>REST Integration Test</h2>
+    <div>
+        <button data-field="getItemBtn" id="get-item-btn">Get Item (id=1)</button>
+        <div data-field="getItemResult" id="get-item-result"></div>
+    </div>
+    <div>
+        <button data-field="listItemsBtn" id="list-items-btn">List Items</button>
+        <div data-field="listItemsResult" id="list-items-result"></div>
+    </div>
+    <div>
+        <button data-field="createItemBtn" id="create-item-btn">Create Item</button>
+        <div data-field="createItemResult" id="create-item-result"></div>
+    </div>
+    <div>
+        <button data-field="updateItemBtn" id="update-item-btn">Update Item (id=1)</button>
+        <div data-field="updateItemResult" id="update-item-result"></div>
+    </div>
+    <div>
+        <button data-field="deleteItemBtn" id="delete-item-btn">Delete Item (id=1)</button>
+        <div data-field="deleteItemResult" id="delete-item-result"></div>
+    </div>
+    <div>
+        <button data-field="searchItemsBtn" id="search-items-btn">Search Items (name=item-1)</button>
+        <div data-field="searchItemsResult" id="search-items-result"></div>
+    </div>
+    <h2>Nested Model</h2>
+    <div>
+        <button data-field="detailedItemBtn" id="detailed-item-btn">Get Detailed Item (id=1)</button>
+        <div data-field="detailedItemResult" id="detailed-item-result"></div>
+    </div>
+    <h2>Empty List</h2>
+    <div>
+        <button data-field="searchEmptyBtn" id="search-empty-btn">Search Items (name=nonexistent)</button>
+        <div data-field="searchEmptyResult" id="search-empty-result"></div>
+    </div>
+    <h2>Void Endpoint</h2>
+    <div>
+        <button data-field="deleteVoidBtn" id="delete-void-btn">Delete Void (id=1)</button>
+        <div data-field="deleteVoidResult" id="delete-void-result"></div>
+    </div>
+    <h2>FullResponseCallback</h2>
+    <div>
+        <button data-field="fullResponseBtn" id="full-response-btn">Get Item FullResponse (id=1)</button>
+        <div data-field="fullResponseResult" id="full-response-result"></div>
+    </div>
+    <h2>HTTP Error Handling</h2>
+    <div>
+        <button data-field="error404Btn" id="error-404-btn">Get Error 404</button>
+        <div data-field="error404Result" id="error-404-result"></div>
+    </div>
+    <div>
+        <button data-field="error500Btn" id="error-500-btn">Get Error 500</button>
+        <div data-field="error500Result" id="error-500-result"></div>
+    </div>
+    <h2>Promise API</h2>
+    <div>
+        <button data-field="promiseGetItemBtn" id="promise-get-item-btn">Promise Get Item (id=1)</button>
+        <div data-field="promiseGetItemResult" id="promise-get-item-result"></div>
+    </div>
+    <div>
+        <button data-field="promiseListItemsBtn" id="promise-list-items-btn">Promise List Items</button>
+        <div data-field="promiseListItemsResult" id="promise-list-items-result"></div>
+    </div>
+    <h2>External API (JSONPlaceholder) - @Named</h2>
+    <div>
+        <button data-field="getPostBtn" id="get-post-btn">Get Post (id=1)</button>
+        <div data-field="getPostResult" id="get-post-result"></div>
+    </div>
+    <h2>External API (JSONPlaceholder) - @ExternalApi</h2>
+    <div>
+        <button data-field="getPostCustomBtn" id="get-post-custom-btn">Get Post (id=2)</button>
+        <div data-field="getPostCustomResult" id="get-post-custom-result"></div>
+    </div>
+</div>

@@ -28,6 +28,8 @@ public @interface Templated {
 
   String value() default "";
 
+  String inline() default "";
+
   String stylesheet() default "";
 
 }

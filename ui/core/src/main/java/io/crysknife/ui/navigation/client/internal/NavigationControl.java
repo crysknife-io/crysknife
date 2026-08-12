@@ -17,6 +17,7 @@ package io.crysknife.ui.navigation.client.internal;
 import io.crysknife.client.internal.collections.ImmutableMultimap;
 import io.crysknife.client.internal.collections.Multimap;
 import io.crysknife.ui.navigation.client.Navigation;
+import io.crysknife.ui.navigation.client.UniquePageRole;
 import io.crysknife.ui.navigation.client.annotation.Page;
 import io.crysknife.ui.navigation.client.annotation.PageHiding;
 
@@ -83,6 +84,20 @@ public class NavigationControl {
       navigation.goTo(toPage, state);
     } else {
       throw new IllegalStateException("redirect() method can only be called once.");
+    }
+  }
+
+  /**
+   * Redirect to the page with the given unique role.
+   *
+   * @param role the unique page role to navigate to (e.g. LoginPage.class, SecurityError.class).
+   */
+  public void redirectToRole(Class<? extends UniquePageRole> role) {
+    if (!hasRun) {
+      interrupt();
+      navigation.goToWithRole(role);
+    } else {
+      throw new IllegalStateException("redirectToRole() method can only be called once.");
     }
   }
 

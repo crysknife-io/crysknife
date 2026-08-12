@@ -1,0 +1,56 @@
+<div data-field="root" class="pf-v6-c-page__main-section">
+  <div class="pf-v6-c-content">
+    <h2>WebSocket Client</h2>
+
+    <h4>1. Define a @ClientEndpoint bean:</h4>
+    <pre class="prettyprint lang-java">
+    @ClientEndpoint\n
+    @Singleton\n
+    public class ChatEndpoint {\n
+    \n
+        @OnOpen\n
+        public void onOpen(Session session) {\n
+            session.getBasicRemote()\n
+                .sendText("hello");\n
+        }\n
+    \n
+        @OnMessage\n
+        public void onMessage(String message) {\n
+            // handle incoming message\n
+        }\n
+    \n
+        @OnClose\n
+        public void onClose(CloseReason reason) {\n
+            // handle disconnect\n
+        }\n
+    \n
+        @OnError\n
+        public void onError(Throwable error) {\n
+            // handle error\n
+        }\n
+    }\n
+    </pre>
+
+    <h4>2. Inject WebSocketConnector and connect:</h4>
+    <pre class="prettyprint lang-java">
+    @Inject\n
+    WebSocketConnector&lt;ChatEndpoint&gt; connector;\n
+    \n
+    connector\n
+        .baseUri("ws://localhost:8080/chat")\n
+        .connect();\n
+    </pre>
+
+    <p>The framework generates the WebSocket wiring at compile time &mdash;
+       <code>@OnOpen</code>, <code>@OnMessage</code>, <code>@OnClose</code>,
+       and <code>@OnError</code> callbacks are bound automatically.</p>
+
+    <div class="demo-playground">
+        <label class="pf-v6-c-form__label">Connection log (no server in this demo)</label>
+        <div class="demo-result" style="min-height: 48px; font-family: monospace; font-size: 0.85rem;"
+             data-field="logArea">
+            WebSocket demo &mdash; no live server configured.
+        </div>
+    </div>
+  </div>
+</div>

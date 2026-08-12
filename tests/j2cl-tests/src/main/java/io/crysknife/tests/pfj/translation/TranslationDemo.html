@@ -1,0 +1,39 @@
+<div class="pf-v6-c-page__main-section"><div class="pf-v6-c-page__main-body pf-v6-u-p-lg">
+    <div class="pf-v6-c-content">
+        <h1>Translation Demo</h1>
+        <p>Verifies @TranslationBundle / @TranslationKey with goog.getMsg() + native.js in different scenarios.</p>
+    </div>
+    <br/>
+
+    <h2 class="pf-v6-c-title pf-m-lg">DemoMessages — zero-arg methods</h2>
+    <table class="pf-v6-c-table pf-m-grid-md">
+        <thead><tr><th>Key</th><th>Expected (en)</th><th>Actual</th></tr></thead>
+        <tbody>
+            <tr><td>welcome</td><td>Welcome</td><td data-field="welcomeResult"></td></tr>
+            <tr><td>save</td><td>Save</td><td data-field="saveResult"></td></tr>
+            <tr><td>cancel</td><td>Cancel</td><td data-field="cancelResult"></td></tr>
+            <tr><td>deleteButton (custom key)</td><td>Delete</td><td data-field="deleteResult"></td></tr>
+            <tr><td>boldLabel (html=true)</td><td>&lt;b&gt;Bold text&lt;/b&gt;</td><td data-field="boldResult"></td></tr>
+        </tbody>
+    </table>
+    <br/>
+
+    <h2 class="pf-v6-c-title pf-m-lg">DemoMessages — with parameters</h2>
+    <table class="pf-v6-c-table pf-m-grid-md">
+        <thead><tr><th>Key</th><th>Expected (en)</th><th>Actual</th></tr></thead>
+        <tbody>
+            <tr><td>greeting("World", "5")</td><td>Hello World, you have 5 messages</td><td data-field="greetingResult"></td></tr>
+        </tbody>
+    </table>
+    <br/>
+
+    <h2 class="pf-v6-c-title pf-m-lg">AdminMessages — second bundle (custom name)</h2>
+    <table class="pf-v6-c-table pf-m-grid-md">
+        <thead><tr><th>Key</th><th>Expected (en)</th><th>Actual</th></tr></thead>
+        <tbody>
+            <tr><td>dashboard</td><td>Dashboard</td><td data-field="dashboardResult"></td></tr>
+            <tr><td>settings</td><td>Settings</td><td data-field="settingsResult"></td></tr>
+            <tr><td>usersOnline("42")</td><td>Users online: 42</td><td data-field="usersOnlineResult"></td></tr>
+        </tbody>
+    </table>
+</div></div>

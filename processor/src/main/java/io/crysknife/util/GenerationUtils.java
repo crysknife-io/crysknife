@@ -86,6 +86,10 @@ public class GenerationUtils {
   }
 
   public String getActualQualifiedBeanName(InjectableVariableDefinition fieldPoint) {
+    if (fieldPoint.getOverrideType().isPresent()) {
+      return MoreTypes.asTypeElement(fieldPoint.getOverrideType().get()).getQualifiedName()
+          .toString();
+    }
     String typeQualifiedName;
     if (!MoreTypes.asTypeElement(fieldPoint.getVariableElement().asType()).getTypeParameters()
         .isEmpty()) {
