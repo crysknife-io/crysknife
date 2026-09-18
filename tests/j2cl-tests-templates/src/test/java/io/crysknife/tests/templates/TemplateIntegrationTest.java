@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -79,11 +78,11 @@ public class TemplateIntegrationTest {
         baseUrl = "http://localhost:" + port;
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--window-size=1920,1200");
-        ChromeDriverService service = new ChromeDriverService.Builder()
-            .withBuildCheckDisabled(true)
-            .build();
-        driver = new ChromeDriver(service, options);
+        options.addArguments("--headless=new", "--window-size=1920,1200",
+            "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu");
+        driver = new ChromeDriver(options);
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(15));
     }
 
     @BeforeEach

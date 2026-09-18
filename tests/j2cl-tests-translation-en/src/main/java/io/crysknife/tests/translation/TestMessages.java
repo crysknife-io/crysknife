@@ -34,4 +34,16 @@ public interface TestMessages {
 
   @TranslationKey(defaultValue = "Delete", key = "btn_delete")
   String deleteButton();
+
+  @TranslationKey(defaultValue = "Good bye {$arg} !")
+  String farewell(String arg);
+
+  @TranslationKey(defaultValue = "{$second} / {$first} / {$second}")
+  String reordered(String first, String second);
+
+  @TranslationKey(defaultValue = "<b>{$arg}</b>", html = true)
+  String escapedHtml(String arg);
+
+  @TranslationKey(defaultValue = "&lt;b&gt;{$arg}&lt;/b&gt; &amp;", unescapeHtmlEntities = true)
+  String unescapedHtml(String arg);
 }

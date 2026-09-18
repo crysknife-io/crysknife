@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.crysknife.tests</groupId>
     <artifactId>jre-simple-tests</artifactId>
-    <version>0.11</version>
+    <version>0.12-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Crysknife :: Tests :: JRE :: Simple</name>
@@ -23,7 +23,7 @@
         <maven.properties.plugin>1.0.0</maven.properties.plugin>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.surfire.plugin>3.0.0-M1</maven.surfire.plugin>
-        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <junit.version>4.13.1</junit.version>
     </properties>
 
@@ -85,6 +85,7 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
+                    <proc>full</proc>
                 </configuration>
             </plugin>
             <plugin>

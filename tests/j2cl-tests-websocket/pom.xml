@@ -24,7 +24,7 @@
     <parent>
         <groupId>io.crysknife.tests</groupId>
         <artifactId>tests-parent</artifactId>
-        <version>0.11</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>j2cl-tests-websocket-parent</artifactId>
@@ -32,7 +32,7 @@
     <name>Crysknife :: Tests :: J2CL :: WebSocket</name>
 
     <properties>
-        <crysknife.version>0.11</crysknife.version>
+        <crysknife.version>0.12-SNAPSHOT</crysknife.version>
         <quarkus.version>3.37.0</quarkus.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

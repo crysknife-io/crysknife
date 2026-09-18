@@ -44,7 +44,8 @@ public class RestIntegrationTest {
     @BeforeAll
     static void setupDriver() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--window-size=1920,1200");
+        options.addArguments("--headless=new", "--window-size=1920,1200",
+            "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu");
         driver = new ChromeDriver(options);
     }
 

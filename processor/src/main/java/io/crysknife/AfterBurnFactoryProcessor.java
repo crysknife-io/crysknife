@@ -23,14 +23,12 @@ import jakarta.ejb.Singleton;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.Dependent;
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
 import com.google.auto.common.MoreElements;
-import com.google.auto.service.AutoService;
 import io.crysknife.client.internal.step.AfterBurnFactoryStep;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.exception.UnableToCompleteException;
@@ -43,7 +41,6 @@ import io.crysknife.task.FactoryGeneratorTask;
 import io.crysknife.task.IOCProviderTask;
 import io.crysknife.task.TaskGroup;
 
-@AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class AfterBurnFactoryProcessor extends AbstractProcessor {
 

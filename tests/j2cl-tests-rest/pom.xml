@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife.tests</groupId>
     <artifactId>j2cl-tests-rest-parent</artifactId>
-    <version>0.11</version>
+    <version>0.12-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Crysknife :: Tests :: J2CL :: REST</name>
 
@@ -25,7 +25,7 @@
         <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
 
-        <crysknife.version>0.11</crysknife.version>
+        <crysknife.version>0.12-SNAPSHOT</crysknife.version>
         <j2cl.platform.version>20260527-1</j2cl.platform.version>
         <org.treblereel.j2cl.processors.version>0.11</org.treblereel.j2cl.processors.version>
         <jakarta4g.rest.version>0.2</jakarta4g.rest.version>

@@ -12,3 +12,8 @@ target
 .flattened-pom.xml
 dependency-reduced-pom.xml
 wksp
+.quill/
+.githooks
+.mcp.json
+.codex/
+/META-INF/

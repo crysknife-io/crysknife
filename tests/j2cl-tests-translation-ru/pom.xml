@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife.tests</groupId>
     <artifactId>j2cl-tests-translation-ru</artifactId>
-    <version>0.11</version>
+    <version>0.12-SNAPSHOT</version>
     <name>Crysknife :: Tests :: J2CL :: Translation RU</name>
     <description>J2CL browser tests for TranslationBundle with Russian locale via XTB</description>
 
@@ -21,8 +21,8 @@
         <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
         <maven.surefire.plugin.version>3.1.0</maven.surefire.plugin.version>
 
-        <crysknife.version>0.11</crysknife.version>
-        <j2cl.platform.version>20260527-1</j2cl.platform.version>
+        <crysknife.version>${project.version}</crysknife.version>
+        <j2cl.platform.version>20260906-1</j2cl.platform.version>
         <org.treblereel.j2cl.processors.version>0.11</org.treblereel.j2cl.processors.version>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
@@ -65,18 +65,18 @@
 
         <!-- test dependencies -->
         <dependency>
-            <groupId>org.kie.j2cl.tools</groupId>
+            <groupId>org.treblereel.j2cl</groupId>
             <artifactId>junit-annotations</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.kie.j2cl.tools</groupId>
+            <groupId>org.treblereel.j2cl</groupId>
             <artifactId>gwttestcase-emul</artifactId>
             <classifier>sources</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.kie.j2cl.tools</groupId>
+            <groupId>org.treblereel.j2cl</groupId>
             <artifactId>junit-emul</artifactId>
             <scope>test</scope>
         </dependency>
@@ -155,9 +155,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.kie.j2cl.tools</groupId>
+                <groupId>org.treblereel.j2cl.plugin</groupId>
                 <artifactId>j2cl-maven-plugin</artifactId>
-                <version>0.23.8</version>
+                <version>0.24.2</version>
                 <executions>
                     <execution>
                         <id>j2cl-test</id>

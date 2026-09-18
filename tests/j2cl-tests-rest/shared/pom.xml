@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.crysknife.tests</groupId>
         <artifactId>j2cl-tests-rest-parent</artifactId>
-        <version>0.11</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>j2cl-tests-rest-shared</artifactId>

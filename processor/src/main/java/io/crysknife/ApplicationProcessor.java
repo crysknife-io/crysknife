@@ -21,14 +21,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import com.google.auto.service.AutoService;
 import io.crysknife.annotation.Application;
 import io.crysknife.exception.GenerationException;
 import io.crysknife.generator.BeanManagerProducerGenerator;
@@ -59,7 +57,6 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 
-@AutoService(Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_11)
 public class ApplicationProcessor extends AbstractProcessor {
 

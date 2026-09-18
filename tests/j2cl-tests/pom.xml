@@ -6,7 +6,7 @@
 
     <groupId>io.crysknife.tests</groupId>
     <artifactId>j2cl-tests</artifactId>
-    <version>0.11</version>
+    <version>0.12-SNAPSHOT</version>
     <name>Crysknife :: Tests :: J2CL</name>
     <description>J2CL integration tests</description>
 
@@ -21,7 +21,7 @@
         <maven.deploy.plugin.version>3.0.0-M2</maven.deploy.plugin.version>
         <maven.surefire.plugin.version>3.0.0-M5</maven.surefire.plugin.version>
 
-        <crysknife.version>0.11</crysknife.version>
+        <crysknife.version>0.12-SNAPSHOT</crysknife.version>
         <patternfly.version>0.3.0</patternfly.version>
         <j2cl.platform.version>20260527-1</j2cl.platform.version>
         <org.treblereel.j2cl.processors.version>0.11</org.treblereel.j2cl.processors.version>
@@ -149,9 +149,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.kie.j2cl.tools</groupId>
+                <groupId>org.treblereel.j2cl.plugin</groupId>
                 <artifactId>j2cl-maven-plugin</artifactId>
-                <version>0.23.8</version>
+                <version>0.24.2</version>
                 <executions>
                     <execution>
                         <id>build-js</id>

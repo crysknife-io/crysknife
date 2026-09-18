@@ -74,6 +74,26 @@ public class TranslationRuTest {
   }
 
   @Test
+  public void testMissingTranslationFallsBackToDefaultWithRenamablePlaceholder() {
+    assertEquals("Good bye Billy !", messages.farewell("Billy"));
+  }
+
+  @Test
+  public void testRepeatedAndReorderedPlaceholders() {
+    assertEquals("two / one / two", messages.reordered("one", "two"));
+  }
+
+  @Test
+  public void testHtmlEscapesMessageButNotPlaceholder() {
+    assertEquals("&lt;b><em>Billy</em>&lt;/b>", messages.escapedHtml("<em>Billy</em>"));
+  }
+
+  @Test
+  public void testUnescapeHtmlEntitiesPreservesPlaceholder() {
+    assertEquals("<b>&amp;</b> &", messages.unescapedHtml("&amp;"));
+  }
+
+  @Test
   public void testI18nKeySaveInDom() {
     HTMLElement el = (HTMLElement) DomGlobal.document.querySelector("[data-field='saveLabel']");
     assertNotNull(el);

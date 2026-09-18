@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.crysknife.tests</groupId>
         <artifactId>j2cl-tests-rest-parent</artifactId>
-        <version>0.11</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>j2cl-tests-rest-server</artifactId>
@@ -61,13 +61,13 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-chrome-driver</artifactId>
-            <version>4.12.1</version>
+            <version>4.48.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-support</artifactId>
-            <version>4.12.1</version>
+            <version>4.48.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

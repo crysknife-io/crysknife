@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -70,8 +69,10 @@ public class NavigationIntegrationTest {
                 try (OutputStream os = exchange.getResponseBody()) {
                     os.write(data);
                 }
+                System.err.println("[HTTP] 200 " + path + " (" + data.length + " bytes)");
             } else {
                 exchange.sendResponseHeaders(404, -1);
+                System.err.println("[HTTP] 404 " + path);
             }
         });
         server.start();
@@ -79,17 +80,41 @@ public class NavigationIntegrationTest {
         baseUrl = "http://localhost:" + port;
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--window-size=1920,1200");
-        ChromeDriverService service = new ChromeDriverService.Builder()
-            .withBuildCheckDisabled(true)
-            .build();
-        driver = new ChromeDriver(service, options);
+        options.addArguments("--headless=new", "--window-size=1920,1200",
+            "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu");
+        java.util.Map<String, String> logPrefs = new java.util.HashMap<>();
+        logPrefs.put("browser", "ALL");
+        options.setCapability("goog:loggingPrefs", logPrefs);
+        driver = new ChromeDriver(options);
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(15));
     }
 
     @BeforeEach
     void loadPage() {
         driver.get(baseUrl);
-        waitForElement("home-page");
+        try {
+            waitForElement("home-page");
+        } catch (Exception e) {
+            try {
+                driver.manage().logs().get("browser").getAll()
+                    .forEach(entry -> System.err.println(
+                        "BROWSER: " + entry.getLevel() + " " + entry.getMessage()));
+            } catch (Exception ignored) {
+            }
+            try {
+                Object diag = ((JavascriptExecutor) driver).executeScript(
+                    "var r = {};"
+                    + "r.url = location.href;"
+                    + "r.navHTML = document.getElementById('navigation-container').innerHTML;"
+                    + "r.logHTML = document.getElementById('log').textContent;"
+                    + "r.scripts = document.querySelectorAll('script').length;"
+                    + "return JSON.stringify(r);");
+                System.err.println("=== DIAG: " + diag);
+            } catch (Exception ignored) {
+            }
+            throw e;
+        }
     }
 
     // --- Default page ---

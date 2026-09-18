@@ -24,11 +24,12 @@
     <parent>
         <groupId>io.crysknife.tests</groupId>
         <artifactId>j2cl-tests-websocket-parent</artifactId>
-        <version>0.11</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>j2cl-tests-websocket-client</artifactId>
     <name>Crysknife :: Tests :: J2CL :: WebSocket :: Client</name>
+    <version>0.12-SNAPSHOT</version>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -96,9 +97,9 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.kie.j2cl.tools</groupId>
+                <groupId>org.treblereel.j2cl.plugin</groupId>
                 <artifactId>j2cl-maven-plugin</artifactId>
-                <version>0.23.8</version>
+                <version>0.24.2</version>
                 <executions>
                     <execution>
                         <id>build-js</id>

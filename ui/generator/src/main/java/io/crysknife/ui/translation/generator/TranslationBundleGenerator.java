@@ -208,6 +208,7 @@ public class TranslationBundleGenerator extends IOCGenerator<BeanDefinition> {
     List<String> placeholders = parts.stream()
         .filter(JsMessage.Part::isPlaceholder)
         .map(JsMessage.Part::getCanonicalPlaceholderName)
+        .distinct()
         .collect(Collectors.toList());
     List<String> paramNames = method.getParameters().stream()
         .map(p -> p.getSimpleName().toString())
@@ -314,6 +315,7 @@ public class TranslationBundleGenerator extends IOCGenerator<BeanDefinition> {
     List<String> placeholders = parts.stream()
         .filter(JsMessage.Part::isPlaceholder)
         .map(JsMessage.Part::getCanonicalPlaceholderName)
+        .distinct()
         .collect(Collectors.toList());
 
     sb.append("/** @desc ").append(key).append(" */\n");
