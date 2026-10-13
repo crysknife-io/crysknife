@@ -66,7 +66,7 @@
 
         <apache.commons.commons-lang3.version>3.19.0</apache.commons.commons-lang3.version>
 
-        <jsoup.version>1.22.2</jsoup.version>
+        <jsoup.version>1.23.2</jsoup.version>
         <javax.inject.version>1</javax.inject.version>
         <freemarker.version>2.3.30</freemarker.version>
         <lesscss.version>1.12</lesscss.version>
